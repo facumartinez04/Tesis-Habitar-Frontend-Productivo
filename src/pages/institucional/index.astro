@@ -1,0 +1,12 @@
+---
+import AppShell from '../../layouts/AppShell.astro';
+import { InstitutionDashboard } from '../../components/react/features/InstitutionDashboard';
+import { institucionalNavItems } from '../../lib/nav';
+---
+<AppShell
+  title="Institucional"
+  sectionLabel="Panel institucional"
+  sidebarItems={institucionalNavItems}
+>
+  <InstitutionDashboard client:load />
+</AppShell>

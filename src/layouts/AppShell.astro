@@ -1,0 +1,26 @@
+---
+import SiteLayout from './SiteLayout.astro';
+import AppHeader from '../components/app/AppHeader.astro';
+import AppSidebar, { type AppSidebarItem } from '../components/app/AppSidebar.astro';
+
+interface Props {
+  title: string;
+  sectionLabel: string;
+  sidebarItems: AppSidebarItem[];
+}
+
+const { title, sectionLabel, sidebarItems } = Astro.props;
+---
+<SiteLayout title={title}>
+  <div class="min-h-screen flex">
+    <AppSidebar items={sidebarItems} sectionLabel={sectionLabel} />
+    <div class="flex-1 min-w-0 flex flex-col">
+      <AppHeader sectionLabel={sectionLabel} />
+      <main class="flex-1 min-w-0 p-4 sm:p-6 bg-surface">
+        <div class="max-w-5xl mx-auto">
+          <slot />
+        </div>
+      </main>
+    </div>
+  </div>
+</SiteLayout>

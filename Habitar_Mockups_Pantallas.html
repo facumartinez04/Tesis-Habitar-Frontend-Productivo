@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Habitar — Mockups de pantallas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green-dark:#0F6E56;
+  --green-mid:#1D9E75;
+  --green-light:#E1F5EE;
+  --green-bg:#EAF3DE;
+  --green-text:#27500A;
+  --amber:#EF9F27;
+  --amber-bg:#FAEEDA;
+  --amber-text:#854F0B;
+  --red:#E24B4A;
+  --red-bg:#FCEBEB;
+  --red-text:#A32D2D;
+  --blue:#185FA5;
+  --blue-bg:#E6F1FB;
+  --gray-bg:#F1EFE8;
+  --gray-border:#D8D5CE;
+  --surface:#F7F6F3;
+  --text-pri:#1A1918;
+  --text-sec:#5C5A56;
+  --text-ter:#8C8A85;
+  --white:#FFFFFF;
+  --radius-sm:6px;
+  --radius-md:8px;
+  --radius-lg:12px;
+}
+html,body{height:100%;font-family:'Inter',sans-serif;background:#EDECEA;color:var(--text-pri);font-size:14px;line-height:1.5;}
+
+/* ── SHELL ── */
+.shell{display:flex;height:100vh;}
+
+/* ── NAV ── */
+.nav{width:220px;background:var(--white);border-right:1px solid var(--gray-border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;}
+.nav-logo{padding:16px 18px 14px;border-bottom:1px solid var(--gray-border);}
+.nav-logo span{font-size:18px;font-weight:600;color:var(--green-dark);letter-spacing:-.02em;}
+.nav-logo small{display:block;font-size:10px;color:var(--text-ter);margin-top:2px;letter-spacing:.04em;text-transform:uppercase;}
+.nav-section{padding:10px 10px 2px;font-size:10px;font-weight:600;color:var(--text-ter);letter-spacing:.06em;text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 12px;margin:1px 6px;border-radius:var(--radius-sm);cursor:pointer;font-size:12px;color:var(--text-sec);transition:background .12s,color .12s;user-select:none;}
+.nav-item:hover{background:var(--surface);}
+.nav-item.active{background:var(--green-bg);color:var(--green-text);font-weight:500;}
+.nav-item .cu{font-size:9.5px;color:var(--text-ter);margin-left:auto;font-family:'DM Mono',monospace;}
+.nav-item.active .cu{color:var(--green-mid);}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+
+/* ── TOOLBAR ── */
+.toolbar{background:var(--white);border-bottom:1px solid var(--gray-border);padding:10px 20px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.toolbar-title{font-size:13px;font-weight:500;color:var(--text-pri);flex:1;}
+.toolbar-sub{font-size:11px;color:var(--text-ter);}
+.btn-capture{display:flex;align-items:center;gap:6px;padding:7px 14px;background:var(--green-dark);color:var(--white);border:none;border-radius:var(--radius-md);font-size:12px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .15s;}
+.btn-capture:hover{opacity:.88;}
+.btn-capture svg{flex-shrink:0;}
+.btn-all{display:flex;align-items:center;gap:6px;padding:7px 14px;background:var(--white);color:var(--text-pri);border:1px solid var(--gray-border);border-radius:var(--radius-md);font-size:12px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:background .12s;}
+.btn-all:hover{background:var(--surface);}
+
+/* ── CANVAS ── */
+.canvas{flex:1;overflow-y:auto;padding:28px;display:flex;justify-content:center;align-items:flex-start;}
+.screen-wrap{width:960px;min-height:600px;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1A1918;color:white;padding:10px 20px;border-radius:var(--radius-lg);font-size:12px;opacity:0;transition:all .3s;pointer-events:none;z-index:999;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ══════════════════════════════════════════════
+   PWA FRAME COMPONENTS
+══════════════════════════════════════════════ */
+.browser-chrome{background:#f0efed;border:1px solid var(--gray-border);border-radius:10px 10px 0 0;padding:8px 12px;display:flex;align-items:center;gap:8px;}
+.browser-dots{display:flex;gap:5px;}
+.browser-dots i{width:11px;height:11px;border-radius:50%;}
+.browser-dots i:nth-child(1){background:#FF5F57;}
+.browser-dots i:nth-child(2){background:#FEBC2E;}
+.browser-dots i:nth-child(3){background:#28C840;}
+.browser-url{flex:1;background:var(--white);border:1px solid var(--gray-border);border-radius:5px;padding:3px 10px;font-size:11px;color:var(--text-ter);font-family:'DM Mono',monospace;}
+.pwa-frame{background:var(--white);border:1px solid var(--gray-border);border-top:none;border-radius:0 0 10px 10px;overflow:hidden;}
+.pwa-header{background:var(--green-dark);padding:13px 18px;display:flex;align-items:center;justify-content:space-between;}
+.pwa-logo{font-size:16px;font-weight:600;color:var(--green-light);letter-spacing:-.01em;}
+.pwa-logo small{font-size:10px;font-weight:400;opacity:.7;margin-left:8px;}
+.pwa-avatar{width:30px;height:30px;border-radius:50%;background:#085041;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#9FE1CB;}
+.pwa-badge-admin{background:#085041;color:#9FE1CB;font-size:10px;padding:3px 10px;border-radius:20px;}
+
+.pwa-layout{display:flex;min-height:500px;}
+.sidebar{width:190px;border-right:1px solid var(--gray-border);padding:10px 8px;flex-shrink:0;background:var(--white);}
+.sidebar-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--radius-sm);font-size:12.5px;color:var(--text-sec);cursor:pointer;margin-bottom:1px;}
+.sidebar-item.active{background:var(--surface);color:var(--text-pri);font-weight:500;}
+.sidebar-item .badge-count{margin-left:auto;background:var(--red-bg);color:var(--red-text);font-size:10px;padding:1px 6px;border-radius:10px;font-weight:600;}
+.content{flex:1;padding:22px 24px;background:var(--surface);}
+
+/* PAGE HEAD */
+.page-title{font-size:18px;font-weight:600;color:var(--text-pri);margin-bottom:3px;letter-spacing:-.01em;}
+.page-sub{font-size:12.5px;color:var(--text-sec);margin-bottom:18px;}
+
+/* STEPPER */
+.stepper{display:flex;align-items:center;margin-bottom:18px;}
+.step-item{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.step-circle{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;}
+.step-circle.done{background:var(--green-mid);color:white;}
+.step-circle.current{background:var(--green-dark);color:white;}
+.step-circle.pending{background:var(--white);color:var(--text-ter);border:1px solid var(--gray-border);}
+.step-line{flex:1;height:1.5px;margin:0 4px;margin-bottom:16px;}
+.step-line.done{background:var(--green-mid);}
+.step-line.pending{background:var(--gray-border);}
+.step-label{font-size:10px;color:var(--text-ter);white-space:nowrap;}
+
+/* METRIC CARDS */
+.metrics-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:18px;}
+.metric-card{background:var(--white);border:1px solid var(--gray-border);border-radius:var(--radius-md);padding:12px 14px;text-align:center;}
+.metric-val{font-size:22px;font-weight:600;color:var(--text-pri);}
+.metric-lbl{font-size:10.5px;color:var(--text-sec);margin-top:2px;}
+
+/* FORM */
+.form-row{display:grid;gap:12px;margin-bottom:14px;}
+.form-row.cols-2{grid-template-columns:1fr 1fr;}
+.form-row.cols-3{grid-template-columns:1fr 1fr 1fr;}
+.form-group label{display:block;font-size:11px;color:var(--text-sec);margin-bottom:5px;font-weight:500;}
+.form-input{width:100%;padding:7px 10px;border:1px solid var(--gray-border);border-radius:var(--radius-sm);font-size:12.5px;background:var(--white);color:var(--text-pri);font-family:'Inter',sans-serif;}
+.form-select{width:100%;padding:7px 10px;border:1px solid var(--gray-border);border-radius:var(--radius-sm);font-size:12.5px;background:var(--white);color:var(--text-pri);font-family:'Inter',sans-serif;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238C8A85' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;}
+.form-textarea{width:100%;padding:8px 10px;border:1px solid var(--gray-border);border-radius:var(--radius-sm);font-size:12px;background:var(--white);color:var(--text-pri);font-family:'Inter',sans-serif;resize:none;line-height:1.6;}
+
+/* BUTTONS */
+.btn-primary{background:var(--green-dark);color:white;border:none;padding:8px 16px;border-radius:var(--radius-sm);font-size:12.5px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-secondary{background:var(--white);color:var(--text-pri);border:1px solid var(--gray-border);padding:7px 14px;border-radius:var(--radius-sm);font-size:12.5px;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-danger{background:var(--red-bg);color:var(--red-text);border:1px solid #F09595;padding:7px 14px;border-radius:var(--radius-sm);font-size:12.5px;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-row{display:flex;gap:8px;margin-top:16px;}
+.btn-row.end{justify-content:flex-end;}
+
+/* BADGES */
+.badge{display:inline-block;font-size:10.5px;font-weight:500;padding:2px 8px;border-radius:10px;white-space:nowrap;}
+.badge-green{background:var(--green-bg);color:var(--green-text);}
+.badge-blue{background:var(--blue-bg);color:var(--blue);}
+.badge-amber{background:var(--amber-bg);color:var(--amber-text);}
+.badge-red{background:var(--red-bg);color:var(--red-text);}
+.badge-gray{background:var(--gray-bg);color:var(--text-sec);}
+.badge-teal{background:var(--green-light);color:var(--green-dark);}
+
+/* TABLE */
+.data-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+.data-table th{text-align:left;font-size:11px;color:var(--text-sec);font-weight:500;padding:8px 10px;border-bottom:1px solid var(--gray-border);background:var(--white);}
+.data-table td{padding:9px 10px;border-bottom:1px solid var(--gray-border);color:var(--text-pri);}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr.row-warn td{background:#FCEBEB18;}
+.table-wrap{background:var(--white);border:1px solid var(--gray-border);border-radius:var(--radius-md);overflow:hidden;}
+
+/* CARD */
+.card{background:var(--white);border:1px solid var(--gray-border);border-radius:var(--radius-md);padding:16px;}
+.card-surface{background:var(--surface);border-radius:var(--radius-md);padding:12px 14px;}
+.card-grid{display:grid;gap:10px;}
+.card-grid.cols-2{grid-template-columns:1fr 1fr;}
+
+/* PROGRESS */
+.progress-wrap{background:var(--gray-border);border-radius:3px;height:5px;overflow:hidden;margin:4px 0;}
+.progress-fill{height:100%;border-radius:3px;}
+.progress-fill.green{background:var(--green-mid);}
+.progress-fill.amber{background:var(--amber);}
+.progress-fill.red{background:var(--red);}
+
+/* STATUS DOT */
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px;flex-shrink:0;}
+.dot-green{background:var(--green-mid);}
+.dot-amber{background:var(--amber);}
+.dot-red{background:var(--red);}
+
+/* DIVIDER */
+hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
+
+/* TAG CHIPS */
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.chip{background:var(--white);border:1px solid var(--gray-border);border-radius:10px;font-size:11px;color:var(--text-sec);padding:3px 10px;}
+
+/* ALERT ITEMS */
+.alert-item{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:var(--radius-md);border:1px solid var(--gray-border);margin-bottom:8px;}
+.alert-icon{width:34px;height:34px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:17px;}
+.alert-icon.red{background:var(--red-bg);}
+.alert-icon.amber{background:var(--amber-bg);}
+.alert-icon.green{background:var(--green-bg);}
+.alert-body{flex:1;}
+.alert-title{font-size:13px;font-weight:500;margin-bottom:3px;}
+.alert-desc{font-size:11.5px;color:var(--text-sec);}
+.alert-date{font-size:10.5px;color:var(--text-ter);margin-top:2px;}
+
+/* TIMELINE */
+.timeline{position:relative;padding-left:20px;}
+.timeline::before{content:'';position:absolute;left:7px;top:6px;bottom:6px;width:1.5px;background:var(--gray-border);}
+.tl-item{position:relative;margin-bottom:14px;}
+.tl-dot{position:absolute;left:-16px;top:4px;width:10px;height:10px;border-radius:50%;border:2px solid var(--white);}
+.tl-dot.done{background:var(--green-mid);}
+.tl-dot.wait{background:var(--amber);}
+.tl-dot.todo{background:var(--gray-border);}
+.tl-text{font-size:12.5px;color:var(--text-pri);}
+.tl-sub{font-size:11px;color:var(--amber-text);margin-top:2px;}
+
+/* AVATAR */
+.avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;}
+
+/* RADIO TOGGLE */
+.radio-group{display:flex;gap:14px;}
+.radio-opt{display:flex;align-items:center;gap:7px;font-size:12.5px;cursor:pointer;}
+.radio-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--gray-border);display:flex;align-items:center;justify-content:center;}
+.radio-dot.selected{border-color:var(--green-dark);background:var(--green-dark);}
+.radio-dot.selected::after{content:'';width:5px;height:5px;border-radius:50%;background:white;}
+
+/* QR BOX */
+.qr-box{background:var(--white);border:2px solid var(--gray-border);border-radius:var(--radius-md);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;}
+.qr-pattern{width:100px;height:100px;display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(7,1fr);gap:1.5px;}
+.qr-cell{border-radius:1px;}
+.qr-cell.on{background:var(--text-pri);}
+.qr-cell.off{background:transparent;}
+.qr-code{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;letter-spacing:.14em;margin-top:10px;}
+
+/* SUCCESS CIRCLE */
+.success-circle{width:52px;height:52px;border-radius:50%;background:var(--green-bg);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 12px;}
+
+/* MOBILE FRAME */
+.mobile-frame-outer{width:260px;background:var(--white);border:2px solid var(--gray-border);border-radius:24px;overflow:hidden;flex-shrink:0;}
+.mobile-notch{height:22px;background:var(--white);display:flex;align-items:center;justify-content:center;}
+.mobile-notch-pill{width:52px;height:4px;background:var(--gray-border);border-radius:2px;}
+.mobile-header{background:var(--green-dark);padding:10px 14px;}
+.mobile-body{padding:12px;}
+
+/* CHART SVG */
+.chart-area{background:var(--surface);border-radius:var(--radius-md);padding:14px;}
+.chart-legend{display:flex;gap:14px;margin-top:8px;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-sec);}
+.legend-dot{width:20px;height:2px;border-radius:1px;}
+
+/* LOGIN SCREEN */
+.login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;min-height:500px;background:var(--surface);}
+.login-logo{font-size:36px;font-weight:700;color:var(--text-pri);letter-spacing:-.03em;margin-bottom:4px;}
+.login-logo span{color:var(--green-dark);}
+.login-tagline{font-size:13px;color:var(--text-sec);margin-bottom:36px;text-align:center;}
+.oauth-btn{display:flex;align-items:center;gap:10px;width:280px;padding:11px 16px;border:1px solid var(--gray-border);border-radius:var(--radius-md);background:var(--white);font-size:13px;cursor:pointer;margin-bottom:10px;color:var(--text-pri);font-family:'Inter',sans-serif;font-weight:500;transition:border-color .15s;}
+.oauth-btn:hover{border-color:var(--green-mid);}
+.oauth-icon{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;flex-shrink:0;}
+.login-note{font-size:11px;color:var(--text-ter);text-align:center;max-width:240px;margin-top:24px;line-height:1.6;}
+
+/* CONSENT */
+.consent-scroll{max-height:120px;overflow-y:auto;background:var(--surface);border-radius:var(--radius-sm);padding:12px 14px;border:1px solid var(--gray-border);font-size:12px;line-height:1.7;color:var(--text-sec);}
+.check-row{display:flex;align-items:flex-start;gap:10px;margin:14px 0;}
+.check-box{width:16px;height:16px;border:2px solid var(--green-dark);border-radius:3px;background:var(--green-dark);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.check-box svg{color:white;}
+
+/* MONITORING COMPONENT */
+.comp-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--gray-border);}
+.comp-row:last-child{border-bottom:none;}
+.comp-name{flex:1;font-size:12.5px;}
+.comp-bar-wrap{width:140px;}
+
+/* RENEWAL CARD */
+.renewal-card{background:var(--white);border:1px solid;border-radius:var(--radius-md);padding:16px;margin-bottom:12px;}
+.renewal-card.urgent{border-color:#FAC775;}
+.renewal-actions{display:flex;gap:8px;margin-top:12px;}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<div class="shell">
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-logo">
+      <span>Habitar</span>
+      <small>Mockups · Sección 11.3.4</small>
+    </div>
+
+    <div class="nav-section">Paquete 1 — Sesión</div>
+    <div class="nav-item active" onclick="show(this,'s-login')">Inicio de sesión<span class="cu">CU-01-01</span></div>
+    <div class="nav-item" onclick="show(this,'s-qr-access')">Acceso por QR<span class="cu">CU-01-02</span></div>
+
+    <div class="nav-section">Paquete 2 — Actividades</div>
+    <div class="nav-item" onclick="show(this,'s-new-activity')">Cargar texto<span class="cu">CU-02-01</span></div>
+    <div class="nav-item" onclick="show(this,'s-review-q')">Revisar preguntas<span class="cu">CU-02-03</span></div>
+    <div class="nav-item" onclick="show(this,'s-config-act')">Configurar actividad<span class="cu">CU-02-04</span></div>
+    <div class="nav-item" onclick="show(this,'s-qr-gen')">QR generado<span class="cu">CU-02-05</span></div>
+    <div class="nav-item" onclick="show(this,'s-student-act')">Vista alumno<span class="cu">CU-02-06</span></div>
+
+    <div class="nav-section">Paquete 3 — Resultados</div>
+    <div class="nav-item" onclick="show(this,'s-dash-doc')">Dashboard docente<span class="cu">CU-03-01</span></div>
+    <div class="nav-item" onclick="show(this,'s-dash-coord')">Dashboard inst.<span class="cu">CU-03-02</span></div>
+    <div class="nav-item" onclick="show(this,'s-alerts')">Alertas<span class="cu">CU-03-03</span></div>
+    <div class="nav-item" onclick="show(this,'s-student-det')">Detalle alumno<span class="cu">CU-03-04</span></div>
+
+    <div class="nav-section">Paquete 4 — Cumplimiento</div>
+    <div class="nav-item" onclick="show(this,'s-arco')">Datos personales ARCO<span class="cu">CU-04-01</span></div>
+    <div class="nav-item" onclick="show(this,'s-consent')">Consentimiento<span class="cu">CU-04-02</span></div>
+
+    <div class="nav-section">Paquete 5 — Admin</div>
+    <div class="nav-item" onclick="show(this,'s-new-tenant')">Alta institución<span class="cu">CU-05-01</span></div>
+    <div class="nav-item" onclick="show(this,'s-oauth')">Config. OAuth<span class="cu">CU-05-02</span></div>
+    <div class="nav-item" onclick="show(this,'s-monitoring')">Monitoreo<span class="cu">CU-05-03</span></div>
+    <div class="nav-item" onclick="show(this,'s-renewal')">Renovación<span class="cu">CU-05-04</span></div>
+  </nav>
+
+  <div class="main">
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <div>
+        <div class="toolbar-title" id="toolbar-title">CU-01-01 — Inicio de sesión institucional (Login)</div>
+        <div class="toolbar-sub" id="toolbar-sub">Paquete 1 · Sesión y acceso</div>
+      </div>
+      <button class="btn-all" onclick="captureAll()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Descargar todas (PDF)
+      </button>
+      <button class="btn-capture" onclick="captureOne()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Capturar esta pantalla
+      </button>
+    </div>
+
+    <!-- CANVAS -->
+    <div class="canvas">
+      <div class="screen-wrap" id="screen-container">
+
+<!-- ════════════════════════════════════════
+     CU-01-01  LOGIN
+════════════════════════════════════════ -->
+<div class="screen" id="s-login">
+  <div class="browser-chrome">
+    <div class="browser-dots"><i></i><i></i><i></i></div>
+    <div class="browser-url">app.habitar.com.ar</div>
+  </div>
+  <div class="pwa-frame">
+    <div class="login-screen">
+      <div class="login-logo">Habi<span>tar</span></div>
+      <div class="login-tagline">Analítica de comprensión lectora<br>para instituciones educativas</div>
+      <button class="oauth-btn">
+        <div class="oauth-icon" style="background:#EA4335;">G</div>
+        Continuar con Google Workspace
+      </button>
+      <button class="oauth-btn">
+        <div class="oauth-icon" style="background:#0078D4;">M</div>
+        Continuar con Microsoft 365
+      </button>
+      <div class="login-note">El acceso está disponible solo para instituciones registradas. Habitar nunca almacena contraseñas.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     CU-01-02  ACCESO QR ALUMNO
+════════════════════════════════════════ -->
+<div class="screen" id="s-qr-access" style="display:none;">
+  <div class="browser-chrome">
+    <div class="browser-dots"><i></i><i></i><i></i></div>
+    <div class="browser-url">app.habitar.com.ar/actividad/HAB-4B29</div>
+  </div>
+  <div class="pwa-frame">
+    <div style="background:var(--surface);padding:32px;display:flex;gap:32px;align-items:flex-start;justify-content:center;min-height:500px;">
+      <!-- mobile -->
+      <div>
+        <div style="font-size:11px;color:var(--text-ter);text-align:center;margin-bottom:8px;">Vista en smartphone del alumno</div>
+        <div class="mobile-frame-outer">
+          <div class="mobile-notch"><div class="mobile-notch-pill"></div></div>
+          <div class="mobile-header">
+            <div style="font-size:14px;font-weight:600;color:var(--green-light);">Habitar</div>
+            <div style="font-size:11px;color:#9FE1CB;margin-top:1px;">Actividad de comprensión</div>
+          </div>
+          <div class="mobile-body">
+            <div style="text-align:center;padding:10px 0;">
+              <div style="font-size:14px;font-weight:500;margin-bottom:3px;">¡Hola! ¿Cómo te llamás?</div>
+              <div style="font-size:11px;color:var(--text-sec);margin-bottom:14px;">No necesitás cuenta para comenzar</div>
+              <input class="form-input" placeholder="Nombre o nº de lista" style="text-align:center;margin-bottom:10px;">
+              <button class="btn-primary" style="width:100%;">Comenzar actividad</button>
+            </div>
+            <div class="card-surface" style="margin-top:10px;">
+              <div style="font-size:10.5px;color:var(--text-ter);text-align:center;">Actividad: <strong>Comprensión inferencial — 4°B</strong></div>
+              <div style="font-size:10.5px;color:var(--text-ter);text-align:center;margin-top:2px;">Disponible hasta las 18:00 hs</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- QR card -->
+      <div class="card" style="width:220px;margin-top:32px;">
+        <div style="font-size:13px;font-weight:500;margin-bottom:12px;">Escanear código QR</div>
+        <div class="qr-box" style="margin-bottom:14px;">
+          <div class="qr-pattern">
+            <!-- row 1 --> <div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div>
+            <!-- row 2 --> <div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell on"></div>
+            <!-- row 3 --> <div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div>
+            <!-- row 4 --> <div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div>
+            <!-- row 5 --> <div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div>
+            <!-- row 6 --> <div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell on"></div>
+            <!-- row 7 --> <div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div>
+          </div>
+          <div class="qr-code">HAB-4B29</div>
+        </div>
+        <div style="font-size:11px;color:var(--text-ter);text-align:center;line-height:1.5;">Sin instalación · Sin cuenta<br>Sin datos guardados</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     CU-02-01  CARGAR TEXTO
+════════════════════════════════════════ -->
+<div class="screen" id="s-new-activity" style="display:none;">
+  <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">app.habitar.com.ar/nueva-actividad</div></div>
+  <div class="pwa-frame">
+    <div class="pwa-header"><span class="pwa-logo">Habitar</span><div class="pwa-avatar">LP</div></div>
+    <div class="pwa-layout">
+      <div class="sidebar">
+        <div class="sidebar-item">🏠 Inicio</div>
+        <div class="sidebar-item active">✚ Nueva actividad</div>
+        <div class="sidebar-item">📚 Mis actividades</div>
+        <div class="sidebar-item">📊 Mis cursos</div>
+      </div>
+      <div class="content">
+        <div class="page-title">Nueva actividad</div>
+        <div class="page-sub">Cargá el texto fuente para generar preguntas con IA</div>
+        <div class="stepper">
+          <div class="step-item"><div class="step-circle current">1</div><div class="step-label">Texto</div></div>
+          <div class="step-line pending"></div>
+          <div class="step-item"><div class="step-circle pending">2</div><div class="step-label">Revisar</div></div>
+          <div class="step-line pending"></div>
+          <div class="step-item"><div class="step-circle pending">3</div><div class="step-label">Configurar</div></div>
+          <div class="step-line pending"></div>
+          <div class="step-item"><div class="step-circle pending">4</div><div class="step-label">QR</div></div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="form-group"><label>Nivel educativo</label><select class="form-select"><option>Secundario — 4°</option></select></div>
+          <div class="form-group"><label>Eje de comprensión</label><select class="form-select"><option>Inferencial</option><option>Literal</option><option>Crítico</option></select></div>
+        </div>
+        <div class="form-group" style="margin-bottom:10px;">
+          <label>Texto fuente</label>
+          <div style="display:flex;gap:8px;margin-bottom:8px;">
+            <button class="btn-secondary" style="font-size:12px;">📁 Google Drive</button>
+            <button class="btn-secondary" style="font-size:12px;">☁ OneDrive</button>
+            <button class="btn-secondary" style="font-size:12px;">Pegar texto</button>
+          </div>
+          <textarea class="form-textarea" rows="5">La biodiversidad es el conjunto de formas de vida que habitan nuestro planeta. Cada ecosistema alberga especies que dependen entre sí para sobrevivir. Cuando una especie desaparece, las consecuencias se propagan en cadena hacia el resto del sistema. Proteger la biodiversidad no es solo una cuestión ambiental, sino también cultural y económica.</textarea>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-size:11.5px;color:var(--text-sec);"><span style="color:var(--green-mid);font-weight:600;">312 palabras</span> · Rango válido para nivel seleccionado (200–600)</div>
+          <button class="btn-primary">Generar preguntas ✦</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     CU-02-03  REVISAR PREGUNTAS
+════════════════════════════════════════ -->
+<div class="screen" id="s-review-q" style="display:none;">
+  <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">app.habitar.com.ar/nueva-actividad/revision</div></div>
+  <div class="pwa-frame">
+    <div class="pwa-header"><span class="pwa-logo">Habitar</span><div class="pwa-avatar">LP</div></div>
+    <div class="pwa-layout">
+      <div class="sidebar">
+        <div class="sidebar-item">🏠 Inicio</div>
+        <div class="sidebar-item active">✚ Nueva actividad</div>
+        <div class="sidebar-item">📚 Mis actividades</div>
+        <div class="sidebar-item">📊 Mis cursos</div>
+      </div>
+      <div class="content">
+        <div class="page-title">Revisá las preguntas generadas</div>
+        <div class="page-sub">La IA generó 5 preguntas. Podés editarlas, eliminarlas o aprobarlas.</div>
+        <div class="stepper">
+          <div class="step-item"><div class="step-circle done">✓</div><div class="step-label">Texto</div></div>
+          <div class="step-line done"></div>
+          <div class="step-item"><div class="step-circle current">2</div><div class="step-label">Revisar</div></div>
+          <div class="step-line pending"></div>
+          <div class="step-item"><div class="step-circle pending">3</div><div class="step-label">Configurar</div></div>
+          <div class="step-line pending"></div>
+          <div class="step-item"><div class="step-circle pending">4</div><div class="step-label">QR</div></div>
+        </div>
+        <div class="chips">
+          <span class="chip">Inferencial <strong style="color:var(--green-mid);">3</strong></span>
+          <span class="chip">Literal <strong style="color:var(--blue);">1</strong></span>
+          <span class="chip">Crítico <strong style="color:var(--amber-text);">1</strong></span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+          <!-- Q1 -->
+          <div class="card" style="display:flex;gap:12px;align-items:flex-start;">
+            <div style="flex:1;"><span class="badge badge-blue" style="margin-bottom:5px;display:inline-block;">Literal</span><div style="font-size:13px;font-weight:500;margin-bottom:4px;">¿Qué es la biodiversidad según el texto?</div><div style="font-size:11.5px;color:var(--text-sec);">Resp. esperada: El conjunto de formas de vida que habitan el planeta</div></div>
+            <div style="display:flex;gap:6px;"><button class="btn-secondary" style="padding:5px 10px;font-size:12px;">Editar</button><button class="btn-secondary" style="padding:5px 10px;font-size:12px;color:var(--red-text);">Eliminar</button></div>
+          </div>
+          <!-- Q2 edited -->
+          <div class="card" style="display:flex;gap:12px;align-items:flex-start;border-color:var(--green-mid);">
+            <div style="flex:1;"><span class="badge badge-teal" style="margin-bottom:5px;display:inline-block;">Inferencial</span> <span style="font-size:10.5px;color:var(--green-mid);">✎ editada</span><div style="font-size:13px;font-weight:500;margin-bottom:4px;">¿Por qué la desaparición de una especie afecta a otras del mismo ecosistema?</div><div style="font-size:11.5px;color:var(--text-sec);">Resp. esperada: Porque las especies dependen entre sí, generando efectos en cadena</div></div>
+            <div style="display:flex;gap:6px;"><button class="btn-secondary" style="padding:5px 10px;font-size:12px;">Editar</button><button class="btn-secondary" style="padding:5px 10px;font-size:12px;color:var(--red-text);">Eliminar</button></div>
+          </div>
+          <!-- Q3 -->
+          <div class="card" style="display:flex;gap:12px;align-items:flex-start;">
+            <div style="flex:1;"><span class="badge badge-amber" style="margin-bottom:5px;display:inline-block;">Crítico</span><div style="font-size:13px;font-weight:500;margin-bottom:4px;">¿Estás de acuerdo con que proteger la biodiversidad es responsabilidad de todos? Justificá.</div><div style="font-size:11.5px;color:var(--text-sec);">Resp. esperada: (respuesta abierta — justificación con argumentos del texto)</div></div>
+            <div style="display:flex;gap:6px;"><button class="btn-secondary" style="padding:5px 10px;font-size:12px;">Editar</button><button class="btn-secondary" style="padding:5px 10px;font-size:12px;color:var(--red-text);">Eliminar</button></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-size:11.5px;color:var(--text-sec);">5 preguntas · 3 aprobadas · 2 pendientes</div>
+          <button class="btn-primary">Aprobar y continuar →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     CU-02-04  CONFIGURAR ACTIVIDAD
+════════════════════════════════════════ -->
+<div class="screen" id="s-config-act" style="display:none;">
+  <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">app.habitar.com.ar/nueva-actividad/configurar</div></div>
+  <div class="pwa-frame">
+    <div class="pwa-header"><span class="pwa-logo">Habitar</span><div class="pwa-avatar">LP</div></div>
+    <div class="pwa-layout">
+      <div class="sidebar">
+        <div class="sidebar-item">🏠 Inicio</div>
+        <div class="sidebar-item active">✚ Nueva actividad</div>
+        <div class="sidebar-item">📚 Mis actividades</div>
+        <div class="sidebar-item">📊 Mis cursos</div>
+      </div>
+      <div class="content">
+        <div class="page-title">Configurar actividad</div>
+        <div class="page-sub">Definí curso, ventana horaria y política de intentos</div>
+        <div class="stepper">
+          <div class="step-item"><div class="step-circle done">✓</div><div class="step-label">Texto</div></div>
+          <div class="step-line done"></div>
+          <div class="step-item"><div class="step-circle done">✓</div><div class="step-label">Revisar</div></div>
+          <div class="step-line done"></div>
+          <div class="step-item"><div class="step-circle current">3</div><div class="step-label">Configurar</div></div>
+          <div class="step-line pending"></div>
+          <div class="step-item"><div class="step-circle pending">4</div><div class="step-label">QR</div></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Curso de destino</label><select class="form-select"><option>4°B — Lengua y Literatura</option><option>4°A</option><option>5°B</option></select></div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="form-group"><label>Fecha de disponibilidad</label><input class="form-input" type="text" value="18 jun 2026"></div>
+          <div class="form-group"><label>Horario (inicio → fin)</label><div style="display:flex;gap:8px;align-items:center;"><input class="form-input" value="08:00" style="width:80px;"><span style="color:var(--text-sec);">→</span><input class="form-input" value="12:00" style="width:80px;"></div></div>
+        </div>
+        <div class="form-group" style="margin-bottom:14px;">
+          <label>Política de intentos</label>
+          <div class="radio-group">
+            <label class="radio-opt"><div class="radio-dot selected"></div> Único intento</label>
+            <label class="radio-opt"><div class="radio-dot"></div> Permitir reintentos</label>
+          </div>
+        </div>
+        <div class="form-group"><label>Nombre de la actividad (opcional)</label><input class="form-input" value="Comprensión lectora — Biodiversidad"></div>
+        <div class="btn-row end"><button class="btn-secondary">← Volver</button><button class="btn-primary">Confirmar y generar QR</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     CU-02-05  QR GENERADO
+════════════════════════════════════════ -->
+<div class="screen" id="s-qr-gen" style="display:none;">
+  <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">app.habitar.com.ar/nueva-actividad/qr</div></div>
+  <div class="pwa-frame">
+    <div class="pwa-header"><span class="pwa-logo">Habitar</span><div class="pwa-avatar">LP</div></div>
+    <div style="background:var(--surface);padding:30px;min-height:500px;">
+      <div style="text-align:center;margin-bottom:24px;">
+        <span class="badge badge-green" style="font-size:11.5px;padding:5px 14px;margin-bottom:12px;display:inline-block;">✓ Actividad lista en menos de 90 segundos</span>
+        <div class="page-title" style="margin-bottom:4px;">¡QR generado!</div>
+        <div style="font-size:12.5px;color:var(--text-sec);">Comprensión lectora — Biodiversidad · 4°B · 18 jun · 08:00–12:00</div>
+      </div>
+      <div style="display:flex;gap:28px;justify-content:center;align-items:flex-start;">
+        <div style="text-align:center;">
+          <div class="qr-box" style="width:190px;height:190px;">
+            <div class="qr-pattern" style="width:140px;height:140px;gap:2px;">
+              <div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div>
+              <div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell on"></div>
+              <div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div>
+              <div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell on"></div>
+              <div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div>
+              <div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell on"></div>
+              <div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--text-ter);margin-top:8px;">Código QR para proyectar o imprimir</div>
+        </div>
+        <div style="width:240px;">
+          <div class="card-surface" style="margin-bottom:14px;">
+            <div style="font-size:11px;color:var(--text-ter);margin-bottom:4px;">Código corto alternativo</div>
+            <div style="font-family:'DM Mono',monospace;font-size:28px;font-weight:500;letter-spacing:.16em;color:var(--text-pri);">HAB-4B29</div>
+            <div style="font-size:10.5px;color:var(--text-ter);margin-top:3px;">Los alumnos pueden ingresarlo manualmente</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <button class="btn-primary">📽 Proyectar en pantalla completa</button>
+            <button class="btn-secondary">⬇ Descargar imagen</button>
+            <button class="btn-secondary">🖨 Imprimir</button>
+          </div>
+          <hr>
+          <div style="font-size:11.5px;color:var(--text-sec);"><span class="dot dot-green"></span>QR válido por <strong>4 hs</strong></div>
+          <div style="font-size:11.5px;color:var(--text-sec);margin-top:4px;"><span class="dot dot-amber"></span>0 respuestas registradas</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     CU-02-06  VISTA ALUMNO
+════════════════════════════════════════ -->
+<div class="screen" id="s-student-act" style="display:none;">
+  <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">app.habitar.com.ar/actividad/HAB-4B29</div></div>
+  <div class="pwa-frame">
+    <div style="background:var(--surface);padding:28px;display:flex;gap:28px;justify-content:center;align-items:flex-start;min-height:500px;">
+      <!-- Responding -->
+      <div>
+        <div style="font-size:11px;color:var(--text-ter);text-align:center;margin-bottom:8px;">Vista alumno — respondiendo</div>
+        <div class="mobile-frame-outer" style="width:280px;">
+          <div class="mobile-notch"><div class="mobile-notch-pill"></div></div>
+          <div class="mobile-header" style="display:flex;justify-content:space-between;align-items:center;">
+            <div style="font-size:13px;font-weight:600;color:var(--green-light);">Comprensión — Biodiversidad</div>
+            <div style="font-size:10px;color:#9FE1CB;">4°B</div>
+          </div>
+          <div class="mobile-body">
+            <div class="card-surface" style="margin-bottom:12px;max-height:90px;overflow:hidden;">
+              <div style="font-size:10px;font-weight:600;color:var(--text-ter);margin-bottom:4px;">TEXTO</div>
+              <div style="font-size:11px;color:var(--text-pri);line-height:1.6;">La biodiversidad es el conjunto de formas de vida que habitan nuestro planeta. Cada ecosistema alberga especies que dependen entre sí...</div>
+            </div>
+            <div style="font-size:10.5px;color:var(--text-ter);margin-bottom:5px;">Pregunta 1 de 5</div>
+            <div style="font-size:12.5px;font-weight:500;margin-bottom:10px;">¿Qué es la biodiversidad según el texto?</div>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;">
+              <label style="display:flex;align-items:center;gap:8px;font-size:11.5px;background:var(--green-bg);border-radius:6px;padding:8px;cursor:pointer;color:var(--green-text);font-weight:500;"><input type="radio" name="q1" checked>El conjunto de formas de vida del planeta</label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:11.5px;background:var(--surface);border-radius:6px;padding:8px;cursor:pointer;"><input type="radio" name="q1">La cantidad de ecosistemas</label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:11.5px;background:var(--surface);border-radius:6px;padding:8px;cursor:pointer;"><input type="radio" name="q1">Solo los animales en peligro</label>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:10px;color:var(--text-ter);">Guardado automáticamente</span>
+              <button class="btn-primary" style="font-size:11px;padding:6px 14px;">Siguiente →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Confirmation -->
+      <div>
+        <div style="font-size:11px;color:var(--text-ter);text-align:center;margin-bottom:8px;">Confirmación de envío</div>
+        <div class="mobile-frame-outer" style="width:220px;">
+          <div class="mobile-notch"><div class="mobile-notch-pill"></div></div>
+          <div class="mobile-body" style="text-align:center;padding:28px 16px;">
+            <div class="success-circle">✓</div>
+            <div style="font-size:16px;font-weight:600;margin-bottom:6px;">¡Actividad enviada!</div>
+            <div style="font-size:12px;color:var(--text-sec);margin-bottom:18px;">Tus respuestas fueron registradas correctamente.</div>
+            <div class="card-surface">
+              <div style="font-size:11px;color:var(--text-ter);">5 de 5 preguntas respondidas</div>
+              <div style="font-size:11px;color:var(--text-ter);margin-top:3px;">Biodiversidad · 4°B</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     CU-03-01  DASHBOARD DOCENTE
+════════════════════════════════════════ -->
+<div class="screen" id="s-dash-doc" style="display:none;">
+  <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">app.habitar.com.ar/mis-cursos</div></div>
+  <div class="pwa-frame">
+    <div class="pwa-header"><span class="pwa-logo">Habitar</span><div class="pwa-avatar">LP</div></div>
+    <div class="pwa-layout">
+      <div class="sidebar">
+        <div class="sidebar-item">🏠 Inicio</div>
+        <div class="sidebar-item">✚ Nueva actividad</div>
+        <div class="sidebar-item">📚 Mis actividades</div>
+        <div class="sidebar-item active">📊 Mis cursos</div>
+      </div>
+      <div class="content">
+        <div class="page-title">Mis cursos — 4°B</div>
+        <div class="page-sub">Comprensión lectora · Jun 2026 · 28 alumnos</div>
+        <div class="metrics-row">
+          <div class="metric-card"><div class="metric-val" style="color:var(--green-mid);">72%</div><div class="metric-lbl">Literal</div></div>
+          <div class="metric-card"><div class="metric-val" style="color:var(--amber);">58%</div><div class="metric-lbl">Inferencial</div></div>
+          <div class="metric-card"><div class="metric-val" style="color:var(--red);">41%</div><div class="metric-lbl">Crítico</div></div>
+          <div class="metric-card"><div class="metric-val">6</div><div class="metric-lbl">Actividades</div></div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Alumno</th><th>Literal</th><th>Inferencial</th><th>Crítico</th><th>Estado</th></tr></thead>
+            <tbody>
+              <tr><td>García, Valentina</td><td>85%</td><td>74%</td><td>62%</td><td><span class="badge badge-green">Bien</span></td></tr>
+              <tr><td>López, Marcos</td><td>70%</td><td>55%</td><td>38%</td><td><span class="badge badge-amber">Regular</span></td></tr>
+              <tr><td>Rodríguez, Sofía</td><td>90%</td><td>80%</td><td>70%</td><td><span class="badge badge-green">Bien</span></td></tr>
+              <tr class="row-warn"><td>Torres, Emiliano</td><td>45%</td><td>30%</td><td>20%</td><td><span class="badge badge-red">⚠ Bajo</span></td></tr>
+              <tr><td>Fernández, Lucía</td><td>—</td><td>—</td><td>—</td><td><span class="badge badge-gray">Sin datos</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     CU-03-02  DASHBOARD INSTITUCIONAL
+════════════════════════════════════════ -->
+<div class="screen" id="s-dash-coord" style="display:none;">
+  <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">app.habitar.com.ar/institucional</div></div>
+  <div class="pwa-frame">
+    <div class="pwa-header"><span class="pwa-logo">Habitar</span><div style="display:flex;gap:10px;align-items:center;"><span class="pwa-badge-admin">Coordinador/a</span><div class="pwa-avatar">MC</div></div></div>
+    <div class="pwa-layout">
+      <div class="sidebar">
+        <div class="sidebar-item active">🏫 Institucional</div>
+        <div class="sidebar-item">🔔 Alertas <span class="badge-count">2</span></div>
+        <div class="sidebar-item">👥 Docentes</div>
+        <div class="sidebar-item">🛡 Datos personales</div>
+      </div>
+      <div class="content">
+        <div class="page-title">Dashboard institucional</div>
+        <div class="page-sub">Colegio Belgrano Norte · Jun 2026 · 12 cursos activos</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;">
+          <select class="form-select" style="width:auto;font-size:12px;padding:5px 30px 5px 10px;"><option>Todos los niveles</option></select>
+          <select class="form-select" style="width:auto;font-size:12px;padding:5px 30px 5px 10px;"><option>Jun 2026</option></select>
+        </div>
+        <div class="metrics-row">
+          <div class="metric-card"><div class="metric-val" style="color:var(--green-mid);">68%</div><div class="metric-lbl">Prom. literal</div></div>
+          <div class="metric-card"><div class="metric-val" style="color:var(--amber);">54%</div><div class="metric-lbl">Prom. inferencial</div></div>
+          <div class="metric-card"><div class="metric-val" style="color:var(--red);">38%</div><div class="metric-lbl">Prom. crítico</div></div>
+          <div class="metric-card"><div class="metric-val">247</div><div class="metric-lbl">Actividades</div></div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Curso</th><th>Docente</th><th>Literal</th><th>Inferencial</th><th>Crítico</th><th>Estado</th></tr></thead>
+            <tbody>
+              <tr><td>4°B</td><td>López, P.</td><td>72%</td><td>58%</td><td>41%</td><td><span class="badge badge-amber">Regular</span></td></tr>
+              <tr><td>5°A</td><td>García, M.</td><td>81%</td><td>69%</td><td>55%</td><td><span class="badge badge-green">Bien</span></td></tr>
+              <tr class="row-warn"><td>3°C</td><td>Ruiz, T.</td><td>48%</td><td>32%</td><td>21%</td><td><span class="badge badge-red">⚠ Bajo</span></td></tr>
+              <tr><td>6°B</td><td>Molina, S.</td><td>76%</td><td>63%</td><td>48%</td><td><span class="badge badge-green">Bien</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     CU-03-03  ALERTAS
+════════════════════════════════════════ -->
+<div class="screen" id="s-alerts" style="display:none;">
+  <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">app.habitar.com.ar/alertas</div></div>
+  <div class="pwa-frame">
+    <div class="pwa-header"><span class="pwa-logo">Habitar</span><div class="pwa-avatar">MC</div></div>
+    <div class="pwa-layout">
+      <div class="sidebar">
+        <div class="sidebar-item">🏫 Institucional</div>
+        <div class="sidebar-item active">🔔 Alertas <span class="badge-count">2</span></div>
+        <div class="sidebar-item">👥 Docentes</div>
+        <div class="sidebar-item">🛡 Datos personales</div>
+      </div>
+      <div class="content">
+        <div class="page-title">Alertas de rendimiento</div>
+        <div class="page-sub">Cursos que descendieron por debajo del umbral institucional (60%)</div>
+        <div class="alert-item" style="border-color:#F09595;background:#FCEBEB18;">
+          <div class="alert-icon red">⚠</div>
+          <div class="alert-body"><div class="alert-title">3°C — Comprensión crítica bajo umbral</div><div class="alert-desc">Promedio crítico: <strong style="color:var(--red-text);">21%</strong> (umbral: 40%) · Docente: Ruiz, T.</div><div class="alert-date">Detectado el 17 jun 2026</div></div>
+          <button class="btn-secondary" style="font-size:12px;white-space:nowrap;">Ver detalle →</button>
+        </div>
+        <div class="alert-item" style="border-color:#FAC775;background:#FAEEDA18;">
+          <div class="alert-icon amber">ℹ</div>
+          <div class="alert-body"><div class="alert-title">4°B — Comprensión inferencial en descenso</div><div class="alert-desc">Promedio inferencial: <strong style="color:var(--amber-text);">58%</strong> (umbral: 60%) · Docente: López, P.</div><div class="alert-date">Detectado el 18 jun 2026</div></div>
+          <button class="btn-secondary" style="font-size:12px;white-space:nowrap;">Ver detalle →</button>
+        </div>
+        <div class="alert-item" style="border-color:#C0DD97;background:#EAF3DE18;">
+          <div class="alert-icon green">✓</div>
+          <div class="alert-body"><div class="alert-title">5°A — Recuperación sostenida</div><div class="alert-desc">Todos los ejes superan el umbral por segunda semana consecutiva</div></div>
+          <span class="badge badge-green">Resuelto</span>
+        </div>
+        <hr>
+        <div style="font-size:11.5px;color:var(--text-ter);">Las alertas se actualizan automáticamente y se notifican por correo. <a href="#" style="color:var(--green-dark);">Configurar preferencias</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     CU-03-04  DETALLE ALUMNO
+════════════════════════════════════════ -->
+<div class="screen" id="s-student-det" style="display:none;">
+  <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">app.habitar.com.ar/mis-cursos/4b/alumno/torres-emiliano</div></div>
+  <div class="pwa-frame">
+    <div class="pwa-header"><span class="pwa-logo">Habitar</span><div class="pwa-avatar">LP</div></div>
+    <div class="pwa-layout">
+      <div class="sidebar">
+        <div class="sidebar-item">🏠 Inicio</div>
+        <div class="sidebar-item">✚ Nueva actividad</div>
+        <div class="sidebar-item">📚 Mis actividades</div>
+        <div class="sidebar-item active">📊 Mis cursos</div>
+      </div>
+      <div class="content">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+          <button class="btn-secondary" style="font-size:12px;padding:5px 10px;">← 4°B</button>
+          <div class="avatar" style="background:var(--amber-bg);color:var(--amber-text);">ET</div>
+          <div><div style="font-size:15px;font-weight:500;">Torres, Emiliano</div><div style="font-size:11.5px;color:var(--text-sec);">4°B · 6 actividades respondidas</div></div>
+          <span class="badge badge-red" style="margin-left:auto;">⚠ Rendimiento bajo</span>
+        </div>
+        <div style="font-size:12px;font-weight:500;color:var(--text-sec);margin-bottom:8px;">Evolución por eje · Abr–Jun 2026</div>
+        <div class="chart-area" style="margin-bottom:16px;">
+          <svg viewBox="0 0 500 120" style="width:100%;height:120px;">
+            <line x1="40" y1="10" x2="40" y2="100" stroke="#D8D5CE" stroke-width="1"/>
+            <line x1="40" y1="100" x2="490" y2="100" stroke="#D8D5CE" stroke-width="1"/>
+            <line x1="40" y1="55" x2="490" y2="55" stroke="#D8D5CE" stroke-width="0.5" stroke-dasharray="4,3"/>
+            <text x="2" y="14" font-size="9" fill="#8C8A85">100%</text>
+            <text x="8" y="58" font-size="9" fill="#8C8A85">50%</text>
+            <text x="8" y="103" font-size="9" fill="#8C8A85">0%</text>
+            <!-- Literal -->
+            <polyline points="60,82 152,76 244,70 336,64 428,58 490,52" fill="none" stroke="#1D9E75" stroke-width="2" stroke-linejoin="round"/>
+            <!-- Inferencial -->
+            <polyline points="60,88 152,85 244,83 336,80 428,77 490,74" fill="none" stroke="#EF9F27" stroke-width="2" stroke-linejoin="round"/>
+            <!-- Critico -->
+            <polyline points="60,94 152,93 244,92 336,90 428,89 490,88" fill="none" stroke="#E24B4A" stroke-width="2" stroke-linejoin="round"/>
+            <text x="60" y="113" font-size="8" fill="#8C8A85" text-anchor="middle">Abr</text>
+            <text x="244" y="113" font-size="8" fill="#8C8A85" text-anchor="middle">May</text>
+            <text x="428" y="113" font-size="8" fill="#8C8A85" text-anchor="middle">Jun</text>
+          </svg>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#1D9E75;"></div> Literal</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#EF9F27;"></div> Inferencial</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#E24B4A;"></div> Crítico</div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Actividad</th><th>Fecha</th><th>Literal</th><th>Inferencial</th><th>Crítico</th></tr></thead>
+            <tbody>
+              <tr><td>Biodiversidad</td><td>18 jun</td><td>45%</td><td>30%</td><td>20%</td></tr>
+              <tr><td>El Quijote</td><td>5 jun</td><td>40%</td><td>28%</td><td>18%</td></tr>
+              <tr><td>Cambio climático</td><td>22 may</td><td>38%</td><td>25%</td><td>15%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     CU-04-01  ARCO
+════════════════════════════════════════ -->
+<div class="screen" id="s-arco" style="display:none;">
+  <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">app.habitar.com.ar/datos-personales</div></div>
+  <div class="pwa-frame">
+    <div class="pwa-header"><span class="pwa-logo">Habitar</span><div class="pwa-avatar">MC</div></div>
+    <div class="pwa-layout">
+      <div class="sidebar">
+        <div class="sidebar-item">🏫 Institucional</div>
+        <div class="sidebar-item">🔔 Alertas</div>
+        <div class="sidebar-item">👥 Docentes</div>
+        <div class="sidebar-item active">🛡 Datos personales</div>
+      </div>
+      <div class="content">
+        <div class="page-title">Cumplimiento — Datos personales (ARCO)</div>
+        <div class="page-sub">Solicitudes de acceso, rectificación, cancelación u oposición · Ley 25.326</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;">
+          <input class="form-input" placeholder="Nombre o número de lista..." style="flex:1;">
+          <select class="form-select" style="width:auto;padding:7px 30px 7px 10px;"><option>Curso — todos</option><option>4°B</option></select>
+          <button class="btn-primary">Buscar</button>
+        </div>
+        <div class="card" style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+            <div class="avatar" style="background:var(--blue-bg);color:var(--blue);">ET</div>
+            <div><div style="font-size:13px;font-weight:500;">Torres, Emiliano · 4°B</div><div style="font-size:11.5px;color:var(--text-sec);">6 actividades registradas · Última: 18 jun 2026</div></div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-secondary" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;">⬇ Exportar datos (JSON)</button>
+            <button class="btn-danger" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;">🗑 Eliminar datos</button>
+          </div>
+        </div>
+        <div style="font-size:12px;font-weight:500;color:var(--text-sec);margin-bottom:8px;">Registro de auditoría</div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Fecha</th><th>Alumno</th><th>Operación</th><th>Usuario</th></tr></thead>
+            <tbody>
+              <tr><td>10 jun</td><td>García, V.</td><td><span class="badge badge-blue">Exportación</span></td><td>coord.martinez</td></tr>
+              <tr><td>2 may</td><td>López, M.</td><td><span class="badge badge-red">Eliminación</span></td><td>coord.martinez</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     CU-04-02  CONSENTIMIENTO
+════════════════════════════════════════ -->
+<div class="screen" id="s-consent" style="display:none;">
+  <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">app.habitar.com.ar/consentimiento</div></div>
+  <div class="pwa-frame">
+    <div class="pwa-header"><span class="pwa-logo">Habitar</span><div class="pwa-avatar">MC</div></div>
+    <div style="background:var(--surface);padding:32px;min-height:500px;display:flex;flex-direction:column;align-items:center;">
+      <div style="width:100%;max-width:560px;">
+        <div style="text-align:center;margin-bottom:22px;">
+          <div style="font-size:40px;margin-bottom:10px;">🔒</div>
+          <div class="page-title" style="margin-bottom:4px;">Términos de tratamiento de datos</div>
+          <div style="font-size:12.5px;color:var(--text-sec);">Para habilitar Habitar, el/la coordinador/a debe aceptar estos términos en nombre de la institución</div>
+        </div>
+        <div class="card" style="margin-bottom:14px;">
+          <div style="font-size:11.5px;font-weight:500;color:var(--text-sec);margin-bottom:10px;">Roles de tratamiento (Ley 25.326)</div>
+          <div class="card-grid cols-2" style="gap:10px;">
+            <div class="card-surface"><div style="font-size:10.5px;color:var(--text-ter);margin-bottom:3px;">Responsable del tratamiento</div><div style="font-size:13px;font-weight:500;">Colegio Belgrano Norte</div></div>
+            <div class="card-surface"><div style="font-size:10.5px;color:var(--text-ter);margin-bottom:3px;">Encargado del tratamiento</div><div style="font-size:13px;font-weight:500;">Habitar (Operador)</div></div>
+          </div>
+        </div>
+        <div class="consent-scroll" style="margin-bottom:14px;">
+          <strong>1. Datos tratados:</strong> respuestas a actividades de comprensión lectora y métricas derivadas, identificadas por nombre o número de lista.<br><br>
+          <strong>2. Finalidad:</strong> analítica pedagógica institucional. Sin uso para publicidad ni cesión a terceros.<br><br>
+          <strong>3. Minimización:</strong> Habitar no almacena los textos fuente enviados al motor de IA.<br><br>
+          <strong>4. Derechos ARCO:</strong> el Responsable puede ejercerlos en cualquier momento desde la sección Datos personales.<br><br>
+          <strong>5. Versión del documento:</strong> 1.2 · 1 jun 2026
+        </div>
+        <div class="check-row">
+          <div class="check-box"><svg width="10" height="10" fill="none" stroke="white" stroke-width="3" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <div style="font-size:12.5px;">He leído y acepto los términos de tratamiento de datos personales en nombre de la institución. Entiendo que este registro quedará auditado.</div>
+        </div>
+        <button class="btn-primary" style="width:100%;padding:11px;">Registrar aceptación y habilitar plataforma</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     CU-05-01  ALTA INSTITUCIÓN
+════════════════════════════════════════ -->
+<div class="screen" id="s-new-tenant" style="display:none;">
+  <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">admin.habitar.com.ar/nueva-institucion</div></div>
+  <div class="pwa-frame">
+    <div class="pwa-header"><span class="pwa-logo">Habitar <small>Panel de Administración</small></span><span class="pwa-badge-admin">Admin</span></div>
+    <div class="pwa-layout">
+      <div class="sidebar">
+        <div class="sidebar-item active">🏗 Nueva institución</div>
+        <div class="sidebar-item">🏢 Instituciones</div>
+        <div class="sidebar-item">🔄 Suscripciones</div>
+        <div class="sidebar-item">📡 Monitoreo</div>
+      </div>
+      <div class="content">
+        <div class="page-title">Alta de institución</div>
+        <div class="page-sub">Aprovisioná un nuevo tenant en la plataforma</div>
+        <div class="form-row cols-2">
+          <div class="form-group"><label>Nombre de la institución</label><input class="form-input" value="Colegio San Martín"></div>
+          <div class="form-group"><label>Dominio institucional</label><input class="form-input" placeholder="@colegio.edu.ar"></div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="form-group"><label>Niveles educativos</label>
+            <div style="display:flex;flex-direction:column;gap:7px;padding:8px 0;">
+              <label style="display:flex;align-items:center;gap:7px;font-size:12.5px;cursor:pointer;"><input type="checkbox" checked> Primario</label>
+              <label style="display:flex;align-items:center;gap:7px;font-size:12.5px;cursor:pointer;"><input type="checkbox" checked> Secundario</label>
+            </div>
+          </div>
+          <div class="form-group"><label>Estado inicial</label><select class="form-select"><option>Activo</option><option>Piloto no confirmado</option></select></div>
+        </div>
+        <div class="form-group" style="margin-bottom:14px;"><label>Email del/la coordinador/a (recibirá la invitación OAuth)</label><input class="form-input" placeholder="coordinador@colegio.edu.ar"></div>
+        <div style="background:var(--green-bg);border-radius:var(--radius-sm);padding:11px 14px;margin-bottom:16px;font-size:12.5px;color:var(--green-text);display:flex;align-items:center;gap:8px;">
+          ✉ Al confirmar, se enviará automáticamente la invitación de configuración OAuth al coordinador/a.
+        </div>
+        <div class="btn-row end"><button class="btn-secondary">Cancelar</button><button class="btn-primary">Crear institución y enviar invitación</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     CU-05-02  CONFIG OAUTH
+════════════════════════════════════════ -->
+<div class="screen" id="s-oauth" style="display:none;">
+  <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">admin.habitar.com.ar/instituciones/belgrano-norte/oauth</div></div>
+  <div class="pwa-frame">
+    <div class="pwa-header"><span class="pwa-logo">Habitar <small>Panel de Administración</small></span><span class="pwa-badge-admin">Admin</span></div>
+    <div class="pwa-layout">
+      <div class="sidebar">
+        <div class="sidebar-item">🏗 Nueva institución</div>
+        <div class="sidebar-item active">🏢 Instituciones</div>
+        <div class="sidebar-item">🔄 Suscripciones</div>
+        <div class="sidebar-item">📡 Monitoreo</div>
+      </div>
+      <div class="content">
+        <div class="page-title">Configurar OAuth — Colegio Belgrano Norte</div>
+        <div class="page-sub">Integrá el proveedor de identidad para habilitar el inicio de sesión</div>
+        <div style="display:flex;gap:10px;margin-bottom:18px;">
+          <div class="card" style="flex:1;border-color:var(--green-dark);border-width:2px;"><div style="display:flex;align-items:center;gap:8px;"><div class="oauth-icon" style="background:#EA4335;width:22px;height:22px;font-size:11px;font-weight:700;color:white;border-radius:4px;display:flex;align-items:center;justify-content:center;">G</div><div><div style="font-size:13px;font-weight:500;">Google Workspace</div><div style="font-size:10.5px;color:var(--green-mid);">Seleccionado</div></div></div></div>
+          <div class="card" style="flex:1;opacity:.6;"><div style="display:flex;align-items:center;gap:8px;"><div class="oauth-icon" style="background:#0078D4;width:22px;height:22px;font-size:11px;font-weight:700;color:white;border-radius:4px;display:flex;align-items:center;justify-content:center;">M</div><div><div style="font-size:13px;font-weight:500;">Microsoft 365</div><div style="font-size:10.5px;color:var(--text-ter);">Disponible</div></div></div></div>
+        </div>
+        <div class="form-group" style="margin-bottom:16px;"><label>Client ID generado para este tenant</label><div style="display:flex;gap:6px;"><input class="form-input" value="habitar_belgrano_norte_20260601" style="font-family:'DM Mono',monospace;font-size:12px;" readonly><button class="btn-secondary" style="padding:7px 12px;">Copiar</button></div></div>
+        <div class="card"><div style="font-size:12.5px;font-weight:500;margin-bottom:12px;">Pasos para el/la coordinador/a</div>
+          <div class="timeline">
+            <div class="tl-item"><div class="tl-dot done"></div><div class="tl-text">Recibir el enlace de autorización por correo</div></div>
+            <div class="tl-item"><div class="tl-dot wait"></div><div class="tl-text">Ingresar a la consola de administración de Google Workspace</div><div class="tl-sub">⏳ Esperando confirmación del coordinador/a</div></div>
+            <div class="tl-item"><div class="tl-dot todo"></div><div class="tl-text" style="color:var(--text-ter);">Autorizar la aplicación Habitar</div></div>
+            <div class="tl-item"><div class="tl-dot todo"></div><div class="tl-text" style="color:var(--text-ter);">Integración activada — usuarios pueden iniciar sesión</div></div>
+          </div>
+        </div>
+        <div class="btn-row end"><button class="btn-secondary">Reenviar enlace</button><button class="btn-primary">Verificar integración</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     CU-05-03  MONITOREO
+════════════════════════════════════════ -->
+<div class="screen" id="s-monitoring" style="display:none;">
+  <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">admin.habitar.com.ar/monitoreo</div></div>
+  <div class="pwa-frame">
+    <div class="pwa-header"><span class="pwa-logo">Habitar <small>Panel de Administración</small></span><span class="pwa-badge-admin">Admin</span></div>
+    <div class="pwa-layout">
+      <div class="sidebar">
+        <div class="sidebar-item">🏗 Nueva institución</div>
+        <div class="sidebar-item">🏢 Instituciones</div>
+        <div class="sidebar-item">🔄 Suscripciones</div>
+        <div class="sidebar-item active">📡 Monitoreo</div>
+      </div>
+      <div class="content">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <div class="page-title" style="margin-bottom:0;">Monitoreo de disponibilidad</div>
+          <span style="font-size:12px;font-weight:500;color:var(--green-mid);display:flex;align-items:center;gap:5px;"><span class="dot dot-green"></span>Todos los sistemas operativos</span>
+        </div>
+        <div class="page-sub">Última verificación: hace 2 minutos · Jun 2026</div>
+        <div class="metrics-row">
+          <div class="metric-card"><div class="metric-val" style="color:var(--green-mid);">99.7%</div><div class="metric-lbl">Disponibilidad mensual</div></div>
+          <div class="metric-card"><div class="metric-val">1.2s</div><div class="metric-lbl">Latencia p95</div></div>
+          <div class="metric-card"><div class="metric-val" style="color:var(--amber);">1</div><div class="metric-lbl">Incidentes este mes</div></div>
+        </div>
+        <div style="font-size:12px;font-weight:500;color:var(--text-sec);margin-bottom:10px;">Estado de componentes</div>
+        <div class="card" style="margin-bottom:16px;">
+          <div class="comp-row"><span class="dot dot-green"></span><div class="comp-name">API Backend (AWS ECS)</div><span class="badge badge-green">Operativo</span><div class="comp-bar-wrap"><div class="progress-wrap"><div class="progress-fill green" style="width:99.7%;"></div></div></div></div>
+          <div class="comp-row"><span class="dot dot-green"></span><div class="comp-name">Base de datos PostgreSQL (RDS)</div><span class="badge badge-green">Operativo</span><div class="comp-bar-wrap"><div class="progress-wrap"><div class="progress-fill green" style="width:100%;"></div></div></div></div>
+          <div class="comp-row"><span class="dot dot-green"></span><div class="comp-name">API OpenAI (GPT-4o)</div><span class="badge badge-green">Operativo</span><div class="comp-bar-wrap"><div class="progress-wrap"><div class="progress-fill green" style="width:98.5%;"></div></div></div></div>
+          <div class="comp-row"><span class="dot dot-amber"></span><div class="comp-name">Auth OAuth (Google/Microsoft)</div><span class="badge badge-amber">Degradado</span><div class="comp-bar-wrap"><div class="progress-wrap"><div class="progress-fill amber" style="width:95%;"></div></div></div></div>
+        </div>
+        <div style="font-size:12px;font-weight:500;color:var(--text-sec);margin-bottom:8px;">Historial de incidentes</div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Fecha</th><th>Componente</th><th>Duración</th><th>Estado</th></tr></thead>
+            <tbody>
+              <tr><td>12 jun · 03:14</td><td>API Backend</td><td>8 min</td><td><span class="badge badge-green">Resuelto</span></td></tr>
+              <tr><td>Mantenimiento programado · 04:00–04:30</td><td>Todos</td><td>30 min</td><td><span class="badge badge-gray">Planificado</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     CU-05-04  RENOVACIÓN
+════════════════════════════════════════ -->
+<div class="screen" id="s-renewal" style="display:none;">
+  <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">admin.habitar.com.ar/suscripciones</div></div>
+  <div class="pwa-frame">
+    <div class="pwa-header"><span class="pwa-logo">Habitar <small>Panel de Administración</small></span><span class="pwa-badge-admin">Admin</span></div>
+    <div class="pwa-layout">
+      <div class="sidebar">
+        <div class="sidebar-item">🏗 Nueva institución</div>
+        <div class="sidebar-item">🏢 Instituciones</div>
+        <div class="sidebar-item active">🔄 Suscripciones</div>
+        <div class="sidebar-item">📡 Monitoreo</div>
+      </div>
+      <div class="content">
+        <div class="page-title">Gestión de renovaciones</div>
+        <div class="page-sub">Instituciones con vencimiento en los próximos 60 días</div>
+        <div class="renewal-card urgent" style="margin-bottom:14px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+            <div><div style="font-size:15px;font-weight:500;margin-bottom:4px;">Colegio Belgrano Norte</div><div style="font-size:12px;color:var(--text-sec);margin-bottom:8px;">Plan Estándar · ARS 130.000/mes · Vence el <strong>30 jun 2026</strong></div><span class="badge badge-amber">⏰ Vence en 7 días</span></div>
+            <div style="display:flex;gap:8px;flex-shrink:0;"><button class="btn-primary">Renovar</button><button class="btn-secondary">Ver historial</button></div>
+          </div>
+          <hr>
+          <div class="form-row cols-3" style="margin-bottom:0;">
+            <div class="form-group"><label>Nuevo plan</label><select class="form-select"><option>Estándar · ARS 150.000/mes</option><option>Premium</option></select></div>
+            <div class="form-group"><label>Duración</label><select class="form-select"><option>12 meses</option><option>6 meses</option></select></div>
+            <div class="form-group"><label>Estado de gestión</label><select class="form-select"><option>En negociación</option><option>Confirmado</option></select></div>
+          </div>
+        </div>
+        <div class="renewal-card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+          <div><div style="font-size:15px;font-weight:500;margin-bottom:4px;">Instituto San Martín</div><div style="font-size:12px;color:var(--text-sec);margin-bottom:8px;">Plan Estándar · ARS 130.000/mes · Vence el <strong>15 ago 2026</strong></div><span class="badge badge-gray">En 57 días</span></div>
+          <button class="btn-secondary">Gestionar</button>
+        </div>
+        <hr>
+        <div style="font-size:11.5px;color:var(--text-ter);">Las instituciones sin respuesta antes del vencimiento pasan automáticamente a estado de gracia (15 días de acceso limitado).</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      </div><!-- screen-wrap -->
+    </div><!-- canvas -->
+  </div><!-- main -->
+</div><!-- shell -->
+
+<script>
+const screenMeta = {
+  's-login':       {title:'CU-01-01 — Inicio de sesión institucional (Login)',          sub:'Paquete 1 · Sesión y acceso'},
+  's-qr-access':   {title:'CU-01-02 — Acceso por QR (vista alumno, sin login)',         sub:'Paquete 1 · Sesión y acceso'},
+  's-new-activity':{title:'CU-02-01 — Nueva actividad — Carga de texto',                sub:'Paquete 2 · Gestión de actividades'},
+  's-review-q':    {title:'CU-02-03 — Revisión de preguntas generadas por IA',          sub:'Paquete 2 · Gestión de actividades'},
+  's-config-act':  {title:'CU-02-04 — Configurar actividad',                             sub:'Paquete 2 · Gestión de actividades'},
+  's-qr-gen':      {title:'CU-02-05 — QR generado',                                     sub:'Paquete 2 · Gestión de actividades'},
+  's-student-act': {title:'CU-02-06 — Texto y preguntas (vista alumno) / Confirmación', sub:'Paquete 2 · Gestión de actividades'},
+  's-dash-doc':    {title:'CU-03-01 — Dashboard docente (Mis cursos)',                   sub:'Paquete 3 · Resultados y seguimiento'},
+  's-dash-coord':  {title:'CU-03-02 — Dashboard institucional (Coordinador)',            sub:'Paquete 3 · Resultados y seguimiento'},
+  's-alerts':      {title:'CU-03-03 — Alertas de rendimiento',                           sub:'Paquete 3 · Resultados y seguimiento'},
+  's-student-det': {title:'CU-03-04 — Detalle longitudinal de alumno',                  sub:'Paquete 3 · Resultados y seguimiento'},
+  's-arco':        {title:'CU-04-01 — Cumplimiento datos personales (ARCO)',             sub:'Paquete 4 · Datos y cumplimiento'},
+  's-consent':     {title:'CU-04-02 — Términos de tratamiento de datos',                 sub:'Paquete 4 · Datos y cumplimiento'},
+  's-new-tenant':  {title:'CU-05-01 — Alta de institución (tenant)',                     sub:'Paquete 5 · Administración de plataforma'},
+  's-oauth':       {title:'CU-05-02 — Configurar integración OAuth',                    sub:'Paquete 5 · Administración de plataforma'},
+  's-monitoring':  {title:'CU-05-03 — Monitoreo de disponibilidad',                     sub:'Paquete 5 · Administración de plataforma'},
+  's-renewal':     {title:'CU-05-04 — Gestión de renovación de suscripción',            sub:'Paquete 5 · Administración de plataforma'},
+};
+
+let currentId = 's-login';
+
+function show(navEl, id) {
+  document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).style.display = '';
+  navEl.classList.add('active');
+  currentId = id;
+  const meta = screenMeta[id];
+  document.getElementById('toolbar-title').textContent = meta.title;
+  document.getElementById('toolbar-sub').textContent = meta.sub;
+  document.querySelector('.canvas').scrollTop = 0;
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+async function captureOne() {
+  const el = document.getElementById(currentId);
+  toast('Capturando pantalla…');
+  try {
+    const canvas = await html2canvas(el, {scale:2, useCORS:true, backgroundColor:'#EDECEA', logging:false});
+    const link = document.createElement('a');
+    const name = currentId.replace('s-','');
+    link.download = 'habitar_' + name + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    toast('✓ Imagen descargada');
+  } catch(e) {
+    toast('Error al capturar');
+  }
+}
+
+async function captureAll() {
+  const ids = Object.keys(screenMeta);
+  toast('Generando PDF con todas las pantallas…');
+  const {jsPDF} = window.jspdf;
+  const pdf = new jsPDF({orientation:'landscape', unit:'px', format:[1060,680]});
+  let first = true;
+
+  for (const id of ids) {
+    // show temporarily
+    const prev = document.getElementById(currentId);
+    prev.style.display = 'none';
+    const el = document.getElementById(id);
+    el.style.display = '';
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+    const canvas = await html2canvas(el, {scale:1.5, useCORS:true, backgroundColor:'#EDECEA', logging:false});
+    const img = canvas.toDataURL('image/png');
+    const ratio = canvas.width / canvas.height;
+    const pw = 1060, ph = 680;
+    let iw = pw - 40, ih = iw / ratio;
+    if (ih > ph - 60) { ih = ph - 60; iw = ih * ratio; }
+    const ix = (pw - iw) / 2, iy = 40;
+
+    if (!first) pdf.addPage();
+    first = false;
+
+    // header band
+    pdf.setFillColor(15, 110, 86);
+    pdf.rect(0, 0, pw, 30, 'F');
+    pdf.setTextColor(225, 245, 238);
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica','bold');
+    pdf.text('Habitar — Mockups de pantallas', 16, 19);
+    pdf.setFont('helvetica','normal');
+    pdf.setFontSize(9);
+    const meta = screenMeta[id];
+    pdf.text(meta.title, pw - 16, 19, {align:'right'});
+
+    pdf.addImage(img, 'PNG', ix, iy, iw, ih);
+
+    // footer
+    pdf.setFillColor(247, 246, 243);
+    pdf.rect(0, ph - 22, pw, 22, 'F');
+    pdf.setTextColor(140, 138, 133);
+    pdf.setFontSize(8);
+    pdf.text(meta.sub + '  ·  Tesis Facundo Julian Martínez · UAI 2026', pw/2, ph - 8, {align:'center'});
+
+    // restore
+    el.style.display = 'none';
+    prev.style.display = '';
+  }
+
+  // restore current
+  document.getElementById(currentId).style.display = '';
+  pdf.save('Habitar_Mockups_Pantallas.pdf');
+  toast('✓ PDF descargado con ' + ids.length + ' pantallas');
+}
+</script>
+</body>
+</html>

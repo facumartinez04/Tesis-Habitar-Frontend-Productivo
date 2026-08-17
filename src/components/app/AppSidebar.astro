@@ -1,0 +1,85 @@
+---
+import Icon from './Icon.astro';
+import type { IconName } from '../../lib/iconPaths';
+
+export interface AppSidebarItem {
+  icon: IconName;
+  label: string;
+  href: string;
+  badgeCount?: number;
+}
+
+interface Props {
+  items: AppSidebarItem[];
+  sectionLabel: string;
+}
+
+const { items, sectionLabel } = Astro.props;
+const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
+---
+<div
+  id="sidebar-backdrop"
+  class="hidden fixed inset-0 bg-black/40 z-30 md:hidden"
+></div>
+<aside
+  id="app-sidebar"
+  class="fixed inset-y-0 left-0 z-40 w-[248px] -translate-x-full transition-transform duration-200 ease-out shrink-0 bg-green-dark overflow-y-auto flex flex-col md:static md:z-auto md:w-[224px] md:translate-x-0"
+>
+  <div class="px-5 pt-5 pb-4">
+    <span class="text-lg font-semibold text-green-light tracking-tight">Habi<span class="text-white">tar</span></span>
+    <div class="text-[10.5px] text-white/45 mt-0.5 tracking-wide">{sectionLabel}</div>
+  </div>
+
+  <nav class="px-3 flex flex-col gap-0.5">
+    {items.map((item) => {
+      const isActive = currentPath === item.href.replace(/\/$/, '');
+      return (
+        <a
+          href={item.href}
+          class={`group relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] transition-colors ${
+            isActive ? 'bg-white/12 text-white font-medium' : 'text-white/55 hover:bg-white/[0.06] hover:text-white/85'
+          }`}
+        >
+          {isActive && <span class="absolute left-0 top-1/2 -translate-y-1/2 h-[18px] w-[3px] rounded-full bg-green-light" />}
+          <Icon name={item.icon} size={16} class={isActive ? 'text-green-light' : 'text-white/40 group-hover:text-white/70'} />
+          <span class="flex-1">{item.label}</span>
+          {item.badgeCount !== undefined && item.badgeCount > 0 && (
+            <span class="bg-red text-white text-[10px] min-w-[18px] h-[18px] px-1 rounded-full font-semibold flex items-center justify-center">
+              {item.badgeCount}
+            </span>
+          )}
+        </a>
+      );
+    })}
+  </nav>
+
+  <div class="mt-auto px-5 py-4 text-[10.5px] text-white/30">Habitar © 2026</div>
+</aside>
+
+<script>
+  function initSidebar() {
+    const sidebar = document.getElementById('app-sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    const toggle = document.getElementById('sidebar-toggle');
+    if (!sidebar || !backdrop || !toggle) return;
+
+    function open() {
+      sidebar?.classList.remove('-translate-x-full');
+      backdrop?.classList.remove('hidden');
+    }
+
+    function close() {
+      sidebar?.classList.add('-translate-x-full');
+      backdrop?.classList.add('hidden');
+    }
+
+    toggle.addEventListener('click', () => {
+      if (sidebar?.classList.contains('-translate-x-full')) open();
+      else close();
+    });
+    backdrop.addEventListener('click', close);
+    sidebar?.querySelectorAll('a').forEach((link) => link.addEventListener('click', close));
+  }
+
+  initSidebar();
+</script>

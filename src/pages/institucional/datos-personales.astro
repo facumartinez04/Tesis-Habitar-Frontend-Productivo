@@ -1,0 +1,12 @@
+---
+import AppShell from '../../layouts/AppShell.astro';
+import { ArcoScreen } from '../../components/react/features/ArcoScreen';
+import { institucionalNavItems } from '../../lib/nav';
+---
+<AppShell
+  title="Datos personales"
+  sectionLabel="Panel institucional"
+  sidebarItems={institucionalNavItems}
+>
+  <ArcoScreen client:load />
+</AppShell>

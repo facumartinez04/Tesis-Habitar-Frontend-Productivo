@@ -1,0 +1,12 @@
+---
+import AppShell from '../../../layouts/AppShell.astro';
+import { NewInstitutionScreen } from '../../../components/react/features/NewInstitutionScreen';
+import { adminNavItems } from '../../../lib/nav';
+---
+<AppShell
+  title="Nueva institución"
+  sectionLabel="Administración de plataforma"
+  sidebarItems={adminNavItems}
+>
+  <NewInstitutionScreen client:load />
+</AppShell>

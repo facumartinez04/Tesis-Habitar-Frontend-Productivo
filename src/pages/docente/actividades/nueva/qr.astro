@@ -1,0 +1,12 @@
+---
+import AppShell from '../../../../layouts/AppShell.astro';
+import { GeneratedQrStep } from '../../../../components/react/features/wizard/GeneratedQrStep';
+import { docenteNavItems } from '../../../../lib/nav';
+---
+<AppShell
+  title="QR generado"
+  sectionLabel="Panel docente"
+  sidebarItems={docenteNavItems}
+>
+  <GeneratedQrStep client:load />
+</AppShell>

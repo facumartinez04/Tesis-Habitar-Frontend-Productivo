@@ -1,0 +1,12 @@
+---
+import AppShell from '../../../../layouts/AppShell.astro';
+import { ConfigureActivityStep } from '../../../../components/react/features/wizard/ConfigureActivityStep';
+import { docenteNavItems } from '../../../../lib/nav';
+---
+<AppShell
+  title="Configurar actividad"
+  sectionLabel="Panel docente"
+  sidebarItems={docenteNavItems}
+>
+  <ConfigureActivityStep client:load />
+</AppShell>

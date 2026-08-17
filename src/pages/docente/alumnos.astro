@@ -1,0 +1,8 @@
+---
+import AppShell from '../../layouts/AppShell.astro';
+import { StudentDetailScreen } from '../../components/react/features/StudentDetailScreen';
+import { docenteNavItems } from '../../lib/nav';
+---
+<AppShell title="Detalle de alumno" sectionLabel="Panel docente" sidebarItems={docenteNavItems}>
+  <StudentDetailScreen client:load />
+</AppShell>

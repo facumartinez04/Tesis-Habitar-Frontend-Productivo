@@ -1,0 +1,12 @@
+---
+import AppShell from '../../layouts/AppShell.astro';
+import { AlertsScreen } from '../../components/react/features/AlertsScreen';
+import { institucionalNavItems } from '../../lib/nav';
+---
+<AppShell
+  title="Alertas"
+  sectionLabel="Panel institucional"
+  sidebarItems={institucionalNavItems}
+>
+  <AlertsScreen client:load />
+</AppShell>

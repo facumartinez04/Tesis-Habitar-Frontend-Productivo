@@ -1,0 +1,12 @@
+---
+import AppShell from '../../layouts/AppShell.astro';
+import { TeacherDashboard } from '../../components/react/features/TeacherDashboard';
+import { docenteNavItems } from '../../lib/nav';
+---
+<AppShell
+  title="Mis cursos"
+  sectionLabel="Panel docente"
+  sidebarItems={docenteNavItems}
+>
+  <TeacherDashboard client:load />
+</AppShell>

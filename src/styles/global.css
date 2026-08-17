@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+
+  --color-green-dark: #0F6E56;
+  --color-green-mid: #1D9E75;
+  --color-green-light: #E1F5EE;
+  --color-green-bg: #EAF3DE;
+  --color-green-text: #27500A;
+  --color-amber: #EF9F27;
+  --color-amber-bg: #FAEEDA;
+  --color-amber-text: #854F0B;
+  --color-red: #E24B4A;
+  --color-red-bg: #FCEBEB;
+  --color-red-text: #A32D2D;
+  --color-blue: #185FA5;
+  --color-blue-bg: #E6F1FB;
+  --color-gray-bg: #F1EFE8;
+  --color-gray-border: #D8D5CE;
+  --color-surface: #F7F6F3;
+  --color-text-pri: #1A1918;
+  --color-text-sec: #5C5A56;
+  --color-text-ter: #8C8A85;
+  --color-app-bg: #EDECEA;
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+@layer base {
+  html, body {
+    height: 100%;
+    background: var(--color-app-bg);
+    color: var(--color-text-pri);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@layer components {
+  .form-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238C8A85' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+  }
+}
