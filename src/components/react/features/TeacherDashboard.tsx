@@ -165,7 +165,7 @@ export function TeacherDashboard() {
           </button>
 
           {comparison && (
-            <div className="grid grid-cols-3 gap-2 mt-3">
+            <div className="grid grid-cols-3 gap-1.5 mt-3">
               {(['literal', 'inferencial', 'critico'] as const).map((axis) => (
                 <div key={axis} className="bg-surface rounded-md px-2.5 py-2 text-center">
                   <div className="text-[10px] text-text-ter uppercase">{axis}</div>

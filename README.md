@@ -1,45 +1,58 @@
-# Astro Starter Kit: Minimal
+# Habitar — Frontend
 
-```sh
-npm create astro@latest -- --template minimal
-```
+Frontend del proyecto Habitar (Astro + React + Tailwind), PWA e íntegramente responsive (mobile-first).
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Stack
 
-## 🚀 Project Structure
+- **Astro 7** — routing basado en archivos, salida estática
+- **React** — islas interactivas (`client:load`) para las pantallas con estado
+- **TailwindCSS 4** — utilidades responsive (`sm:`/`md:` mobile-first) en todo el proyecto
+- **vite-plugin-pwa** — manifest + service worker (ver sección PWA)
 
-Inside of your Astro project, you'll see the following folders and files:
+## Comandos
+
+| Comando | Acción |
+| :--- | :--- |
+| `npm install` | Instala dependencias |
+| `npm run dev` | Levanta el server de desarrollo en `localhost:4321` |
+| `npm run build` | Build de producción a `./dist/` (incluye generar el service worker) |
+| `npm run preview` | Sirve el build de `./dist/` localmente para probarlo |
+| `npm run astro check` | Chequeo de tipos de todo el proyecto (Astro + React) |
+
+## PWA
+
+La app es instalable y funciona offline sobre las páginas ya visitadas:
+
+- **Manifest** (`vite-plugin-pwa`, configurado en `astro.config.mjs`): nombre, ícono, `theme_color`,
+  `display: standalone`. Íconos en `public/icons/` (192, 512 y 512 maskable, generados a partir del
+  isotipo de `public/favicon.svg`).
+- **Service worker**: durante `npm run dev`, `vite-plugin-pwa` sirve un SW de desarrollo automáticamente.
+  En producción, `astro build` no genera el SW por sí solo (Astro compila en dos pasadas y el plugin de
+  Vite no llega a engancharse a la salida final) — por eso `npm run build` encadena
+  `scripts/generate-sw.mjs`, que usa `workbox-build` para precachear `dist/` y escribir `dist/sw.js`
+  directamente. Se registra desde `src/layouts/SiteLayout.astro` vía `virtual:pwa-register`.
+- **Estrategia de cache**: `NetworkFirst` para el HTML de las páginas y especialmente para `/actividad`
+  (CU-02-06/CU-01-04) — si el alumno pierde conexión a mitad de una actividad ya cargada, la pantalla
+  sigue disponible desde cache mientras las respuestas se guardan en `localStorage` (ver
+  `ActivityScreen.tsx`) para reintentar el envío cuando vuelva la conexión.
+
+## Responsive
+
+Todo el layout es mobile-first con Tailwind (`grid-cols-1 sm:grid-cols-N`, `flex-col sm:flex-row`,
+tablas con scroll horizontal propio vía `TableWrap`). El sidebar (`AppSidebar.astro`) es un drawer
+colapsable en mobile (`< md`) con botón de apertura y backdrop, y estático en desktop.
+
+## Estructura
 
 ```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+src/
+  components/app/       Layout Astro (sidebar, header)
+  components/react/     Islas React: features/ (pantallas) y ui/ (componentes base)
+  layouts/               SiteLayout (shell HTML + PWA) y AppShell (sidebar + header)
+  pages/                 Rutas (una .astro por página)
+  services/               Clientes HTTP hacia el backend
+  store/                  Estado compartido (nanostores): sesión y wizard de actividad
+  types/                  Tipos compartidos entre servicios y componentes
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
-
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
-
-# Tesis-Habitar-Frontend
+El backend vive en un repo aparte: [Tesis-Habitar-Backend](https://github.com/facumartinez04/Tesis-Habitar-Backend).

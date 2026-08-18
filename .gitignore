@@ -3,6 +3,7 @@ backend/
 
 # build output
 dist/
+dev-dist/
 # generated types
 .astro/
 
