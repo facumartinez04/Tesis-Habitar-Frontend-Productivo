@@ -1,17 +1,21 @@
 import { useState } from 'react';
 import type { OAuthProviderId } from '../../../types/auth';
-import { dashboardPathForRole, loginWithProvider } from '../../../services/authService';
-import { sessionStore } from '../../../store/sessionStore';
+import { oauthLoginUrl } from '../../../services/authService';
 import { GoogleIcon, MicrosoftIcon } from '../ui/BrandIcon';
+
+function getErrorFromQuery(): string | null {
+  if (typeof window === 'undefined') return null;
+  return new URLSearchParams(window.location.search).get('error');
+}
 
 export function LoginScreen() {
   const [loadingProvider, setLoadingProvider] = useState<OAuthProviderId | null>(null);
+  const [error] = useState<string | null>(getErrorFromQuery);
 
-  async function handleLogin(provider: OAuthProviderId) {
+  function handleLogin(provider: OAuthProviderId) {
     setLoadingProvider(provider);
-    const session = await loginWithProvider(provider);
-    sessionStore.set(session);
-    window.location.href = dashboardPathForRole(session.user.role);
+    // CU-01-01: navegación completa — el backend redirige a la pantalla real de Google/Microsoft.
+    window.location.href = oauthLoginUrl(provider);
   }
 
   return (
@@ -24,6 +28,10 @@ export function LoginScreen() {
         <br />
         para instituciones educativas
       </div>
+
+      {error && (
+        <div className="w-[280px] text-[11.5px] text-red-800 bg-red-100 rounded-md px-3 py-2 mb-4 text-center">{error}</div>
+      )}
 
       <button
         disabled={loadingProvider !== null}

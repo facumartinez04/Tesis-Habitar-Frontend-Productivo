@@ -3,6 +3,8 @@ import { apiFetch } from '../lib/apiClient';
 import { toLower, toUpper } from '../lib/caseAdapters';
 import { sessionStore } from '../store/sessionStore';
 
+const API_URL = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:4000/api';
+
 interface BackendUser {
   id: string;
   name: string;
@@ -46,6 +48,29 @@ export async function loginWithProvider(provider: OAuthProviderId): Promise<Sess
     body: { provider: toUpper(provider) },
   });
   return toSession(backendSession);
+}
+
+/** CU-01-01: URL a la que redirigir el navegador para arrancar el login real (Google/Microsoft). */
+export function oauthLoginUrl(provider: OAuthProviderId): string {
+  return `${API_URL}/auth/${toUpper(provider)}`;
+}
+
+/** Completa el login real: el backend ya redirigió acá con `?token=`, buscamos los datos del usuario y armamos la sesión. */
+export async function completeOAuthCallback(token: string): Promise<Session> {
+  const response = await fetch(`${API_URL}/auth/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error('No se pudo completar el inicio de sesión');
+
+  const { user } = (await response.json()) as { user: BackendUser };
+  const session: Session = {
+    token,
+    user: toUser(user),
+    provider: toLower<OAuthProviderId>(user.provider),
+    issuedAt: new Date().toISOString(),
+  };
+  sessionStore.set(session);
+  return session;
 }
 
 export async function ensureAdminSession(): Promise<Session> {
