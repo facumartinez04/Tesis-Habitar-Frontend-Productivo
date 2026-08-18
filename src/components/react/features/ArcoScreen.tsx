@@ -8,6 +8,7 @@ import { Toast } from '../ui/Toast';
 import { useAuthGuard } from '../../../hooks/useAuthGuard';
 import { useToast } from '../../../hooks/useToast';
 import { deleteStudentData, exportStudentData, getAuditLog, searchArcoStudents } from '../../../services/complianceService';
+import { confirmDestructive } from '../../../lib/alerts';
 import type { ArcoStudentRecord, AuditLogEntry } from '../../../types/compliance';
 
 const operationBadge: Record<AuditLogEntry['operation'], { label: string; color: 'blue' | 'red' | 'green' }> = {
@@ -60,7 +61,12 @@ export function ArcoScreen() {
 
   async function handleDelete() {
     if (!selected || !session) return;
-    if (!window.confirm(`¿Eliminar los datos de ${selected.name}? Esta acción quedará auditada.`)) return;
+    const confirmed = await confirmDestructive({
+      title: `¿Eliminar los datos de ${selected.name}?`,
+      text: 'Esta acción no se puede deshacer y quedará registrada en el log de auditoría.',
+      confirmButtonText: 'Sí, eliminar',
+    });
+    if (!confirmed) return;
     setBusy(true);
     await deleteStudentData(session.user.institutionId, selected.id);
     await refresh();

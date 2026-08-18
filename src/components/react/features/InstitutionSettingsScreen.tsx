@@ -15,6 +15,7 @@ import {
   type InstitutionUser,
 } from '../../../services/institutionUsersService';
 import { getRetentionPolicy, purgeExpiredData, updateRetentionPolicy, type RetentionPolicy } from '../../../services/complianceService';
+import { confirmDestructive, showError } from '../../../lib/alerts';
 import type { ComprehensionAxis, EducationLevel, Institution } from '../../../types/institution';
 import type { Role } from '../../../types/auth';
 
@@ -98,11 +99,19 @@ export function InstitutionSettingsScreen() {
 
   async function handleToggleActive(user: InstitutionUser) {
     if (!session) return;
+    if (user.active) {
+      const confirmed = await confirmDestructive({
+        title: `¿Desactivar a ${user.name}?`,
+        text: 'Va a perder el acceso a Habitar hasta que lo vuelvas a activar.',
+        confirmButtonText: 'Sí, desactivar',
+      });
+      if (!confirmed) return;
+    }
     try {
       await setInstitutionUserActive(session.user.institutionId, user.id, !user.active);
       refresh();
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'No se pudo actualizar el usuario');
+      showError('No se pudo actualizar el usuario', err instanceof Error ? err.message : undefined);
     }
   }
 
@@ -121,6 +130,13 @@ export function InstitutionSettingsScreen() {
 
   async function handlePurge() {
     if (!session) return;
+    const confirmed = await confirmDestructive({
+      title: '¿Purgar datos vencidos?',
+      text: `Se van a eliminar de forma permanente los alumnos dados de alta hace más de ${retentionMonths} meses. Esta acción no se puede deshacer.`,
+      confirmButtonText: 'Sí, purgar',
+    });
+    if (!confirmed) return;
+
     setPurging(true);
     try {
       const result = await purgeExpiredData(session.user.institutionId);

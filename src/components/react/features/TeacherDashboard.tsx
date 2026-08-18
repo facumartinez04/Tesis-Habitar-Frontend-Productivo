@@ -11,6 +11,7 @@ import { listMyCourses } from '../../../services/courseService';
 import { compareCoursePeriods, exportCourseReport, getTeacherCourseSummary, type PeriodComparison } from '../../../services/resultsService';
 import { getAiUsage, type AiUsageSnapshot } from '../../../services/aiUsageService';
 import { duplicateActivity, listActivitiesByCourse, publishActivityNow, type ActivitySummary } from '../../../services/activityService';
+import { confirmAction } from '../../../lib/alerts';
 import type { CourseResultSummary, PerformanceStatus } from '../../../types/result';
 
 const activityStatusBadge: Record<ActivitySummary['status'], { label: string; color: 'green' | 'amber' | 'gray' }> = {
@@ -74,6 +75,13 @@ export function TeacherDashboard() {
   }
 
   async function handlePublishNow(activityId: string) {
+    const confirmed = await confirmAction({
+      title: '¿Publicar la actividad ahora?',
+      text: 'Va a quedar disponible para los alumnos antes de la fecha programada.',
+      confirmButtonText: 'Sí, publicar',
+    });
+    if (!confirmed) return;
+
     setBusyActivityId(activityId);
     try {
       await publishActivityNow(activityId);

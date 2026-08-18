@@ -1,3 +1,7 @@
 ---
-return Astro.redirect('/login');
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { IndexRedirectScreen } from '../components/react/features/IndexRedirectScreen';
 ---
+<SiteLayout title="Habitar">
+  <IndexRedirectScreen client:load />
+</SiteLayout>

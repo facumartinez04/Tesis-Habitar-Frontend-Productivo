@@ -42,12 +42,13 @@ export function LoginScreen() {
         {loadingProvider === 'google' ? 'Conectando…' : 'Continuar con Google Workspace'}
       </button>
       <button
-        disabled={loadingProvider !== null}
-        onClick={() => handleLogin('microsoft')}
-        className="flex items-center gap-2.5 w-[280px] px-4 py-[11px] border border-gray-border rounded-md bg-white text-[13px] font-medium mb-2.5 hover:border-green-mid transition-colors disabled:opacity-60"
+        disabled
+        title="Todavía no está disponible"
+        className="flex items-center gap-2.5 w-[280px] px-4 py-[11px] border border-gray-border rounded-md bg-white text-[13px] font-medium mb-2.5 opacity-50 cursor-not-allowed"
       >
         <MicrosoftIcon />
-        {loadingProvider === 'microsoft' ? 'Conectando…' : 'Continuar con Microsoft 365'}
+        <span className="flex-1 text-left">Continuar con Microsoft 365</span>
+        <span className="text-[10px] text-text-ter">Próximamente</span>
       </button>
 
       <div className="text-[11px] text-text-ter text-center max-w-[240px] mt-6 leading-relaxed">
