@@ -14,7 +14,7 @@ export const institucionalNavItems: AppSidebarItem[] = [
 
 export const adminNavItems: AppSidebarItem[] = [
   { icon: 'plusSquare', label: 'Nueva institución', href: '/admin/instituciones/nueva' },
-  { icon: 'building', label: 'Instituciones', href: '/admin/instituciones/oauth?slug=belgrano-norte' },
+  { icon: 'building', label: 'Instituciones', href: '/admin/instituciones' },
   { icon: 'refresh', label: 'Suscripciones', href: '/admin/suscripciones' },
   { icon: 'activity', label: 'Monitoreo', href: '/admin/monitoreo' },
 ];

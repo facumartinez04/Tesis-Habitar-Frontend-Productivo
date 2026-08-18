@@ -1,56 +1,39 @@
-import type { OAuthProviderId } from '../types/auth';
-import type { IntegrationStep, IntegrationStepState, OAuthIntegration } from '../types/oauth';
+import type { InstitutionStatus } from '../types/institution';
+import type { OAuthAccessStatus } from '../types/oauth';
 import { apiFetch } from '../lib/apiClient';
 import { toLower } from '../lib/caseAdapters';
 
-interface BackendIntegrationStep {
-  id: string;
-  label: string;
-  state: string;
-  note?: string;
-}
-
-interface BackendOAuthIntegration {
+interface BackendOAuthAccessStatus {
   institutionId: string;
-  provider: string;
-  clientId: string;
-  steps: BackendIntegrationStep[];
+  domain: string;
+  coordinatorEmail: string;
+  institutionStatus: string;
+  googleConfigured: boolean;
+  microsoftConfigured: boolean;
 }
 
-function toIntegration(backend: BackendOAuthIntegration): OAuthIntegration {
+function toStatus(backend: BackendOAuthAccessStatus): OAuthAccessStatus {
   return {
     institutionId: backend.institutionId,
-    provider: toLower<OAuthProviderId>(backend.provider),
-    clientId: backend.clientId,
-    steps: backend.steps.map(
-      (step): IntegrationStep => ({
-        id: step.id,
-        label: step.label,
-        state: toLower<IntegrationStepState>(step.state),
-        note: step.note,
-      }),
-    ),
+    domain: backend.domain,
+    coordinatorEmail: backend.coordinatorEmail,
+    institutionStatus: toLower<InstitutionStatus>(backend.institutionStatus),
+    googleConfigured: backend.googleConfigured,
+    microsoftConfigured: backend.microsoftConfigured,
   };
 }
 
-export async function getOAuthIntegration(institutionId: string): Promise<OAuthIntegration | undefined> {
-  try {
-    const backend = await apiFetch<BackendOAuthIntegration>(`/oauth/${institutionId}`);
-    return toIntegration(backend);
-  } catch {
-    return undefined;
-  }
+export async function getOAuthAccessStatus(institutionId: string): Promise<OAuthAccessStatus> {
+  const backend = await apiFetch<BackendOAuthAccessStatus>(`/oauth/${institutionId}`);
+  return toStatus(backend);
 }
 
-export async function verifyIntegration(institutionId: string): Promise<OAuthIntegration | undefined> {
-  try {
-    const backend = await apiFetch<BackendOAuthIntegration>(`/oauth/${institutionId}/verify`, { method: 'POST' });
-    return toIntegration(backend);
-  } catch {
-    return undefined;
-  }
+export async function activateOAuthAccess(institutionId: string): Promise<OAuthAccessStatus> {
+  const backend = await apiFetch<BackendOAuthAccessStatus>(`/oauth/${institutionId}/activate`, { method: 'POST' });
+  return toStatus(backend);
 }
 
-export async function resendInvitation(institutionId: string): Promise<void> {
-  await apiFetch<void>(`/oauth/${institutionId}/resend`, { method: 'POST' });
+export async function deactivateOAuthAccess(institutionId: string): Promise<OAuthAccessStatus> {
+  const backend = await apiFetch<BackendOAuthAccessStatus>(`/oauth/${institutionId}/deactivate`, { method: 'POST' });
+  return toStatus(backend);
 }

@@ -30,7 +30,11 @@ export function NewInstitutionScreen() {
     setSubmitting(true);
     await createInstitution({ name, domain, levels, status, coordinatorEmail });
     setSubmitting(false);
-    showToast('Institución creada e invitación OAuth enviada');
+    showToast(
+      status === 'activo'
+        ? 'Institución creada y activa: los usuarios con ese dominio ya pueden iniciar sesión'
+        : 'Institución creada como piloto — activala desde "Instituciones" cuando esté lista',
+    );
     setDomain('');
     setCoordinatorEmail('');
   }
@@ -83,9 +87,7 @@ export function NewInstitutionScreen() {
       </div>
 
       <div className="form-group mb-3.5">
-        <label className="block text-[11px] text-text-sec mb-[5px] font-medium">
-          Email del/la coordinador/a (recibirá la invitación OAuth)
-        </label>
+        <label className="block text-[11px] text-text-sec mb-[5px] font-medium">Email del/la coordinador/a</label>
         <input
           value={coordinatorEmail}
           onChange={(e) => setCoordinatorEmail(e.target.value)}
@@ -96,7 +98,8 @@ export function NewInstitutionScreen() {
 
       <div className="bg-green-bg rounded-[6px] px-3.5 py-2.5 mb-4 text-[12.5px] text-green-text flex items-center gap-2">
         <Icon name="mail" size={15} />
-        Al confirmar, se enviará automáticamente la invitación de configuración OAuth al coordinador/a.
+        Habitar usa una única app de Google/Microsoft para toda la plataforma: si la institución queda "Activa", cualquier
+        cuenta con ese dominio ya puede iniciar sesión, sin pasos adicionales para el/la coordinador/a.
       </div>
 
       <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end">
@@ -111,7 +114,7 @@ export function NewInstitutionScreen() {
           disabled={!isValid || submitting}
           className="bg-green-dark text-white px-4 py-2 rounded-[6px] text-[12.5px] font-medium disabled:opacity-50"
         >
-          {submitting ? 'Creando…' : 'Crear institución y enviar invitación'}
+          {submitting ? 'Creando…' : 'Crear institución'}
         </button>
       </div>
     </div>

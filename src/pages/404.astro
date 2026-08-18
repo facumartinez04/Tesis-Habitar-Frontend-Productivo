@@ -1,0 +1,21 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+---
+<SiteLayout title="Página no encontrada">
+  <div class="flex flex-col items-center justify-center px-6 py-12 min-h-screen bg-surface text-center">
+    <div class="text-[36px] font-bold text-text-pri tracking-tight mb-1">
+      Habi<span class="text-green-dark">tar</span>
+    </div>
+    <div class="text-[64px] font-bold text-green-mid leading-none mt-4 mb-2">404</div>
+    <div class="text-[15px] font-medium text-text-pri mb-1.5">No encontramos esta página</div>
+    <div class="text-[13px] text-text-sec max-w-[280px] mb-7">
+      La dirección a la que intentaste acceder no existe o fue movida.
+    </div>
+    <a
+      href="/"
+      class="px-4 py-[11px] bg-green-dark text-white rounded-md text-[13px] font-medium hover:opacity-90 transition-opacity"
+    >
+      Volver al inicio
+    </a>
+  </div>
+</SiteLayout>
