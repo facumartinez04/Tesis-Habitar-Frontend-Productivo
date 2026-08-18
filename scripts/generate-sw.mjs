@@ -13,8 +13,9 @@ const { count, size, warnings } = await generateSW({
   cleanupOutdatedCaches: true,
   clientsClaim: true,
   skipWaiting: true,
-  navigateFallback: '/login',
-  navigateFallbackDenylist: [/^\/api\//],
+  // Sin navigateFallback a propósito: es multi-página (cada ruta tiene su propio HTML
+  // precacheado), no una SPA con app-shell — Workbox precachea /login/ (con barra), no
+  // /login, así que un fallback fijo rompía en runtime con "non-precached-url".
   runtimeCaching: [
     {
       urlPattern: ({ url }) => url.pathname === '/actividad',

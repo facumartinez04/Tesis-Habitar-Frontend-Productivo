@@ -1,16 +1,18 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { OAuthProviderId } from '../../../types/auth';
 import { oauthLoginUrl } from '../../../services/authService';
 import { GoogleIcon, MicrosoftIcon } from '../ui/BrandIcon';
 
-function getErrorFromQuery(): string | null {
-  if (typeof window === 'undefined') return null;
-  return new URLSearchParams(window.location.search).get('error');
-}
-
 export function LoginScreen() {
   const [loadingProvider, setLoadingProvider] = useState<OAuthProviderId | null>(null);
-  const [error] = useState<string | null>(getErrorFromQuery);
+  // El ?error= de la URL se lee recién en useEffect (post-hidratación): leerlo durante
+  // el render inicial rompe la hidratación, porque el server no tiene `window` y arma
+  // un HTML distinto al que arma el cliente en su primer render.
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setError(new URLSearchParams(window.location.search).get('error'));
+  }, []);
 
   function handleLogin(provider: OAuthProviderId) {
     setLoadingProvider(provider);

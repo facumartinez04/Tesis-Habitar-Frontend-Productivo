@@ -34,8 +34,9 @@ export default defineConfig({
           ],
         },
         workbox: {
-          navigateFallback: '/login',
-          navigateFallbackDenylist: [/^\/api\//],
+          // Sin navigateFallback a propósito: es multi-página (cada ruta tiene su propio
+          // HTML precacheado), no una SPA con app-shell — Workbox precachea /login/
+          // (con barra), no /login, así que un fallback fijo rompía con "non-precached-url".
           runtimeCaching: [
             {
               // Pantalla del alumno (CU-02-06 / RNF-09): que quede disponible offline
