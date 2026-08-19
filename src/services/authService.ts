@@ -73,6 +73,27 @@ export async function completeOAuthCallback(token: string): Promise<Session> {
   return session;
 }
 
+/** Vuelve a pedirle al backend los datos actuales del usuario (rol, institución, activo) y
+ *  actualiza la sesión guardada. El token queda igual — lo que puede cambiar es lo que el
+ *  usuario tiene permitido hacer, y eso vive en la DB, no en el JWT cacheado en localStorage. */
+export async function refreshSession(): Promise<Session | null> {
+  const current = sessionStore.get();
+  if (!current?.token) return null;
+
+  const response = await fetch(`${API_URL}/auth/me`, {
+    headers: { Authorization: `Bearer ${current.token}` },
+  });
+  if (!response.ok) {
+    sessionStore.set(null);
+    return null;
+  }
+
+  const { user } = (await response.json()) as { user: BackendUser };
+  const session: Session = { ...current, user: toUser(user), provider: toLower<OAuthProviderId>(user.provider) };
+  sessionStore.set(session);
+  return session;
+}
+
 export async function ensureAdminSession(): Promise<Session> {
   const current = sessionStore.get();
   if (current?.user.role === 'admin') return current;
