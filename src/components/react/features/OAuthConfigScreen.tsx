@@ -4,6 +4,7 @@ import { Card } from '../ui/Card';
 import { Icon } from '../ui/Icon';
 import { GoogleIcon, MicrosoftIcon } from '../ui/BrandIcon';
 import { Toast } from '../ui/Toast';
+import { Skeleton, SkeletonCard } from '../ui/Skeleton';
 import { useToast } from '../../../hooks/useToast';
 import { useQueryParam } from '../../../hooks/useQueryParam';
 import { ensureAdminSession } from '../../../services/authService';
@@ -63,7 +64,18 @@ export function OAuthConfigScreen() {
   if (notFound) {
     return <div className="text-xs text-red-800">No se encontró la institución "{institutionSlug}".</div>;
   }
-  if (!status || !institution) return <div className="text-xs text-text-ter">Cargando…</div>;
+  if (!status || !institution) {
+    return (
+      <div className="space-y-4">
+        <div className="space-y-2 mb-4">
+          <Skeleton className="h-6 w-60" />
+          <Skeleton className="h-3.5 w-48" />
+        </div>
+        <SkeletonCard />
+        <SkeletonCard />
+      </div>
+    );
+  }
 
   const isActive = status.institutionStatus === 'activo';
 

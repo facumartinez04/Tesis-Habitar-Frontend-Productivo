@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Card } from '../ui/Card';
 import { Icon } from '../ui/Icon';
+import { Skeleton } from '../ui/Skeleton';
 import { useAuthGuard } from '../../../hooks/useAuthGuard';
 import { acceptConsent, getConsentDocument } from '../../../services/complianceService';
 import type { ConsentDocument } from '../../../types/compliance';
@@ -24,7 +25,31 @@ export function ConsentScreen() {
     setConfirmed(true);
   }
 
-  if (!session || !document_) return <div className="text-xs text-text-ter">Cargando…</div>;
+  if (!session || !document_) {
+    return (
+      <div className="bg-surface p-8 min-h-screen flex flex-col items-center">
+        <div className="w-full max-w-[560px] space-y-4">
+          <div className="flex flex-col items-center space-y-2 mb-4">
+            <Skeleton className="h-10 w-10 rounded-full" />
+            <Skeleton className="h-6 w-64" />
+            <Skeleton className="h-3.5 w-48" />
+          </div>
+          <div className="bg-white border border-gray-border rounded-xl p-5 space-y-3 shadow-xs">
+            <Skeleton className="h-4 w-1/3" />
+            <Skeleton className="h-3 w-full" />
+            <Skeleton className="h-3 w-5/6" />
+            <Skeleton className="h-3 w-4/6" />
+            <div className="pt-2 space-y-2">
+              <Skeleton className="h-4 w-1/4" />
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-3/4" />
+            </div>
+          </div>
+          <Skeleton className="h-10 w-full rounded-lg" />
+        </div>
+      </div>
+    );
+  }
 
   if (confirmed) {
     return (

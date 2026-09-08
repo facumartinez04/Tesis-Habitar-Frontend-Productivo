@@ -9,6 +9,8 @@ import { ensureAdminSession } from '../../../services/authService';
 import { getMonitoringSnapshot } from '../../../services/monitoringService';
 import type { ComponentHealth, MonitoringSnapshot } from '../../../types/monitoring';
 
+import { Skeleton, SkeletonMetricCards, SkeletonTable } from '../ui/Skeleton';
+
 const healthBadge: Record<ComponentHealth, { label: string; color: 'green' | 'amber' | 'red'; dot: 'green' | 'amber' | 'red' }> = {
   operativo: { label: 'Operativo', color: 'green', dot: 'green' },
   degradado: { label: 'Degradado', color: 'amber', dot: 'amber' },
@@ -37,7 +39,18 @@ export function MonitoringScreen() {
     load();
   }, []);
 
-  if (!snapshot) return <div className="text-xs text-text-ter">Cargando…</div>;
+  if (!snapshot) {
+    return (
+      <div className="space-y-4">
+        <div className="space-y-2 mb-4">
+          <Skeleton className="h-6 w-56" />
+          <Skeleton className="h-3.5 w-72" />
+        </div>
+        <SkeletonMetricCards count={3} />
+        <SkeletonTable rows={5} cols={3} />
+      </div>
+    );
+  }
 
   const allOperational = snapshot.components.every((c) => c.health === 'operativo');
 

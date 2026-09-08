@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Badge } from '../ui/Badge';
 import { Icon } from '../ui/Icon';
 import { Toast } from '../ui/Toast';
+import { Skeleton, SkeletonCard } from '../ui/Skeleton';
 import { useToast } from '../../../hooks/useToast';
 import { ensureAdminSession } from '../../../services/authService';
 import { listPlans, listSubscriptions, renewSubscription, updateSubscription } from '../../../services/subscriptionService';
@@ -17,14 +18,16 @@ export function RenewalScreen() {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     ensureAdminSession().then(() => {
-      listSubscriptions().then((result) => {
+      Promise.all([listSubscriptions(), listPlans()]).then(([result, plansResult]) => {
         setSubscriptions(result);
+        setPlans(plansResult);
         setExpandedId(result.find((s) => s.daysUntilExpiration <= 15)?.id ?? null);
-      });
-      listPlans().then(setPlans);
+        setLoading(false);
+      }).catch(() => setLoading(false));
     });
   }, []);
 
@@ -43,6 +46,19 @@ export function RenewalScreen() {
     if (updated) {
       setSubscriptions((prev) => prev.map((s) => (s.id === id ? updated : s)));
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <div className="space-y-2 mb-4">
+          <Skeleton className="h-6 w-60" />
+          <Skeleton className="h-3.5 w-72" />
+        </div>
+        <SkeletonCard />
+        <SkeletonCard />
+      </div>
+    );
   }
 
   return (

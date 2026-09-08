@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Card } from '../ui/Card';
 import { Icon } from '../ui/Icon';
+import { Skeleton } from '../ui/Skeleton';
 import { useQueryParam } from '../../../hooks/useQueryParam';
 import { getActivityByCode, submitResponse } from '../../../services/activityService';
 import type { Activity } from '../../../types/activity';
@@ -137,7 +138,21 @@ export function ActivityScreen({ defaultCode }: ActivityScreenProps) {
   }
 
   if (stage === 'loading') {
-    return <div className="min-h-screen flex items-center justify-center text-xs text-text-ter">Cargando actividad…</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center px-6">
+        <div className="w-full max-w-sm bg-white border border-gray-border rounded-xl p-6 space-y-4 shadow-sm">
+          <div className="flex justify-center mb-2">
+            <Skeleton className="h-6 w-24 rounded-full" />
+          </div>
+          <Skeleton className="h-5 w-3/4 mx-auto" />
+          <Skeleton className="h-3.5 w-1/2 mx-auto" />
+          <div className="space-y-2.5 pt-4">
+            <Skeleton className="h-9 w-full rounded-lg" />
+            <Skeleton className="h-9 w-full rounded-lg" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (stage === 'not-found' || !activity) {

@@ -8,6 +8,7 @@ import type {
   JiraToken,
 } from '../../../types/jira';
 import { jiraService } from '../../../services/jiraService';
+import { SkeletonKanban } from '../ui/Skeleton';
 
 const COLUMNS: { id: JiraStatus; title: string; accent: string }[] = [
   { id: 'todo', title: 'Por Hacer', accent: 'border-t-gray-400' },
@@ -111,6 +112,10 @@ export function JiraScreen() {
     }
   };
 
+  if (loading) {
+    return <SkeletonKanban />;
+  }
+
   return (
     <div className="space-y-6">
       {notification && (
@@ -185,7 +190,7 @@ export function JiraScreen() {
 
       {/* Board or List */}
       {loading ? (
-        <div className="py-20 text-center text-xs text-gray-400">Cargando incidencias...</div>
+        <SkeletonKanban />
       ) : viewMode === 'board' ? (
         <div className="overflow-x-auto pb-4">
           <div className="flex items-start gap-4 min-w-max">

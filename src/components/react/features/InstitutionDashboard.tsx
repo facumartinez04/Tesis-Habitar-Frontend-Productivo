@@ -8,6 +8,8 @@ import { useAuthGuard } from '../../../hooks/useAuthGuard';
 import { getInstitutionSummary } from '../../../services/resultsService';
 import type { InstitutionResultSummary, PerformanceStatus } from '../../../types/result';
 
+import { Skeleton, SkeletonMetricCards, SkeletonTable } from '../ui/Skeleton';
+
 const statusBadge: Record<PerformanceStatus, { label: ReactNode; color: 'green' | 'amber' | 'red' | 'gray' }> = {
   bien: { label: 'Bien', color: 'green' },
   regular: { label: 'Regular', color: 'amber' },
@@ -33,7 +35,16 @@ export function InstitutionDashboard() {
   }, [session]);
 
   if (!session || !summary) {
-    return <div className="text-xs text-text-ter">Cargando…</div>;
+    return (
+      <div className="space-y-4">
+        <div className="space-y-2 mb-4">
+          <Skeleton className="h-6 w-52" />
+          <Skeleton className="h-3.5 w-64" />
+        </div>
+        <SkeletonMetricCards count={4} />
+        <SkeletonTable rows={5} cols={5} />
+      </div>
+    );
   }
 
   const courses = levelFilter === 'todos' ? summary.courses : summary.courses.filter((c) => c.status === levelFilter);

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Skeleton } from '../ui/Skeleton';
 
 const API_URL = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:4000/api';
 
@@ -107,7 +108,22 @@ export function StatusScreen() {
             )}
           </div>
 
-          {backend.kind === 'loading' && <div className="text-[12px] text-text-ter py-3">Consultando…</div>}
+          {backend.kind === 'loading' && (
+            <div className="py-2 space-y-2.5">
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <Skeleton className="h-3.5 w-32" />
+                <Skeleton className="h-3 w-12" />
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <Skeleton className="h-3.5 w-28" />
+                <Skeleton className="h-3 w-16" />
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <Skeleton className="h-3.5 w-36" />
+                <Skeleton className="h-3 w-10" />
+              </div>
+            </div>
+          )}
 
           {backend.kind === 'error' && (
             <div className="text-[12px] text-red bg-red-100 rounded-md px-3 py-2">{backend.message}</div>

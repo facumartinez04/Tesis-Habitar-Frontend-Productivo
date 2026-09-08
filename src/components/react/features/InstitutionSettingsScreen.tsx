@@ -4,6 +4,7 @@ import { Card } from '../ui/Card';
 import { Icon } from '../ui/Icon';
 import { TableWrap } from '../ui/TableWrap';
 import { Toast } from '../ui/Toast';
+import { Skeleton, SkeletonCard } from '../ui/Skeleton';
 import { useAuthGuard } from '../../../hooks/useAuthGuard';
 import { useToast } from '../../../hooks/useToast';
 import { getInstitutionById, updateInstitutionConfig } from '../../../services/institutionService';
@@ -147,7 +148,19 @@ export function InstitutionSettingsScreen() {
     }
   }
 
-  if (!session) return <div className="text-xs text-text-ter">Cargando…</div>;
+  if (!session) {
+    return (
+      <div className="space-y-5">
+        <div className="space-y-2 mb-4">
+          <Skeleton className="h-6 w-56" />
+          <Skeleton className="h-3.5 w-72" />
+        </div>
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">

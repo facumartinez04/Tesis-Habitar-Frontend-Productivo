@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { AlertItem } from '../ui/AlertItem';
 import { Badge } from '../ui/Badge';
 import { Icon } from '../ui/Icon';
+import { Skeleton } from '../ui/Skeleton';
 import { useAuthGuard } from '../../../hooks/useAuthGuard';
 import { getPerformanceAlerts } from '../../../services/alertService';
 import type { PerformanceAlert } from '../../../types/alert';
@@ -21,7 +22,25 @@ export function AlertsScreen() {
     if (session) getPerformanceAlerts(session.user.institutionId).then(setAlerts);
   }, [session]);
 
-  if (!session) return <div className="text-xs text-text-ter">Cargando…</div>;
+  if (!session) {
+    return (
+      <div className="space-y-4">
+        <div className="space-y-2 mb-4">
+          <Skeleton className="h-6 w-52" />
+          <Skeleton className="h-3.5 w-80" />
+        </div>
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="bg-white border border-gray-border rounded-xl p-4 flex items-start gap-3.5">
+            <Skeleton className="h-9 w-9 rounded-full shrink-0" />
+            <div className="space-y-2 flex-1">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-3 w-1/2" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div>

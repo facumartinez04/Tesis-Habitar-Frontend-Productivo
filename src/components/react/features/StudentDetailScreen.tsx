@@ -3,6 +3,7 @@ import { Avatar } from '../ui/Avatar';
 import { Badge } from '../ui/Badge';
 import { Icon } from '../ui/Icon';
 import { TableWrap } from '../ui/TableWrap';
+import { Skeleton, SkeletonMetricCards, SkeletonCard } from '../ui/Skeleton';
 import { useAuthGuard } from '../../../hooks/useAuthGuard';
 import { useQueryParam } from '../../../hooks/useQueryParam';
 import { getStudentDetail } from '../../../services/studentService';
@@ -65,7 +66,21 @@ export function StudentDetailScreen() {
     }
   }
 
-  if (!session || !student) return <div className="text-xs text-text-ter">Cargando…</div>;
+  if (!session || !student) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-3 mb-4">
+          <Skeleton className="h-12 w-12 rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-48" />
+            <Skeleton className="h-3 w-32" />
+          </div>
+        </div>
+        <SkeletonMetricCards count={3} />
+        <SkeletonCard />
+      </div>
+    );
+  }
 
   const badge = statusBadge[student.status];
 

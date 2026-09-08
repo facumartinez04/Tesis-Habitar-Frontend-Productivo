@@ -4,6 +4,7 @@ import { Card } from '../ui/Card';
 import { Icon } from '../ui/Icon';
 import { TableWrap } from '../ui/TableWrap';
 import { Toast } from '../ui/Toast';
+import { Skeleton, SkeletonCard, SkeletonTable } from '../ui/Skeleton';
 import { useToast } from '../../../hooks/useToast';
 import { useQueryParam } from '../../../hooks/useQueryParam';
 import { ensureAdminSession } from '../../../services/authService';
@@ -93,7 +94,18 @@ export function AdminInstitutionUsersScreen() {
   if (notFound) {
     return <div className="text-xs text-red-800">No se encontró la institución "{institutionSlug}".</div>;
   }
-  if (!institution) return <div className="text-xs text-text-ter">Cargando…</div>;
+  if (!institution) {
+    return (
+      <div className="space-y-4">
+        <div className="space-y-2 mb-4">
+          <Skeleton className="h-6 w-60" />
+          <Skeleton className="h-3.5 w-40" />
+        </div>
+        <SkeletonCard />
+        <SkeletonTable rows={4} cols={4} />
+      </div>
+    );
+  }
 
   return (
     <div>

@@ -5,6 +5,7 @@ import { Card } from '../ui/Card';
 import { Icon } from '../ui/Icon';
 import { TableWrap } from '../ui/TableWrap';
 import { Toast } from '../ui/Toast';
+import { Skeleton, SkeletonCard } from '../ui/Skeleton';
 import { useAuthGuard } from '../../../hooks/useAuthGuard';
 import { useToast } from '../../../hooks/useToast';
 import { deleteStudentData, exportStudentData, getAuditLog, searchArcoStudents } from '../../../services/complianceService';
@@ -74,7 +75,30 @@ export function ArcoScreen() {
     showToast('Datos eliminados');
   }
 
-  if (!session) return <div className="text-xs text-text-ter">Cargando…</div>;
+  if (!session) {
+    return (
+      <div className="space-y-4">
+        <div className="space-y-2 mb-4">
+          <Skeleton className="h-6 w-72" />
+          <Skeleton className="h-3.5 w-96" />
+        </div>
+        <div className="flex gap-2 mb-4">
+          <Skeleton className="h-9 w-64 rounded-md" />
+          <Skeleton className="h-9 w-24 rounded-md" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="md:col-span-1 space-y-2">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-14 w-full rounded-lg" />
+            ))}
+          </div>
+          <div className="md:col-span-2">
+            <SkeletonCard />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
