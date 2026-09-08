@@ -96,7 +96,14 @@ const jsonLd = {
     <slot />
     <script>
       if ('serviceWorker' in navigator) {
-        import('virtual:pwa-register').then(({ registerSW }) => registerSW({ immediate: true }));
+        import('virtual:pwa-register').then(({ registerSW }) =>
+          registerSW({
+            immediate: true,
+            onNeedRefresh() {
+              window.location.reload();
+            },
+          })
+        );
       }
     </script>
   </body>
