@@ -25,9 +25,16 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
   id="app-sidebar"
   class="fixed inset-y-0 left-0 z-40 w-[248px] -translate-x-full transition-transform duration-200 ease-out shrink-0 bg-green-dark overflow-y-auto flex flex-col md:static md:z-auto md:w-[224px] md:translate-x-0"
 >
-  <div class="px-5 pt-5 pb-4">
-    <span class="text-lg font-semibold text-green-light tracking-tight">Habi<span class="text-white">tar</span></span>
-    <div class="text-[10.5px] text-white/45 mt-0.5 tracking-wide">{sectionLabel}</div>
+  <div class="px-5 pt-5 pb-4 flex items-center gap-3">
+    <img
+      src="/logo-habitar.jpg"
+      alt="Habitar"
+      class="w-8 h-8 rounded-lg object-cover shadow-xs border border-white/20 shrink-0"
+    />
+    <div>
+      <span class="text-lg font-semibold text-green-light tracking-tight block leading-tight">Habi<span class="text-white">tar</span></span>
+      <div class="text-[10.5px] text-white/45 tracking-wide">{sectionLabel}</div>
+    </div>
   </div>
 
   <nav class="px-3 flex flex-col gap-0.5">

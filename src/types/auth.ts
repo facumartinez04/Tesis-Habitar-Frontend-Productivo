@@ -16,4 +16,7 @@ export interface Session {
   provider: OAuthProviderId;
   issuedAt: string;
   token: string;
+  impersonatedInstitutionId?: string;
+  impersonatedInstitutionName?: string;
+  impersonatedRole?: string;
 }

@@ -25,6 +25,12 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
   if (auth) {
     const session = sessionStore.get();
     if (session?.token) headers.Authorization = `Bearer ${session.token}`;
+    if (session?.impersonatedInstitutionId) {
+      headers['X-Impersonate-Institution'] = session.impersonatedInstitutionId;
+    }
+    if (session?.impersonatedRole) {
+      headers['X-Impersonate-Role'] = session.impersonatedRole;
+    }
   }
 
   const response = await fetch(`${API_URL}${path}`, {

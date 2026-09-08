@@ -7,6 +7,8 @@ import { ensureAdminSession } from '../../../services/authService';
 import { listInstitutions } from '../../../services/institutionService';
 import type { Institution } from '../../../types/institution';
 
+import { sessionStore } from '../../../store/sessionStore';
+
 const STATUS_LABEL: Record<Institution['status'], string> = {
   activo: 'Activa',
   piloto_no_confirmado: 'Piloto no confirmado',
@@ -15,6 +17,22 @@ const STATUS_LABEL: Record<Institution['status'], string> = {
 export function InstitutionsListScreen() {
   const [institutions, setInstitutions] = useState<Institution[] | null>(null);
   const [search, setSearch] = useState('');
+
+  const enterAs = (inst: Institution, role: 'coordinador' | 'director' | 'docente') => {
+    const current = sessionStore.get();
+    if (!current) return;
+    sessionStore.set({
+      ...current,
+      impersonatedInstitutionId: inst.id,
+      impersonatedInstitutionName: inst.name,
+      impersonatedRole: role,
+    });
+    if (role === 'docente') {
+      window.location.href = '/docente/cursos';
+    } else {
+      window.location.href = '/institucional';
+    }
+  };
 
   useEffect(() => {
     ensureAdminSession()
@@ -76,17 +94,57 @@ export function InstitutionsListScreen() {
                 <Badge color={inst.status === 'activo' ? 'green' : 'amber'}>{STATUS_LABEL[inst.status]}</Badge>
               </td>
               <td className="px-2.5 py-2.5 border-b border-gray-border">
-                <div className="flex gap-1.5">
+                <div className="flex items-center gap-1.5">
+                  <div className="relative group">
+                    <button
+                      type="button"
+                      className="flex items-center gap-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-[6px] px-2 py-1 text-[10.5px] font-semibold transition-colors"
+                    >
+                      <Icon name="eye" size={11} />
+                      Ver como ▾
+                    </button>
+                    <div className="hidden group-hover:block absolute left-0 top-full pt-1 z-30 w-44">
+                      <div className="bg-white border border-gray-border rounded-lg shadow-xl py-1 text-xs">
+                        <div className="px-3 py-1 text-[10px] font-semibold text-text-ter uppercase tracking-wider border-b border-gray-100">
+                          Ingresar a {inst.name}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => enterAs(inst, 'coordinador')}
+                          className="w-full text-left px-3 py-1.5 hover:bg-amber-50 text-text-pri flex items-center justify-between transition-colors"
+                        >
+                          <span className="font-medium">Coordinador</span>
+                          <span className="text-[10px] text-text-ter">Panel</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => enterAs(inst, 'director')}
+                          className="w-full text-left px-3 py-1.5 hover:bg-amber-50 text-text-pri flex items-center justify-between transition-colors"
+                        >
+                          <span className="font-medium">Director</span>
+                          <span className="text-[10px] text-text-ter">Auditoría</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => enterAs(inst, 'docente')}
+                          className="w-full text-left px-3 py-1.5 hover:bg-amber-50 text-text-pri flex items-center justify-between transition-colors"
+                        >
+                          <span className="font-medium">Docente</span>
+                          <span className="text-[10px] text-text-ter">Cursos</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                   <a
                     href={`/admin/instituciones/oauth?slug=${inst.slug}`}
-                    className="flex items-center gap-1 bg-white border border-gray-border rounded-[6px] px-2 py-1 text-[10.5px]"
+                    className="flex items-center gap-1 bg-white hover:bg-gray-50 border border-gray-border rounded-[6px] px-2 py-1 text-[10.5px]"
                   >
                     <Icon name="lock" size={10} />
                     Acceso
                   </a>
                   <a
                     href={`/admin/instituciones/usuarios?slug=${inst.slug}`}
-                    className="flex items-center gap-1 bg-white border border-gray-border rounded-[6px] px-2 py-1 text-[10.5px]"
+                    className="flex items-center gap-1 bg-white hover:bg-gray-50 border border-gray-border rounded-[6px] px-2 py-1 text-[10.5px]"
                   >
                     <Icon name="school" size={10} />
                     Usuarios

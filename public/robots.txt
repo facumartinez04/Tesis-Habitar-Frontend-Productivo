@@ -1,0 +1,15 @@
+# robots.txt para https://habitar.lat
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /actividad
+Allow: /consentimiento
+Allow: /status
+
+# Bloquear rutas administrativas privadas y de datos de alumnos
+Disallow: /admin/
+Disallow: /docente/
+Disallow: /institucional/
+Disallow: /api/
+
+Sitemap: https://habitar.lat/sitemap.xml

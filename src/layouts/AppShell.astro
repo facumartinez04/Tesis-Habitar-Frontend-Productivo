@@ -2,6 +2,7 @@
 import SiteLayout from './SiteLayout.astro';
 import AppHeader from '../components/app/AppHeader.astro';
 import AppSidebar, { type AppSidebarItem } from '../components/app/AppSidebar.astro';
+import { ImpersonationBanner } from '../components/react/features/ImpersonationBanner';
 
 interface Props {
   title: string;
@@ -12,6 +13,7 @@ interface Props {
 const { title, sectionLabel, sidebarItems } = Astro.props;
 ---
 <SiteLayout title={title}>
+  <ImpersonationBanner client:load />
   <div class="min-h-screen flex">
     <AppSidebar items={sidebarItems} sectionLabel={sectionLabel} />
     <div class="flex-1 min-w-0 flex flex-col">
