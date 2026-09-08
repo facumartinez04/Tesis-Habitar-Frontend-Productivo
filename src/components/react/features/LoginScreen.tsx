@@ -41,9 +41,9 @@ export function LoginScreen() {
   return (
     <div className="flex flex-col items-center justify-center px-6 py-12 min-h-screen bg-surface">
       <img
-        src="/logo-habitar.jpg"
+        src="/logo.svg"
         alt="Habitar"
-        className="w-20 h-20 rounded-2xl object-cover shadow-md mb-4 border border-gray-border/70"
+        className="w-20 h-20 rounded-2xl object-contain shadow-md mb-4 border border-gray-border/70 bg-white p-2"
       />
       <div className="text-[36px] font-bold text-text-pri tracking-tight mb-1">
         Habi<span className="text-green-dark">tar</span>
