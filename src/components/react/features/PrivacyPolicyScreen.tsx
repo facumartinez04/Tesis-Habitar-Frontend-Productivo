@@ -208,7 +208,7 @@ export function PrivacyPolicyScreen() {
           </section>
 
           {/* Section 5 */}
-          <section className="space-y-3">
+          <section id="derechos-arco" className="space-y-3 scroll-mt-24">
             <h2 className="text-lg font-bold text-text-pri flex items-center gap-2">
               <span className="text-emerald-700 font-mono">5.</span>
               Ejercicio de Derechos ARCO (Acceso, Rectificación, Cancelación y Oposición)

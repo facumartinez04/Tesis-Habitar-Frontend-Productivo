@@ -1101,7 +1101,7 @@ export function LandingPage() {
               <ul className="space-y-1.5">
                 <li><a href="/privacidad" className="hover:text-emerald-700 font-semibold text-emerald-850">Política de Privacidad PBA (DGCyE)</a></li>
                 <li><a href="/consentimiento" className="hover:text-emerald-700">Consentimiento Menores (Ley 26.061)</a></li>
-                <li><a href="/institucional/datos-personales" className="hover:text-emerald-700">Gobernanza y Derechos ARCO</a></li>
+                <li><a href="/privacidad#derechos-arco" className="hover:text-emerald-700">Gobernanza y Derechos ARCO</a></li>
                 <li><a href="/status" className="hover:text-emerald-700">Estado del Sistema & SLA</a></li>
                 <li><a href="/admin/api" className="hover:text-emerald-700">API para Desarrolladores</a></li>
               </ul>
