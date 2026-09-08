@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Icon } from '../ui/Icon';
 import { createCourse } from '../../../services/courseService';
+import { listInstitutionUsers, type InstitutionUser } from '../../../services/institutionUsersService';
+import { sessionStore } from '../../../store/sessionStore';
 import type { Course, CreateCourseInput } from '../../../types/activity';
 
 interface CreateCourseModalProps {
@@ -10,6 +12,8 @@ interface CreateCourseModalProps {
 }
 
 export function CreateCourseModal({ isOpen, onClose, onCreated }: CreateCourseModalProps) {
+  const session = sessionStore.get();
+  const [teachers, setTeachers] = useState<InstitutionUser[]>([]);
   const [form, setForm] = useState<CreateCourseInput>({
     name: '',
     subject: 'Lengua y Literatura',
@@ -17,8 +21,17 @@ export function CreateCourseModal({ isOpen, onClose, onCreated }: CreateCourseMo
     division: 'A',
     room: 'Aula 1',
     shift: 'MAÑANA',
+    teacherId: session?.user.role === 'docente' ? session.user.id : undefined,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (session?.user.institutionId && (session.user.role === 'admin' || session.user.role === 'coordinador' || session.user.role === 'director')) {
+      listInstitutionUsers(session.user.institutionId)
+        .then((users) => setTeachers(users.filter((u) => u.role === 'docente' && u.active)))
+        .catch(() => {});
+    }
+  }, [session]);
 
   if (!isOpen) return null;
 
@@ -141,6 +154,26 @@ export function CreateCourseModal({ isOpen, onClose, onCreated }: CreateCourseMo
               </select>
             </div>
           </div>
+
+          {teachers.length > 0 && (
+            <div>
+              <label className="block text-xs font-semibold text-text-pri mb-1">
+                Docente Asignado/a a Cargo
+              </label>
+              <select
+                value={form.teacherId || ''}
+                onChange={(e) => setForm({ ...form, teacherId: e.target.value || undefined })}
+                className="w-full border border-gray-border rounded-lg px-3 py-2 text-xs bg-surface text-text-pri focus:ring-2 focus:ring-emerald-500"
+              >
+                <option value="">-- Sin asignar / Asignar luego --</option>
+                {teachers.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name} ({t.email})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className="pt-2 flex items-center justify-end gap-2 border-t border-gray-100">
             <button

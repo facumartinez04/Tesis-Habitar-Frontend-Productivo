@@ -9,6 +9,9 @@ import { getInstitutionSummary } from '../../../services/resultsService';
 import type { InstitutionResultSummary, PerformanceStatus } from '../../../types/result';
 
 import { Skeleton, SkeletonMetricCards, SkeletonTable } from '../ui/Skeleton';
+import { listInstitutionUsers, type InstitutionUser } from '../../../services/institutionUsersService';
+import { ReassignCourseTeacherModal } from './ReassignCourseTeacherModal';
+import type { Course } from '../../../types/activity';
 
 const statusBadge: Record<PerformanceStatus, { label: ReactNode; color: 'green' | 'amber' | 'red' | 'gray' }> = {
   bien: { label: 'Bien', color: 'green' },
@@ -29,9 +32,16 @@ export function InstitutionDashboard() {
   const session = useAuthGuard(['coordinador', 'admin']);
   const [summary, setSummary] = useState<InstitutionResultSummary | null>(null);
   const [levelFilter, setLevelFilter] = useState('todos');
+  const [teachers, setTeachers] = useState<InstitutionUser[]>([]);
+  const [reassigningCourse, setReassigningCourse] = useState<Course | null>(null);
 
   useEffect(() => {
-    if (session) getInstitutionSummary(session.user.institutionId).then(setSummary);
+    if (session) {
+      getInstitutionSummary(session.user.institutionId).then(setSummary);
+      listInstitutionUsers(session.user.institutionId)
+        .then((users) => setTeachers(users.filter((u) => u.role === 'docente' && u.active)))
+        .catch(() => {});
+    }
   }, [session]);
 
   if (!session || !summary) {
@@ -90,8 +100,29 @@ export function InstitutionDashboard() {
         <tbody>
           {courses.map((course) => (
             <tr key={course.courseId} className={course.status === 'bajo' ? 'bg-red-bg/10' : ''}>
-              <td className="px-2.5 py-2.5 border-b border-gray-border">{course.courseName}</td>
-              <td className="px-2.5 py-2.5 border-b border-gray-border">{course.teacherName}</td>
+              <td className="px-2.5 py-2.5 border-b border-gray-border font-medium">{course.courseName}</td>
+              <td className="px-2.5 py-2.5 border-b border-gray-border">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-text-pri">{course.teacherName || 'Sin asignar'}</span>
+                  {teachers.length > 0 && (
+                    <button
+                      onClick={() =>
+                        setReassigningCourse({
+                          id: course.courseId,
+                          name: course.courseName,
+                          subject: '',
+                          teacherId: '',
+                          teacherName: course.teacherName,
+                        })
+                      }
+                      className="p-1 text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 rounded transition-colors"
+                      title="Reasignar docente a este curso"
+                    >
+                      <Icon name="edit" size={12} />
+                    </button>
+                  )}
+                </div>
+              </td>
               <td className="px-2.5 py-2.5 border-b border-gray-border">{course.averages.literal}%</td>
               <td className="px-2.5 py-2.5 border-b border-gray-border">{course.averages.inferencial}%</td>
               <td className="px-2.5 py-2.5 border-b border-gray-border">{course.averages.critico}%</td>
@@ -102,6 +133,18 @@ export function InstitutionDashboard() {
           ))}
         </tbody>
       </TableWrap>
+
+      {/* Modal para Reasignar Docente al Aula */}
+      {reassigningCourse && (
+        <ReassignCourseTeacherModal
+          course={reassigningCourse}
+          teachers={teachers}
+          onClose={() => setReassigningCourse(null)}
+          onSaved={() => {
+            if (session) getInstitutionSummary(session.user.institutionId).then(setSummary);
+          }}
+        />
+      )}
     </div>
   );
 }

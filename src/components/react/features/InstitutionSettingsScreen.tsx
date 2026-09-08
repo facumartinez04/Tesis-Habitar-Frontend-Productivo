@@ -16,8 +16,11 @@ import {
   type InstitutionUser,
 } from '../../../services/institutionUsersService';
 import { getRetentionPolicy, purgeExpiredData, updateRetentionPolicy, type RetentionPolicy } from '../../../services/complianceService';
+import { listMyCourses } from '../../../services/courseService';
+import { AssignTeacherCoursesModal } from './AssignTeacherCoursesModal';
 import { confirmDestructive, showError } from '../../../lib/alerts';
 import type { ComprehensionAxis, EducationLevel, Institution } from '../../../types/institution';
+import type { Course } from '../../../types/activity';
 import type { Role } from '../../../types/auth';
 
 const ROLE_LABEL: Record<Role, string> = { docente: 'Docente', coordinador: 'Coordinador/a', admin: 'Admin' };
@@ -30,6 +33,8 @@ export function InstitutionSettingsScreen() {
 
   const [institution, setInstitution] = useState<Institution | null>(null);
   const [users, setUsers] = useState<InstitutionUser[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [assigningTeacher, setAssigningTeacher] = useState<InstitutionUser | null>(null);
   const [retention, setRetention] = useState<RetentionPolicy | null>(null);
 
   const [levels, setLevels] = useState<EducationLevel[]>([]);
@@ -45,15 +50,17 @@ export function InstitutionSettingsScreen() {
   async function refresh() {
     if (!session) return;
     const institutionId = session.user.institutionId;
-    const [inst, userList, retentionPolicy] = await Promise.all([
+    const [inst, userList, retentionPolicy, courseList] = await Promise.all([
       getInstitutionById(institutionId),
       listInstitutionUsers(institutionId),
       getRetentionPolicy(institutionId),
+      listMyCourses().catch(() => [] as Course[]),
     ]);
     setInstitution(inst);
     setUsers(userList);
     setRetention(retentionPolicy);
     setRetentionMonths(retentionPolicy.retentionMonths);
+    setCourses(courseList);
   }
 
   useEffect(() => {
@@ -233,6 +240,7 @@ export function InstitutionSettingsScreen() {
               <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Nombre</th>
               <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Email</th>
               <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Rol</th>
+              <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Aulas de Trabajo</th>
               <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Estado</th>
               <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Acciones</th>
             </tr>
@@ -240,7 +248,7 @@ export function InstitutionSettingsScreen() {
           <tbody>
             {users.map((user) => (
               <tr key={user.id}>
-                <td className="px-2.5 py-2.5 border-b border-gray-border">{user.name}</td>
+                <td className="px-2.5 py-2.5 border-b border-gray-border font-medium text-text-pri">{user.name}</td>
                 <td className="px-2.5 py-2.5 border-b border-gray-border text-text-sec">{user.email}</td>
                 <td className="px-2.5 py-2.5 border-b border-gray-border">
                   <select
@@ -254,13 +262,68 @@ export function InstitutionSettingsScreen() {
                   </select>
                 </td>
                 <td className="px-2.5 py-2.5 border-b border-gray-border">
+                  {user.role === 'docente' ? (
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {(() => {
+                        const assigned = courses.filter((c) => c.teacherId === user.id);
+                        if (assigned.length === 0) {
+                          return (
+                            <span className="text-[11px] text-text-sec italic">
+                              Sin aulas
+                            </span>
+                          );
+                        }
+                        return (
+                          <div className="flex flex-wrap gap-1 max-w-[220px]">
+                            {assigned.slice(0, 2).map((c) => (
+                              <span
+                                key={c.id}
+                                className="text-[10px] font-semibold text-emerald-900 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded truncate max-w-[100px]"
+                                title={`${c.name} (${c.subject})`}
+                              >
+                                {c.name}
+                              </span>
+                            ))}
+                            {assigned.length > 2 && (
+                              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded">
+                                +{assigned.length - 2}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })()}
+                      <button
+                        onClick={() => setAssigningTeacher(user)}
+                        className="p-1 text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 rounded transition-colors shrink-0"
+                        title="Editar aulas asignadas"
+                      >
+                        <Icon name="edit" size={12} />
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="text-[11px] text-text-sec">—</span>
+                  )}
+                </td>
+                <td className="px-2.5 py-2.5 border-b border-gray-border">
                   <Badge color={user.active ? 'green' : 'gray'}>{user.active ? 'Activo' : 'Desactivado'}</Badge>
                 </td>
                 <td className="px-2.5 py-2.5 border-b border-gray-border">
-                  <button onClick={() => handleToggleActive(user)} className="flex items-center gap-1 bg-white border border-gray-border rounded-[6px] px-2 py-1 text-[10.5px]">
-                    <Icon name={user.active ? 'lock' : 'check'} size={10} />
-                    {user.active ? 'Desactivar' : 'Reactivar'}
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    {user.role === 'docente' && (
+                      <button
+                        onClick={() => setAssigningTeacher(user)}
+                        className="flex items-center gap-1 bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 rounded-[6px] px-2 py-1 text-[10.5px] font-semibold transition-colors shrink-0"
+                        title="Asignar aulas a este docente"
+                      >
+                        <Icon name="school" size={11} />
+                        <span>Asignar Aulas</span>
+                      </button>
+                    )}
+                    <button onClick={() => handleToggleActive(user)} className="flex items-center gap-1 bg-white border border-gray-border rounded-[6px] px-2 py-1 text-[10.5px]">
+                      <Icon name={user.active ? 'lock' : 'check'} size={10} />
+                      {user.active ? 'Desactivar' : 'Reactivar'}
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -296,6 +359,19 @@ export function InstitutionSettingsScreen() {
           {purging ? 'Purgando…' : 'Ejecutar purga ahora'}
         </button>
       </Card>
+
+      {/* Modal de Asignación de Aulas a Docente */}
+      {assigningTeacher && (
+        <AssignTeacherCoursesModal
+          teacher={assigningTeacher}
+          availableCourses={courses}
+          onClose={() => setAssigningTeacher(null)}
+          onSaved={() => {
+            refresh();
+            showToast('Aulas asignadas correctamente al docente');
+          }}
+        />
+      )}
     </div>
   );
 }

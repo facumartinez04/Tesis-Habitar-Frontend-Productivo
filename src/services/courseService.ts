@@ -19,3 +19,22 @@ export async function createCourse(input: CreateCourseInput): Promise<Course> {
     body: input,
   });
 }
+
+export async function assignCourseTeacher(courseId: string, teacherId: string): Promise<Course> {
+  return apiFetch<Course>(`/courses/${courseId}/teacher`, {
+    method: 'PATCH',
+    body: { teacherId },
+  });
+}
+
+export async function setTeacherCourses(teacherId: string, courseIds: string[]): Promise<Course[]> {
+  return apiFetch<Course[]>(`/courses/teachers/${teacherId}/assignments`, {
+    method: 'PUT',
+    body: { courseIds },
+  });
+}
+
+export async function getTeacherCourses(teacherId: string): Promise<Course[]> {
+  return apiFetch<Course[]>(`/courses/teachers/${teacherId}/assignments`);
+}
+
