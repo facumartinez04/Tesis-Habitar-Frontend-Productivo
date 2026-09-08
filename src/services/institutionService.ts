@@ -1,4 +1,11 @@
-import type { ComprehensionAxis, EducationLevel, Institution, InstitutionStatus } from '../types/institution';
+import type {
+  AiKeySource,
+  AiProvider,
+  ComprehensionAxis,
+  EducationLevel,
+  Institution,
+  InstitutionStatus,
+} from '../types/institution';
 import { apiFetch } from '../lib/apiClient';
 import { toLower, toUpper } from '../lib/caseAdapters';
 
@@ -19,6 +26,11 @@ interface BackendInstitution {
   coordinatorEmail: string;
   levels: string[];
   enabledAxes: string[];
+  aiProvider?: string;
+  aiKeySource?: string;
+  aiCustomApiKeyMasked?: string | null;
+  hasCustomApiKey?: boolean;
+  aiModel?: string | null;
   createdAt: string;
 }
 
@@ -32,6 +44,11 @@ function toInstitution(backend: BackendInstitution): Institution {
     coordinatorEmail: backend.coordinatorEmail,
     levels: backend.levels.map((level) => toLower<EducationLevel>(level)),
     enabledAxes: (backend.enabledAxes ?? []).map((axis) => toLower<ComprehensionAxis>(axis)),
+    aiProvider: backend.aiProvider ? toLower<AiProvider>(backend.aiProvider) : 'deepseek',
+    aiKeySource: backend.aiKeySource ? toLower<AiKeySource>(backend.aiKeySource) : 'platform',
+    aiCustomApiKeyMasked: backend.aiCustomApiKeyMasked ?? null,
+    hasCustomApiKey: Boolean(backend.hasCustomApiKey),
+    aiModel: backend.aiModel ?? null,
     createdAt: backend.createdAt,
   };
 }
@@ -65,15 +82,50 @@ export async function getInstitutionById(institutionId: string): Promise<Institu
   return toInstitution(backend);
 }
 
+export interface UpdateInstitutionConfigPayload {
+  levels?: EducationLevel[];
+  enabledAxes?: ComprehensionAxis[];
+  aiProvider?: AiProvider;
+  aiKeySource?: AiKeySource;
+  aiCustomApiKey?: string | null;
+  aiModel?: string | null;
+}
+
 export async function updateInstitutionConfig(
   institutionId: string,
-  input: { levels?: EducationLevel[]; enabledAxes?: ComprehensionAxis[] },
-): Promise<void> {
-  await apiFetch(`/institutions/${institutionId}/config`, {
+  input: UpdateInstitutionConfigPayload,
+): Promise<Institution> {
+  const backend = await apiFetch<BackendInstitution>(`/institutions/${institutionId}/config`, {
     method: 'PATCH',
     body: {
       levels: input.levels?.map((l) => toUpper(l)),
       enabledAxes: input.enabledAxes?.map((a) => toUpper(a)),
+      aiProvider: input.aiProvider ? toUpper(input.aiProvider) : undefined,
+      aiKeySource: input.aiKeySource ? toUpper(input.aiKeySource) : undefined,
+      aiCustomApiKey: input.aiCustomApiKey,
+      aiModel: input.aiModel,
+    },
+  });
+  return toInstitution(backend);
+}
+
+export async function testAiConfig(
+  institutionId: string,
+  input: {
+    provider: AiProvider;
+    keySource: AiKeySource;
+    apiKey?: string | null;
+    model?: string | null;
+  },
+): Promise<{ success: boolean; modelUsed?: string; message?: string; error?: string }> {
+  return apiFetch(`/institutions/${institutionId}/ai-config/test`, {
+    method: 'POST',
+    body: {
+      provider: toUpper(input.provider),
+      keySource: toUpper(input.keySource),
+      apiKey: input.apiKey,
+      model: input.model,
     },
   });
 }
+

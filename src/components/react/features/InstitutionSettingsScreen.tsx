@@ -7,7 +7,7 @@ import { Toast } from '../ui/Toast';
 import { Skeleton, SkeletonCard } from '../ui/Skeleton';
 import { useAuthGuard } from '../../../hooks/useAuthGuard';
 import { useToast } from '../../../hooks/useToast';
-import { getInstitutionById, updateInstitutionConfig } from '../../../services/institutionService';
+import { getInstitutionById, updateInstitutionConfig, testAiConfig } from '../../../services/institutionService';
 import {
   inviteInstitutionUser,
   listInstitutionUsers,
@@ -19,13 +19,14 @@ import { getRetentionPolicy, purgeExpiredData, updateRetentionPolicy, type Reten
 import { listMyCourses } from '../../../services/courseService';
 import { AssignTeacherCoursesModal } from './AssignTeacherCoursesModal';
 import { confirmDestructive, showError } from '../../../lib/alerts';
-import type { ComprehensionAxis, EducationLevel, Institution } from '../../../types/institution';
+import type { ComprehensionAxis, EducationLevel, Institution, AiProvider, AiKeySource } from '../../../types/institution';
 import type { Course } from '../../../types/activity';
 import type { Role } from '../../../types/auth';
 
 const ROLE_LABEL: Record<Role, string> = { docente: 'Docente', coordinador: 'Coordinador/a', admin: 'Admin' };
 const LEVEL_LABEL: Record<EducationLevel, string> = { primario: 'Primario', secundario: 'Secundario' };
 const AXIS_LABEL: Record<ComprehensionAxis, string> = { literal: 'Literal', inferencial: 'Inferencial', critico: 'Crítico' };
+
 
 export function InstitutionSettingsScreen() {
   const session = useAuthGuard(['coordinador', 'admin']);
@@ -40,6 +41,14 @@ export function InstitutionSettingsScreen() {
   const [levels, setLevels] = useState<EducationLevel[]>([]);
   const [axes, setAxes] = useState<ComprehensionAxis[]>([]);
   const [savingConfig, setSavingConfig] = useState(false);
+
+  const [aiProvider, setAiProvider] = useState<AiProvider>('deepseek');
+  const [aiKeySource, setAiKeySource] = useState<AiKeySource>('platform');
+  const [aiCustomApiKey, setAiCustomApiKey] = useState('');
+  const [aiModel, setAiModel] = useState('');
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [testingAi, setTestingAi] = useState(false);
+  const [testResult, setTestResult] = useState<{ success: boolean; message?: string; error?: string } | null>(null);
 
   const [inviteForm, setInviteForm] = useState({ name: '', email: '', role: 'docente' as Role });
   const [inviting, setInviting] = useState(false);
@@ -65,13 +74,17 @@ export function InstitutionSettingsScreen() {
 
   useEffect(() => {
     refresh();
-
   }, [session]);
 
   useEffect(() => {
     if (institution) {
       setLevels(institution.levels);
       setAxes(institution.enabledAxes);
+      setAiProvider(institution.aiProvider ?? 'deepseek');
+      setAiKeySource(institution.aiKeySource ?? 'platform');
+      setAiModel(institution.aiModel ?? (institution.aiProvider === 'openai' ? 'gpt-4o-mini' : 'deepseek-chat'));
+      setAiCustomApiKey('');
+      setTestResult(null);
     }
   }, [institution]);
 
@@ -83,10 +96,46 @@ export function InstitutionSettingsScreen() {
     if (!session) return;
     setSavingConfig(true);
     try {
-      await updateInstitutionConfig(session.user.institutionId, { levels, enabledAxes: axes });
-      showToast('Configuración actualizada');
+      const updated = await updateInstitutionConfig(session.user.institutionId, {
+        levels,
+        enabledAxes: axes,
+        aiProvider,
+        aiKeySource,
+        aiCustomApiKey: aiCustomApiKey.trim() ? aiCustomApiKey.trim() : undefined,
+        aiModel: aiModel.trim() ? aiModel.trim() : undefined,
+      });
+      setInstitution(updated);
+      setAiCustomApiKey('');
+      showToast('Configuración institucional e IA guardada');
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Error al guardar la configuración');
     } finally {
       setSavingConfig(false);
+    }
+  }
+
+  async function handleTestAi() {
+    if (!session || !institution) return;
+    setTestingAi(true);
+    setTestResult(null);
+    try {
+      const res = await testAiConfig(session.user.institutionId, {
+        provider: aiProvider,
+        keySource: aiKeySource,
+        apiKey: aiCustomApiKey.trim() || undefined,
+        model: aiModel.trim() || undefined,
+      });
+      setTestResult(res);
+      if (res.success) {
+        showToast('¡Prueba de conexión exitosa con la IA!');
+      }
+    } catch (err) {
+      setTestResult({
+        success: false,
+        error: err instanceof Error ? err.message : 'Fallo en la prueba de conexión',
+      });
+    } finally {
+      setTestingAi(false);
     }
   }
 
@@ -204,6 +253,258 @@ export function InstitutionSettingsScreen() {
           {savingConfig ? 'Guardando…' : 'Guardar configuración'}
         </button>
       </Card>
+
+      {/* Tarjeta de Configuración de IA (DeepSeek / OpenAI / BYOK) */}
+      <Card>
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-gray-100">
+          <div>
+            <div className="text-[13px] font-semibold text-text-pri flex items-center gap-1.5">
+              <Icon name="sparkles" size={14} className="text-green-dark" />
+              Inteligencia Artificial y Modelos Pedagógicos
+            </div>
+            <div className="text-[11.5px] text-text-sec mt-0.5">
+              Motor para la generación de actividades de comprensión lectora (ejes literal, inferencial y crítico).
+            </div>
+          </div>
+          <Badge color={aiProvider === 'openai' ? 'blue' : 'green'}>
+            {aiProvider === 'openai' ? 'OpenAI (ChatGPT)' : 'DeepSeek'} · {aiKeySource === 'custom' ? 'Clave Propia (BYOK)' : 'Clave Habitar'}
+          </Badge>
+        </div>
+
+        <div className="space-y-4 pt-1">
+          {/* Selector de Proveedor */}
+          <div>
+            <div className="text-[11px] font-semibold text-text-sec uppercase tracking-wider mb-2">
+              1. Proveedor de Inteligencia Artificial
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setAiProvider('deepseek');
+                  if (!aiModel || aiModel.startsWith('gpt')) setAiModel('deepseek-chat');
+                  setTestResult(null);
+                }}
+                className={`p-3 rounded-lg border text-left transition-all ${
+                  aiProvider === 'deepseek'
+                    ? 'border-green-dark bg-green-50/50 shadow-sm'
+                    : 'border-gray-border bg-white hover:bg-gray-50'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-semibold text-[13px] text-text-pri">DeepSeek</span>
+                  {aiProvider === 'deepseek' && (
+                    <span className="text-[10.5px] bg-green-dark text-white px-2 py-0.5 rounded-full font-medium">Activo</span>
+                  )}
+                </div>
+                <p className="text-[11.5px] text-text-sec">
+                  Modelo con alta capacidad de razonamiento y comprensión textual en español rioplatense.
+                </p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setAiProvider('openai');
+                  if (!aiModel || aiModel.startsWith('deepseek')) setAiModel('gpt-4o-mini');
+                  setTestResult(null);
+                }}
+                className={`p-3 rounded-lg border text-left transition-all ${
+                  aiProvider === 'openai'
+                    ? 'border-blue-600 bg-blue-50/50 shadow-sm'
+                    : 'border-gray-border bg-white hover:bg-gray-50'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-semibold text-[13px] text-text-pri">OpenAI (ChatGPT)</span>
+                  {aiProvider === 'openai' && (
+                    <span className="text-[10.5px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-medium">Activo</span>
+                  )}
+                </div>
+                <p className="text-[11.5px] text-text-sec">
+                  Modelos GPT-4o-mini y GPT-4o reconocidos mundialmente por velocidad y rigor pedagógico.
+                </p>
+              </button>
+            </div>
+          </div>
+
+          {/* Origen de la Clave */}
+          <div>
+            <div className="text-[11px] font-semibold text-text-sec uppercase tracking-wider mb-2">
+              2. Origen de la Clave de API (Key Source)
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <label
+                className={`p-3 rounded-lg border cursor-pointer transition-all flex items-start gap-2.5 ${
+                  aiKeySource === 'platform'
+                    ? 'border-green-dark bg-green-50/40'
+                    : 'border-gray-border bg-white hover:bg-gray-50'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="keySource"
+                  checked={aiKeySource === 'platform'}
+                  onChange={() => {
+                    setAiKeySource('platform');
+                    setTestResult(null);
+                  }}
+                  className="mt-0.5 text-green-dark focus:ring-green-dark"
+                />
+                <div>
+                  <div className="font-medium text-[12.5px] text-text-pri">Clave Central de Habitar (Servidor)</div>
+                  <div className="text-[11.5px] text-text-sec mt-0.5">
+                    Utiliza la infraestructura central. El consumo se descuenta de la cuota mensual del plan contratado.
+                  </div>
+                </div>
+              </label>
+
+              <label
+                className={`p-3 rounded-lg border cursor-pointer transition-all flex items-start gap-2.5 ${
+                  aiKeySource === 'custom'
+                    ? 'border-green-dark bg-green-50/40'
+                    : 'border-gray-border bg-white hover:bg-gray-50'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="keySource"
+                  checked={aiKeySource === 'custom'}
+                  onChange={() => {
+                    setAiKeySource('custom');
+                    setTestResult(null);
+                  }}
+                  className="mt-0.5 text-green-dark focus:ring-green-dark"
+                />
+                <div>
+                  <div className="font-medium text-[12.5px] text-text-pri">Clave Propia de la Escuela (BYOK)</div>
+                  <div className="text-[11.5px] text-text-sec mt-0.5">
+                    Tu colegio usa su propia API Key de OpenAI o DeepSeek. No consume cuotas de la plataforma Habitar.
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          {/* Configuración de Clave Propia */}
+          {aiKeySource === 'custom' && (
+            <div className="bg-surface p-3.5 rounded-lg border border-gray-border space-y-3">
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-[11.5px] font-medium text-text-pri">
+                    API Key de {aiProvider === 'openai' ? 'OpenAI' : 'DeepSeek'}
+                  </label>
+                  {institution?.hasCustomApiKey && (
+                    <span className="text-[10.5px] text-text-sec font-mono bg-white px-2 py-0.5 rounded border border-gray-border">
+                      Clave guardada: {institution.aiCustomApiKeyMasked}
+                    </span>
+                  )}
+                </div>
+                <div className="relative">
+                  <input
+                    type={showApiKey ? 'text' : 'password'}
+                    value={aiCustomApiKey}
+                    onChange={(e) => {
+                      setAiCustomApiKey(e.target.value);
+                      setTestResult(null);
+                    }}
+                    placeholder={
+                      institution?.hasCustomApiKey
+                        ? 'Dejá vacío para conservar la clave actual, o ingresá una nueva'
+                        : 'Ingresá tu clave de API (sk-...)'
+                    }
+                    className="w-full pr-20 pl-3 py-2 border border-gray-border rounded-md text-[12px] font-mono bg-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowApiKey(!showApiKey)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-text-sec hover:text-text-pri px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded"
+                  >
+                    {showApiKey ? 'Ocultar' : 'Mostrar'}
+                  </button>
+                </div>
+                <p className="text-[10.5px] text-text-ter mt-1">
+                  Tu clave se almacena de forma cifrada en la base de datos y nunca se comparte con terceros.
+                </p>
+              </div>
+
+              {/* Selector de Modelo */}
+              <div>
+                <label className="text-[11.5px] font-medium text-text-pri block mb-1">
+                  Modelo Pedagógico Asignado
+                </label>
+                <select
+                  value={aiModel}
+                  onChange={(e) => {
+                    setAiModel(e.target.value);
+                    setTestResult(null);
+                  }}
+                  className="form-select w-full border border-gray-border rounded-md px-3 py-1.5 text-[12px] bg-white"
+                >
+                  {aiProvider === 'openai' ? (
+                    <>
+                      <option value="gpt-4o-mini">gpt-4o-mini (Recomendado: balance óptimo de velocidad y costo)</option>
+                      <option value="gpt-4o">gpt-4o (Máxima capacidad de razonamiento profundo)</option>
+                      <option value="gpt-3.5-turbo">gpt-3.5-turbo (Legacy)</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="deepseek-chat">deepseek-chat (Recomendado: alta fluidez y precisión pedagógica)</option>
+                      <option value="deepseek-reasoner">deepseek-reasoner (Modo razonamiento reflexivo)</option>
+                    </>
+                  )}
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* Resultado del test */}
+          {testResult && (
+            <div
+              className={`p-3 rounded-lg border text-[12px] flex items-start gap-2 ${
+                testResult.success
+                  ? 'bg-green-50 border-green-200 text-green-900'
+                  : 'bg-red-50 border-red-200 text-red-900'
+              }`}
+            >
+              <Icon
+                name={testResult.success ? 'check' : 'alert-circle'}
+                size={16}
+                className={`shrink-0 mt-0.5 ${testResult.success ? 'text-green-600' : 'text-red-600'}`}
+              />
+              <div>
+                <span className="font-semibold block">
+                  {testResult.success ? 'Validación exitosa' : 'Error en la conexión'}
+                </span>
+                <span>{testResult.success ? testResult.message : testResult.error}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Botones de acción */}
+          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={handleTestAi}
+              disabled={testingAi}
+              className="flex items-center gap-1.5 bg-surface hover:bg-gray-100 text-text-pri border border-gray-border text-[11.5px] font-medium px-3 py-1.5 rounded-md transition-colors disabled:opacity-50"
+            >
+              <Icon name="refresh-cw" size={12} className={testingAi ? 'animate-spin' : ''} />
+              {testingAi ? 'Probando conexión…' : 'Probar conexión con la IA'}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSaveConfig}
+              disabled={savingConfig}
+              className="bg-green-dark hover:bg-green-hover text-white text-[11.5px] font-medium px-3.5 py-1.5 rounded-md transition-colors disabled:opacity-50"
+            >
+              {savingConfig ? 'Guardando…' : 'Guardar configuración'}
+            </button>
+          </div>
+        </div>
+      </Card>
+
 
       <Card>
         <div className="text-[12.5px] font-medium mb-3">CU-05-05 · Usuarios y roles de la institución</div>
