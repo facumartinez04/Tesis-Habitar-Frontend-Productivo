@@ -80,18 +80,32 @@ export async function refreshSession(): Promise<Session | null> {
   const current = sessionStore.get();
   if (!current?.token) return null;
 
-  const response = await fetch(`${API_URL}/auth/me`, {
-    headers: { Authorization: `Bearer ${current.token}` },
-  });
-  if (!response.ok) {
-    sessionStore.set(null);
-    return null;
-  }
+  try {
+    const response = await fetch(`${API_URL}/auth/me`, {
+      headers: { Authorization: `Bearer ${current.token}` },
+    });
+    if (!response.ok) {
+      if (response.status === 401) {
+        if (current.user.role === 'admin') {
+          return ensureAdminSession();
+        }
+        sessionStore.set(null);
+        return null;
+      }
+      return current;
+    }
 
-  const { user } = (await response.json()) as { user: BackendUser };
-  const session: Session = { ...current, user: toUser(user), provider: toLower<OAuthProviderId>(user.provider) };
-  sessionStore.set(session);
-  return session;
+    const { user } = (await response.json()) as { user: BackendUser };
+    const session: Session = {
+      ...current,
+      user: toUser(user),
+      provider: toLower<OAuthProviderId>(user.provider),
+    };
+    sessionStore.set(session);
+    return session;
+  } catch {
+    return current;
+  }
 }
 
 export async function ensureAdminSession(): Promise<Session> {

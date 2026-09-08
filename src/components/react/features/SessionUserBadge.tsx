@@ -3,6 +3,8 @@ import { LogoutButton } from './LogoutButton';
 
 const roleBadgeLabel: Record<string, string> = {
   coordinador: 'Coordinador/a',
+  director: 'Director/a',
+  docente: 'Docente',
   admin: 'Admin',
 };
 
@@ -13,7 +15,9 @@ export function SessionUserBadge() {
     return <div className="w-[30px] h-[30px] rounded-full bg-gray-bg animate-pulse" />;
   }
 
-  const roleBadge = roleBadgeLabel[session.user.role];
+  const roleBadge = session.impersonatedRole
+    ? `Admin (${roleBadgeLabel[session.impersonatedRole] || session.impersonatedRole})`
+    : roleBadgeLabel[session.user.role] || session.user.role;
 
   return (
     <div className="flex items-center gap-2 sm:gap-3 shrink-0">
