@@ -70,6 +70,114 @@ export async function listPlans(includeInactive = false): Promise<SubscriptionPl
   return apiFetch<SubscriptionPlan[]>(`/subscriptions/plans${includeInactive ? '?includeInactive=true' : ''}`);
 }
 
+export const DEFAULT_PUBLIC_PLANS: SubscriptionPlan[] = [
+  {
+    id: 'piloto',
+    name: 'Piloto Gratuito',
+    description: 'Plan inicial sin costo para validación institucional durante 60 días en escuelas.',
+    monthlyPriceArs: 0,
+    annualPriceArs: 0,
+    maxUsers: 15,
+    maxStudents: 150,
+    maxCourses: 8,
+    storageGb: 5,
+    badge: 'Piloto 60 Días',
+    isActive: true,
+    features: {
+      hasAiAnalytics: false,
+      hasEarlyAlerts: true,
+      hasArcoCompliance: true,
+      hasCustomDomain: false,
+      hasApiAccess: false,
+      hasSlaSupport: false,
+      hasExportReports: true,
+      bullets: [
+        'Hasta 15 docentes',
+        '150 alumnos incluidos',
+        '8 aulas físicas con QR permanente',
+        '5 GB de almacenamiento',
+        'Alertas tempranas de asistencia y comprensión',
+        'Cumplimiento normativo ARCO y consentimiento',
+      ],
+    },
+  },
+  {
+    id: 'estandar',
+    name: 'Plan Estándar',
+    description: 'Ideal para escuelas medianas que buscan digitalizar y elevar el seguimiento pedagógico.',
+    monthlyPriceArs: 120000,
+    annualPriceArs: 1200000,
+    maxUsers: 50,
+    maxStudents: 600,
+    maxCourses: 25,
+    storageGb: 20,
+    badge: 'Más Elegido',
+    isActive: true,
+    features: {
+      hasAiAnalytics: false,
+      hasEarlyAlerts: true,
+      hasArcoCompliance: true,
+      hasCustomDomain: false,
+      hasApiAccess: false,
+      hasSlaSupport: true,
+      hasExportReports: true,
+      bullets: [
+        'Hasta 50 docentes',
+        '600 alumnos incluidos',
+        '25 aulas físicas con QR permanente',
+        '20 GB de almacenamiento',
+        'Exportación completa a Excel y reportes PDF',
+        'Soporte prioritario por email y mesa de ayuda',
+        'Alertas tempranas avanzadas y comparador de períodos',
+      ],
+    },
+  },
+  {
+    id: 'premium',
+    name: 'Premium Institucional',
+    description: 'Para colegios de alta exigencia que requieren analítica predictiva de IA y máxima escala.',
+    monthlyPriceArs: 220000,
+    annualPriceArs: 2200000,
+    maxUsers: 150,
+    maxStudents: 1800,
+    maxCourses: 80,
+    storageGb: 100,
+    badge: 'Recomendado',
+    isActive: true,
+    features: {
+      hasAiAnalytics: true,
+      hasEarlyAlerts: true,
+      hasArcoCompliance: true,
+      hasCustomDomain: true,
+      hasApiAccess: true,
+      hasSlaSupport: true,
+      hasExportReports: true,
+      bullets: [
+        'Docentes ilimitados (hasta 150)',
+        '1.800 alumnos incluidos',
+        '80 aulas físicas con QR permanente',
+        '100 GB de almacenamiento',
+        'Analítica predictiva con IA en 3 ejes cognitivos',
+        'Dominio institucional personalizado (Marca Blanca)',
+        'Acceso a API REST y Webhooks para SIU/Sistemas',
+        'SLA con soporte telefónico y asesor pedagógico dedicado',
+      ],
+    },
+  },
+];
+
+export async function listPublicPlans(): Promise<SubscriptionPlan[]> {
+  try {
+    const plans = await apiFetch<SubscriptionPlan[]>('/subscriptions/plans/public');
+    if (Array.isArray(plans) && plans.length > 0) {
+      return plans.filter((p) => p.isActive);
+    }
+    return DEFAULT_PUBLIC_PLANS;
+  } catch {
+    return DEFAULT_PUBLIC_PLANS;
+  }
+}
+
 export async function createPlan(input: CreatePlanInput): Promise<SubscriptionPlan> {
   return apiFetch<SubscriptionPlan>('/subscriptions/plans', {
     method: 'POST',

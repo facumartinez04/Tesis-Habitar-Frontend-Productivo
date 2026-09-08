@@ -1,0 +1,858 @@
+import { useEffect, useState } from 'react';
+import { Icon } from '../ui/Icon';
+import { listPublicPlans, DEFAULT_PUBLIC_PLANS } from '../../../services/subscriptionService';
+import type { SubscriptionPlan } from '../../../types/subscription';
+import { sessionStore } from '../../../store/sessionStore';
+import { dashboardPathForRole } from '../../../services/authService';
+
+export function LandingPage() {
+  const [plans, setPlans] = useState<SubscriptionPlan[]>(DEFAULT_PUBLIC_PLANS);
+  const [billingCycle, setBillingCycle] = useState<'MONTHLY' | 'ANNUAL'>('ANNUAL');
+  const [activeAxisTab, setActiveAxisTab] = useState<'literal' | 'inferencial' | 'critico'>('inferencial');
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [session, setSession] = useState(sessionStore.get());
+
+  useEffect(() => {
+    setSession(sessionStore.get());
+    listPublicPlans().then((data) => {
+      if (data && data.length > 0) {
+        setPlans(data);
+      }
+    });
+  }, []);
+
+  function formatPrice(plan: SubscriptionPlan) {
+    if (plan.monthlyPriceArs === 0) return 'Gratis';
+    if (billingCycle === 'ANNUAL') {
+      const price = plan.annualPriceArs || plan.monthlyPriceArs * 10;
+      return `$${price.toLocaleString('es-AR')}`;
+    }
+    return `$${plan.monthlyPriceArs.toLocaleString('es-AR')}`;
+  }
+
+  function formatCycleLabel(plan: SubscriptionPlan) {
+    if (plan.monthlyPriceArs === 0) return 'durante 60 días';
+    if (billingCycle === 'ANNUAL') return '/ año (facturación anual)';
+    return '/ mes (facturación mensual)';
+  }
+
+  const axisExamples = {
+    literal: {
+      title: 'Eje Literal — Recuperación explícita de información',
+      description: 'Evalúa la capacidad de ubicar hechos, personajes, cronología y datos textuales tal como fueron formulados en la lectura.',
+      sampleQuestion: 'Según el texto sobre biodiversidad, ¿cuál es la causa principal de la ruptura en cadena de los ecosistemas?',
+      sampleOptions: [
+        'A) El aumento estacional de las lluvias en zonas boscosas.',
+        'B) La desaparición de una especie que altera las interdependencias ecológicas (Correcta).',
+        'C) La rotación de cultivos en áreas agrícolas protegidas.',
+        'D) El ciclo migratorio natural de las aves rapaces.',
+      ],
+      cognitiveBenefit: 'Fortalece la lectura atenta, la extracción de datos concretos y la memoria de trabajo.',
+    },
+    inferencial: {
+      title: 'Eje Inferencial — Lectura entre líneas y deducción contextual',
+      description: 'Desafía al estudiante a deducir intenciones, relaciones causales no explícitas y significado de vocabulario por contexto.',
+      sampleQuestion: '¿Qué se puede inferir respecto a la relación entre la biodiversidad y la economía descrita por el autor?',
+      sampleOptions: [
+        'A) La conservación ecológica solo genera gastos innecesarios para el Estado.',
+        'B) Los servicios ecosistémicos sustentan indirectamente actividades productivas humanas (Correcta).',
+        'C) Solo los países industrializados pueden permitirse cuidar sus recursos naturales.',
+        'D) Las economías modernas son totalmente independientes del medio ambiente.',
+      ],
+      cognitiveBenefit: 'Desarrolla el razonamiento inductivo/deductivo y la integración profunda de ideas.',
+    },
+    critico: {
+      title: 'Eje Crítico — Juicio fundamentado y pensamiento reflexivo',
+      description: 'Estimula la argumentación, la identificación de sesgos, la contrastación de perspectivas y la postura ética del alumno.',
+      sampleQuestion: 'A partir de la tesis del texto, ¿cuál de los siguientes argumentos fundamenta mejor una política de protección ambiental comunitaria?',
+      sampleOptions: [
+        'A) Porque la preservación ecológica es una responsabilidad compartida de impacto ético y generacional (Correcta).',
+        'B) Porque impone sanciones monetarias a las comunidades vecinas.',
+        'C) Porque evita que otras regiones utilicen los recursos hídricos.',
+        'D) Porque garantiza que los precios de los productos no sufran variaciones.',
+      ],
+      cognitiveBenefit: 'Fomenta el pensamiento crítico, la toma de postura reflexiva y la fundamentación de ideas.',
+    },
+  };
+
+  const faqs = [
+    {
+      q: '¿Cómo funciona el código QR permanente del aula física?',
+      a: 'Cada aula creada en Habitar tiene un código QR único e inmutable (por ejemplo: AULA-6A-781A). El colegio lo imprime una sola vez y lo coloca en la puerta o pizarrón del salón. La docente abre la app desde su celular o laptop, escanea el QR en segundos y el sistema la conecta automáticamente a ese espacio para cargar lecturas y vincular actividades.',
+    },
+    {
+      q: '¿Qué sucede si no hay buena conexión a internet en la escuela?',
+      a: 'Habitar está diseñada como Progressive Web App (PWA) con Service Worker integrado. Los textos de lectura y cuestionarios precargados pueden utilizarse sin interrupciones incluso ante cortes temporales de red, sincronizando los resultados una vez recuperada la conexión.',
+    },
+    {
+      q: '¿Cómo genera la IA las preguntas en los tres ejes cognitivos?',
+      a: 'El docente puede pegar un texto, subir un archivo (.txt / .md) o importar desde Google Drive. Nuestro motor de IA pedagógica analiza la estructura del texto y formula preguntas calibradas para los tres ejes: Literal, Inferencial y Crítico. El docente tiene control total: puede editar, agregar o ajustar cualquier pregunta antes de publicarla.',
+    },
+    {
+      q: '¿Cómo protege Habitar los datos de los estudiantes (Normativa ARCO)?',
+      a: 'La privacidad es nuestro pilar fundamental. Cumplimos con la Ley de Protección de Datos Personales, contamos con módulo de consentimiento informado para tutores legales y herramientas nativas para el ejercicio de los derechos ARCO (Acceso, Rectificación, Cancelación y Oposición), con trazabilidad y cifrado.',
+    },
+    {
+      q: '¿Cuánto dura el Piloto Gratuito y qué incluye?',
+      a: 'El Piloto Gratuito tiene una vigencia de 60 días completos para tu institución. Incluye hasta 15 docentes, 150 alumnos, 8 aulas físicas con QR permanente, alertas tempranas y exportación de reportes, sin costo ni compromiso.',
+    },
+    {
+      q: '¿Se pueden personalizar los cupos y módulos para nuestra institución?',
+      a: '¡Sí! Desde el panel de administración de Habitar podemos adaptar planes a medida para colegios de gran tamaño, federaciones o distritos escolares, ajustando cupos de alumnos, almacenamiento, dominio propio de marca blanca e integración con sistemas de gestión escolar.',
+    },
+  ];
+
+  return (
+    <div className="min-h-screen bg-white text-text-pri selection:bg-emerald-100 selection:text-emerald-900 font-sans">
+      {/* 1. TOP NAVBAR */}
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-border/80 transition-all">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <a href="/" className="flex items-center gap-3 group">
+            <div className="w-9 h-9 rounded-xl overflow-hidden border border-emerald-200 shadow-sm flex items-center justify-center bg-emerald-50 shrink-0">
+              <img src="/logo-habitar.jpg" alt="Habitar Logo" className="w-full h-full object-cover" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xl font-bold tracking-tight text-text-pri leading-none">
+                Habi<span className="text-emerald-700">tar</span>
+              </span>
+              <span className="text-[10px] text-text-sec uppercase tracking-widest font-semibold mt-0.5">
+                Comprensión Lectora & IA
+              </span>
+            </div>
+          </a>
+
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center gap-7 text-[13px] font-medium text-text-sec">
+            <a href="#ejes" className="hover:text-emerald-700 transition-colors">3 Ejes Cognitivos</a>
+            <a href="#aulas-qr" className="hover:text-emerald-700 transition-colors">Aulas & QR Fijo</a>
+            <a href="#analitica" className="hover:text-emerald-700 transition-colors">Analítica Directiva</a>
+            <a href="#precios" className="hover:text-emerald-700 transition-colors">Planes & Precios</a>
+            <a href="#faq" className="hover:text-emerald-700 transition-colors">Preguntas Frecuentes</a>
+          </nav>
+
+          {/* Header Action Buttons */}
+          <div className="flex items-center gap-3">
+            {session ? (
+              <a
+                href={dashboardPathForRole(session.user.role)}
+                className="flex items-center gap-2 bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition-all"
+              >
+                <div className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+                Ir a mi Panel ({session.user.role})
+                <Icon name="arrowRight" size={13} />
+              </a>
+            ) : (
+              <>
+                <a
+                  href="/login"
+                  className="text-xs font-semibold text-text-pri hover:text-emerald-700 px-3 py-2 rounded-lg hover:bg-surface transition-colors"
+                >
+                  Iniciar Sesión
+                </a>
+                <a
+                  href="#precios"
+                  className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold px-4 py-2 rounded-lg shadow-sm hover:shadow transition-all flex items-center gap-1.5"
+                >
+                  <span>Piloto Gratis</span>
+                  <Icon name="arrowRight" size={12} />
+                </a>
+              </>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* 2. HERO SECTION */}
+      <section className="relative overflow-hidden pt-12 pb-20 lg:pt-20 lg:pb-28 bg-gradient-to-b from-emerald-50/40 via-white to-white">
+        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(#059669_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.07]" />
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+            
+            {/* Hero Left Column */}
+            <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 bg-emerald-100/80 border border-emerald-300/80 rounded-full px-3.5 py-1 text-[11.5px] font-semibold text-emerald-900 shadow-sm">
+                <Icon name="sparkles" size={13} className="text-emerald-700" />
+                <span>Validado por Expertos Pedagógicos & Modelo Financiero Sostenible</span>
+              </div>
+
+              <h1 className="text-3xl sm:text-5xl lg:text-[52px] font-extrabold text-text-pri tracking-tight leading-[1.15]">
+                Potenciá la <span className="text-emerald-700 underline decoration-emerald-300 underline-offset-8">comprensión lectora</span> con IA en tu institución.
+              </h1>
+
+              <p className="text-base sm:text-lg text-text-sec leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                La plataforma integral para escuelas primarias y secundarias: evalúa los tres ejes cognitivos (<strong>Literal</strong>, <strong>Inferencial</strong> y <strong>Crítico</strong>), conecta aulas físicas con <strong>códigos QR permanentes</strong> y genera <strong>analítica en tiempo real</strong> para directivos y docentes.
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5 pt-2">
+                <a
+                  href="#precios"
+                  className="w-full sm:w-auto bg-emerald-700 hover:bg-emerald-800 text-white px-6 py-3.5 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                >
+                  <Icon name="zap" size={16} />
+                  <span>Comenzar Piloto Gratuito (60 días)</span>
+                </a>
+                <a
+                  href="#aulas-qr"
+                  className="w-full sm:w-auto bg-white border border-gray-border hover:border-emerald-400 hover:bg-emerald-50/50 text-text-pri px-5 py-3.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 shadow-sm"
+                >
+                  <Icon name="qrCode" size={16} className="text-emerald-700" />
+                  <span>Aulas con QR Permanente</span>
+                </a>
+              </div>
+
+              {/* Trust Badges */}
+              <div className="pt-6 border-t border-gray-border/60 grid grid-cols-3 gap-4 max-w-lg mx-auto lg:mx-0 text-left">
+                <div>
+                  <div className="text-xl sm:text-2xl font-bold text-emerald-800">3 Ejes</div>
+                  <div className="text-[11px] text-text-sec font-medium leading-tight mt-0.5">Literal, Inferencial y Crítico</div>
+                </div>
+                <div>
+                  <div className="text-xl sm:text-2xl font-bold text-emerald-800">100% QR</div>
+                  <div className="text-[11px] text-text-sec font-medium leading-tight mt-0.5">Fijo en aulas sin configuración</div>
+                </div>
+                <div>
+                  <div className="text-xl sm:text-2xl font-bold text-emerald-800">ARCO</div>
+                  <div className="text-[11px] text-text-sec font-medium leading-tight mt-0.5">Privacidad por diseño en menores</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Hero Right Column: Live Mockup Card */}
+            <div className="lg:col-span-5 relative">
+              <div className="relative mx-auto max-w-md bg-white border border-gray-border rounded-2xl p-5 sm:p-6 shadow-xl space-y-4">
+                {/* Classroom Status Ribbon */}
+                <div className="flex items-center justify-between pb-3 border-b border-gray-border">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                      <Icon name="school" size={16} />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-text-pri">6° A — Salón 12</div>
+                      <div className="text-[10px] text-text-sec font-mono font-medium">QR Permanente: AULA-6A-8A4F</div>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded-full">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                    Aula Conectada
+                  </span>
+                </div>
+
+                {/* Source Reading Snippet */}
+                <div className="bg-surface rounded-xl p-3 border border-gray-border/70 space-y-1.5">
+                  <div className="flex items-center justify-between text-[11px] font-medium text-text-sec">
+                    <span className="flex items-center gap-1 font-semibold text-text-pri">
+                      <Icon name="fileText" size={13} className="text-emerald-700" />
+                      Lectura asignada: Biodiversidad
+                    </span>
+                    <span className="text-[10px] text-emerald-700 font-semibold">248 palabras</span>
+                  </div>
+                  <p className="text-[11.5px] text-text-sec leading-relaxed italic line-clamp-3">
+                    "La biodiversidad es el conjunto de formas de vida que habitan nuestro planeta. Cada ecosistema alberga especies que dependen entre sí para sobrevivir..."
+                  </p>
+                </div>
+
+                {/* Questions Preview per Axis */}
+                <div className="space-y-2">
+                  <div className="text-[11px] font-semibold text-text-sec uppercase tracking-wider">
+                    Preguntas generadas por IA y calibradas
+                  </div>
+                  <div className="space-y-1.5 text-xs">
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-emerald-50/70 border border-emerald-200 text-emerald-950">
+                      <span className="font-medium truncate pr-2">1. Causa principal de ruptura ecosistémica</span>
+                      <span className="text-[10px] uppercase font-bold bg-emerald-200/80 text-emerald-900 px-1.5 py-0.5 rounded shrink-0">
+                        Literal
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-amber-50/70 border border-amber-200 text-amber-950">
+                      <span className="font-medium truncate pr-2">2. Inferencia entre economía y conservación</span>
+                      <span className="text-[10px] uppercase font-bold bg-amber-200/80 text-amber-900 px-1.5 py-0.5 rounded shrink-0">
+                        Inferencial
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-red-50/70 border border-red-200 text-red-950">
+                      <span className="font-medium truncate pr-2">3. Argumentación sobre ética ambiental</span>
+                      <span className="text-[10px] uppercase font-bold bg-red-200/80 text-red-900 px-1.5 py-0.5 rounded shrink-0">
+                        Crítico
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Real-Time Live Results Meter */}
+                <div className="pt-2 border-t border-gray-border flex items-center justify-between text-[11px]">
+                  <span className="text-text-sec">Progreso del aula: <strong>26/28 alumnos</strong></span>
+                  <span className="text-emerald-700 font-bold">89% Comprensión Global</span>
+                </div>
+              </div>
+
+              {/* Decorative Blur Background */}
+              <div className="absolute -z-10 -bottom-6 -right-6 w-48 h-48 bg-emerald-200/50 rounded-full blur-2xl" />
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* 3. COGNITIVE AXES INTERACTIVE SHOWCASE */}
+      <section id="ejes" className="py-20 bg-surface border-y border-gray-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full mb-3">
+              <Icon name="layers" size={13} />
+              Marco Pedagógico Validado
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-text-pri tracking-tight">
+              Los Tres Ejes de la Comprensión Lectora
+            </h2>
+            <p className="mt-3 text-sm sm:text-base text-text-sec leading-relaxed">
+              Superamos la simple memorización. Habitar estructura cada evaluación en tres dimensiones cognitivas complementarias para diagnosticar con precisión el nivel de cada alumno.
+            </p>
+          </div>
+
+          {/* Interactive Axis Tabs */}
+          <div className="max-w-4xl mx-auto">
+            <div className="grid grid-cols-3 gap-2 p-1.5 bg-white border border-gray-border rounded-xl mb-6 shadow-sm">
+              <button
+                onClick={() => setActiveAxisTab('literal')}
+                className={`py-3 px-2 sm:px-4 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+                  activeAxisTab === 'literal'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-text-sec hover:text-text-pri hover:bg-surface'
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-300" />
+                Eje Literal
+              </button>
+              <button
+                onClick={() => setActiveAxisTab('inferencial')}
+                className={`py-3 px-2 sm:px-4 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+                  activeAxisTab === 'inferencial'
+                    ? 'bg-amber-600 text-white shadow-sm'
+                    : 'text-text-sec hover:text-text-pri hover:bg-surface'
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-amber-300" />
+                Eje Inferencial
+              </button>
+              <button
+                onClick={() => setActiveAxisTab('critico')}
+                className={`py-3 px-2 sm:px-4 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+                  activeAxisTab === 'critico'
+                    ? 'bg-red-600 text-white shadow-sm'
+                    : 'text-text-sec hover:text-text-pri hover:bg-surface'
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-red-300" />
+                Eje Crítico
+              </button>
+            </div>
+
+            {/* Tab Detail Card */}
+            <div className="bg-white border border-gray-border rounded-2xl p-6 sm:p-8 shadow-sm">
+              <div className="flex flex-col md:flex-row justify-between md:items-center gap-3 pb-5 border-b border-gray-border">
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold text-text-pri">
+                    {axisExamples[activeAxisTab].title}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-text-sec mt-1">
+                    {axisExamples[activeAxisTab].description}
+                  </p>
+                </div>
+                <div className="shrink-0 bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold px-3 py-1 rounded-md">
+                  {axisExamples[activeAxisTab].cognitiveBenefit}
+                </div>
+              </div>
+
+              {/* Sample Question Box */}
+              <div className="mt-6 bg-surface border border-gray-border rounded-xl p-4 sm:p-5 space-y-3">
+                <div className="text-xs font-semibold text-text-sec uppercase tracking-wider">
+                  Ejemplo de ítem pedagógico generado:
+                </div>
+                <div className="text-sm font-semibold text-text-pri leading-snug">
+                  {axisExamples[activeAxisTab].sampleQuestion}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+                  {axisExamples[activeAxisTab].sampleOptions.map((opt, i) => (
+                    <div
+                      key={i}
+                      className={`p-2.5 rounded-lg text-xs border ${
+                        opt.includes('(Correcta)')
+                          ? 'bg-emerald-50 border-emerald-300 text-emerald-950 font-medium'
+                          : 'bg-white border-gray-border text-text-sec'
+                      }`}
+                    >
+                      {opt}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. AULAS CON QR FIJO PERMANENTE */}
+      <section id="aulas-qr" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <div className="lg:col-span-6 space-y-6">
+              <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full">
+                <Icon name="qrCode" size={14} />
+                Innovación en el Espacio Físico
+              </div>
+
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-text-pri tracking-tight leading-tight">
+                Aulas físicas con Códigos QR fijos y permanentes.
+              </h2>
+
+              <p className="text-base text-text-sec leading-relaxed">
+                Olvidate de proyectar enlaces largos o generar códigos nuevos cada semana. En Habitar, cada salón de clases cuenta con un <strong>código QR permanente e inmutable</strong> que se imprime una sola vez y se pega en la pared del aula.
+              </p>
+
+              <div className="space-y-4 pt-2">
+                <div className="flex items-start gap-3.5">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                    1
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-text-pri">Creación del aula física</h4>
+                    <p className="text-xs text-text-sec mt-0.5">Definí el nombre de la materia, salón físico, grado, división y turno horario.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3.5">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                    2
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-text-pri">Cartel QR Imprimible en un clic</h4>
+                    <p className="text-xs text-text-sec mt-0.5">Generá el póster en formato A4 listo para imprimir y colocar en el aula física.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3.5">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                    3
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-text-pri">Escáner integrado en la app docente</h4>
+                    <p className="text-xs text-text-sec mt-0.5">La docente llega al aula, escanea el QR desde su celular o laptop y sube el archivo de lectura asignado instantáneamente a ese grupo.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Visual Representation of Classroom Poster */}
+            <div className="lg:col-span-6 flex justify-center">
+              <div className="w-full max-w-sm bg-white border-2 border-dashed border-emerald-400/80 rounded-2xl p-7 shadow-lg text-center space-y-4">
+                <div className="inline-block bg-emerald-700 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full">
+                  Cartel Fijo Oficial de Aula
+                </div>
+                <div>
+                  <div className="text-xl font-black text-text-pri">AULA 6° A — Salón 12</div>
+                  <div className="text-xs text-text-sec font-medium">Turno Mañana · Escuela San Martín</div>
+                </div>
+
+                {/* QR Code Vector Representation */}
+                <div className="w-44 h-44 mx-auto bg-white p-3 rounded-xl border border-gray-border shadow-inner flex flex-col items-center justify-center">
+                  <div className="text-emerald-800">
+                    <Icon name="qrCode" size={120} />
+                  </div>
+                  <span className="font-mono text-xs font-bold text-emerald-950 mt-1">AULA-6A-8A4F</span>
+                </div>
+
+                <div className="text-[11px] text-text-sec">
+                  Escanear con la app docente de Habitar para cargar lectura y preguntas
+                </div>
+
+                <div className="pt-2 border-t border-gray-border flex justify-center gap-2">
+                  <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200">
+                    <Icon name="printer" size={12} />
+                    Listo para imprimir en A4
+                  </span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* 5. ANALÍTICA DIRECTIVA & SEGUIMIENTO PEDAGÓGICO */}
+      <section id="analitica" className="py-20 bg-surface border-t border-gray-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full mb-3">
+              <Icon name="chart" size={13} />
+              Para Directores y Equipos de Conducción
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-text-pri tracking-tight">
+              Visión Integral del Rendimiento Escolar
+            </h2>
+            <p className="mt-3 text-sm sm:text-base text-text-sec leading-relaxed">
+              Detectá a tiempo a los estudiantes que necesitan apoyo, compará evoluciones entre trimestres y tomá decisiones pedagógicas respaldadas por evidencia real.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white border border-gray-border rounded-xl p-6 shadow-sm hover:shadow-md transition-all space-y-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center font-bold">
+                <Icon name="alertTriangle" size={18} />
+              </div>
+              <h3 className="text-base font-bold text-text-pri">Alertas Tempranas de Riesgo</h3>
+              <p className="text-xs text-text-sec leading-relaxed">
+                Algoritmos que detectan caídas en comprensión inferencial o crítica antes de las instancias de cierre, permitiendo intervenciones oportunas.
+              </p>
+            </div>
+
+            <div className="bg-white border border-gray-border rounded-xl p-6 shadow-sm hover:shadow-md transition-all space-y-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center font-bold">
+                <Icon name="activity" size={18} />
+              </div>
+              <h3 className="text-base font-bold text-text-pri">Comparador de Períodos</h3>
+              <p className="text-xs text-text-sec leading-relaxed">
+                Contrastá el rendimiento de un aula entre Período A y Período B con deltas porcentuales en cada uno de los tres ejes cognitivos.
+              </p>
+            </div>
+
+            <div className="bg-white border border-gray-border rounded-xl p-6 shadow-sm hover:shadow-md transition-all space-y-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 flex items-center justify-center font-bold">
+                <Icon name="download" size={18} />
+              </div>
+              <h3 className="text-base font-bold text-text-pri">Exportación Institucional</h3>
+              <p className="text-xs text-text-sec leading-relaxed">
+                Descargá reportes completos en formato Excel o PDF con un solo clic para presentar ante inspectores, supervisores o directivos.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 6. DYNAMIC PRICING PLANS SECTION (LINKED DIRECTLY TO DB) */}
+      <section id="precios" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full mb-3">
+              <Icon name="zap" size={13} />
+              Inversión Transparente para tu Escuela
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-text-pri tracking-tight">
+              Planes de Suscripción Institucional
+            </h2>
+            <p className="mt-3 text-sm sm:text-base text-text-sec leading-relaxed">
+              Comenzá hoy con un piloto gratuito sin costo o elegí el plan que mejor se adapte al tamaño de tu institución educativa.
+            </p>
+
+            {/* Billing Cycle Toggle */}
+            <div className="mt-8 inline-flex items-center p-1.5 bg-surface border border-gray-border rounded-xl">
+              <button
+                onClick={() => setBillingCycle('MONTHLY')}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                  billingCycle === 'MONTHLY'
+                    ? 'bg-white text-text-pri shadow-sm border border-gray-border'
+                    : 'text-text-sec hover:text-text-pri'
+                }`}
+              >
+                Facturación Mensual
+              </button>
+              <button
+                onClick={() => setBillingCycle('ANNUAL')}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  billingCycle === 'ANNUAL'
+                    ? 'bg-emerald-700 text-white shadow-sm'
+                    : 'text-text-sec hover:text-text-pri'
+                }`}
+              >
+                <span>Facturación Anual</span>
+                <span className="bg-emerald-200 text-emerald-900 text-[10px] font-extrabold px-1.5 py-0.5 rounded">
+                  2 meses gratis (17% OFF)
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* Pricing Cards Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+            {plans.map((plan) => {
+              const isPopular = plan.id === 'estandar';
+              const isPremium = plan.id === 'premium';
+              const isPilot = plan.id === 'piloto';
+
+              return (
+                <div
+                  key={plan.id}
+                  className={`relative flex flex-col justify-between rounded-2xl p-7 transition-all ${
+                    isPremium
+                      ? 'bg-gradient-to-b from-emerald-950 to-emerald-900 text-white shadow-xl ring-2 ring-emerald-500'
+                      : isPopular
+                      ? 'bg-white border-2 border-emerald-600 shadow-lg'
+                      : 'bg-white border border-gray-border shadow-sm'
+                  }`}
+                >
+                  {/* Badge */}
+                  {plan.badge && (
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                      <span
+                        className={`text-[11px] font-extrabold uppercase tracking-wider px-3.5 py-1 rounded-full shadow-sm ${
+                          isPremium
+                            ? 'bg-emerald-400 text-emerald-950'
+                            : isPopular
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-surface text-text-sec border border-gray-border'
+                        }`}
+                      >
+                        {plan.badge}
+                      </span>
+                    </div>
+                  )}
+
+                  <div>
+                    {/* Plan Header */}
+                    <div className="mb-4">
+                      <h3 className={`text-xl font-bold ${isPremium ? 'text-white' : 'text-text-pri'}`}>
+                        {plan.name}
+                      </h3>
+                      <p className={`text-xs mt-1 leading-relaxed ${isPremium ? 'text-emerald-100' : 'text-text-sec'}`}>
+                        {plan.description}
+                      </p>
+                    </div>
+
+                    {/* Price Display */}
+                    <div className="py-4 border-y border-gray-border/40 my-4">
+                      <div className="flex items-baseline gap-1">
+                        <span className={`text-3xl sm:text-4xl font-black ${isPremium ? 'text-white' : 'text-text-pri'}`}>
+                          {formatPrice(plan)}
+                        </span>
+                        <span className={`text-xs ${isPremium ? 'text-emerald-200' : 'text-text-sec'}`}>
+                          {formatCycleLabel(plan)}
+                        </span>
+                      </div>
+                      {billingCycle === 'ANNUAL' && plan.monthlyPriceArs > 0 && (
+                        <div className={`text-[11px] mt-1 font-medium ${isPremium ? 'text-emerald-300' : 'text-emerald-700'}`}>
+                          Equivale a ${Math.round((plan.annualPriceArs || plan.monthlyPriceArs * 10) / 12).toLocaleString('es-AR')}/mes
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Quotas Specs */}
+                    <div className="grid grid-cols-2 gap-2 text-xs mb-5">
+                      <div className={`p-2 rounded-lg ${isPremium ? 'bg-emerald-800/60' : 'bg-surface'}`}>
+                        <div className={`text-[10px] uppercase font-semibold ${isPremium ? 'text-emerald-200' : 'text-text-sec'}`}>Alumnos</div>
+                        <div className="font-bold">{plan.maxStudents.toLocaleString('es-AR')}</div>
+                      </div>
+                      <div className={`p-2 rounded-lg ${isPremium ? 'bg-emerald-800/60' : 'bg-surface'}`}>
+                        <div className={`text-[10px] uppercase font-semibold ${isPremium ? 'text-emerald-200' : 'text-text-sec'}`}>Aulas Físicas QR</div>
+                        <div className="font-bold">{plan.maxCourses}</div>
+                      </div>
+                      <div className={`p-2 rounded-lg ${isPremium ? 'bg-emerald-800/60' : 'bg-surface'}`}>
+                        <div className={`text-[10px] uppercase font-semibold ${isPremium ? 'text-emerald-200' : 'text-text-sec'}`}>Docentes</div>
+                        <div className="font-bold">{plan.maxUsers}</div>
+                      </div>
+                      <div className={`p-2 rounded-lg ${isPremium ? 'bg-emerald-800/60' : 'bg-surface'}`}>
+                        <div className={`text-[10px] uppercase font-semibold ${isPremium ? 'text-emerald-200' : 'text-text-sec'}`}>Almacenamiento</div>
+                        <div className="font-bold">{plan.storageGb} GB</div>
+                      </div>
+                    </div>
+
+                    {/* Features Bullet List */}
+                    <div className="space-y-2.5 text-xs">
+                      <div className={`font-semibold uppercase tracking-wider text-[10.5px] ${isPremium ? 'text-emerald-200' : 'text-text-sec'}`}>
+                        Lo que incluye:
+                      </div>
+                      {(plan.features?.bullets || []).map((bullet, idx) => (
+                        <div key={idx} className="flex items-start gap-2">
+                          <span className={`shrink-0 mt-0.5 ${isPremium ? 'text-emerald-300' : 'text-emerald-600'}`}>
+                            <Icon name="check" size={14} />
+                          </span>
+                          <span className={`leading-tight ${isPremium ? 'text-emerald-50' : 'text-text-pri'}`}>
+                            {bullet}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Plan CTA Button */}
+                  <div className="mt-8 pt-4 border-t border-gray-border/40">
+                    <a
+                      href={isPilot ? '/login' : '/login'}
+                      className={`w-full py-3 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm ${
+                        isPremium
+                          ? 'bg-emerald-400 hover:bg-emerald-300 text-emerald-950 font-extrabold'
+                          : isPopular
+                          ? 'bg-emerald-700 hover:bg-emerald-800 text-white'
+                          : 'bg-surface hover:bg-gray-100 border border-gray-border text-text-pri'
+                      }`}
+                    >
+                      <span>{isPilot ? 'Iniciar Piloto Gratuito' : `Elegir ${plan.name}`}</span>
+                      <Icon name="arrowRight" size={13} />
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Custom Plans Banner for Districts / Educational Networks */}
+          <div className="mt-12 bg-surface border border-gray-border rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="space-y-1 text-center sm:text-left">
+              <h4 className="text-base font-bold text-text-pri">
+                ¿Gestionás una red escolar, congregación o distrito educativo?
+              </h4>
+              <p className="text-xs text-text-sec max-w-2xl">
+                Configuramos planes personalizados con cupos a medida, facturación especial por orden de compra, soporte técnico presencial y capacitaciones docentes.
+              </p>
+            </div>
+            <a
+              href="mailto:contacto@habitar.lat?subject=Consulta%20Plan%20Institucional%20Habitar"
+              className="bg-white border border-gray-border hover:border-emerald-600 px-5 py-2.5 rounded-xl text-xs font-semibold text-text-pri hover:text-emerald-700 transition-all shrink-0 shadow-sm"
+            >
+              Contactar con un Asesor
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* 7. FREQUENTLY ASKED QUESTIONS (FAQ) */}
+      <section id="faq" className="py-20 bg-surface border-t border-gray-border">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full mb-3">
+              <Icon name="helpCircle" size={13} />
+              Resolución de Dudas
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-text-pri tracking-tight">
+              Preguntas Frecuentes
+            </h2>
+            <p className="mt-3 text-sm text-text-sec">
+              Todo lo que directores, docentes y coordinadores pedagógicos necesitan saber.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {faqs.map((faq, index) => {
+              const isOpen = openFaq === index;
+              return (
+                <div
+                  key={index}
+                  className="bg-white border border-gray-border rounded-xl overflow-hidden transition-all shadow-sm"
+                >
+                  <button
+                    onClick={() => setOpenFaq(isOpen ? null : index)}
+                    className="w-full text-left p-4 sm:p-5 flex items-center justify-between gap-4 font-semibold text-sm text-text-pri hover:text-emerald-800 transition-colors"
+                  >
+                    <span>{faq.q}</span>
+                    <span className={`transition-transform duration-200 text-text-sec ${isOpen ? 'rotate-180' : ''}`}>
+                      ▼
+                    </span>
+                  </button>
+                  {isOpen && (
+                    <div className="px-4 sm:px-5 pb-5 text-xs sm:text-[13px] text-text-sec leading-relaxed border-t border-gray-border/60 pt-3">
+                      {faq.a}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* 8. FINAL CTA BANNER */}
+      <section className="py-20 bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-950 text-white relative overflow-hidden">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 relative z-10">
+          <div className="inline-flex items-center gap-2 bg-emerald-700/80 border border-emerald-500/50 rounded-full px-4 py-1 text-xs font-semibold text-emerald-100">
+            <Icon name="sparkles" size={14} />
+            <span>Transformación Pedagógica Real</span>
+          </div>
+
+          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
+            Sumá tu escuela a la nueva era de la comprensión lectora.
+          </h2>
+
+          <p className="text-sm sm:text-base text-emerald-100 max-w-2xl mx-auto leading-relaxed">
+            Iniciá hoy tu prueba piloto gratuita de 60 días sin compromiso y descubrí cómo el diagnóstico en tres ejes transforma los resultados de tus estudiantes.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
+            <a
+              href="#precios"
+              className="w-full sm:w-auto bg-white text-emerald-950 hover:bg-emerald-50 px-7 py-3.5 rounded-xl text-sm font-extrabold shadow-lg transition-all flex items-center justify-center gap-2"
+            >
+              <span>Ver Planes & Comenzar Piloto</span>
+              <Icon name="arrowRight" size={14} />
+            </a>
+            <a
+              href="/login"
+              className="w-full sm:w-auto bg-emerald-800/80 hover:bg-emerald-700/80 text-white border border-emerald-500/50 px-6 py-3.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2"
+            >
+              <span>Ingresar a la Plataforma</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* 9. FOOTER */}
+      <footer className="bg-white border-t border-gray-border py-12 text-xs text-text-sec">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2.5">
+                <img src="/logo-habitar.jpg" alt="Logo" className="w-6 h-6 rounded-md object-cover" />
+                <span className="text-base font-bold text-text-pri">
+                  Habi<span className="text-emerald-700">tar</span>
+                </span>
+              </div>
+              <p className="text-[11.5px] leading-relaxed">
+                Plataforma de evaluación y potenciación de la comprensión lectora mediante Inteligencia Artificial y aulas físicas QR.
+              </p>
+            </div>
+
+            <div>
+              <h5 className="font-bold text-text-pri mb-2.5 uppercase tracking-wider text-[10px]">Plataforma</h5>
+              <ul className="space-y-1.5">
+                <li><a href="/login" className="hover:text-emerald-700">Acceso Docentes</a></li>
+                <li><a href="/login" className="hover:text-emerald-700">Portal Directivo</a></li>
+                <li><a href="#aulas-qr" className="hover:text-emerald-700">Aulas QR Permanente</a></li>
+                <li><a href="#precios" className="hover:text-emerald-700">Planes de Suscripción</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h5 className="font-bold text-text-pri mb-2.5 uppercase tracking-wider text-[10px]">Normativa & Legal</h5>
+              <ul className="space-y-1.5">
+                <li><a href="/consentimiento" className="hover:text-emerald-700">Consentimiento de Menores</a></li>
+                <li><a href="/institucional/datos-personales" className="hover:text-emerald-700">Derechos ARCO</a></li>
+                <li><a href="/status" className="hover:text-emerald-700">Estado del Sistema</a></li>
+                <li><a href="/admin/api" className="hover:text-emerald-700">API para Desarrolladores</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h5 className="font-bold text-text-pri mb-2.5 uppercase tracking-wider text-[10px]">Contacto Institucional</h5>
+              <p className="text-[11.5px] leading-relaxed">
+                Soporte y mesas de ayuda pedagógica para instituciones educativas de Argentina y Latinoamérica.
+              </p>
+              <div className="mt-2 text-emerald-800 font-semibold">
+                contacto@habitar.lat
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-8 border-t border-gray-border/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px]">
+            <div>
+              © {new Date().getFullYear()} Habitar — Todos los derechos reservados. Proyecto de Tesis de Grado.
+            </div>
+            <div className="flex gap-4">
+              <a href="/consentimiento" className="hover:text-emerald-700">Privacidad</a>
+              <a href="/status" className="hover:text-emerald-700">Monitoreo SLA</a>
+              <a href="/login" className="hover:text-emerald-700">Ingreso Seguro</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
