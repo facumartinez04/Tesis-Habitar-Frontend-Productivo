@@ -3,6 +3,15 @@ import type { OAuthProviderId } from '../../../types/auth';
 import { oauthLoginUrl } from '../../../services/authService';
 import { GoogleIcon, MicrosoftIcon } from '../ui/BrandIcon';
 
+const ERROR_MESSAGES: Record<string, string> = {
+  institution_not_allowed: 'Tu institución no está habilitada en Habitar. Contactá a tu coordinador/a.',
+  account_disabled: 'Tu cuenta fue desactivada. Contactá a tu coordinador/a.',
+  invalid_tenant: 'El email no corresponde a la institución registrada.',
+  unauthorized: 'No se pudo validar la sesión con el proveedor de login.',
+  auth_failed: 'Ocurrió un error al intentar iniciar sesión. Por favor, intentá nuevamente.',
+  session_expired: 'La sesión de login expiró, intentá de nuevo.',
+};
+
 export function LoginScreen() {
   const [loadingProvider, setLoadingProvider] = useState<OAuthProviderId | null>(null);
   // El ?error= de la URL se lee recién en useEffect (post-hidratación): leerlo durante
@@ -11,7 +20,16 @@ export function LoginScreen() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setError(new URLSearchParams(window.location.search).get('error'));
+    const rawError = new URLSearchParams(window.location.search).get('error');
+    if (rawError) {
+      setError(ERROR_MESSAGES[rawError] || rawError);
+      // Limpia el ?error=... de la barra de direcciones para que no quede visible en la URL
+      try {
+        window.history.replaceState({}, '', window.location.pathname);
+      } catch {
+        // no-op
+      }
+    }
   }, []);
 
   function handleLogin(provider: OAuthProviderId) {
