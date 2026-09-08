@@ -1,0 +1,12 @@
+---
+import AppShell from '../../layouts/AppShell.astro';
+import { ApiDocsScreen } from '../../components/react/features/ApiDocsScreen';
+import { adminNavItems } from '../../lib/nav';
+---
+<AppShell
+  title="Documentación de API"
+  sectionLabel="Administración de plataforma"
+  sidebarItems={adminNavItems}
+>
+  <ApiDocsScreen client:load />
+</AppShell>
