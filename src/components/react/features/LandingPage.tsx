@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Icon } from '../ui/Icon';
 import { listPublicPlans, DEFAULT_PUBLIC_PLANS } from '../../../services/subscriptionService';
 import type { SubscriptionPlan } from '../../../types/subscription';
-import { sessionStore } from '../../../store/sessionStore';
+import { sessionStore, clearSession } from '../../../store/sessionStore';
 import { dashboardPathForRole } from '../../../services/authService';
 
 export function LandingPage() {
@@ -125,25 +125,63 @@ export function LandingPage() {
           </a>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-5 xl:gap-7 text-xs xl:text-[13px] font-medium text-text-sec">
-            <a href="#ejes" className="hover:text-emerald-700 transition-colors whitespace-nowrap">3 Ejes Cognitivos</a>
-            <a href="#aulas-qr" className="hover:text-emerald-700 transition-colors whitespace-nowrap">Aulas & QR Fijo</a>
-            <a href="#analitica" className="hover:text-emerald-700 transition-colors whitespace-nowrap">Analítica Directiva</a>
-            <a href="#precios" className="hover:text-emerald-700 transition-colors whitespace-nowrap">Planes & Precios</a>
-            <a href="#faq" className="hover:text-emerald-700 transition-colors whitespace-nowrap">Preguntas Frecuentes</a>
+          <nav className="hidden lg:flex items-center gap-4 xl:gap-6 text-xs xl:text-[13px] font-medium text-text-sec">
+            <a href="#ejes" className="hover:text-emerald-700 transition-colors whitespace-nowrap">3 Ejes</a>
+            <a href="#aulas-qr" className="hover:text-emerald-700 transition-colors whitespace-nowrap">Aulas QR</a>
+            <a href="#analitica" className="hover:text-emerald-700 transition-colors whitespace-nowrap">Analítica</a>
+            <a href="#precios" className="hover:text-emerald-700 transition-colors whitespace-nowrap">Planes</a>
+            <a href="#privacidad" className="hover:text-emerald-700 transition-colors whitespace-nowrap font-semibold text-emerald-800">Privacidad & PBA</a>
+            <a href="#faq" className="hover:text-emerald-700 transition-colors whitespace-nowrap">FAQ</a>
           </nav>
 
           {/* Header Action Buttons (Desktop & Tablet) */}
           <div className="hidden sm:flex items-center gap-2.5 shrink-0">
             {session ? (
-              <a
-                href={dashboardPathForRole(session.user.role)}
-                className="flex items-center gap-2 bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition-all whitespace-nowrap"
-              >
-                <div className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-                <span>Ir a mi Panel ({session.user.role})</span>
-                <Icon name="arrowRight" size={13} />
-              </a>
+              <div className="flex items-center gap-2.5">
+                {/* User Info Capsule */}
+                <div className="flex items-center gap-2 bg-surface border border-gray-border/80 rounded-full pl-1.5 pr-3 py-1">
+                  <div className="w-7 h-7 rounded-full bg-emerald-700 text-white font-bold text-[11px] flex items-center justify-center shrink-0 shadow-xs">
+                    {session.user.initials || session.user.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex flex-col text-left">
+                    <span className="text-xs font-semibold text-text-pri leading-tight truncate max-w-[140px]">
+                      {session.user.name}
+                    </span>
+                    <span className="text-[9.5px] font-semibold text-emerald-800 leading-none">
+                      {session.impersonatedRole
+                        ? `Admin (${session.impersonatedRole})`
+                        : session.user.role === 'admin'
+                        ? 'Admin'
+                        : session.user.role === 'docente'
+                        ? 'Docente'
+                        : session.user.role === 'director'
+                        ? 'Director/a'
+                        : 'Coordinador/a'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Direct Panel Link */}
+                <a
+                  href={dashboardPathForRole(session.user.role)}
+                  className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition-all whitespace-nowrap"
+                >
+                  <span>Ir a mi Panel</span>
+                  <Icon name="arrowRight" size={12} />
+                </a>
+
+                {/* Logout Button */}
+                <button
+                  onClick={() => {
+                    clearSession();
+                    setSession(null);
+                  }}
+                  className="text-text-sec hover:text-red p-1.5 rounded-md hover:bg-red-50 text-xs transition-colors"
+                  title="Cerrar sesión"
+                >
+                  <Icon name="close" size={13} />
+                </button>
+              </div>
             ) : (
               <>
                 <a
@@ -176,6 +214,49 @@ export function LandingPage() {
         {/* Mobile Dropdown Menu */}
         {isMobileMenuOpen && (
           <div className="lg:hidden bg-white border-b border-gray-border px-4 pt-3 pb-5 space-y-3 shadow-lg">
+            {/* Logged in User Card on Mobile */}
+            {session && (
+              <div className="bg-surface border border-gray-border rounded-xl p-3 space-y-2.5">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-emerald-700 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-sm">
+                    {session.user.initials || session.user.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold text-text-pri">{session.user.name}</span>
+                    <span className="text-[10px] font-semibold text-emerald-800">
+                      {session.impersonatedRole
+                        ? `Admin (${session.impersonatedRole})`
+                        : session.user.role === 'admin'
+                        ? 'Admin'
+                        : session.user.role === 'docente'
+                        ? 'Docente'
+                        : session.user.role === 'director'
+                        ? 'Director/a'
+                        : 'Coordinador/a'}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 pt-1 border-t border-gray-border/60">
+                  <a
+                    href={dashboardPathForRole(session.user.role)}
+                    className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-700 text-white py-2 rounded-lg text-xs font-semibold shadow-sm"
+                  >
+                    <span>Ir a mi Panel</span>
+                    <Icon name="arrowRight" size={12} />
+                  </a>
+                  <button
+                    onClick={() => {
+                      clearSession();
+                      setSession(null);
+                    }}
+                    className="px-3 py-2 border border-gray-border rounded-lg text-xs font-medium text-text-sec hover:text-red hover:bg-red-50 transition-colors"
+                  >
+                    Salir
+                  </button>
+                </div>
+              </div>
+            )}
+
             <nav className="flex flex-col space-y-1.5 text-sm font-medium text-text-pri">
               <a
                 href="#ejes"
@@ -206,6 +287,13 @@ export function LandingPage() {
                 Planes & Precios
               </a>
               <a
+                href="#privacidad"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="px-3 py-2 rounded-lg hover:bg-emerald-50 hover:text-emerald-800 transition-colors font-semibold text-emerald-800"
+              >
+                Privacidad & Normativa PBA
+              </a>
+              <a
                 href="#faq"
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="px-3 py-2 rounded-lg hover:bg-emerald-50 hover:text-emerald-800 transition-colors"
@@ -213,33 +301,24 @@ export function LandingPage() {
                 Preguntas Frecuentes
               </a>
             </nav>
-            <div className="pt-3 border-t border-gray-border flex flex-col gap-2">
-              {session ? (
+
+            {!session && (
+              <div className="pt-3 border-t border-gray-border flex flex-col gap-2">
                 <a
-                  href={dashboardPathForRole(session.user.role)}
-                  className="flex items-center justify-center gap-2 bg-emerald-700 text-white px-4 py-2.5 rounded-lg text-xs font-semibold shadow-sm"
+                  href="/login"
+                  className="w-full text-center py-2.5 text-xs font-semibold text-text-pri border border-gray-border rounded-lg hover:bg-surface transition-colors"
                 >
-                  <span>Ir a mi Panel ({session.user.role})</span>
-                  <Icon name="arrowRight" size={13} />
+                  Iniciar Sesión
                 </a>
-              ) : (
-                <>
-                  <a
-                    href="/login"
-                    className="w-full text-center py-2.5 text-xs font-semibold text-text-pri border border-gray-border rounded-lg hover:bg-surface transition-colors"
-                  >
-                    Iniciar Sesión
-                  </a>
-                  <a
-                    href="#precios"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="w-full text-center py-2.5 bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-sm hover:bg-emerald-800 transition-colors"
-                  >
-                    Comenzar Piloto Gratuito (60 días)
-                  </a>
-                </>
-              )}
-            </div>
+                <a
+                  href="#precios"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full text-center py-2.5 bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-sm hover:bg-emerald-800 transition-colors"
+                >
+                  Comenzar Piloto Gratuito (60 días)
+                </a>
+              </div>
+            )}
           </div>
         )}
       </header>
@@ -797,7 +876,122 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* 7. FREQUENTLY ASKED QUESTIONS (FAQ) */}
+      {/* 7. PRIVACIDAD, GOBERNANZA DE DATOS & NORMATIVA PBA (DGCyE) */}
+      <section id="privacidad" className="py-16 sm:py-20 bg-white border-t border-gray-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-3.5 py-1 rounded-full mb-3 shadow-xs">
+              <Icon name="shield" size={13} />
+              Seguridad Institucional & Soberanía de Datos
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-text-pri tracking-tight">
+              Cumplimiento Normativo DGCyE PBA y Privacidad Escolar
+            </h2>
+            <p className="mt-3 text-xs sm:text-sm text-text-sec leading-relaxed">
+              Habitar fue diseñado desde sus cimientos arquitectónicos para adaptarse a las exigencias jurídicas y pedagógicas de la <strong>Provincia de Buenos Aires</strong> (DGCyE / DIPREGEP), resguardando los derechos fundamentales de niñas, niños y adolescentes.
+            </p>
+          </div>
+
+          {/* 4 Compliance Pillars Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-surface border border-gray-border/80 rounded-2xl p-5 hover:border-emerald-600 transition-all shadow-xs flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+                  <Icon name="school" size={20} />
+                </div>
+                <h3 className="font-bold text-sm sm:text-base text-text-pri">
+                  Marco DGCyE & DIPREGEP
+                </h3>
+                <p className="text-xs text-text-sec leading-relaxed">
+                  Alineado a la <strong>Ley Provincial N° 13.688</strong> (Art. 16) y la <strong>Ley Nacional N° 26.061</strong>. Garantizamos el interés superior de la niñez, la preservación de la intimidad y la prohibición absoluta de explotación comercial o perfilamiento publicitario.
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-gray-border/50 text-[11px] font-semibold text-emerald-800 flex items-center gap-1">
+                <Icon name="check" size={13} />
+                <span>Jurisdicción PBA</span>
+              </div>
+            </div>
+
+            <div className="bg-surface border border-gray-border/80 rounded-2xl p-5 hover:border-emerald-600 transition-all shadow-xs flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+                  <Icon name="lock" size={20} />
+                </div>
+                <h3 className="font-bold text-sm sm:text-base text-text-pri">
+                  Gobernanza B2B Escolar
+                </h3>
+                <p className="text-xs text-text-sec leading-relaxed">
+                  Bajo la <strong>Ley 25.326</strong>, la Escuela es la exclusiva <em>Responsable del Tratamiento</em> de su matrícula. Habitar actúa estrictamente como <em>Encargado del Tratamiento</em>: no vendemos, no cedemos ni monetizamos ninguna información del alumnado.
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-gray-border/50 text-[11px] font-semibold text-emerald-800 flex items-center gap-1">
+                <Icon name="check" size={13} />
+                <span>Contrato B2B con Escuelas</span>
+              </div>
+            </div>
+
+            <div className="bg-surface border border-gray-border/80 rounded-2xl p-5 hover:border-emerald-600 transition-all shadow-xs flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+                  <Icon name="sparkles" size={20} />
+                </div>
+                <h3 className="font-bold text-sm sm:text-base text-text-pri">
+                  IA Ética sin Re-entrenamiento
+                </h3>
+                <p className="text-xs text-text-sec leading-relaxed">
+                  Las producciones y respuestas de los alumnos <strong>nunca son utilizadas para entrenar modelos de IA</strong> públicos ni comerciales. La evaluación es asistiva; la toma de decisiones pedagógicas y calificaciones permanece siempre en el criterio docente humano.
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-gray-border/50 text-[11px] font-semibold text-emerald-800 flex items-center gap-1">
+                <Icon name="check" size={13} />
+                <span>Supervisión Humana Obligatoria</span>
+              </div>
+            </div>
+
+            <div className="bg-surface border border-gray-border/80 rounded-2xl p-5 hover:border-emerald-600 transition-all shadow-xs flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+                  <Icon name="shield" size={20} />
+                </div>
+                <h3 className="font-bold text-sm sm:text-base text-text-pri">
+                  Derechos ARCO & Cifrado
+                </h3>
+                <p className="text-xs text-text-sec leading-relaxed">
+                  Cifrado de extremo a extremo en tránsito (TLS 1.3) y en reposo (AES-256). Ejercicio garantizado de los derechos ARCO (Acceso, Rectificación, Cancelación y Oposición) ante solicitud formal de directivos o familias tutoras.
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-gray-border/50 text-[11px] font-semibold text-emerald-800 flex items-center gap-1">
+                <Icon name="check" size={13} />
+                <span>Auditoría & Supresión Permanente</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Legal Document Highlight Banner */}
+          <div className="mt-10 sm:mt-12 bg-gradient-to-r from-emerald-900 to-emerald-800 rounded-2xl p-6 sm:p-8 text-white flex flex-col sm:flex-row items-center justify-between gap-6 shadow-md">
+            <div className="space-y-1.5 text-center sm:text-left">
+              <div className="text-xs font-semibold text-emerald-200 uppercase tracking-wider">
+                Documento Institucional Oficial
+              </div>
+              <h4 className="text-base sm:text-lg font-bold text-white">
+                Política Integral de Privacidad y Tratamiento de Datos Escolares
+              </h4>
+              <p className="text-xs text-emerald-100 max-w-2xl leading-relaxed">
+                Consultá los 10 puntos de nuestro pliego legal completo: bases normativas PBA, roles contractuales, protocolos ante incidentes de ciberseguridad y vías de contacto del Oficial de Protección de Datos (DPO).
+              </p>
+            </div>
+            <a
+              href="/privacidad"
+              className="bg-white hover:bg-emerald-50 text-emerald-950 font-bold px-5 py-3 rounded-xl text-xs transition-all shrink-0 shadow flex items-center gap-2"
+            >
+              <span>Leer Política Completa PBA</span>
+              <Icon name="arrowRight" size={14} />
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* 8. FREQUENTLY ASKED QUESTIONS (FAQ) */}
       <section id="faq" className="py-16 sm:py-20 bg-surface border-t border-gray-border">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10 sm:mb-12">
@@ -905,9 +1099,10 @@ export function LandingPage() {
             <div>
               <h5 className="font-bold text-text-pri mb-2.5 uppercase tracking-wider text-[10px]">Normativa & Legal</h5>
               <ul className="space-y-1.5">
-                <li><a href="/consentimiento" className="hover:text-emerald-700">Consentimiento de Menores</a></li>
-                <li><a href="/institucional/datos-personales" className="hover:text-emerald-700">Derechos ARCO</a></li>
-                <li><a href="/status" className="hover:text-emerald-700">Estado del Sistema</a></li>
+                <li><a href="/privacidad" className="hover:text-emerald-700 font-semibold text-emerald-850">Política de Privacidad PBA (DGCyE)</a></li>
+                <li><a href="/consentimiento" className="hover:text-emerald-700">Consentimiento Menores (Ley 26.061)</a></li>
+                <li><a href="/institucional/datos-personales" className="hover:text-emerald-700">Gobernanza y Derechos ARCO</a></li>
+                <li><a href="/status" className="hover:text-emerald-700">Estado del Sistema & SLA</a></li>
                 <li><a href="/admin/api" className="hover:text-emerald-700">API para Desarrolladores</a></li>
               </ul>
             </div>
@@ -928,7 +1123,8 @@ export function LandingPage() {
               © {new Date().getFullYear()} Habitar — Todos los derechos reservados. Proyecto de Tesis de Grado.
             </div>
             <div className="flex gap-4">
-              <a href="/consentimiento" className="hover:text-emerald-700">Privacidad</a>
+              <a href="/privacidad" className="hover:text-emerald-700 font-semibold text-emerald-800">Privacidad PBA</a>
+              <a href="/consentimiento" className="hover:text-emerald-700">Consentimiento</a>
               <a href="/status" className="hover:text-emerald-700">Monitoreo SLA</a>
               <a href="/login" className="hover:text-emerald-700">Ingreso Seguro</a>
             </div>
