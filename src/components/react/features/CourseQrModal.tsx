@@ -18,7 +18,7 @@ export function CourseQrModal({ course, isOpen, onClose, onUploadForCourse }: Co
 
     const qrPayload = course.qrCode || `AULA-${course.id.substring(0, 6).toUpperCase()}`;
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://habitar.lat';
-    const fullUrl = `${baseUrl}/aula/${qrPayload}`;
+    const fullUrl = `${baseUrl}/aula?code=${encodeURIComponent(qrPayload)}`;
 
     QRCode.toDataURL(fullUrl, {
       margin: 2,

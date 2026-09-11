@@ -2,6 +2,27 @@
 import SiteLayout from '../layouts/SiteLayout.astro';
 ---
 <SiteLayout title="Página no encontrada">
+  <script is:inline>
+    (function() {
+      try {
+        const path = window.location.pathname;
+        if (path.startsWith('/aula/')) {
+          const code = path.replace(/^\/aula\//, '').replace(/\/$/, '');
+          if (code && code !== 'aula') {
+            window.location.replace('/aula?code=' + encodeURIComponent(code));
+            return;
+          }
+        }
+        if (path.startsWith('/actividad/')) {
+          const code = path.replace(/^\/actividad\//, '').replace(/\/$/, '');
+          if (code && code !== 'actividad') {
+            window.location.replace('/actividad?code=' + encodeURIComponent(code));
+            return;
+          }
+        }
+      } catch (e) {}
+    })();
+  </script>
   <div class="flex flex-col items-center justify-center px-6 py-12 min-h-screen bg-surface text-center">
     <div class="text-[36px] font-bold text-text-pri tracking-tight mb-1">
       Habi<span class="text-green-dark">tar</span>

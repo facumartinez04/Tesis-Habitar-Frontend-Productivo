@@ -150,6 +150,11 @@ export function ClassroomScannerScreen() {
       } catch {}
 
       setBoundInfo(newBound);
+
+      // Si ya hay una actividad activa en el aula, ingresar directamente
+      if (info.activeActivity) {
+        window.location.href = `/actividad?code=${encodeURIComponent(info.activeActivity.code)}`;
+      }
     } catch (err: any) {
       setError(err.message || 'No se pudo vincular este dispositivo.');
     } finally {

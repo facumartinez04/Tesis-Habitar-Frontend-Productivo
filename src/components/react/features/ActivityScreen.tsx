@@ -102,12 +102,43 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   }, []);
 
   function loadActivity(codeToLoad: string) {
-    const cleanCode = (codeToLoad || '').trim().toUpperCase();
-    if (!cleanCode) {
+    const raw = (codeToLoad || '').trim();
+    if (!raw) {
       setCurrentCode('');
       setStage('not-found');
       return;
     }
+
+    // Si es un enlace o código de aula física, redirigir inteligentemente a /aula
+    if (raw.includes('/aula') || raw.toUpperCase().startsWith('AULA-')) {
+      let code = raw;
+      try {
+        const url = new URL(raw, window.location.origin);
+        code = url.searchParams.get('code') || '';
+        if (!code && url.pathname.includes('/aula/')) {
+          code = url.pathname.split('/aula/')[1]?.split('/')[0] || '';
+        }
+      } catch {
+        if (raw.includes('code=')) {
+          code = raw.split('code=')[1]?.split('&')[0] || '';
+        } else if (raw.includes('/aula/')) {
+          code = raw.split('/aula/')[1]?.split('?')[0]?.split('/')[0] || '';
+        }
+      }
+      window.location.href = `/aula?code=${encodeURIComponent((code || raw).toUpperCase())}`;
+      return;
+    }
+
+    // Si es una URL completa de actividad, extraer el parámetro ?code=
+    let cleanCode = raw.toUpperCase();
+    if (raw.includes('/actividad')) {
+      try {
+        const url = new URL(raw, window.location.origin);
+        const extracted = url.searchParams.get('code');
+        if (extracted) cleanCode = extracted.toUpperCase();
+      } catch {}
+    }
+
     setCurrentCode(cleanCode);
     setStage('loading');
     getActivityByCode(cleanCode).then((result) => {

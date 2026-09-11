@@ -100,48 +100,49 @@ export function StudentQrScannerModal({
 
     const text = rawText.trim();
 
-    // 1. Detectar si es URL de aula
-    if (text.includes('/aula')) {
-      let code = '';
-      if (text.includes('code=')) {
-        try {
-          code = new URL(text).searchParams.get('code') || '';
-        } catch {
-          code = text.split('code=').pop()?.split('&')[0] || '';
+    // 1. Detectar si es URL o texto de aula física
+    if (text.includes('/aula') || text.toUpperCase().startsWith('AULA-')) {
+      let code = text;
+      try {
+        const url = new URL(text, window.location.origin);
+        code = url.searchParams.get('code') || '';
+        if (!code && url.pathname.includes('/aula/')) {
+          code = url.pathname.split('/aula/')[1]?.split('/')[0] || '';
         }
-      } else {
-        code = text.split('/aula/').pop()?.split('?')[0] || '';
+      } catch {
+        if (text.includes('code=')) {
+          code = text.split('code=')[1]?.split('&')[0] || '';
+        } else if (text.includes('/aula/')) {
+          code = text.split('/aula/')[1]?.split('?')[0]?.split('/')[0] || '';
+        }
       }
-      onCodeScanned(code || text, 'course');
+      onCodeScanned((code || text).toUpperCase(), 'course');
       onClose();
       return;
     }
 
     // 2. Detectar si es URL de actividad
     if (text.includes('/actividad')) {
-      let code = '';
-      if (text.includes('code=')) {
-        try {
-          code = new URL(text).searchParams.get('code') || '';
-        } catch {
-          code = text.split('code=').pop()?.split('&')[0] || '';
+      let code = text;
+      try {
+        const url = new URL(text, window.location.origin);
+        code = url.searchParams.get('code') || '';
+        if (!code && url.pathname.includes('/actividad/')) {
+          code = url.pathname.split('/actividad/')[1]?.split('/')[0] || '';
         }
-      } else {
-        code = text.split('/actividad/').pop()?.split('?')[0] || '';
+      } catch {
+        if (text.includes('code=')) {
+          code = text.split('code=')[1]?.split('&')[0] || '';
+        } else if (text.includes('/actividad/')) {
+          code = text.split('/actividad/')[1]?.split('?')[0]?.split('/')[0] || '';
+        }
       }
-      onCodeScanned(code || text, 'activity');
+      onCodeScanned((code || text).toUpperCase(), 'activity');
       onClose();
       return;
     }
 
-    // 3. Detectar si es texto plano de código de aula (ej: AULA-XXXX)
-    if (text.toUpperCase().startsWith('AULA-')) {
-      onCodeScanned(text.toUpperCase(), 'course');
-      onClose();
-      return;
-    }
-
-    // 4. Por defecto, tratar como código de actividad o PIN
+    // 3. Por defecto, tratar como código de actividad o PIN
     onCodeScanned(text.toUpperCase(), 'activity');
     onClose();
   }
