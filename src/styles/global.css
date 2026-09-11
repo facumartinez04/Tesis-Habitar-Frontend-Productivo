@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
+@variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
 
 :root {
   --color-green-dark: #0F6E56;
@@ -73,6 +73,7 @@ html.dark,
   --color-gray-bg: var(--color-gray-bg);
   --color-gray-border: var(--color-gray-border);
   --color-surface: var(--color-surface);
+  --color-card-bg: var(--color-card-bg);
   --color-text-pri: var(--color-text-pri);
   --color-text-sec: var(--color-text-sec);
   --color-text-ter: var(--color-text-ter);
@@ -98,67 +99,210 @@ html.dark,
   }
 }
 
-@layer components {
-  /* Dynamic adaptions in dark mode for common utility containers */
-  html.dark .bg-white:not([data-keep-white]):not([data-keep-white] *) {
-    background-color: var(--color-card-bg);
-  }
+/* =========================================================================
+   GLOBAL DARK THEME ADAPTATIONS
+   Applied when html has .dark or [data-theme="dark"]
+   ========================================================================= */
 
-  html.dark header.bg-white {
-    background-color: rgba(22, 26, 36, 0.95);
-  }
+/* Header and card surfaces */
+html.dark header.bg-white,
+html.dark header,
+:root[data-theme="dark"] header.bg-white,
+:root[data-theme="dark"] header {
+  background-color: #161A24 !important;
+  border-color: #2D3342 !important;
+}
 
-  html.dark input:not([type="checkbox"]):not([type="radio"]),
-  html.dark select,
-  html.dark textarea {
-    background-color: #151821;
-    color: var(--color-text-pri);
-    border-color: var(--color-gray-border);
-  }
+html.dark .bg-white:not([data-keep-white]):not([data-keep-white] *),
+:root[data-theme="dark"] .bg-white:not([data-keep-white]):not([data-keep-white] *) {
+  background-color: var(--color-card-bg, #1A1E29) !important;
+  border-color: #2D3342 !important;
+}
 
-  html.dark input::placeholder,
-  html.dark textarea::placeholder {
-    color: var(--color-text-ter);
-  }
+/* Form controls & inputs */
+html.dark input:not([type="checkbox"]):not([type="radio"]):not([data-keep-white]),
+html.dark select,
+html.dark textarea,
+:root[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([data-keep-white]),
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea {
+  background-color: #131620 !important;
+  color: #F3F4F6 !important;
+  border-color: #2D3342 !important;
+}
 
-  .form-select {
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238C8A85' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 8px center;
-  }
+html.dark input::placeholder,
+html.dark textarea::placeholder,
+:root[data-theme="dark"] input::placeholder,
+:root[data-theme="dark"] textarea::placeholder {
+  color: #6B7280 !important;
+}
 
-  html.dark .form-select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-  }
+.form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238C8A85' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
 
-  @keyframes shimmer {
-    0% {
-      background-position: -200% 0;
-    }
-    100% {
-      background-position: 200% 0;
-    }
-  }
+html.dark .form-select,
+:root[data-theme="dark"] .form-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+}
 
-  .skeleton-shimmer {
-    background: linear-gradient(
-      90deg,
-      #E5E3DD 0%,
-      #F5F4F0 50%,
-      #E5E3DD 100%
-    );
-    background-size: 200% 100%;
-    animation: shimmer 1.8s ease-in-out infinite;
-  }
+/* Subtle background tints in dark mode (Swagger / badges / cards) */
+html.dark .bg-emerald-50,
+:root[data-theme="dark"] .bg-emerald-50 {
+  background-color: rgba(16, 185, 129, 0.12) !important;
+}
 
-  html.dark .skeleton-shimmer {
-    background: linear-gradient(
-      90deg,
-      #1F2430 0%,
-      #2B3242 50%,
-      #1F2430 100%
-    );
-    background-size: 200% 100%;
+html.dark .bg-blue-50,
+:root[data-theme="dark"] .bg-blue-50 {
+  background-color: rgba(59, 130, 246, 0.12) !important;
+}
+
+html.dark .bg-amber-50,
+:root[data-theme="dark"] .bg-amber-50 {
+  background-color: rgba(245, 158, 11, 0.12) !important;
+}
+
+html.dark .bg-rose-50,
+html.dark .bg-red-50,
+:root[data-theme="dark"] .bg-rose-50,
+:root[data-theme="dark"] .bg-red-50 {
+  background-color: rgba(239, 68, 68, 0.12) !important;
+}
+
+html.dark .bg-emerald-100,
+:root[data-theme="dark"] .bg-emerald-100 {
+  background-color: rgba(16, 185, 129, 0.22) !important;
+}
+
+html.dark .bg-blue-100,
+:root[data-theme="dark"] .bg-blue-100 {
+  background-color: rgba(59, 130, 246, 0.22) !important;
+}
+
+html.dark .bg-amber-100,
+:root[data-theme="dark"] .bg-amber-100 {
+  background-color: rgba(245, 158, 11, 0.22) !important;
+}
+
+html.dark .bg-gray-50,
+:root[data-theme="dark"] .bg-gray-50 {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+html.dark .bg-gray-100,
+:root[data-theme="dark"] .bg-gray-100 {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Text color contrast adaptations in dark mode */
+html.dark .text-emerald-700,
+html.dark .text-emerald-800,
+html.dark .text-emerald-900,
+html.dark .text-emerald-950,
+:root[data-theme="dark"] .text-emerald-700,
+:root[data-theme="dark"] .text-emerald-800,
+:root[data-theme="dark"] .text-emerald-900,
+:root[data-theme="dark"] .text-emerald-950 {
+  color: #34D399 !important;
+}
+
+html.dark .text-blue-700,
+html.dark .text-blue-800,
+:root[data-theme="dark"] .text-blue-700,
+:root[data-theme="dark"] .text-blue-800 {
+  color: #60A5FA !important;
+}
+
+html.dark .text-amber-700,
+html.dark .text-amber-800,
+html.dark .text-amber-950,
+:root[data-theme="dark"] .text-amber-700,
+:root[data-theme="dark"] .text-amber-800,
+:root[data-theme="dark"] .text-amber-950 {
+  color: #FBBF24 !important;
+}
+
+html.dark .text-rose-700,
+html.dark .text-rose-800,
+html.dark .text-red-700,
+html.dark .text-red-800,
+html.dark .text-red-950,
+:root[data-theme="dark"] .text-rose-700,
+:root[data-theme="dark"] .text-rose-800,
+:root[data-theme="dark"] .text-red-700,
+:root[data-theme="dark"] .text-red-800,
+:root[data-theme="dark"] .text-red-950 {
+  color: #F87171 !important;
+}
+
+/* Borders in dark mode */
+html.dark .border-gray-100,
+html.dark .border-gray-200,
+html.dark .border-gray-300,
+:root[data-theme="dark"] .border-gray-100,
+:root[data-theme="dark"] .border-gray-200,
+:root[data-theme="dark"] .border-gray-300 {
+  border-color: #2D3342 !important;
+}
+
+/* Shadows in dark mode */
+html.dark .shadow-sm,
+html.dark .shadow-md,
+html.dark .shadow-lg,
+html.dark .shadow-xl,
+:root[data-theme="dark"] .shadow-sm,
+:root[data-theme="dark"] .shadow-md,
+:root[data-theme="dark"] .shadow-lg,
+:root[data-theme="dark"] .shadow-xl {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* SweetAlert2 popups in dark mode */
+html.dark .swal2-popup,
+:root[data-theme="dark"] .swal2-popup {
+  background: #181C26 !important;
+  color: #F3F4F6 !important;
+  border: 1px solid #272C3A !important;
+}
+html.dark .swal2-title,
+html.dark .swal2-html-container,
+:root[data-theme="dark"] .swal2-title,
+:root[data-theme="dark"] .swal2-html-container {
+  color: #F3F4F6 !important;
+}
+
+/* Skeleton animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
   }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #E5E3DD 0%,
+    #F5F4F0 50%,
+    #E5E3DD 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+html.dark .skeleton-shimmer,
+:root[data-theme="dark"] .skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #1F2430 0%,
+    #2B3242 50%,
+    #1F2430 100%
+  );
+  background-size: 200% 100%;
 }

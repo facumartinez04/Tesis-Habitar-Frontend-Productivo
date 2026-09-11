@@ -18,6 +18,7 @@ const ALL_MODULES: PlatformModule[] = [
   'alertas',
   'cumplimiento',
   'suscripciones',
+  'finanzas',
   'monitoreo',
   'jira',
   'roles',
@@ -72,6 +73,11 @@ const MODULE_INFO: Record<PlatformModule, { name: string; description: string; c
   suscripciones: {
     name: 'Planes & Renovaciones',
     description: 'Contratos, cuotas, upgrades a plan anual y estados de facturación.',
+    category: 'Comercial',
+  },
+  finanzas: {
+    name: 'Finanzas & Mercado Pago',
+    description: 'Control de gastos, balances, cuotas de colegios y pasarela Mercado Pago.',
     category: 'Comercial',
   },
   monitoreo: {

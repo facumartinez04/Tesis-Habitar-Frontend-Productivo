@@ -63,7 +63,7 @@ export function CourseQrModal({ course, isOpen, onClose, onUploadForCourse }: Co
 
         {/* Cartel imprimible */}
         <div className="p-6 flex flex-col items-center justify-center bg-surface/50 text-center">
-          <div className="bg-white border-2 border-emerald-700/60 rounded-2xl p-6 shadow-md max-w-sm w-full space-y-3">
+          <div data-keep-white="true" className="bg-white border-2 border-emerald-700/60 rounded-2xl p-6 shadow-md max-w-sm w-full space-y-3">
             <div className="flex items-center justify-center gap-2">
               <img src="/logo.svg" alt="Habitar" className="w-6 h-6 object-contain" />
               <span className="text-base font-bold tracking-tight text-text-pri">
@@ -79,7 +79,7 @@ export function CourseQrModal({ course, isOpen, onClose, onUploadForCourse }: Co
             </div>
 
             {/* Código QR visual */}
-            <div className="p-3 bg-white border border-gray-border rounded-xl shadow-xs inline-block mx-auto">
+            <div data-keep-white="true" className="p-3 bg-white border border-gray-border rounded-xl shadow-xs inline-block mx-auto">
               {qrDataUrl ? (
                 <img src={qrDataUrl} alt={`QR Fijo ${course.name}`} className="w-48 h-48 mx-auto" />
               ) : (

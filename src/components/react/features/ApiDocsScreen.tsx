@@ -962,15 +962,15 @@ export function ApiDocsScreen() {
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-16">
       {/* HEADER TIPO SWAGGER */}
-      <div className="bg-white border border-gray-border rounded-xl p-6 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-5">
+      <div className="bg-white dark:bg-[#1A1E29] border border-gray-border rounded-xl p-6 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 dark:border-gray-800 pb-5">
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold text-text-pri tracking-tight">Habitar API Documentation</h1>
-              <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
+              <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/50">
                 v1.0.0 OAS 3.0
               </span>
-              <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+              <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-700/50">
                 REST / JSON
               </span>
             </div>
@@ -982,15 +982,15 @@ export function ApiDocsScreen() {
           <div className="flex items-center gap-2">
             <button
               onClick={copyBaseUrl}
-              className="inline-flex items-center gap-2 px-3 py-2 bg-surface hover:bg-gray-100 border border-gray-border rounded-lg text-xs font-medium text-text-pri transition-colors"
+              className="inline-flex items-center gap-2 px-3 py-2 bg-surface hover:bg-gray-100 dark:hover:bg-zinc-800 border border-gray-border rounded-lg text-xs font-medium text-text-pri transition-colors"
               title="Copiar Base URL"
             >
-              <code className="text-emerald-700 font-mono font-semibold">{baseUrl}</code>
+              <code className="text-emerald-700 dark:text-emerald-400 font-mono font-semibold">{baseUrl}</code>
               <svg className="w-4 h-4 text-text-ter" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <rect x="9" y="9" width="13" height="13" rx="2" strokeWidth="2" />
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" strokeWidth="2" />
               </svg>
-              {copiedUrl && <span className="text-emerald-600 text-[11px] font-bold">¡Copiado!</span>}
+              {copiedUrl && <span className="text-emerald-600 dark:text-emerald-400 text-[11px] font-bold">¡Copiado!</span>}
             </button>
           </div>
         </div>
@@ -1012,20 +1012,20 @@ export function ApiDocsScreen() {
               placeholder="Buscar por ruta (/api/jira, /auth...), resumen o método..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-gray-border rounded-lg text-xs bg-surface text-text-pri placeholder-text-ter focus:outline-none focus:ring-2 focus:ring-green-mid"
+              className="w-full pl-9 pr-4 py-2 border border-gray-border rounded-lg text-xs bg-surface dark:bg-[#131620] text-text-pri placeholder-text-ter focus:outline-hidden focus:ring-2 focus:ring-green-mid"
             />
           </div>
 
           {/* MÉTODOS Y EXPANDIR/COLAPSAR */}
           <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end">
-            <div className="flex items-center bg-gray-100 p-1 rounded-lg border border-gray-200 text-xs">
+            <div className="flex items-center bg-gray-100 dark:bg-[#131620] p-1 rounded-lg border border-gray-200 dark:border-gray-800 text-xs">
               {['ALL', 'GET', 'POST', 'PATCH', 'DELETE'].map((m) => (
                 <button
                   key={m}
                   onClick={() => setMethodFilter(m)}
                   className={`px-2.5 py-1 rounded font-mono font-medium transition-all ${
                     methodFilter === m
-                      ? 'bg-white shadow-xs text-text-pri font-bold'
+                      ? 'bg-white dark:bg-[#222736] shadow-xs text-text-pri font-bold'
                       : 'text-text-sec hover:text-text-pri'
                   }`}
                 >
@@ -1037,13 +1037,13 @@ export function ApiDocsScreen() {
             <div className="flex items-center gap-1">
               <button
                 onClick={expandAll}
-                className="px-2.5 py-1.5 text-xs text-text-sec hover:text-text-pri border border-gray-200 rounded-md hover:bg-gray-50 font-medium"
+                className="px-2.5 py-1.5 text-xs text-text-sec hover:text-text-pri border border-gray-200 dark:border-gray-800 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-800 font-medium"
               >
                 Expandir todos
               </button>
               <button
                 onClick={collapseAll}
-                className="px-2.5 py-1.5 text-xs text-text-sec hover:text-text-pri border border-gray-200 rounded-md hover:bg-gray-50 font-medium"
+                className="px-2.5 py-1.5 text-xs text-text-sec hover:text-text-pri border border-gray-200 dark:border-gray-800 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-800 font-medium"
               >
                 Colapsar todos
               </button>
@@ -1052,7 +1052,7 @@ export function ApiDocsScreen() {
         </div>
 
         {/* PILLS DE CATEGORÍAS */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pt-3 pb-1 border-t border-gray-100 mt-4 text-xs">
+        <div className="flex items-center gap-1.5 overflow-x-auto pt-3 pb-1 border-t border-gray-100 dark:border-gray-800 mt-4 text-xs">
           {TAGS.map((t) => {
             const count = t === 'Todos' ? ENDPOINTS.length : ENDPOINTS.filter((e) => e.tag === t).length;
             const isSelected = selectedTag === t;
@@ -1063,11 +1063,11 @@ export function ApiDocsScreen() {
                 className={`whitespace-nowrap px-3 py-1 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 ${
                   isSelected
                     ? 'bg-green-dark text-white shadow-xs'
-                    : 'bg-surface hover:bg-gray-100 text-text-sec hover:text-text-pri border border-gray-border'
+                    : 'bg-surface hover:bg-gray-100 dark:hover:bg-zinc-800 text-text-sec hover:text-text-pri border border-gray-border'
                 }`}
               >
                 <span>{t}</span>
-                <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${isSelected ? 'bg-white/20 text-white' : 'bg-gray-200 text-text-ter'}`}>
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${isSelected ? 'bg-white/20 text-white' : 'bg-gray-200 dark:bg-zinc-800 text-text-ter dark:text-text-sec'}`}>
                   {count}
                 </span>
               </button>
@@ -1079,7 +1079,7 @@ export function ApiDocsScreen() {
       {/* LISTADO DE ENDPOINTS ESTILO SWAGGER */}
       <div className="space-y-3">
         {filteredEndpoints.length === 0 ? (
-          <div className="bg-white border border-gray-border rounded-xl p-12 text-center text-text-sec">
+          <div className="bg-white dark:bg-[#1A1E29] border border-gray-border rounded-xl p-12 text-center text-text-sec">
             <svg className="w-12 h-12 mx-auto text-text-ter mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <circle cx="11" cy="11" r="8" strokeWidth="1.5" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" strokeWidth="1.5" />
@@ -1095,7 +1095,7 @@ export function ApiDocsScreen() {
             return (
               <div
                 key={ep.id}
-                className={`border rounded-xl overflow-hidden transition-all duration-200 ${colors.border} bg-white shadow-xs`}
+                className={`border rounded-xl overflow-hidden transition-all duration-200 ${colors.border} bg-white dark:bg-[#1A1E29] shadow-xs`}
               >
                 {/* CABECERA CLICKABLE DEL ENDPOINT */}
                 <div
@@ -1123,7 +1123,7 @@ export function ApiDocsScreen() {
 
                   <div className="flex items-center gap-3">
                     {/* BADGE DE AUTENTICACIÓN */}
-                    <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-white/80 border border-gray-border text-text-sec">
+                    <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-white/80 dark:bg-zinc-800/80 border border-gray-border text-text-sec">
                       {ep.auth}
                     </span>
 
@@ -1134,11 +1134,11 @@ export function ApiDocsScreen() {
                         e.stopPropagation();
                         copyCurl(ep);
                       }}
-                      className="p-1.5 hover:bg-white/80 rounded border border-transparent hover:border-gray-border text-text-ter hover:text-text-pri transition-all"
+                      className="p-1.5 hover:bg-white/80 dark:hover:bg-zinc-800/80 rounded border border-transparent hover:border-gray-border text-text-ter hover:text-text-pri transition-all"
                       title="Copiar comando cURL"
                     >
                       {copiedCurlId === ep.id ? (
-                        <span className="text-[10px] text-emerald-700 font-bold">¡cURL copiado!</span>
+                        <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold">¡cURL copiado!</span>
                       ) : (
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <polyline points="16 18 22 12 16 6" strokeWidth="2" />
@@ -1161,7 +1161,7 @@ export function ApiDocsScreen() {
 
                 {/* DETALLE EXPANDIBLE TIPO SWAGGER */}
                 {isExpanded && (
-                  <div className="p-5 border-t border-gray-200 bg-white space-y-5 text-xs">
+                  <div className="p-5 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1A1E29] space-y-5 text-xs">
                     {/* DESCRIPCIÓN DETALLADA / PARA QUÉ SIRVE */}
                     <div className="bg-surface rounded-lg p-4 border border-gray-border">
                       <div className="font-semibold text-text-pri text-xs uppercase tracking-wider mb-1 flex items-center gap-2">
@@ -1188,7 +1188,7 @@ export function ApiDocsScreen() {
                         <div className="border border-gray-border rounded-lg overflow-hidden">
                           <table className="w-full text-left border-collapse">
                             <thead>
-                              <tr className="bg-gray-50 border-b border-gray-border text-[11px] text-text-sec">
+                              <tr className="bg-gray-50 dark:bg-zinc-800/60 border-b border-gray-border text-[11px] text-text-sec">
                                 <th className="py-2 px-3">Parámetro</th>
                                 <th className="py-2 px-3">Tipo</th>
                                 <th className="py-2 px-3">Ubicación</th>
@@ -1196,21 +1196,21 @@ export function ApiDocsScreen() {
                                 <th className="py-2 px-3">Descripción</th>
                               </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100">
+                            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                               {ep.pathParams?.map((p) => (
-                                <tr key={p.name} className="hover:bg-gray-50/50">
+                                <tr key={p.name} className="hover:bg-gray-50/50 dark:hover:bg-zinc-800/30">
                                   <td className="py-2 px-3 font-mono font-semibold text-text-pri">{p.name}</td>
                                   <td className="py-2 px-3 font-mono text-text-ter">{p.type}</td>
-                                  <td className="py-2 px-3"><span className="px-1.5 py-0.5 bg-purple-50 text-purple-700 rounded text-[10px]">path</span></td>
-                                  <td className="py-2 px-3 text-rose-600 font-medium">Requerido</td>
+                                  <td className="py-2 px-3"><span className="px-1.5 py-0.5 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 rounded text-[10px]">path</span></td>
+                                  <td className="py-2 px-3 text-rose-600 dark:text-rose-400 font-medium">Requerido</td>
                                   <td className="py-2 px-3 text-text-sec">{p.description}</td>
                                 </tr>
                               ))}
                               {ep.queryParams?.map((p) => (
-                                <tr key={p.name} className="hover:bg-gray-50/50">
+                                <tr key={p.name} className="hover:bg-gray-50/50 dark:hover:bg-zinc-800/30">
                                   <td className="py-2 px-3 font-mono font-semibold text-text-pri">{p.name}</td>
                                   <td className="py-2 px-3 font-mono text-text-ter">{p.type}</td>
-                                  <td className="py-2 px-3"><span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-[10px]">query</span></td>
+                                  <td className="py-2 px-3"><span className="px-1.5 py-0.5 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 rounded text-[10px]">query</span></td>
                                   <td className="py-2 px-3 text-text-ter">{p.required ? 'Sí' : 'Opcional'}</td>
                                   <td className="py-2 px-3 text-text-sec">{p.description}</td>
                                 </tr>
@@ -1228,7 +1228,7 @@ export function ApiDocsScreen() {
                           <span className="font-semibold text-text-pri text-xs uppercase tracking-wider">
                             Cuerpo de la Petición (Request Body)
                           </span>
-                          <span className="font-mono text-[11px] text-text-ter bg-gray-100 px-2 py-0.5 rounded">
+                          <span className="font-mono text-[11px] text-text-ter bg-gray-100 dark:bg-zinc-800 px-2 py-0.5 rounded">
                             {ep.requestBody.contentType}
                           </span>
                         </div>
@@ -1254,8 +1254,8 @@ export function ApiDocsScreen() {
                                   <span
                                     className={`px-2 py-0.5 rounded text-xs font-mono font-bold ${
                                       is2xx
-                                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                                        : 'bg-rose-100 text-rose-800 border border-rose-300'
+                                        ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/50'
+                                        : 'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-700/50'
                                     }`}
                                   >
                                     {resp.label}
@@ -1275,14 +1275,14 @@ export function ApiDocsScreen() {
                     </div>
 
                     {/* COMANDO CURL LISTO PARA TESTEAR */}
-                    <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
+                    <div className="pt-2 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
                       <span className="text-[11px] text-text-ter">
                         Usa este cURL para probar el endpoint en tu terminal o en un agente autónomo de IA.
                       </span>
                       <button
                         type="button"
                         onClick={() => copyCurl(ep)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-gray-100 hover:bg-gray-200 text-text-pri text-xs font-medium transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-text-pri text-xs font-medium transition-colors"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <polyline points="16 18 22 12 16 6" strokeWidth="2" />

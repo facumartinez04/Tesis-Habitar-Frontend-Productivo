@@ -8,7 +8,7 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
 export function Card({ surface = false, className = '', children, ...rest }: CardProps) {
   const base = surface
     ? 'bg-surface rounded-md px-3.5 py-3'
-    : 'bg-white border border-gray-border rounded-md p-4';
+    : 'bg-white dark:bg-[#1A1E29] border border-gray-border rounded-md p-4';
   return (
     <div className={`${base} ${className}`} {...rest}>
       {children}

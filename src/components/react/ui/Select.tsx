@@ -12,7 +12,7 @@ export function Select({ label, className = '', id, children, ...rest }: SelectP
           {label}
         </label>
       )}
-      <select id={id} className={`form-select w-full px-2.5 py-[7px] border border-gray-border rounded-[6px] text-[12.5px] bg-white text-text-pri ${className}`} {...rest}>
+      <select id={id} className={`form-select w-full px-2.5 py-[7px] border border-gray-border rounded-[6px] text-[12.5px] bg-white dark:bg-[#131620] text-text-pri ${className}`} {...rest}>
         {children}
       </select>
     </div>
