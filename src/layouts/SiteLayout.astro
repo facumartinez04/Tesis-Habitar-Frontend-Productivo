@@ -5,13 +5,17 @@ interface Props {
   title: string;
   description?: string;
   image?: string;
+  forceLight?: boolean;
 }
 
 const {
   title,
   description = 'Habitar — Comprensión lectora asistida por Inteligencia Artificial, analítica formativa y diagnóstica para instituciones educativas.',
   image = '/logo-habitar.jpg',
+  forceLight = false,
 } = Astro.props;
+
+const isLanding = forceLight || Astro.url.pathname === '/' || Astro.url.pathname === '';
 
 const siteUrl = 'https://habitar.lat';
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
@@ -95,21 +99,28 @@ const jsonLd = {
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
     {/* Inline Theme Detection (Prevents FOUC across Claro / Oscuro / Sistema) */}
-    <script is:inline>
+    <script is:inline define:vars={{ isLanding }}>
       (function() {
         try {
-          const stored = localStorage.getItem('habitar-theme') || 'system';
-          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          const isDark = stored === 'dark' || (stored === 'system' && prefersDark);
           const root = document.documentElement;
-          if (isDark) {
-            root.classList.add('dark');
-            root.setAttribute('data-theme', 'dark');
-          } else {
+          if (isLanding) {
+            // El landing page siempre queda en modo claro
             root.classList.remove('dark');
             root.setAttribute('data-theme', 'light');
+            root.setAttribute('data-theme-preference', 'light');
+          } else {
+            const stored = localStorage.getItem('habitar-theme') || 'system';
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const isDark = stored === 'dark' || (stored === 'system' && prefersDark);
+            if (isDark) {
+              root.classList.add('dark');
+              root.setAttribute('data-theme', 'dark');
+            } else {
+              root.classList.remove('dark');
+              root.setAttribute('data-theme', 'light');
+            }
+            root.setAttribute('data-theme-preference', stored);
           }
-          root.setAttribute('data-theme-preference', stored);
 
           // Auto-redirección para Alumno guardado en PWA
           const userRole = localStorage.getItem('habitar_user_role');
