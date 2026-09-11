@@ -360,11 +360,7 @@ export function RolesManagementScreen() {
   }, [moduleSearch]);
 
   if (loading) {
-    return (
-      <div className="py-20 flex justify-center items-center">
-        <HabitarLoader size="lg" message="Cargando roles y permisos del sistema..." />
-      </div>
-    );
+    return <HabitarLoader size="lg" message="Cargando roles y permisos del sistema..." />;
   }
 
   return (

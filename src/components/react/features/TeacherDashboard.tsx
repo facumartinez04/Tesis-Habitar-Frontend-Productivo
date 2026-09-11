@@ -180,11 +180,7 @@ export function TeacherDashboard() {
   const currentCourse = courses.find((c) => c.id === selectedCourseId) || courses[0];
 
   if (!session || loadingCourses) {
-    return (
-      <div className="py-24 flex justify-center items-center">
-        <HabitarLoader size="lg" message="Cargando tus aulas y métricas pedagógicas..." />
-      </div>
-    );
+    return <HabitarLoader size="lg" message="Cargando tus aulas y métricas pedagógicas..." />;
   }
 
   if (courses.length === 0) {

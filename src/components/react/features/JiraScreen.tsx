@@ -114,11 +114,7 @@ export function JiraScreen() {
   };
 
   if (loading) {
-    return (
-      <div className="py-24 flex justify-center items-center">
-        <HabitarLoader size="lg" message="Sincronizando tablero Jira de tareas y soporte..." />
-      </div>
-    );
+    return <HabitarLoader size="lg" message="Sincronizando tablero Jira de tareas y soporte..." />;
   }
 
   return (

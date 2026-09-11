@@ -252,11 +252,7 @@ export function RenewalScreen() {
   }
 
   if (loading) {
-    return (
-      <div className="py-24 flex justify-center items-center">
-        <HabitarLoader size="lg" message="Cargando planes de suscripción e instituciones..." />
-      </div>
-    );
+    return <HabitarLoader size="lg" message="Cargando planes de suscripción e instituciones..." />;
   }
 
   return (

@@ -42,11 +42,7 @@ export function InstitutionsListScreen() {
   }, []);
 
   if (!institutions) {
-    return (
-      <div className="py-24 flex justify-center items-center">
-        <HabitarLoader size="lg" message="Cargando instituciones educativas..." />
-      </div>
-    );
+    return <HabitarLoader size="lg" message="Cargando instituciones educativas..." />;
   }
 
   const filtered = institutions.filter((inst) => {

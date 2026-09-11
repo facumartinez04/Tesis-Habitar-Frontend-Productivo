@@ -204,11 +204,7 @@ export function AdminFinanceScreen() {
   };
 
   if (loading) {
-    return (
-      <div className="py-24 flex justify-center items-center">
-        <HabitarLoader size="lg" message="Cargando métricas financieras y balances..." />
-      </div>
-    );
+    return <HabitarLoader size="lg" message="Cargando métricas financieras y balances..." />;
   }
 
   return (

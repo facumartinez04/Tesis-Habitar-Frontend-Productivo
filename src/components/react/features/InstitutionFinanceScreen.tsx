@@ -231,11 +231,7 @@ export function InstitutionFinanceScreen() {
   };
 
   if (!session || loading) {
-    return (
-      <div className="py-24 flex justify-center items-center">
-        <HabitarLoader size="lg" message="Cargando cuotas y finanzas institucionales..." />
-      </div>
-    );
+    return <HabitarLoader size="lg" message="Cargando cuotas y finanzas institucionales..." />;
   }
 
   return (

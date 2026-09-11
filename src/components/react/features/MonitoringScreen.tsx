@@ -41,11 +41,7 @@ export function MonitoringScreen() {
   }, []);
 
   if (!snapshot) {
-    return (
-      <div className="py-24 flex justify-center items-center">
-        <HabitarLoader size="lg" message="Verificando disponibilidad de servidores y base de datos..." />
-      </div>
-    );
+    return <HabitarLoader size="lg" message="Verificando disponibilidad de servidores y base de datos..." />;
   }
 
   const allOperational = snapshot.components.every((c) => c.health === 'operativo');

@@ -15,53 +15,44 @@ export function HabitarLoader({
 }: HabitarLoaderProps) {
   const isFullscreen = size === 'fullscreen';
 
-  // Configuración de escalas según tamaño
+  // Proporciones calibradas para alineación y concentricidad matemática
   const config = {
     sm: {
       container: 'w-16 h-16',
       badge: 'w-11 h-11 rounded-xl p-2',
-      logoScale: 'scale-75',
-      spinner: 'w-16 h-16',
       radius: 28,
       showText: false,
     },
     md: {
       container: 'w-24 h-24',
       badge: 'w-16 h-16 rounded-2xl p-3',
-      logoScale: 'scale-90',
-      spinner: 'w-24 h-24',
       radius: 42,
       showText: true,
     },
     lg: {
       container: 'w-32 h-32',
       badge: 'w-20 h-20 rounded-[22px] p-3.5',
-      logoScale: 'scale-100',
-      spinner: 'w-32 h-32',
-      radius: 56,
+      radius: 54,
       showText: true,
     },
     fullscreen: {
       container: 'w-32 h-32',
       badge: 'w-20 h-20 rounded-[22px] p-3.5',
-      logoScale: 'scale-100',
-      spinner: 'w-32 h-32',
-      radius: 56,
+      radius: 54,
       showText: true,
     },
   }[size];
 
   const content = (
-    <div className={`flex flex-col items-center justify-center select-none ${className}`}>
-      {/* Zona Central: Orbita + Resplandor + Isotipo */}
+    <div className={`flex flex-col items-center justify-center text-center select-none ${className}`}>
+      {/* Zona Central: Órbita concéntrica + Halo + Badge centrado */}
       <div className={`relative flex items-center justify-center ${config.container}`}>
-        {/* Resplandor ambiental de fondo (Glow) */}
-        <div className="absolute inset-2 rounded-full bg-emerald-500/20 dark:bg-emerald-400/25 blur-2xl animate-pulse" />
+        {/* Resplandor ambiental de fondo perfectamente concéntrico */}
+        <div className="absolute inset-2 rounded-full bg-emerald-500/20 dark:bg-emerald-400/25 blur-xl animate-pulse pointer-events-none" />
 
-        {/* Anillo de giro orbital SVG */}
+        {/* Órbita SVG con rotación interna centrada en (64, 64) */}
         <svg
-          className={`absolute inset-0 ${config.spinner} animate-spin`}
-          style={{ animationDuration: '2s', animationTimingFunction: 'linear' }}
+          className="absolute inset-0 w-full h-full pointer-events-none"
           viewBox="0 0 128 128"
           fill="none"
         >
@@ -71,62 +62,46 @@ export function HabitarLoader({
               <stop offset="50%" stopColor="#10B981" stopOpacity="0.4" />
               <stop offset="100%" stopColor="#34D399" stopOpacity="1" />
             </linearGradient>
-            <linearGradient id="habitar-trail-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#059669" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#10B981" stopOpacity="0.2" />
-            </linearGradient>
           </defs>
 
-          {/* Pista circular guía fija */}
+          {/* Anillo guía estático concéntrico */}
           <circle
             cx="64"
             cy="64"
             r={config.radius}
             stroke="currentColor"
             className="text-emerald-900/10 dark:text-emerald-400/10"
-            strokeWidth="2.5"
+            strokeWidth="2"
           />
 
-          {/* Arco animado principal con gradiente */}
-          <circle
-            cx="64"
-            cy="64"
-            r={config.radius}
-            stroke="url(#habitar-spin-grad)"
-            strokeWidth="3.5"
-            strokeLinecap="round"
-            strokeDasharray="80 280"
-          />
+          {/* Anillo activo girando sobre el centro matemático (64, 64) */}
+          <g style={{ transformOrigin: '64px 64px', animation: 'habitar-orbit 1.8s linear infinite' }}>
+            <circle
+              cx="64"
+              cy="64"
+              r={config.radius}
+              stroke="url(#habitar-spin-grad)"
+              strokeWidth="3.5"
+              strokeLinecap="round"
+              strokeDasharray="75 260"
+            />
+          </g>
         </svg>
 
-        {/* Contenedor flotante del logo (Card Glassmórfica Premium) */}
+        {/* Tarjeta Glassmórfica central alineada al centro */}
         <div
-          className={`relative z-10 flex items-center justify-center bg-white/95 dark:bg-[#161A23] border border-gray-200/80 dark:border-emerald-500/30 shadow-xl shadow-emerald-900/5 dark:shadow-emerald-950/40 backdrop-blur-md transition-transform duration-500 hover:scale-105 ${config.badge}`}
+          className={`relative z-10 flex items-center justify-center bg-white/95 dark:bg-[#161A23] border border-gray-200/80 dark:border-emerald-500/30 shadow-xl shadow-emerald-900/5 dark:shadow-emerald-950/40 backdrop-blur-md ${config.badge}`}
         >
-          {/* Isotipo vectorial Habitar con gradiente adaptable para luz y oscuridad */}
+          {/* Isotipo vectorial Habitar: viewBox acotado para centrado milimétrico */}
           <svg
-            viewBox="0 0 256 256"
-            className={`w-full h-full transition-transform duration-700 animate-pulse ${config.logoScale}`}
+            viewBox="36 40 184 172"
+            preserveAspectRatio="xMidYMid meet"
+            className="w-full h-full animate-pulse"
             style={{ animationDuration: '2.5s' }}
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <defs>
-              <linearGradient id="habitar-roof-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#10B981" />
-                <stop offset="100%" stopColor="#34D399" />
-              </linearGradient>
-              <linearGradient id="habitar-book-grad-light" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#0F6E56" />
-                <stop offset="100%" stopColor="#10B981" />
-              </linearGradient>
-              <linearGradient id="habitar-book-grad-dark" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#34D399" />
-                <stop offset="100%" stopColor="#10B981" />
-              </linearGradient>
-            </defs>
-
-            {/* Símbolo: Libro Abierto (Fundamento del Saber) */}
+            {/* Libro Abierto */}
             <g
               className="stroke-[#0F6E56] dark:stroke-[#34D399] transition-colors duration-300"
               strokeWidth="11"
@@ -151,9 +126,9 @@ export function HabitarLoader({
               <line x1="162" y1="92" x2="162" y2="150" strokeWidth="11" />
             </g>
 
-            {/* Símbolo: Casa / Hogar (Techo + Chimenea con brillo esmeralda vivo) */}
+            {/* Casa / Hogar (Techo + Chimenea) */}
             <g strokeLinecap="round" strokeLinejoin="round">
-              {/* Techo distintivo */}
+              {/* Techo */}
               <path
                 d="M 74 98 L 128 48 L 182 98"
                 className="stroke-emerald-600 dark:stroke-emerald-400"
@@ -170,26 +145,26 @@ export function HabitarLoader({
         </div>
       </div>
 
-      {/* Marca tipográfica y Mensaje de estado */}
+      {/* Tipografía de marca y Estado centrados */}
       {config.showText && (
-        <div className="mt-5 flex flex-col items-center text-center space-y-2">
-          {/* Logotipo Tipográfico: Habitar (sin separación de letras) */}
-          <div className="text-[15px] font-bold tracking-tight text-gray-900 dark:text-white flex items-center leading-none">
+        <div className="mt-5 flex flex-col items-center justify-center text-center space-y-2 w-full">
+          {/* Logo tipográfico sin separación */}
+          <div className="text-[16px] font-bold tracking-tight text-gray-900 dark:text-white flex items-center justify-center leading-none text-center">
             <span>Habi</span>
             <span className="text-emerald-600 dark:text-emerald-400">tar</span>
           </div>
 
-          {/* Mensaje descriptivo */}
+          {/* Mensaje descriptivo centrado */}
           {message && (
-            <p className="text-xs font-normal text-gray-500 dark:text-gray-400 max-w-xs leading-relaxed">
+            <p className="text-xs font-normal text-gray-500 dark:text-gray-400 max-w-xs leading-relaxed text-center mx-auto">
               {message}
             </p>
           )}
 
-          {/* Barra de progreso indeterminada sutil y moderna (estilo Apple/Vercel) */}
-          <div className="w-28 h-1 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden relative mt-1">
+          {/* Barra shimmer de progreso centrada */}
+          <div className="w-28 h-1 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden relative mt-1 mx-auto">
             <div
-              className="absolute inset-y-0 rounded-full bg-gradient-to-r from-emerald-600 to-teal-400 dark:from-emerald-400 dark:to-teal-300 w-1/2 animate-[shimmer_1.6s_ease-in-out_infinite]"
+              className="absolute inset-y-0 rounded-full bg-gradient-to-r from-emerald-600 to-teal-400 dark:from-emerald-400 dark:to-teal-300 w-1/2"
               style={{
                 animation: 'habitar-slide 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite',
               }}
@@ -198,8 +173,16 @@ export function HabitarLoader({
         </div>
       )}
 
-      {/* Keyframe inline para la barra de progreso */}
+      {/* Keyframes de animación inline */}
       <style>{`
+        @keyframes habitar-orbit {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
         @keyframes habitar-slide {
           0% {
             left: -40%;
@@ -235,7 +218,7 @@ export function HabitarLoader({
   }
 
   return (
-    <div className="py-12 flex items-center justify-center w-full">
+    <div className="min-h-[55vh] sm:min-h-[65vh] w-full flex flex-col items-center justify-center py-12">
       {content}
     </div>
   );
