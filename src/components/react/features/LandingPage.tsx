@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Icon } from '../ui/Icon';
+import { ThemeToggle } from '../ui/ThemeToggle';
 import { listPublicPlans, DEFAULT_PUBLIC_PLANS } from '../../../services/subscriptionService';
 import type { SubscriptionPlan } from '../../../types/subscription';
 import { sessionStore, clearSession } from '../../../store/sessionStore';
@@ -136,6 +137,7 @@ export function LandingPage() {
 
           {/* Header Action Buttons (Desktop & Tablet) */}
           <div className="hidden sm:flex items-center gap-2.5 shrink-0">
+            <ThemeToggle variant="compact" />
             {session ? (
               <div className="flex items-center gap-2.5">
                 {/* User Info Capsule */}
@@ -301,6 +303,11 @@ export function LandingPage() {
                 Preguntas Frecuentes
               </a>
             </nav>
+
+            <div className="pt-3 pb-1 border-t border-gray-border flex items-center justify-between">
+              <span className="text-xs text-text-sec font-medium">Apariencia:</span>
+              <ThemeToggle variant="segmented" />
+            </div>
 
             {!session && (
               <div className="pt-3 border-t border-gray-border flex flex-col gap-2">

@@ -23,7 +23,8 @@ export function QrBox({ code, size = 'sm' }: QrBoxProps) {
 
   return (
     <div
-      className="bg-white border-2 border-gray-border rounded-md flex flex-col items-center justify-center p-3.5"
+      data-keep-white="true"
+      className="bg-white text-neutral-900 border-2 border-gray-border rounded-md flex flex-col items-center justify-center p-3.5"
       style={{ width: boxSize, height: boxSize }}
     >
       {dataUrl ? (

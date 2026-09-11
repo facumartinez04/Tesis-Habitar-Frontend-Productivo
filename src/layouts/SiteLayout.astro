@@ -17,6 +17,8 @@ const siteUrl = 'https://habitar.lat';
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
 const fullImageUrl = new URL(image, siteUrl).href;
 
+const pageTitle = title.startsWith('Habitar') ? title : `Habitar — ${title}`;
+
 const jsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -49,7 +51,7 @@ const jsonLd = {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Habitar — {title}</title>
+    <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <meta name="keywords" content="comprensión lectora, inteligencia artificial, analítica educativa, rúbricas pedagógicas, evaluación formativa, colegios, educación primaria, educación secundaria, Habitar" />
     <meta name="author" content="Habitar" />
@@ -59,7 +61,7 @@ const jsonLd = {
     {/* Open Graph / Facebook */}
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalUrl} />
-    <meta property="og:title" content={`Habitar — ${title}`} />
+    <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={fullImageUrl} />
     <meta property="og:site_name" content="Habitar" />
@@ -68,7 +70,7 @@ const jsonLd = {
     {/* Twitter Card */}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content={canonicalUrl} />
-    <meta name="twitter:title" content={`Habitar — ${title}`} />
+    <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={fullImageUrl} />
 
@@ -91,8 +93,28 @@ const jsonLd = {
 
     {/* Structured Data (Schema.org) */}
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+    {/* Inline Theme Detection (Prevents FOUC across Claro / Oscuro / Sistema) */}
+    <script is:inline>
+      (function() {
+        try {
+          const stored = localStorage.getItem('habitar-theme') || 'system';
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          const isDark = stored === 'dark' || (stored === 'system' && prefersDark);
+          const root = document.documentElement;
+          if (isDark) {
+            root.classList.add('dark');
+            root.setAttribute('data-theme', 'dark');
+          } else {
+            root.classList.remove('dark');
+            root.setAttribute('data-theme', 'light');
+          }
+          root.setAttribute('data-theme-preference', stored);
+        } catch (e) {}
+      })();
+    </script>
   </head>
-  <body class="min-h-screen bg-surface">
+  <body class="min-h-screen bg-surface text-text-pri transition-colors duration-200">
     <slot />
     <script>
       if ('serviceWorker' in navigator) {

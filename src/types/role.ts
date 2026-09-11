@@ -11,7 +11,8 @@ export type PlatformModule =
   | 'suscripciones'
   | 'monitoreo'
   | 'jira'
-  | 'roles';
+  | 'roles'
+  | 'finanzas';
 
 export interface ModuleMetadata {
   id: PlatformModule;

@@ -1,9 +1,8 @@
 @import "tailwindcss";
 
-@theme {
-  --font-sans: 'Inter', sans-serif;
-  --font-mono: 'DM Mono', monospace;
+@custom-variant dark (&:where(.dark, .dark *));
 
+:root {
   --color-green-dark: #0F6E56;
   --color-green-mid: #1D9E75;
   --color-green-light: #E1F5EE;
@@ -20,10 +19,64 @@
   --color-gray-bg: #F1EFE8;
   --color-gray-border: #D8D5CE;
   --color-surface: #F7F6F3;
+  --color-card-bg: #FFFFFF;
   --color-text-pri: #1A1918;
   --color-text-sec: #5C5A56;
   --color-text-ter: #8C8A85;
   --color-app-bg: #EDECEA;
+}
+
+html.dark,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-green-dark: #072A20;
+  --color-green-mid: #10B981;
+  --color-green-light: #133D30;
+  --color-green-bg: rgba(16, 185, 129, 0.15);
+  --color-green-text: #34D399;
+  --color-amber: #F59E0B;
+  --color-amber-bg: rgba(245, 158, 11, 0.15);
+  --color-amber-text: #FBBF24;
+  --color-red: #EF4444;
+  --color-red-bg: rgba(239, 68, 68, 0.15);
+  --color-red-text: #F87171;
+  --color-blue: #3B82F6;
+  --color-blue-bg: rgba(59, 130, 246, 0.15);
+  --color-gray-bg: #1F2430;
+  --color-gray-border: #2D3342;
+  --color-surface: #13161F;
+  --color-card-bg: #1A1E29;
+  --color-text-pri: #F3F4F6;
+  --color-text-sec: #9CA3AF;
+  --color-text-ter: #6B7280;
+  --color-app-bg: #0D0F14;
+}
+
+@theme {
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+
+  --color-green-dark: var(--color-green-dark);
+  --color-green-mid: var(--color-green-mid);
+  --color-green-light: var(--color-green-light);
+  --color-green-bg: var(--color-green-bg);
+  --color-green-text: var(--color-green-text);
+  --color-amber: var(--color-amber);
+  --color-amber-bg: var(--color-amber-bg);
+  --color-amber-text: var(--color-amber-text);
+  --color-red: var(--color-red);
+  --color-red-bg: var(--color-red-bg);
+  --color-red-text: var(--color-red-text);
+  --color-blue: var(--color-blue);
+  --color-blue-bg: var(--color-blue-bg);
+  --color-gray-bg: var(--color-gray-bg);
+  --color-gray-border: var(--color-gray-border);
+  --color-surface: var(--color-surface);
+  --color-text-pri: var(--color-text-pri);
+  --color-text-sec: var(--color-text-sec);
+  --color-text-ter: var(--color-text-ter);
+  --color-app-bg: var(--color-app-bg);
 
   --radius-sm: 6px;
   --radius-md: 8px;
@@ -33,7 +86,7 @@
 @layer base {
   html, body {
     height: 100%;
-    background: var(--color-app-bg);
+    background-color: var(--color-app-bg);
     color: var(--color-text-pri);
     font-family: var(--font-sans);
     font-size: 14px;
@@ -46,11 +99,37 @@
 }
 
 @layer components {
+  /* Dynamic adaptions in dark mode for common utility containers */
+  html.dark .bg-white:not([data-keep-white]):not([data-keep-white] *) {
+    background-color: var(--color-card-bg);
+  }
+
+  html.dark header.bg-white {
+    background-color: rgba(22, 26, 36, 0.95);
+  }
+
+  html.dark input:not([type="checkbox"]):not([type="radio"]),
+  html.dark select,
+  html.dark textarea {
+    background-color: #151821;
+    color: var(--color-text-pri);
+    border-color: var(--color-gray-border);
+  }
+
+  html.dark input::placeholder,
+  html.dark textarea::placeholder {
+    color: var(--color-text-ter);
+  }
+
   .form-select {
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238C8A85' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 8px center;
+  }
+
+  html.dark .form-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   }
 
   @keyframes shimmer {
@@ -72,5 +151,14 @@
     background-size: 200% 100%;
     animation: shimmer 1.8s ease-in-out infinite;
   }
-}
 
+  html.dark .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      #1F2430 0%,
+      #2B3242 50%,
+      #1F2430 100%
+    );
+    background-size: 200% 100%;
+  }
+}

@@ -1,6 +1,7 @@
 ---
 import Icon from './Icon.astro';
 import { SessionUserBadge } from '../react/features/SessionUserBadge';
+import { ThemeToggle } from '../react/ui/ThemeToggle';
 
 interface Props {
   sectionLabel: string;
@@ -8,7 +9,7 @@ interface Props {
 
 const { sectionLabel } = Astro.props;
 ---
-<header class="bg-white border-b border-gray-border px-4 sm:px-6 py-3 flex items-center justify-between shrink-0">
+<header class="bg-white border-b border-gray-border px-4 sm:px-6 py-3 flex items-center justify-between shrink-0 transition-colors">
   <div class="flex items-center gap-3 min-w-0">
     <button
       id="sidebar-toggle"
@@ -20,5 +21,8 @@ const { sectionLabel } = Astro.props;
     </button>
     <span class="text-[13px] font-medium text-text-pri truncate">{sectionLabel}</span>
   </div>
-  <SessionUserBadge client:load />
+  <div class="flex items-center gap-2 sm:gap-3">
+    <ThemeToggle client:load />
+    <SessionUserBadge client:load />
+  </div>
 </header>
