@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Skeleton } from '../ui/Skeleton';
 
-const API_URL = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:4000/api';
+const API_URL =
+  import.meta.env.PUBLIC_API_URL ||
+  (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
+    ? 'https://api.habitar.lat/api'
+    : 'http://localhost:4000/api');
 
 interface StatusReport {
   status: 'ok' | 'degraded' | 'down';

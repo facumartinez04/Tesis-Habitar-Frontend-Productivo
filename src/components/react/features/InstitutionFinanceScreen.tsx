@@ -42,10 +42,11 @@ export function InstitutionFinanceScreen() {
   const [savingConfig, setSavingConfig] = useState(false);
 
   // Formulario nueva cuota
+  const currentPeriod = new Date().toISOString().slice(0, 7);
   const [feeForm, setFeeForm] = useState({
-    title: 'Cuota Mensual Marzo 2026',
-    period: '2026-03',
-    amountArs: '45000',
+    title: '',
+    period: currentPeriod,
+    amountArs: '',
     dueDate: new Date(Date.now() + 15 * 86400000).toISOString().split('T')[0],
     tutorEmail: '',
     tutorName: '',
@@ -122,9 +123,9 @@ export function InstitutionFinanceScreen() {
         'Se generó el enlace de pago de Mercado Pago. Podés compartirlo directamente con la familia.'
       );
       setFeeForm({
-        title: 'Cuota Mensual',
-        period: '2026-03',
-        amountArs: '45000',
+        title: '',
+        period: currentPeriod,
+        amountArs: '',
         dueDate: new Date(Date.now() + 15 * 86400000).toISOString().split('T')[0],
         tutorEmail: '',
         tutorName: '',

@@ -49,8 +49,8 @@ export function AdminFinanceScreen() {
 
   // Formulario nuevo cobro / checkout
   const [checkoutForm, setCheckoutForm] = useState({
-    planName: 'Plan Estándar Anual',
-    amountArs: '1200000',
+    planName: '',
+    amountArs: '',
     payerEmail: '',
     payerName: '',
   });
