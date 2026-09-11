@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { OAuthProviderId } from '../../../types/auth';
 import { oauthLoginUrl } from '../../../services/authService';
 import { GoogleIcon, MicrosoftIcon } from '../ui/BrandIcon';
+import { StudentQrScannerModal } from './StudentQrScannerModal';
 
 const ERROR_MESSAGES: Record<string, string> = {
   institution_not_allowed: 'Tu institución no está habilitada en Habitar. Contactá a tu coordinador/a.',
@@ -18,6 +19,7 @@ export function LoginScreen() {
   // el render inicial rompe la hidratación, porque el server no tiene `window` y arma
   // un HTML distinto al que arma el cliente en su primer render.
   const [error, setError] = useState<string | null>(null);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   useEffect(() => {
     const rawError = new URLSearchParams(window.location.search).get('error');
@@ -45,6 +47,19 @@ export function LoginScreen() {
       // no-op
     }
     window.location.href = '/actividad';
+  }
+
+  function handleCodeScanned(code: string, type: 'course' | 'activity') {
+    try {
+      localStorage.setItem('habitar_user_role', 'alumno');
+    } catch {
+      // no-op
+    }
+    if (type === 'course') {
+      window.location.href = `/aula?code=${encodeURIComponent(code)}`;
+    } else {
+      window.location.href = `/actividad?code=${encodeURIComponent(code)}`;
+    }
   }
 
   return (
@@ -101,9 +116,24 @@ export function LoginScreen() {
         <span>Soy Alumno / Entrar a clase</span>
       </button>
 
-      <div className="text-[11px] text-text-ter text-center max-w-[260px] mt-6 leading-relaxed">
+      <button
+        onClick={() => setIsScannerOpen(true)}
+        type="button"
+        className="flex items-center justify-center gap-2 w-[280px] mt-2 px-4 py-2 border border-dashed border-emerald-600/70 dark:border-emerald-500/60 rounded-xl text-emerald-700 dark:text-emerald-300 text-xs font-semibold hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors cursor-pointer"
+      >
+        <span>📷</span>
+        <span>Escanear código QR</span>
+      </button>
+
+      <div className="text-[11px] text-text-ter text-center max-w-[260px] mt-5 leading-relaxed">
         El acceso docente requiere cuenta institucional. Los alumnos ingresan sin contraseña mediante PIN o código QR de su aula.
       </div>
+
+      <StudentQrScannerModal
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onCodeScanned={handleCodeScanned}
+      />
     </div>
   );
 }

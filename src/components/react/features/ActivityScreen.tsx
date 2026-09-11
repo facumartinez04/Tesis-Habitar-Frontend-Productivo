@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Card } from '../ui/Card';
 import { Icon } from '../ui/Icon';
 import { HabitarLoader } from '../ui/HabitarLoader';
+import { StudentQrScannerModal } from './StudentQrScannerModal';
 import { useQueryParam } from '../../../hooks/useQueryParam';
 import { getActivityByCode, submitResponse } from '../../../services/activityService';
 import type { Activity } from '../../../types/activity';
@@ -64,6 +65,16 @@ export function ActivityScreen({ defaultCode }: ActivityScreenProps) {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [resumed, setResumed] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+
+  function handleCodeScanned(code: string, type: 'activity' | 'course' | 'url') {
+    if (type === 'course') {
+      window.location.href = `/aula?code=${encodeURIComponent(code)}`;
+      return;
+    }
+    setPinInput(code);
+    loadActivity(code);
+  }
 
   // Guardar preferencia de "Soy Alumno" en PWA y recuperar nombre anterior si existe
   useEffect(() => {
@@ -185,13 +196,24 @@ export function ActivityScreen({ defaultCode }: ActivityScreenProps) {
         <span className="font-semibold text-text-pri">Modo Alumno</span>
         <span className="hidden sm:inline text-text-ter">· Guardado en este dispositivo</span>
       </div>
-      <button
-        onClick={handleSwitchToTeacher}
-        type="button"
-        className="text-[11px] font-medium text-text-sec hover:text-emerald-700 dark:hover:text-emerald-400 hover:underline transition-colors cursor-pointer"
-      >
-        ¿Sos docente? Cambiar de modo
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => setIsScannerOpen(true)}
+          type="button"
+          className="flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-1 rounded-md border border-emerald-300 dark:border-emerald-700/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer"
+          title="Escanear código QR"
+        >
+          <Icon name="camera" size={12} />
+          <span>Escanear QR</span>
+        </button>
+        <button
+          onClick={handleSwitchToTeacher}
+          type="button"
+          className="text-[11px] font-medium text-text-sec hover:text-emerald-700 dark:hover:text-emerald-400 hover:underline transition-colors cursor-pointer"
+        >
+          ¿Sos docente?
+        </button>
+      </div>
     </div>
   );
 
@@ -243,12 +265,32 @@ export function ActivityScreen({ defaultCode }: ActivityScreenProps) {
             </button>
           </form>
 
+          <div className="flex items-center gap-2 my-2">
+            <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+            <span className="text-[10.5px] font-semibold text-text-ter uppercase">O también</span>
+            <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsScannerOpen(true)}
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border-2 border-dashed border-emerald-600/70 hover:border-emerald-600 bg-emerald-50/60 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-xs font-bold transition-all shadow-2xs cursor-pointer group"
+          >
+            <Icon name="camera" size={16} className="text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
+            <span>Escanear Código QR con Cámara</span>
+          </button>
+
           {currentCode && (
             <div className="text-[11px] text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 rounded-lg p-2.5">
-              No encontramos una actividad activa con el código <strong>{currentCode}</strong>. Verificá si está bien escrito.
+              No encontramos una actividad activa con el código <strong>{currentCode}</strong>. Verificá si está bien escrito o escaneá el QR del aula.
             </div>
           )}
         </Card>
+        <StudentQrScannerModal
+          isOpen={isScannerOpen}
+          onClose={() => setIsScannerOpen(false)}
+          onCodeScanned={handleCodeScanned}
+        />
       </div>
     );
   }
@@ -303,17 +345,32 @@ export function ActivityScreen({ defaultCode }: ActivityScreenProps) {
             <div className="text-[11px] text-text-ter">{answeredCount} de {questions.length} preguntas respondidas</div>
             <div className="text-[11px] text-text-sec font-medium mt-0.5">{activity.name}</div>
           </Card>
-          <button
-            onClick={() => {
-              setStage('not-found');
-              setPinInput('');
-            }}
-            type="button"
-            className="mt-4 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
-          >
-            Resolver otra actividad con PIN
-          </button>
+          <div className="flex flex-col gap-2 mt-4">
+            <button
+              onClick={() => setIsScannerOpen(true)}
+              type="button"
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-emerald-600/70 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-xs font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer"
+            >
+              <Icon name="camera" size={14} />
+              <span>Escanear otro código QR</span>
+            </button>
+            <button
+              onClick={() => {
+                setStage('not-found');
+                setPinInput('');
+              }}
+              type="button"
+              className="text-xs font-semibold text-text-sec hover:text-text-pri hover:underline cursor-pointer py-1"
+            >
+              Ingresar otro código con PIN
+            </button>
+          </div>
         </Card>
+        <StudentQrScannerModal
+          isOpen={isScannerOpen}
+          onClose={() => setIsScannerOpen(false)}
+          onCodeScanned={handleCodeScanned}
+        />
       </div>
     );
   }
@@ -383,6 +440,11 @@ export function ActivityScreen({ defaultCode }: ActivityScreenProps) {
           </button>
         </div>
       </Card>
+      <StudentQrScannerModal
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onCodeScanned={handleCodeScanned}
+      />
     </div>
   );
 }
