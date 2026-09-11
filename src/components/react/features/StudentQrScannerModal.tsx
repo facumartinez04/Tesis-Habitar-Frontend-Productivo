@@ -21,7 +21,7 @@ export function StudentQrScannerModal({
   const [scanning, setScanning] = useState(false);
   const [manualCode, setManualCode] = useState('');
   const [verifying, setVerifying] = useState(false);
-  const [activeTab, setActiveTab] = useState<'camara' | 'manual' | 'archivo'>('camara');
+  const [activeTab, setActiveTab] = useState<'camara' | 'manual'>('camara');
 
   useEffect(() => {
     if (!isOpen) {
@@ -178,31 +178,6 @@ export function StudentQrScannerModal({
     handleRawScannedText(manualCode.trim());
   }
 
-  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if ('BarcodeDetector' in window) {
-      try {
-        const detector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
-        const img = new Image();
-        img.src = URL.createObjectURL(file);
-        await img.decode();
-        const barcodes = await detector.detect(img);
-        if (barcodes && barcodes.length > 0) {
-          handleRawScannedText(barcodes[0].rawValue);
-          return;
-        }
-        alert('No se detectó ningún código QR en la foto seleccionada.');
-      } catch {
-        alert('No se pudo procesar la imagen.');
-      }
-    } else {
-      alert('Tu navegador no soporta lectura directa desde archivo. Podés ingresar el código manualmente.');
-      setActiveTab('manual');
-    }
-  }
-
   if (!isOpen) return null;
 
   return (
@@ -250,17 +225,6 @@ export function StudentQrScannerModal({
           >
             <Icon name="code" size={13} />
             Escribir PIN
-          </button>
-          <button
-            onClick={() => setActiveTab('archivo')}
-            className={`flex-1 py-2.5 text-center transition-colors border-b-2 flex items-center justify-center gap-1.5 cursor-pointer ${
-              activeTab === 'archivo'
-                ? 'border-emerald-600 text-emerald-700 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30'
-                : 'border-transparent text-text-sec hover:bg-gray-50 dark:hover:bg-[#1A1E29]'
-            }`}
-          >
-            <Icon name="folder" size={13} />
-            Subir Foto
           </button>
         </div>
 
@@ -345,29 +309,6 @@ export function StudentQrScannerModal({
                 {verifying ? 'Verificando…' : 'Ingresar →'}
               </button>
             </form>
-          )}
-
-          {activeTab === 'archivo' && (
-            <div className="w-full flex flex-col items-center justify-center space-y-3 py-2">
-              <div className="border-2 border-dashed border-gray-border dark:border-[#2D3342] hover:border-emerald-500 rounded-2xl p-6 w-full text-center transition-colors">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                  id="student-qr-file-input"
-                />
-                <label htmlFor="student-qr-file-input" className="cursor-pointer space-y-2 block">
-                  <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto">
-                    <Icon name="folder" size={20} />
-                  </div>
-                  <div className="text-xs font-semibold text-text-pri">
-                    Subir foto o captura del código QR
-                  </div>
-                  <div className="text-[11px] text-text-ter">Formatos PNG o JPG</div>
-                </label>
-              </div>
-            </div>
           )}
         </div>
 

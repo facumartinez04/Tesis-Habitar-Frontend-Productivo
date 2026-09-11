@@ -50,13 +50,13 @@ function clearDraft(code: string): void {
   }
 }
 
-export function ActivityScreen({ defaultCode }: ActivityScreenProps) {
+export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   const queryCode = useQueryParam('code', defaultCode);
-  const [currentCode, setCurrentCode] = useState(queryCode);
-  const [pinInput, setPinInput] = useState(queryCode);
+  const [currentCode, setCurrentCode] = useState(queryCode || '');
+  const [pinInput, setPinInput] = useState(queryCode || '');
   const [activity, setActivity] = useState<Activity | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [stage, setStage] = useState<Stage>('loading');
+  const [stage, setStage] = useState<Stage>(queryCode ? 'loading' : 'not-found');
   const [name, setName] = useState('');
   const [joining, setJoining] = useState(false);
   const [index, setIndex] = useState(0);
@@ -102,18 +102,19 @@ export function ActivityScreen({ defaultCode }: ActivityScreenProps) {
   }, []);
 
   function loadActivity(codeToLoad: string) {
-    const cleanCode = codeToLoad.trim().toUpperCase();
+    const cleanCode = (codeToLoad || '').trim().toUpperCase();
     if (!cleanCode) {
+      setCurrentCode('');
       setStage('not-found');
       return;
     }
+    setCurrentCode(cleanCode);
     setStage('loading');
     getActivityByCode(cleanCode).then((result) => {
       if (!result) {
         setStage('not-found');
         return;
       }
-      setCurrentCode(cleanCode);
       setActivity(result.activity);
       setQuestions(result.questions.filter((q) => q.options && q.options.length > 0));
 
@@ -221,7 +222,7 @@ export function ActivityScreen({ defaultCode }: ActivityScreenProps) {
     return (
       <div className="min-h-screen flex flex-col justify-center items-center px-4 pt-10">
         {studentBar}
-        <HabitarLoader size="lg" message={`Cargando actividad ${currentCode}...`} />
+        <HabitarLoader size="lg" message="Cargando actividad..." />
       </div>
     );
   }
