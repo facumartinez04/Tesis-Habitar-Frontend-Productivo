@@ -723,11 +723,11 @@ export function RenewalScreen() {
       {/* MODAL: PERSONALIZAR NEGOCIO / COLEGIO */}
       {customizingSub && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6 space-y-4 border border-gray-border max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+          <div className="bg-white dark:bg-[#1A1E29] rounded-xl shadow-xl max-w-2xl w-full p-6 space-y-4 border border-gray-border dark:border-gray-800 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800">
               <div>
                 <h2 className="text-base font-bold text-text-pri flex items-center gap-2">
-                  <Icon name="sliders" size={16} className="text-emerald-700" />
+                  <Icon name="sliders" size={16} className="text-emerald-700 dark:text-emerald-400" />
                   Personalización Exclusiva: {customizingSub.institutionName}
                 </h2>
                 <p className="text-xs text-text-sec mt-0.5">
@@ -760,7 +760,7 @@ export function RenewalScreen() {
                         });
                       }
                     }}
-                    className="w-full border border-gray-border rounded-lg px-3 py-2 text-xs bg-surface text-text-pri focus:ring-2 focus:ring-emerald-500"
+                    className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-3 py-2 text-xs bg-surface dark:bg-[#131620] text-text-pri focus:ring-2 focus:ring-emerald-500"
                   >
                     {plans.map((p) => (
                       <option key={p.id} value={p.id}>
@@ -776,7 +776,7 @@ export function RenewalScreen() {
                     type="number"
                     value={customPrice}
                     onChange={(e) => setCustomPrice(e.target.value === '' ? '' : Number(e.target.value))}
-                    className="w-full border border-gray-border rounded-lg px-3 py-2 text-xs bg-surface text-text-pri focus:ring-2 focus:ring-emerald-500"
+                    className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-3 py-2 text-xs bg-surface dark:bg-[#131620] text-text-pri focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
 
@@ -785,7 +785,7 @@ export function RenewalScreen() {
                   <select
                     value={customBillingCycle}
                     onChange={(e) => setCustomBillingCycle(e.target.value as any)}
-                    className="w-full border border-gray-border rounded-lg px-3 py-2 text-xs bg-surface text-text-pri focus:ring-2 focus:ring-emerald-500"
+                    className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-3 py-2 text-xs bg-surface dark:bg-[#131620] text-text-pri focus:ring-2 focus:ring-emerald-500"
                   >
                     <option value="MONTHLY">Mensual</option>
                     <option value="ANNUAL">Anual</option>
@@ -794,7 +794,7 @@ export function RenewalScreen() {
               </div>
 
               {/* Cupos personalizados */}
-              <div className="bg-gray-50/80 p-3.5 rounded-xl border border-gray-border/70 space-y-3">
+              <div className="bg-gray-50/80 dark:bg-[#131620] p-3.5 rounded-xl border border-gray-border/70 dark:border-gray-800 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-text-pri">
                     Límites y Cupos Personalizados para este Colegio
@@ -810,7 +810,7 @@ export function RenewalScreen() {
                       placeholder="ej: 100"
                       value={customUsers}
                       onChange={(e) => setCustomUsers(e.target.value === '' ? '' : Number(e.target.value))}
-                      className="w-full border border-gray-border rounded-lg px-2.5 py-1.5 text-xs bg-white text-text-pri"
+                      className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-2.5 py-1.5 text-xs bg-white dark:bg-[#1A1E29] text-text-pri"
                     />
                   </div>
 
@@ -821,7 +821,7 @@ export function RenewalScreen() {
                       placeholder="ej: 1200"
                       value={customStudents}
                       onChange={(e) => setCustomStudents(e.target.value === '' ? '' : Number(e.target.value))}
-                      className="w-full border border-gray-border rounded-lg px-2.5 py-1.5 text-xs bg-white text-text-pri"
+                      className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-2.5 py-1.5 text-xs bg-white dark:bg-[#1A1E29] text-text-pri"
                     />
                   </div>
 
@@ -832,7 +832,7 @@ export function RenewalScreen() {
                       placeholder="ej: 50"
                       value={customCourses}
                       onChange={(e) => setCustomCourses(e.target.value === '' ? '' : Number(e.target.value))}
-                      className="w-full border border-gray-border rounded-lg px-2.5 py-1.5 text-xs bg-white text-text-pri"
+                      className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-2.5 py-1.5 text-xs bg-white dark:bg-[#1A1E29] text-text-pri"
                     />
                   </div>
 
@@ -843,7 +843,7 @@ export function RenewalScreen() {
                       placeholder="ej: 50"
                       value={customStorage}
                       onChange={(e) => setCustomStorage(e.target.value === '' ? '' : Number(e.target.value))}
-                      className="w-full border border-gray-border rounded-lg px-2.5 py-1.5 text-xs bg-white text-text-pri"
+                      className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-2.5 py-1.5 text-xs bg-white dark:bg-[#1A1E29] text-text-pri"
                     />
                   </div>
                 </div>
@@ -855,7 +855,7 @@ export function RenewalScreen() {
                   Módulos y Capacidades Habilitadas para esta Escuela:
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                  <label className="flex items-center gap-2 p-2 border border-gray-border rounded-lg bg-white cursor-pointer hover:bg-gray-50">
+                  <label className="flex items-center gap-2 p-2 border border-gray-border dark:border-gray-800 rounded-lg bg-white dark:bg-[#131620] cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 text-text-pri">
                     <input
                       type="checkbox"
                       checked={customFeatures.hasAiAnalytics}
@@ -865,7 +865,7 @@ export function RenewalScreen() {
                     <span>Analítica e Inteligencia Artificial</span>
                   </label>
 
-                  <label className="flex items-center gap-2 p-2 border border-gray-border rounded-lg bg-white cursor-pointer hover:bg-gray-50">
+                  <label className="flex items-center gap-2 p-2 border border-gray-border dark:border-gray-800 rounded-lg bg-white dark:bg-[#131620] cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 text-text-pri">
                     <input
                       type="checkbox"
                       checked={customFeatures.hasEarlyAlerts}
@@ -875,7 +875,7 @@ export function RenewalScreen() {
                     <span>Sistema de Alertas Tempranas</span>
                   </label>
 
-                  <label className="flex items-center gap-2 p-2 border border-gray-border rounded-lg bg-white cursor-pointer hover:bg-gray-50">
+                  <label className="flex items-center gap-2 p-2 border border-gray-border dark:border-gray-800 rounded-lg bg-white dark:bg-[#131620] cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 text-text-pri">
                     <input
                       type="checkbox"
                       checked={customFeatures.hasApiAccess}
@@ -885,7 +885,7 @@ export function RenewalScreen() {
                     <span>Acceso a API y Webhooks (SIS / ERP)</span>
                   </label>
 
-                  <label className="flex items-center gap-2 p-2 border border-gray-border rounded-lg bg-white cursor-pointer hover:bg-gray-50">
+                  <label className="flex items-center gap-2 p-2 border border-gray-border dark:border-gray-800 rounded-lg bg-white dark:bg-[#131620] cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 text-text-pri">
                     <input
                       type="checkbox"
                       checked={customFeatures.hasCustomDomain}
@@ -895,7 +895,7 @@ export function RenewalScreen() {
                     <span>Dominio Propio / Marca Blanca</span>
                   </label>
 
-                  <label className="flex items-center gap-2 p-2 border border-gray-border rounded-lg bg-white cursor-pointer hover:bg-gray-50">
+                  <label className="flex items-center gap-2 p-2 border border-gray-border dark:border-gray-800 rounded-lg bg-white dark:bg-[#131620] cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 text-text-pri">
                     <input
                       type="checkbox"
                       checked={customFeatures.hasSlaSupport}
@@ -905,7 +905,7 @@ export function RenewalScreen() {
                     <span>SLA y Soporte Técnico Dedicado</span>
                   </label>
 
-                  <label className="flex items-center gap-2 p-2 border border-gray-border rounded-lg bg-white cursor-pointer hover:bg-gray-50">
+                  <label className="flex items-center gap-2 p-2 border border-gray-border dark:border-gray-800 rounded-lg bg-white dark:bg-[#131620] cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 text-text-pri">
                     <input
                       type="checkbox"
                       checked={customFeatures.hasArcoCompliance}
@@ -925,15 +925,15 @@ export function RenewalScreen() {
                   placeholder="ej: Descuento 20% acordado por convenio con red de colegios. Incluye 2 sedes."
                   value={customNotes}
                   onChange={(e) => setCustomNotes(e.target.value)}
-                  className="w-full border border-gray-border rounded-lg px-3 py-2 text-xs bg-surface text-text-pri focus:ring-2 focus:ring-emerald-500 resize-none"
+                  className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-3 py-2 text-xs bg-surface dark:bg-[#131620] text-text-pri focus:ring-2 focus:ring-emerald-500 resize-none"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-100">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-100 dark:border-gray-800">
                 <button
                   type="button"
                   onClick={() => setCustomizingSub(null)}
-                  className="px-4 py-2 border border-gray-border text-xs rounded-lg text-text-sec hover:bg-gray-100 font-medium"
+                  className="px-4 py-2 border border-gray-border dark:border-gray-700 text-xs rounded-lg text-text-sec hover:bg-gray-100 dark:hover:bg-zinc-800 font-medium"
                 >
                   Cancelar
                 </button>
@@ -953,10 +953,10 @@ export function RenewalScreen() {
       {/* MODAL: CREAR / EDITAR PLAN */}
       {isPlanModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-xl w-full p-6 space-y-4 border border-gray-border max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+          <div className="bg-white dark:bg-[#1A1E29] rounded-xl shadow-xl max-w-xl w-full p-6 space-y-4 border border-gray-border dark:border-gray-800 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800">
               <h2 className="text-base font-bold text-text-pri flex items-center gap-2">
-                <Icon name="tag" size={16} className="text-emerald-700" />
+                <Icon name="tag" size={16} className="text-emerald-700 dark:text-emerald-400" />
                 {editingPlan ? `Editar Plan: ${editingPlan.name}` : 'Crear Nuevo Plan de Suscripción'}
               </h2>
               <button
@@ -979,7 +979,7 @@ export function RenewalScreen() {
                     placeholder="ej: Plan Red de Colegios"
                     value={planForm.name}
                     onChange={(e) => setPlanForm({ ...planForm, name: e.target.value })}
-                    className="w-full border border-gray-border rounded-lg px-3 py-2 text-xs bg-surface text-text-pri focus:ring-2 focus:ring-emerald-500"
+                    className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-3 py-2 text-xs bg-surface dark:bg-[#131620] text-text-pri focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
 
@@ -990,7 +990,7 @@ export function RenewalScreen() {
                     placeholder="ej: Popular, Recomendado, Piloto"
                     value={planForm.badge}
                     onChange={(e) => setPlanForm({ ...planForm, badge: e.target.value })}
-                    className="w-full border border-gray-border rounded-lg px-3 py-2 text-xs bg-surface text-text-pri focus:ring-2 focus:ring-emerald-500"
+                    className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-3 py-2 text-xs bg-surface dark:bg-[#131620] text-text-pri focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
               </div>
@@ -1002,7 +1002,7 @@ export function RenewalScreen() {
                   placeholder="Breve descripción del público objetivo y ventajas de este plan..."
                   value={planForm.description}
                   onChange={(e) => setPlanForm({ ...planForm, description: e.target.value })}
-                  className="w-full border border-gray-border rounded-lg px-3 py-2 text-xs bg-surface text-text-pri focus:ring-2 focus:ring-emerald-500"
+                  className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-3 py-2 text-xs bg-surface dark:bg-[#131620] text-text-pri focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
@@ -1017,7 +1017,7 @@ export function RenewalScreen() {
                     type="number"
                     value={planForm.monthlyPriceArs}
                     onChange={(e) => setPlanForm({ ...planForm, monthlyPriceArs: Number(e.target.value) })}
-                    className="w-full border border-gray-border rounded-lg px-3 py-2 text-xs bg-surface text-text-pri focus:ring-2 focus:ring-emerald-500"
+                    className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-3 py-2 text-xs bg-surface dark:bg-[#131620] text-text-pri focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
 
@@ -1027,13 +1027,13 @@ export function RenewalScreen() {
                     type="number"
                     value={planForm.annualPriceArs}
                     onChange={(e) => setPlanForm({ ...planForm, annualPriceArs: Number(e.target.value) })}
-                    className="w-full border border-gray-border rounded-lg px-3 py-2 text-xs bg-surface text-text-pri focus:ring-2 focus:ring-emerald-500"
+                    className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-3 py-2 text-xs bg-surface dark:bg-[#131620] text-text-pri focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
               </div>
 
               {/* Límites por defecto */}
-              <div className="bg-gray-50/80 p-3.5 rounded-xl border border-gray-border/70 space-y-3">
+              <div className="bg-gray-50/80 dark:bg-[#131620] p-3.5 rounded-xl border border-gray-border/70 dark:border-gray-800 space-y-3">
                 <span className="text-xs font-bold text-text-pri block">Límites y Recursos Incluidos en el Plan</span>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div>
@@ -1042,7 +1042,7 @@ export function RenewalScreen() {
                       type="number"
                       value={planForm.maxUsers}
                       onChange={(e) => setPlanForm({ ...planForm, maxUsers: Number(e.target.value) })}
-                      className="w-full border border-gray-border rounded-lg px-2.5 py-1.5 text-xs bg-white text-text-pri"
+                      className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-2.5 py-1.5 text-xs bg-white dark:bg-[#1A1E29] text-text-pri"
                     />
                   </div>
 
@@ -1052,7 +1052,7 @@ export function RenewalScreen() {
                       type="number"
                       value={planForm.maxStudents}
                       onChange={(e) => setPlanForm({ ...planForm, maxStudents: Number(e.target.value) })}
-                      className="w-full border border-gray-border rounded-lg px-2.5 py-1.5 text-xs bg-white text-text-pri"
+                      className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-2.5 py-1.5 text-xs bg-white dark:bg-[#1A1E29] text-text-pri"
                     />
                   </div>
 
@@ -1062,7 +1062,7 @@ export function RenewalScreen() {
                       type="number"
                       value={planForm.maxCourses}
                       onChange={(e) => setPlanForm({ ...planForm, maxCourses: Number(e.target.value) })}
-                      className="w-full border border-gray-border rounded-lg px-2.5 py-1.5 text-xs bg-white text-text-pri"
+                      className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-2.5 py-1.5 text-xs bg-white dark:bg-[#1A1E29] text-text-pri"
                     />
                   </div>
 
@@ -1072,7 +1072,7 @@ export function RenewalScreen() {
                       type="number"
                       value={planForm.storageGb}
                       onChange={(e) => setPlanForm({ ...planForm, storageGb: Number(e.target.value) })}
-                      className="w-full border border-gray-border rounded-lg px-2.5 py-1.5 text-xs bg-white text-text-pri"
+                      className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-2.5 py-1.5 text-xs bg-white dark:bg-[#1A1E29] text-text-pri"
                     />
                   </div>
                 </div>
@@ -1082,7 +1082,7 @@ export function RenewalScreen() {
               <div className="space-y-2">
                 <label className="block text-xs font-semibold text-text-pri">Características y Módulos Incluidos:</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                  <label className="flex items-center gap-2 p-2 border border-gray-border rounded-lg bg-white cursor-pointer hover:bg-gray-50">
+                  <label className="flex items-center gap-2 p-2 border border-gray-border dark:border-gray-800 rounded-lg bg-white dark:bg-[#131620] cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 text-text-pri">
                     <input
                       type="checkbox"
                       checked={planForm.features?.hasAiAnalytics}
@@ -1097,7 +1097,7 @@ export function RenewalScreen() {
                     <span>Analítica Predictiva con IA</span>
                   </label>
 
-                  <label className="flex items-center gap-2 p-2 border border-gray-border rounded-lg bg-white cursor-pointer hover:bg-gray-50">
+                  <label className="flex items-center gap-2 p-2 border border-gray-border dark:border-gray-800 rounded-lg bg-white dark:bg-[#131620] cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 text-text-pri">
                     <input
                       type="checkbox"
                       checked={planForm.features?.hasEarlyAlerts}
@@ -1112,7 +1112,7 @@ export function RenewalScreen() {
                     <span>Alertas Tempranas de Ausentismo</span>
                   </label>
 
-                  <label className="flex items-center gap-2 p-2 border border-gray-border rounded-lg bg-white cursor-pointer hover:bg-gray-50">
+                  <label className="flex items-center gap-2 p-2 border border-gray-border dark:border-gray-800 rounded-lg bg-white dark:bg-[#131620] cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 text-text-pri">
                     <input
                       type="checkbox"
                       checked={planForm.features?.hasApiAccess}
@@ -1127,7 +1127,7 @@ export function RenewalScreen() {
                     <span>Acceso a API & Webhooks</span>
                   </label>
 
-                  <label className="flex items-center gap-2 p-2 border border-gray-border rounded-lg bg-white cursor-pointer hover:bg-gray-50">
+                  <label className="flex items-center gap-2 p-2 border border-gray-border dark:border-gray-800 rounded-lg bg-white dark:bg-[#131620] cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 text-text-pri">
                     <input
                       type="checkbox"
                       checked={planForm.features?.hasCustomDomain}
@@ -1142,7 +1142,7 @@ export function RenewalScreen() {
                     <span>Dominio Personalizado (Marca Blanca)</span>
                   </label>
 
-                  <label className="flex items-center gap-2 p-2 border border-gray-border rounded-lg bg-white cursor-pointer hover:bg-gray-50">
+                  <label className="flex items-center gap-2 p-2 border border-gray-border dark:border-gray-800 rounded-lg bg-white dark:bg-[#131620] cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 text-text-pri">
                     <input
                       type="checkbox"
                       checked={planForm.features?.hasSlaSupport}
@@ -1157,7 +1157,7 @@ export function RenewalScreen() {
                     <span>Soporte SLA Dedicado</span>
                   </label>
 
-                  <label className="flex items-center gap-2 p-2 border border-gray-border rounded-lg bg-white cursor-pointer hover:bg-gray-50">
+                  <label className="flex items-center gap-2 p-2 border border-gray-border dark:border-gray-800 rounded-lg bg-white dark:bg-[#131620] cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 text-text-pri">
                     <input
                       type="checkbox"
                       checked={planForm.features?.hasArcoCompliance}

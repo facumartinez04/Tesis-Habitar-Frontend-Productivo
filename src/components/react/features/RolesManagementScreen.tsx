@@ -539,7 +539,7 @@ export function RolesManagementScreen() {
                         </td>
 
                         {/* Row Quick Toggle */}
-                        <td className="px-2 py-2.5 border-b border-gray-border text-right">
+                        <td className="px-2 py-2.5 border-b border-gray-border dark:border-gray-800 text-right">
                           <button
                             type="button"
                             onClick={() => handleToggleRow(perm.module, !isAllActive)}
@@ -554,28 +554,27 @@ export function RolesManagementScreen() {
                 </tbody>
               </TableWrap>
 
-              {/* Bottom Sticky Action Bar if changes are pending */}
+              {/* Botón de Guardado al pie */}
               {hasChanges && (
-                <div className="sticky bottom-4 bg-emerald-900 text-white p-3.5 rounded-xl shadow-lg flex items-center justify-between gap-3 animate-in fade-in duration-200">
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span>Hay modificaciones sin guardar en los permisos de este rol.</span>
-                  </div>
+                <div className="pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                  <span className="text-xs text-amber-700 dark:text-amber-400 font-medium">Hay modificaciones pendientes de guardar.</span>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => {
-                        const original = roles.find((r) => r.id === selectedRoleId);
-                        if (original) setCurrentPermissions(normalizePermissions(original.permissions));
-                        setHasChanges(false);
+                        const originalRole = roles.find((r) => r.id === selectedRoleId);
+                        if (originalRole) {
+                          setCurrentPermissions(normalizePermissions(originalRole.permissions));
+                          setHasChanges(false);
+                        }
                       }}
-                      className="px-3 py-1 bg-emerald-800 hover:bg-emerald-700 text-xs rounded-lg transition-colors"
+                      className="px-3 py-1.5 border border-gray-border dark:border-gray-700 rounded-lg text-xs font-semibold text-text-sec hover:bg-gray-100 dark:hover:bg-zinc-800"
                     >
                       Descartar
                     </button>
                     <button
                       onClick={handleSavePermissions}
                       disabled={isSaving}
-                      className="px-4 py-1 bg-white text-emerald-950 font-bold text-xs rounded-lg hover:bg-emerald-100 transition-colors"
+                      className="px-4 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-xs font-semibold shadow-xs"
                     >
                       {isSaving ? 'Guardando…' : 'Guardar Cambios'}
                     </button>
@@ -584,7 +583,7 @@ export function RolesManagementScreen() {
               )}
             </div>
           ) : (
-            <div className="bg-white border border-gray-border rounded-xl p-8 text-center text-text-ter text-xs">
+            <div className="bg-white dark:bg-[#1A1E29] border border-gray-border dark:border-gray-800 rounded-xl p-8 text-center text-text-ter text-xs">
               Seleccioná un rol de la lista para ver o editar sus permisos.
             </div>
           )}
@@ -594,10 +593,10 @@ export function RolesManagementScreen() {
       {/* Modal Nuevo Rol */}
       {isCreateOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 border border-gray-border">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+          <div className="bg-white dark:bg-[#1A1E29] rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 border border-gray-border dark:border-gray-800">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800">
               <h2 className="text-base font-bold text-text-pri flex items-center gap-2">
-                <Icon name="shield" size={18} className="text-emerald-700" />
+                <Icon name="shield" size={18} className="text-emerald-700 dark:text-emerald-400" />
                 Crear Nuevo Rol
               </h2>
               <button onClick={() => setIsCreateOpen(false)} className="text-text-ter hover:text-text-pri p-1 rounded-md">
@@ -627,7 +626,7 @@ export function RolesManagementScreen() {
                       );
                     }
                   }}
-                  className="w-full border border-gray-border rounded-lg px-3 py-2 text-xs bg-surface text-text-pri focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-3 py-2 text-xs bg-surface dark:bg-[#131620] text-text-pri focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
@@ -640,7 +639,7 @@ export function RolesManagementScreen() {
                   placeholder="ej. preceptor_academico"
                   value={newRoleId}
                   onChange={(e) => setNewRoleId(e.target.value)}
-                  className="w-full border border-gray-border rounded-lg px-3 py-2 text-xs font-mono bg-surface text-text-pri focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-3 py-2 text-xs font-mono bg-surface dark:bg-[#131620] text-text-pri focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
                 />
                 <span className="text-[10.5px] text-text-ter">Se generará automáticamente si lo dejás vacío.</span>
               </div>
@@ -652,7 +651,7 @@ export function RolesManagementScreen() {
                   placeholder="Responsabilidades y alcance de este rol dentro de la institución..."
                   value={newRoleDesc}
                   onChange={(e) => setNewRoleDesc(e.target.value)}
-                  className="w-full border border-gray-border rounded-lg px-3 py-2 text-xs bg-surface text-text-pri focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+                  className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-3 py-2 text-xs bg-surface dark:bg-[#131620] text-text-pri focus:outline-hidden focus:ring-2 focus:ring-emerald-500 resize-none"
                 />
               </div>
 
