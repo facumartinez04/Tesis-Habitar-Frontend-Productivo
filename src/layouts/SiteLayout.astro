@@ -137,7 +137,12 @@ const jsonLd = {
 
       applyTheme();
       document.addEventListener('astro:after-swap', applyTheme);
-      document.addEventListener('astro:page-load', applyTheme);
+      document.addEventListener('astro:page-load', () => {
+        applyTheme();
+        try {
+          window.__habitar_app_initialized = true;
+        } catch (e) {}
+      });
     </script>
   </head>
   <body class="min-h-screen bg-surface text-text-pri transition-colors duration-200">

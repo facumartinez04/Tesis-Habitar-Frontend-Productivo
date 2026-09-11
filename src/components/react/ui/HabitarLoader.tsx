@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface HabitarLoaderProps {
   size?: 'sm' | 'md' | 'lg' | 'fullscreen';
   message?: string;
   overlay?: boolean;
   className?: string;
+  autoFullscreenOnInitialLoad?: boolean;
 }
 
 export function HabitarLoader({
@@ -12,8 +13,31 @@ export function HabitarLoader({
   message = 'Cargando...',
   overlay = false,
   className = '',
+  autoFullscreenOnInitialLoad = true,
 }: HabitarLoaderProps) {
-  const isFullscreen = size === 'fullscreen';
+  // Detectar si es la carga inicial de la web (ocupa toda la pantalla)
+  // o una navegación posterior entre módulos (queda contenida en el módulo)
+  const [isInitialWebLoad] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    const g = window as any;
+    return !g.__habitar_app_initialized;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const g = window as any;
+    const timer = setTimeout(() => {
+      g.__habitar_app_initialized = true;
+    }, 1200);
+    return () => {
+      clearTimeout(timer);
+      g.__habitar_app_initialized = true;
+    };
+  }, []);
+
+  const shouldBeFullscreen =
+    size === 'fullscreen' ||
+    (autoFullscreenOnInitialLoad && isInitialWebLoad && !overlay && size !== 'sm');
 
   // Dimensiones del contenedor SVG unificado
   const sizeClasses = {
@@ -215,9 +239,9 @@ export function HabitarLoader({
     </div>
   );
 
-  if (isFullscreen) {
+  if (shouldBeFullscreen) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/90 dark:bg-[#0E1017]/90 backdrop-blur-md animate-in fade-in duration-300">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-surface/98 dark:bg-[#0D0F14]/98 backdrop-blur-md animate-in fade-in duration-200">
         {content}
       </div>
     );
@@ -225,14 +249,14 @@ export function HabitarLoader({
 
   if (overlay) {
     return (
-      <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/80 dark:bg-[#0E1017]/80 backdrop-blur-sm rounded-2xl animate-in fade-in duration-200">
+      <div className="absolute inset-0 z-30 flex items-center justify-center bg-surface/80 dark:bg-[#0D0F14]/80 backdrop-blur-sm rounded-2xl animate-in fade-in duration-200">
         {content}
       </div>
     );
   }
 
   return (
-    <div className="min-h-[60vh] sm:min-h-[70vh] w-full flex flex-col items-center justify-center py-12">
+    <div className="min-h-[45vh] sm:min-h-[55vh] w-full flex flex-col items-center justify-center py-8">
       {content}
     </div>
   );
