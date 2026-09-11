@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
 
 interface Props {
   title: string;
@@ -86,7 +87,8 @@ const jsonLd = {
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Habitar" />
+    {/* Client-Side Routing & View Transitions (Navegación SPA sin recarga) */}
+    <ClientRouter />
 
     {/* Google Fonts */}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -98,12 +100,14 @@ const jsonLd = {
     {/* Structured Data (Schema.org) */}
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
-    {/* Inline Theme Detection (Prevents FOUC across Claro / Oscuro / Sistema) */}
+    {/* Inline Theme Detection (Prevents FOUC across Claro / Oscuro / Sistema y navegación SPA) */}
     <script is:inline define:vars={{ isLanding }}>
-      (function() {
+      function applyTheme() {
         try {
           const root = document.documentElement;
-          if (isLanding) {
+          const currentPath = window.location.pathname;
+          const onLanding = isLanding || currentPath === '/' || currentPath === '';
+          if (onLanding) {
             // El landing page siempre queda en modo claro
             root.classList.remove('dark');
             root.setAttribute('data-theme', 'light');
@@ -124,13 +128,16 @@ const jsonLd = {
 
           // Auto-redirección para Alumno guardado en PWA
           const userRole = localStorage.getItem('habitar_user_role');
-          const path = window.location.pathname;
           const isSwitch = new URLSearchParams(window.location.search).has('switch');
-          if (userRole === 'alumno' && (path === '/' || path === '/login') && !isSwitch) {
+          if (userRole === 'alumno' && (currentPath === '/' || currentPath === '/login') && !isSwitch) {
             window.location.replace('/actividad');
           }
         } catch (e) {}
-      })();
+      }
+
+      applyTheme();
+      document.addEventListener('astro:after-swap', applyTheme);
+      document.addEventListener('astro:page-load', applyTheme);
     </script>
   </head>
   <body class="min-h-screen bg-surface text-text-pri transition-colors duration-200">

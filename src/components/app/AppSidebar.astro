@@ -89,4 +89,5 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
   }
 
   initSidebar();
+  document.addEventListener('astro:page-load', initSidebar);
 </script>

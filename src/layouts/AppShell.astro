@@ -18,7 +18,7 @@ const { title, sectionLabel, sidebarItems } = Astro.props;
     <AppSidebar items={sidebarItems} sectionLabel={sectionLabel} />
     <div class="flex-1 min-w-0 flex flex-col">
       <AppHeader sectionLabel={sectionLabel} />
-      <main class="flex-1 min-w-0 p-4 sm:p-6 bg-surface">
+      <main class="flex-1 min-w-0 p-4 sm:p-6 bg-surface" transition:animate="fade">
         <div class="max-w-5xl mx-auto">
           <slot />
         </div>
