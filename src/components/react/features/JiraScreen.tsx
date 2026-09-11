@@ -9,6 +9,7 @@ import type {
 } from '../../../types/jira';
 import { jiraService } from '../../../services/jiraService';
 import { SkeletonKanban } from '../ui/Skeleton';
+import { HabitarLoader } from '../ui/HabitarLoader';
 
 const COLUMNS: { id: JiraStatus; title: string; accent: string }[] = [
   { id: 'todo', title: 'Por Hacer', accent: 'border-t-gray-400' },
@@ -113,7 +114,11 @@ export function JiraScreen() {
   };
 
   if (loading) {
-    return <SkeletonKanban />;
+    return (
+      <div className="py-24 flex justify-center items-center">
+        <HabitarLoader size="lg" message="Sincronizando tablero Jira de tareas y soporte..." />
+      </div>
+    );
   }
 
   return (

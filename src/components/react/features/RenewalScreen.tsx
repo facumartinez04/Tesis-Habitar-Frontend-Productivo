@@ -4,6 +4,7 @@ import { Icon } from '../ui/Icon';
 import { Toast } from '../ui/Toast';
 import { TableWrap } from '../ui/TableWrap';
 import { Skeleton, SkeletonCard } from '../ui/Skeleton';
+import { HabitarLoader } from '../ui/HabitarLoader';
 import { useToast } from '../../../hooks/useToast';
 import { ensureAdminSession } from '../../../services/authService';
 import {
@@ -252,13 +253,8 @@ export function RenewalScreen() {
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <div className="space-y-2 mb-4">
-          <Skeleton className="h-6 w-60" />
-          <Skeleton className="h-3.5 w-72" />
-        </div>
-        <SkeletonCard />
-        <SkeletonCard />
+      <div className="py-24 flex justify-center items-center">
+        <HabitarLoader size="lg" message="Cargando planes de suscripción e instituciones..." />
       </div>
     );
   }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Icon } from '../ui/Icon';
 import { Skeleton } from '../ui/Skeleton';
+import { HabitarLoader } from '../ui/HabitarLoader';
 import { showSuccess, showError } from '../../../lib/alerts';
 import { useAuthGuard } from '../../../hooks/useAuthGuard';
 import {
@@ -231,19 +232,8 @@ export function InstitutionFinanceScreen() {
 
   if (!session || loading) {
     return (
-      <div className="space-y-6">
-        <div className="space-y-2">
-          <Skeleton className="h-7 w-60" />
-          <Skeleton className="h-4 w-96" />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-white border border-gray-border rounded-xl p-4 space-y-2">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-8 w-32" />
-            </div>
-          ))}
-        </div>
+      <div className="py-24 flex justify-center items-center">
+        <HabitarLoader size="lg" message="Cargando cuotas y finanzas institucionales..." />
       </div>
     );
   }

@@ -10,6 +10,7 @@ import { getMonitoringSnapshot } from '../../../services/monitoringService';
 import type { ComponentHealth, MonitoringSnapshot } from '../../../types/monitoring';
 
 import { Skeleton, SkeletonMetricCards, SkeletonTable } from '../ui/Skeleton';
+import { HabitarLoader } from '../ui/HabitarLoader';
 
 const healthBadge: Record<ComponentHealth, { label: string; color: 'green' | 'amber' | 'red'; dot: 'green' | 'amber' | 'red' }> = {
   operativo: { label: 'Operativo', color: 'green', dot: 'green' },
@@ -41,13 +42,8 @@ export function MonitoringScreen() {
 
   if (!snapshot) {
     return (
-      <div className="space-y-4">
-        <div className="space-y-2 mb-4">
-          <Skeleton className="h-6 w-56" />
-          <Skeleton className="h-3.5 w-72" />
-        </div>
-        <SkeletonMetricCards count={3} />
-        <SkeletonTable rows={5} cols={3} />
+      <div className="py-24 flex justify-center items-center">
+        <HabitarLoader size="lg" message="Verificando disponibilidad de servidores y base de datos..." />
       </div>
     );
   }

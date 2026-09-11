@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Badge } from '../ui/Badge';
 import { Icon } from '../ui/Icon';
 import { ToggleSwitch } from '../ui/ToggleSwitch';
-import { Skeleton } from '../ui/Skeleton';
+import { HabitarLoader } from '../ui/HabitarLoader';
 import { showSuccess, showError, confirmDestructive } from '../../../lib/alerts';
 import { ensureAdminSession } from '../../../services/authService';
 import { createRole, deleteRole, listRoles, updateRole } from '../../../services/roleService';
@@ -361,19 +361,8 @@ export function RolesManagementScreen() {
 
   if (loading) {
     return (
-      <div className="space-y-4 max-w-5xl mx-auto">
-        <div className="space-y-2 mb-6">
-          <Skeleton className="h-7 w-64" />
-          <Skeleton className="h-4 w-96" />
-        </div>
-        <div className="space-y-3">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="bg-white dark:bg-[#1A1E29] border border-gray-border dark:border-[#2D3342] rounded-xl p-5 space-y-3">
-              <Skeleton className="h-5 w-48" />
-              <Skeleton className="h-4 w-full max-w-md" />
-            </div>
-          ))}
-        </div>
+      <div className="py-20 flex justify-center items-center">
+        <HabitarLoader size="lg" message="Cargando roles y permisos del sistema..." />
       </div>
     );
   }

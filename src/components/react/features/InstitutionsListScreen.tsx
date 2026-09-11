@@ -3,6 +3,7 @@ import { Badge } from '../ui/Badge';
 import { Icon } from '../ui/Icon';
 import { TableWrap } from '../ui/TableWrap';
 import { Skeleton, SkeletonTable } from '../ui/Skeleton';
+import { HabitarLoader } from '../ui/HabitarLoader';
 import { ensureAdminSession } from '../../../services/authService';
 import { listInstitutions } from '../../../services/institutionService';
 import type { Institution } from '../../../types/institution';
@@ -42,13 +43,8 @@ export function InstitutionsListScreen() {
 
   if (!institutions) {
     return (
-      <div className="space-y-4">
-        <div className="space-y-2 mb-4">
-          <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-3.5 w-64" />
-        </div>
-        <Skeleton className="h-9 w-72 rounded-lg" />
-        <SkeletonTable rows={6} cols={5} />
+      <div className="py-24 flex justify-center items-center">
+        <HabitarLoader size="lg" message="Cargando instituciones educativas..." />
       </div>
     );
   }

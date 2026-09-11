@@ -8,6 +8,7 @@ import { useAuthGuard } from '../../../hooks/useAuthGuard';
 import { useToast } from '../../../hooks/useToast';
 import { Toast } from '../ui/Toast';
 import { Skeleton, SkeletonMetricCards, SkeletonCard } from '../ui/Skeleton';
+import { HabitarLoader } from '../ui/HabitarLoader';
 import { listMyCourses } from '../../../services/courseService';
 import { compareCoursePeriods, exportCourseReport, getTeacherCourseSummary, type PeriodComparison } from '../../../services/resultsService';
 import { getAiUsage, type AiUsageSnapshot } from '../../../services/aiUsageService';
@@ -180,17 +181,8 @@ export function TeacherDashboard() {
 
   if (!session || loadingCourses) {
     return (
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row justify-between gap-3 mb-4">
-          <div className="space-y-2">
-            <Skeleton className="h-6 w-52" />
-            <Skeleton className="h-3.5 w-64" />
-          </div>
-          <Skeleton className="h-9 w-48 rounded-lg" />
-        </div>
-        <SkeletonMetricCards count={3} />
-        <SkeletonCard />
-        <SkeletonCard />
+      <div className="py-24 flex justify-center items-center">
+        <HabitarLoader size="lg" message="Cargando tus aulas y métricas pedagógicas..." />
       </div>
     );
   }
