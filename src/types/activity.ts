@@ -48,3 +48,26 @@ export interface CreateCourseInput {
   shift?: 'MAÑANA' | 'TARDE' | 'NOCHE';
   teacherId?: string;
 }
+
+export interface CourseStudentDevice {
+  id: string;
+  courseId: string;
+  studentName: string;
+  normalizedStudentName: string;
+  deviceId: string;
+  userAgent?: string;
+  ipAddress?: string;
+  linkedAt: string;
+  lastActiveAt: string;
+}
+
+export interface PublicCourseInfo {
+  course: Course;
+  activeActivity: {
+    id: string;
+    code: string;
+    name: string;
+    endTime: string;
+  } | null;
+}
+

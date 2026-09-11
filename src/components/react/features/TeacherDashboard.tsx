@@ -19,6 +19,7 @@ import type { Course } from '../../../types/activity';
 import { QrScannerModal } from './QrScannerModal';
 import { CreateCourseModal } from './CreateCourseModal';
 import { CourseQrModal } from './CourseQrModal';
+import { CourseDevicesModal } from './CourseDevicesModal';
 
 const activityStatusBadge: Record<ActivitySummary['status'], { label: string; color: 'green' | 'amber' | 'gray' }> = {
   borrador: { label: 'Borrador', color: 'gray' },
@@ -57,6 +58,7 @@ export function TeacherDashboard() {
   const [activities, setActivities] = useState<ActivitySummary[]>([]);
   const [busyActivityId, setBusyActivityId] = useState<string | null>(null);
   const [loadingCourses, setLoadingCourses] = useState(true);
+  const [isDevicesModalOpen, setIsDevicesModalOpen] = useState(false);
 
   // Modals state
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -345,14 +347,24 @@ export function TeacherDashboard() {
             Nueva Aula
           </button>
           {currentCourse && (
-            <button
-              onClick={() => setSelectedQrCourse(currentCourse)}
-              className="flex items-center gap-1.5 bg-white border border-gray-border hover:bg-surface rounded-[6px] px-2.5 py-1.5 text-[11.5px] text-text-pri transition-colors"
-              title="Ver e imprimir el QR fijo de esta aula"
-            >
-              <Icon name="qrCode" size={13} />
-              QR Fijo de Aula
-            </button>
+            <>
+              <button
+                onClick={() => setSelectedQrCourse(currentCourse)}
+                className="flex items-center gap-1.5 bg-white dark:bg-[#1A1E29] border border-gray-border dark:border-[#2D3342] hover:bg-surface rounded-[6px] px-2.5 py-1.5 text-[11.5px] text-text-pri transition-colors cursor-pointer"
+                title="Ver e imprimir el QR fijo de esta aula"
+              >
+                <Icon name="qrCode" size={13} />
+                <span>QR Fijo</span>
+              </button>
+              <button
+                onClick={() => setIsDevicesModalOpen(true)}
+                className="flex items-center gap-1.5 bg-white dark:bg-[#1A1E29] border border-gray-border dark:border-[#2D3342] hover:bg-surface rounded-[6px] px-2.5 py-1.5 text-[11.5px] text-text-pri transition-colors cursor-pointer"
+                title="Ver y desvincular dispositivos de alumnos de esta aula física"
+              >
+                <Icon name="kanban" size={13} />
+                <span>Dispositivos</span>
+              </button>
+            </>
           )}
           <a
             href={`/docente/actividades/nueva?courseId=${currentCourse?.id || ''}`}
@@ -537,6 +549,11 @@ export function TeacherDashboard() {
         course={selectedQrCourse}
         isOpen={Boolean(selectedQrCourse)}
         onClose={() => setSelectedQrCourse(null)}
+      />
+      <CourseDevicesModal
+        course={currentCourse}
+        isOpen={isDevicesModalOpen}
+        onClose={() => setIsDevicesModalOpen(false)}
       />
     </div>
   );
