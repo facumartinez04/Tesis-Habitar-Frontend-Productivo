@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Card } from '../ui/Card';
 import { Icon } from '../ui/Icon';
-import { Skeleton } from '../ui/Skeleton';
+import { HabitarLoader } from '../ui/HabitarLoader';
 import { useQueryParam } from '../../../hooks/useQueryParam';
 import { getActivityByCode, submitResponse } from '../../../services/activityService';
 import type { Activity } from '../../../types/activity';
@@ -37,7 +37,7 @@ function saveDraft(code: string, draft: ActivityDraft): void {
   try {
     window.localStorage.setItem(draftKey(code), JSON.stringify(draft));
   } catch {
-
+    // no-op
   }
 }
 
@@ -45,12 +45,14 @@ function clearDraft(code: string): void {
   try {
     window.localStorage.removeItem(draftKey(code));
   } catch {
-
+    // no-op
   }
 }
 
 export function ActivityScreen({ defaultCode }: ActivityScreenProps) {
-  const code = useQueryParam('code', defaultCode);
+  const queryCode = useQueryParam('code', defaultCode);
+  const [currentCode, setCurrentCode] = useState(queryCode);
+  const [pinInput, setPinInput] = useState(queryCode);
   const [activity, setActivity] = useState<Activity | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [stage, setStage] = useState<Stage>('loading');
@@ -62,6 +64,19 @@ export function ActivityScreen({ defaultCode }: ActivityScreenProps) {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [resumed, setResumed] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
+
+  // Guardar preferencia de "Soy Alumno" en PWA y recuperar nombre anterior si existe
+  useEffect(() => {
+    try {
+      localStorage.setItem('habitar_user_role', 'alumno');
+      const savedName = localStorage.getItem('habitar_student_name');
+      if (savedName && !name) {
+        setName(savedName);
+      }
+    } catch {
+      // no-op
+    }
+  }, []);
 
   useEffect(() => {
     setIsOnline(navigator.onLine);
@@ -75,16 +90,23 @@ export function ActivityScreen({ defaultCode }: ActivityScreenProps) {
     };
   }, []);
 
-  useEffect(() => {
-    getActivityByCode(code).then((result) => {
+  function loadActivity(codeToLoad: string) {
+    const cleanCode = codeToLoad.trim().toUpperCase();
+    if (!cleanCode) {
+      setStage('not-found');
+      return;
+    }
+    setStage('loading');
+    getActivityByCode(cleanCode).then((result) => {
       if (!result) {
         setStage('not-found');
         return;
       }
+      setCurrentCode(cleanCode);
       setActivity(result.activity);
-      setQuestions(result.questions.filter((question) => question.options && question.options.length > 0));
+      setQuestions(result.questions.filter((q) => q.options && q.options.length > 0));
 
-      const draft = loadDraft(code);
+      const draft = loadDraft(cleanCode);
       if (draft) {
         setName(draft.name);
         setAnswers(draft.answers);
@@ -95,19 +117,38 @@ export function ActivityScreen({ defaultCode }: ActivityScreenProps) {
         setStage('join');
       }
     });
-  }, [code]);
+  }
+
+  useEffect(() => {
+    loadActivity(queryCode);
+  }, [queryCode]);
 
   useEffect(() => {
     if (stage !== 'answering' || !name) return;
-    saveDraft(code, { name, index, answers, savedAt: new Date().toISOString() });
-  }, [code, stage, name, index, answers]);
+    saveDraft(currentCode, { name, index, answers, savedAt: new Date().toISOString() });
+  }, [currentCode, stage, name, index, answers]);
 
   async function handleJoin() {
-    if (!name.trim()) return;
+    const trimmedName = name.trim();
+    if (!trimmedName) return;
+    try {
+      localStorage.setItem('habitar_student_name', trimmedName);
+    } catch {
+      // no-op
+    }
     setJoining(true);
-    await new Promise((resolve) => setTimeout(resolve, 400));
+    await new Promise((resolve) => setTimeout(resolve, 350));
     setJoining(false);
     setStage('answering');
+  }
+
+  function handleSwitchToTeacher() {
+    try {
+      localStorage.removeItem('habitar_user_role');
+    } catch {
+      // no-op
+    }
+    window.location.href = '/login?switch=1';
   }
 
   const currentQuestion = questions[index];
@@ -121,13 +162,12 @@ export function ActivityScreen({ defaultCode }: ActivityScreenProps) {
     if (isLast) {
       setSubmitting(true);
       setSubmitError(null);
-      const payload = questions.map((question) => ({ questionId: question.id, selectedOption: answers[question.id] }));
+      const payload = questions.map((q) => ({ questionId: q.id, selectedOption: answers[q.id] }));
       try {
-        await submitResponse(code, name, payload);
-        clearDraft(code);
+        await submitResponse(currentCode, name, payload);
+        clearDraft(currentCode);
         setStage('submitted');
       } catch {
-
         setSubmitError('No se pudo enviar. Tus respuestas están guardadas: reintentá cuando tengas conexión.');
       } finally {
         setSubmitting(false);
@@ -137,61 +177,111 @@ export function ActivityScreen({ defaultCode }: ActivityScreenProps) {
     setIndex((prev) => prev + 1);
   }
 
+  // Barra superior de modo alumno PWA
+  const studentBar = (
+    <div className="fixed top-0 inset-x-0 z-40 bg-surface/85 backdrop-blur-md border-b border-gray-border/70 px-4 py-2 flex items-center justify-between text-xs">
+      <div className="flex items-center gap-1.5 text-text-sec">
+        <span className="text-sm">🎒</span>
+        <span className="font-semibold text-text-pri">Modo Alumno</span>
+        <span className="hidden sm:inline text-text-ter">· Guardado en este dispositivo</span>
+      </div>
+      <button
+        onClick={handleSwitchToTeacher}
+        type="button"
+        className="text-[11px] font-medium text-text-sec hover:text-emerald-700 dark:hover:text-emerald-400 hover:underline transition-colors cursor-pointer"
+      >
+        ¿Sos docente? Cambiar de modo
+      </button>
+    </div>
+  );
+
   if (stage === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center px-6">
-        <div className="w-full max-w-sm bg-white border border-gray-border rounded-xl p-6 space-y-4 shadow-sm">
-          <div className="flex justify-center mb-2">
-            <Skeleton className="h-6 w-24 rounded-full" />
-          </div>
-          <Skeleton className="h-5 w-3/4 mx-auto" />
-          <Skeleton className="h-3.5 w-1/2 mx-auto" />
-          <div className="space-y-2.5 pt-4">
-            <Skeleton className="h-9 w-full rounded-lg" />
-            <Skeleton className="h-9 w-full rounded-lg" />
-          </div>
-        </div>
+      <div className="min-h-screen flex flex-col justify-center items-center px-4 pt-10">
+        {studentBar}
+        <HabitarLoader size="lg" message={`Cargando actividad ${currentCode}...`} />
       </div>
     );
   }
 
   if (stage === 'not-found' || !activity) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-center px-6">
-        <div>
-          <div className="text-lg font-semibold mb-1.5">Actividad no encontrada</div>
-          <div className="text-xs text-text-sec">El código {code} no corresponde a una actividad activa.</div>
-        </div>
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 pt-12">
+        {studentBar}
+        <Card className="w-full max-w-sm text-center p-6 space-y-4">
+          <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-center mx-auto text-2xl">
+            🎒
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-text-pri">Portal del Alumno</h1>
+            <p className="text-xs text-text-sec mt-1">
+              Ingresá el código PIN que te dio tu docente o el código del aula para resolver la actividad.
+            </p>
+          </div>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              loadActivity(pinInput);
+            }}
+            className="space-y-3 pt-2"
+          >
+            <div>
+              <input
+                value={pinInput}
+                onChange={(e) => setPinInput(e.target.value.toUpperCase())}
+                placeholder="Ej: HAB-4B29"
+                className="w-full px-4 py-2.5 border border-gray-border rounded-xl text-center font-mono font-bold tracking-widest text-base uppercase bg-white dark:bg-[#1A1E29] text-text-pri focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={!pinInput.trim()}
+              className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
+            >
+              Buscar Actividad
+            </button>
+          </form>
+
+          {currentCode && (
+            <div className="text-[11px] text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 rounded-lg p-2.5">
+              No encontramos una actividad activa con el código <strong>{currentCode}</strong>. Verificá si está bien escrito.
+            </div>
+          )}
+        </Card>
       </div>
     );
   }
 
   if (stage === 'join') {
     return (
-      <div className="min-h-screen flex items-center justify-center px-6">
-        <Card className="w-full max-w-sm">
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 pt-12">
+        {studentBar}
+        <Card className="w-full max-w-sm p-6">
           <div className="text-center mb-5">
-            <div className="text-lg font-semibold text-green-dark mb-1">Habitar</div>
-            <div className="text-sm font-medium mb-1">¡Hola! ¿Cómo te llamás?</div>
-            <div className="text-xs text-text-sec">No necesitás cuenta para comenzar</div>
+            <div className="text-lg font-bold text-emerald-700 dark:text-emerald-400 mb-0.5">Habitar</div>
+            <div className="text-base font-semibold text-text-pri">¡Hola! ¿Cómo te llamás?</div>
+            <div className="text-xs text-text-sec mt-0.5">No necesitás cuenta ni contraseña</div>
           </div>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-border rounded-md text-sm text-center mb-3"
+            className="w-full px-3.5 py-2.5 border border-gray-border rounded-xl text-sm text-center mb-3 bg-white dark:bg-[#1A1E29] text-text-pri focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none"
             placeholder="Nombre o nº de lista"
+            autoFocus
           />
           <button
             onClick={handleJoin}
             disabled={!name.trim() || joining}
-            className="w-full bg-green-dark text-white py-2.5 rounded-md text-sm font-medium disabled:opacity-50"
+            className="w-full bg-emerald-700 hover:bg-emerald-800 text-white py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 cursor-pointer shadow-sm"
           >
             {joining ? 'Ingresando…' : 'Comenzar actividad'}
           </button>
-          <div className="text-center text-[11px] text-text-ter mt-4">
-            {activity.name}
+          <div className="text-center text-[11px] text-text-ter mt-4 pt-3 border-t border-gray-border/60">
+            <span className="font-semibold text-text-sec">{activity.name}</span>
             <br />
-            Disponible hasta las {activity.endTime} hs
+            Código: <span className="font-mono">{currentCode}</span>
+            {activity.endTime && <> · Disponible hasta {activity.endTime} hs</>}
           </div>
         </Card>
       </div>
@@ -201,74 +291,94 @@ export function ActivityScreen({ defaultCode }: ActivityScreenProps) {
   if (stage === 'submitted') {
     const answeredCount = Object.keys(answers).length;
     return (
-      <div className="min-h-screen flex items-center justify-center px-6">
-        <Card className="w-full max-w-sm text-center">
-          <div className="w-14 h-14 rounded-full bg-green-bg flex items-center justify-center mx-auto mb-3">
-            <Icon name="check" size={26} className="text-green-mid" />
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 pt-12">
+        {studentBar}
+        <Card className="w-full max-w-sm text-center p-6">
+          <div className="w-14 h-14 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 flex items-center justify-center mx-auto mb-3">
+            <Icon name="check" size={26} className="text-emerald-600 dark:text-emerald-400" />
           </div>
-          <div className="text-lg font-semibold mb-1.5">¡Actividad enviada!</div>
+          <div className="text-lg font-bold text-text-pri mb-1">¡Actividad enviada!</div>
           <div className="text-xs text-text-sec mb-4">Tus respuestas fueron registradas correctamente.</div>
-          <Card surface>
+          <Card surface className="p-3">
             <div className="text-[11px] text-text-ter">{answeredCount} de {questions.length} preguntas respondidas</div>
-            <div className="text-[11px] text-text-ter mt-0.5">{activity.name}</div>
+            <div className="text-[11px] text-text-sec font-medium mt-0.5">{activity.name}</div>
           </Card>
+          <button
+            onClick={() => {
+              setStage('not-found');
+              setPinInput('');
+            }}
+            type="button"
+            className="mt-4 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
+          >
+            Resolver otra actividad con PIN
+          </button>
         </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 py-10">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
+      {studentBar}
+      <Card className="w-full max-w-md p-5">
         <div className="flex justify-between items-center mb-4">
-          <div className="text-sm font-semibold text-green-dark">{activity.name}</div>
-          <div className="text-xs text-text-ter">{name}</div>
+          <div className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">{activity.name}</div>
+          <div className="text-xs text-text-ter font-medium">{name}</div>
         </div>
-        <Card surface className="mb-4 max-h-[120px] overflow-y-auto">
-          <div className="text-[10px] font-semibold text-text-ter mb-1">TEXTO</div>
-          <div className="text-[12px] text-text-pri leading-relaxed">{activity.sourceText}</div>
+        <Card surface className="mb-4 max-h-[140px] overflow-y-auto p-3">
+          <div className="text-[10px] font-bold text-text-ter uppercase tracking-wider mb-1">TEXTO DE LECTURA</div>
+          <div className="text-[12.5px] text-text-pri leading-relaxed">{activity.sourceText}</div>
         </Card>
         {resumed && (
-          <div className="flex items-center gap-1.5 text-[11px] text-amber bg-amber-bg rounded-md px-2.5 py-1.5 mb-3">
+          <div className="flex items-center gap-1.5 text-[11px] text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 rounded-lg px-2.5 py-1.5 mb-3">
             <Icon name="refresh" size={11} />
             Retomaste la actividad donde la habías dejado
           </div>
         )}
         {!isOnline && (
-          <div className="flex items-center gap-1.5 text-[11px] text-text-sec bg-surface rounded-md px-2.5 py-1.5 mb-3">
+          <div className="flex items-center gap-1.5 text-[11px] text-text-sec bg-surface rounded-lg px-2.5 py-1.5 mb-3">
             <Icon name="alertTriangle" size={11} />
             Sin conexión — tus respuestas se siguen guardando en este dispositivo
           </div>
         )}
         {submitError && (
-          <div className="text-[11px] text-red bg-red-bg rounded-md px-2.5 py-1.5 mb-3">{submitError}</div>
+          <div className="text-[11px] text-red-800 dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 rounded-lg px-2.5 py-1.5 mb-3">{submitError}</div>
         )}
         <div className="text-[11px] text-text-ter mb-1.5">Pregunta {index + 1} de {questions.length}</div>
-        <div className="text-sm font-medium mb-3">{currentQuestion.prompt}</div>
+        <div className="text-sm font-medium text-text-pri mb-3 leading-snug">{currentQuestion.prompt}</div>
         <div className="flex flex-col gap-2 mb-4">
           {currentQuestion.options?.map((option) => {
             const selected = answers[currentQuestion.id] === option;
             return (
               <label
                 key={option}
-                className={`flex items-center gap-2 text-[12.5px] rounded-md p-2.5 cursor-pointer ${
-                  selected ? 'bg-green-bg text-green-text font-medium' : 'bg-surface'
+                className={`flex items-center gap-2.5 text-[12.5px] rounded-xl p-3 border transition-colors cursor-pointer ${
+                  selected
+                    ? 'bg-emerald-50 dark:bg-emerald-950/50 border-emerald-500/70 text-emerald-900 dark:text-emerald-200 font-medium'
+                    : 'bg-surface border-gray-border/70 hover:border-gray-border text-text-pri'
                 }`}
               >
-                <input type="radio" name={currentQuestion.id} checked={selected} onChange={() => selectOption(option)} />
-                {option}
+                <input
+                  type="radio"
+                  name={currentQuestion.id}
+                  checked={selected}
+                  onChange={() => selectOption(option)}
+                  className="accent-emerald-600"
+                />
+                <span>{option}</span>
               </label>
             );
           })}
         </div>
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center pt-2">
           <span className="text-[11px] text-text-ter">Guardado automáticamente</span>
           <button
             onClick={handleNext}
             disabled={!answers[currentQuestion.id] || submitting}
-            className="flex items-center gap-1.5 bg-green-dark text-white text-xs px-4 py-2 rounded-md font-medium disabled:opacity-50"
+            className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-4 py-2 rounded-xl font-semibold transition-colors disabled:opacity-50 cursor-pointer shadow-sm"
           >
-            {submitting ? 'Enviando…' : isLast ? 'Enviar' : 'Siguiente'}
+            {submitting ? 'Enviando…' : isLast ? 'Enviar respuestas' : 'Siguiente'}
             <Icon name="arrowRight" size={13} />
           </button>
         </div>

@@ -186,6 +186,17 @@ export function LandingPage() {
               </div>
             ) : (
               <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    try { localStorage.setItem('habitar_user_role', 'alumno'); } catch {}
+                    window.location.href = '/actividad';
+                  }}
+                  className="text-xs font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 px-3 py-1.5 rounded-lg border border-emerald-300 dark:border-emerald-700 transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer shadow-2xs"
+                >
+                  <span>🎒</span>
+                  <span>Soy Alumno</span>
+                </button>
                 <a
                   href="/login"
                   className="text-xs font-semibold text-text-pri hover:text-emerald-700 px-3 py-2 rounded-lg hover:bg-surface transition-colors whitespace-nowrap"
@@ -311,6 +322,18 @@ export function LandingPage() {
 
             {!session && (
               <div className="pt-3 border-t border-gray-border flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    try { localStorage.setItem('habitar_user_role', 'alumno'); } catch {}
+                    setIsMobileMenuOpen(false);
+                    window.location.href = '/actividad';
+                  }}
+                  className="w-full text-center py-2.5 text-xs font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-700 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors flex items-center justify-center gap-2"
+                >
+                  <span>🎒</span>
+                  <span>Soy Alumno / Entrar a clase</span>
+                </button>
                 <a
                   href="/login"
                   className="w-full text-center py-2.5 text-xs font-semibold text-text-pri border border-gray-border rounded-lg hover:bg-surface transition-colors"

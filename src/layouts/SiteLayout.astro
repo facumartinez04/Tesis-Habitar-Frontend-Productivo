@@ -110,6 +110,14 @@ const jsonLd = {
             root.setAttribute('data-theme', 'light');
           }
           root.setAttribute('data-theme-preference', stored);
+
+          // Auto-redirección para Alumno guardado en PWA
+          const userRole = localStorage.getItem('habitar_user_role');
+          const path = window.location.pathname;
+          const isSwitch = new URLSearchParams(window.location.search).has('switch');
+          if (userRole === 'alumno' && (path === '/' || path === '/login') && !isSwitch) {
+            window.location.replace('/actividad');
+          }
         } catch (e) {}
       })();
     </script>

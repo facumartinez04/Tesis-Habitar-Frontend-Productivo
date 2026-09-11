@@ -38,6 +38,15 @@ export function LoginScreen() {
     window.location.href = oauthLoginUrl(provider);
   }
 
+  function handleSoyAlumno() {
+    try {
+      localStorage.setItem('habitar_user_role', 'alumno');
+    } catch {
+      // no-op
+    }
+    window.location.href = '/actividad';
+  }
+
   return (
     <div className="flex flex-col items-center justify-center px-6 py-12 min-h-screen bg-surface">
       <img
@@ -61,7 +70,7 @@ export function LoginScreen() {
       <button
         disabled={loadingProvider !== null}
         onClick={() => handleLogin('google')}
-        className="flex items-center gap-2.5 w-[280px] px-4 py-[11px] border border-gray-border rounded-md bg-white text-[13px] font-medium mb-2.5 hover:border-green-mid transition-colors disabled:opacity-60"
+        className="flex items-center gap-2.5 w-[280px] px-4 py-[11px] border border-gray-border rounded-md bg-white dark:bg-[#1A1E29] text-text-pri text-[13px] font-medium mb-2.5 hover:border-green-mid transition-colors disabled:opacity-60 cursor-pointer"
       >
         <GoogleIcon />
         {loadingProvider === 'google' ? 'Conectando…' : 'Continuar con Google Workspace'}
@@ -69,15 +78,31 @@ export function LoginScreen() {
       <button
         disabled
         title="Todavía no está disponible"
-        className="flex items-center gap-2.5 w-[280px] px-4 py-[11px] border border-gray-border rounded-md bg-white text-[13px] font-medium mb-2.5 opacity-50 cursor-not-allowed"
+        className="flex items-center gap-2.5 w-[280px] px-4 py-[11px] border border-gray-border rounded-md bg-white dark:bg-[#1A1E29] text-text-pri text-[13px] font-medium mb-2.5 opacity-50 cursor-not-allowed"
       >
         <MicrosoftIcon />
         <span className="flex-1 text-left">Continuar con Microsoft 365</span>
         <span className="text-[10px] text-text-ter">Próximamente</span>
       </button>
 
-      <div className="text-[11px] text-text-ter text-center max-w-[240px] mt-6 leading-relaxed">
-        El acceso está disponible solo para instituciones registradas. Habitar nunca almacena contraseñas.
+      {/* Separador e Ingreso para Alumnos */}
+      <div className="w-[280px] my-4 flex items-center gap-2.5">
+        <div className="flex-1 h-px bg-gray-200 dark:bg-gray-800" />
+        <span className="text-[11px] font-semibold text-text-ter uppercase tracking-wider">O</span>
+        <div className="flex-1 h-px bg-gray-200 dark:bg-gray-800" />
+      </div>
+
+      <button
+        onClick={handleSoyAlumno}
+        type="button"
+        className="flex items-center justify-center gap-2.5 w-[280px] px-4 py-3 border-2 border-emerald-600/80 dark:border-emerald-500 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-[13px] font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 hover:border-emerald-700 transition-all shadow-sm group cursor-pointer"
+      >
+        <span className="text-base group-hover:scale-110 transition-transform">🎒</span>
+        <span>Soy Alumno / Entrar a clase</span>
+      </button>
+
+      <div className="text-[11px] text-text-ter text-center max-w-[260px] mt-6 leading-relaxed">
+        El acceso docente requiere cuenta institucional. Los alumnos ingresan sin contraseña mediante PIN o código QR de su aula.
       </div>
     </div>
   );
