@@ -126,12 +126,7 @@ const jsonLd = {
             root.setAttribute('data-theme-preference', stored);
           }
 
-          // Auto-redirección para Alumno guardado en PWA
-          const userRole = localStorage.getItem('habitar_user_role');
-          const isSwitch = new URLSearchParams(window.location.search).has('switch');
-          if (userRole === 'alumno' && (currentPath === '/' || currentPath === '/login') && !isSwitch) {
-            window.location.replace('/actividad');
-          }
+          // PWA and Theme initialization
         } catch (e) {}
       }
 
