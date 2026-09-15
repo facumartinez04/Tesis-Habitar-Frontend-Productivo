@@ -1,9 +1,9 @@
 import type { ButtonHTMLAttributes } from 'react';
 
 const variants = {
-  primary: 'bg-green-dark text-white',
-  secondary: 'bg-white text-text-pri border border-gray-border',
-  danger: 'bg-red-bg text-red-text border border-[#F09595]',
+  primary: 'bg-green-dark hover:bg-emerald-800 text-white shadow-2xs hover:shadow-xs active:scale-[0.99]',
+  secondary: 'bg-white dark:bg-[#1A1E29] hover:bg-gray-50 dark:hover:bg-[#252B3B] text-text-pri border border-gray-border shadow-2xs hover:border-green-mid/60',
+  danger: 'bg-red-bg hover:bg-red-100 text-red-text border border-[#F09595] shadow-2xs',
 };
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -13,7 +13,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 export function Button({ variant = 'primary', className = '', children, ...rest }: ButtonProps) {
   return (
     <button
-      className={`px-4 py-2 rounded-[6px] text-[12.5px] font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${variants[variant]} ${className}`}
+      className={`inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-semibold cursor-pointer transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-green-mid/40 disabled:opacity-50 disabled:cursor-not-allowed ${variants[variant]} ${className}`}
       {...rest}
     >
       {children}

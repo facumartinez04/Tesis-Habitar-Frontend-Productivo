@@ -44,51 +44,58 @@ export function AlertsScreen() {
 
   return (
     <div>
-      <div className="text-lg font-semibold text-text-pri mb-[3px] tracking-tight">Alertas de rendimiento</div>
-      <div className="text-[12.5px] text-text-sec mb-[18px]">
-        Cursos que descendieron por debajo del umbral institucional (60%)
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+            Alertas Tempranas de Rendimiento
+          </h1>
+          <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+            Detección preventiva de cursos y áreas por debajo del umbral institucional (60%)
+          </p>
+        </div>
       </div>
 
-      {alerts.map((alert) => {
-        const meta = severityIcon[alert.severity];
-        return (
-          <AlertItem
-            key={alert.id}
-            icon={meta.icon}
-            variant={meta.variant}
-            title={`${alert.courseName} — ${alert.message}`}
-            desc={
-              alert.severity !== 'resuelta' ? (
-                <>
-                  Promedio {alert.axis}:{' '}
-                  <strong className={alert.severity === 'critica' ? 'text-red-text' : 'text-amber-text'}>
-                    {alert.currentValue}%
-                  </strong>{' '}
-                  (umbral: {alert.threshold}%) · Docente: {alert.teacherName}
-                </>
-              ) : undefined
-            }
-            date={alert.severity !== 'resuelta' ? `Detectado el ${alert.detectedAt}` : undefined}
-          >
-            {alert.severity === 'resuelta' ? (
-              <Badge color="green">Resuelto</Badge>
-            ) : (
-              <button
-                onClick={() => (window.location.href = `/institucional`)}
-                className="flex items-center gap-1.5 bg-white border border-gray-border rounded-[6px] px-2.5 py-1.5 text-xs whitespace-nowrap"
-              >
-                Ver detalle
-                <Icon name="arrowRight" size={13} />
-              </button>
-            )}
-          </AlertItem>
-        );
-      })}
+      <div className="space-y-3">
+        {alerts.map((alert) => {
+          const meta = severityIcon[alert.severity];
+          return (
+            <AlertItem
+              key={alert.id}
+              icon={meta.icon}
+              variant={meta.variant}
+              title={`${alert.courseName} — ${alert.message}`}
+              desc={
+                alert.severity !== 'resuelta' ? (
+                  <>
+                    Promedio en eje {alert.axis}:{' '}
+                    <strong className={alert.severity === 'critica' ? 'text-rose-700 dark:text-rose-400 font-bold' : 'text-amber-700 dark:text-amber-400 font-bold'}>
+                      {alert.currentValue}%
+                    </strong>{' '}
+                    (umbral esperado: {alert.threshold}%) · Docente a cargo: {alert.teacherName}
+                  </>
+                ) : undefined
+              }
+              date={alert.severity !== 'resuelta' ? `Detectado el ${alert.detectedAt}` : undefined}
+            >
+              {alert.severity === 'resuelta' ? (
+                <Badge color="green">Resuelto</Badge>
+              ) : (
+                <button
+                  onClick={() => (window.location.href = `/institucional`)}
+                  className="flex items-center gap-1.5 bg-white dark:bg-[#1A1E29] border border-stone-200 dark:border-stone-700 hover:bg-stone-50 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap shadow-2xs transition-colors cursor-pointer"
+                >
+                  <span>Ver detalle</span>
+                  <Icon name="arrowRight" size={13} />
+                </button>
+              )}
+            </AlertItem>
+          );
+        })}
+      </div>
 
-      <hr className="border-gray-border my-3.5" />
-      <div className="text-[11.5px] text-text-ter">
-        Las alertas se actualizan automáticamente y se notifican por correo.{' '}
-        <a href="#" className="text-green-dark">Configurar preferencias</a>
+      <div className="mt-8 pt-4 border-t border-stone-200 dark:border-stone-800 flex items-center justify-between text-xs text-stone-500">
+        <span>Las alertas se actualizan de forma continua tras cada cierre de actividad docente.</span>
+        <a href="/institucional/configuracion" className="text-emerald-750 font-semibold hover:underline">Configurar umbrales</a>
       </div>
     </div>
   );

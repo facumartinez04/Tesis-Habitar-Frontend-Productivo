@@ -61,70 +61,87 @@ export function LoginScreen() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center px-6 py-12 min-h-screen bg-surface">
-      <img
-        src="/logo.svg"
-        alt="Habitar"
-        className="w-20 h-20 rounded-2xl object-contain shadow-md mb-4 border border-gray-border/70 bg-white p-2"
-      />
-      <div className="text-[36px] font-bold text-text-pri tracking-tight mb-1">
-        Habi<span className="text-green-dark">tar</span>
+    <div className="flex flex-col items-center justify-center px-4 py-12 min-h-screen bg-[#FAF9F6] dark:bg-[#0D0F14]">
+      <div className="w-full max-w-sm bg-white dark:bg-[#1A1E29] border border-stone-200/80 dark:border-stone-800 rounded-2xl p-6 sm:p-8 shadow-md flex flex-col items-center text-center">
+        <a href="/" className="mb-4 inline-block group">
+          <div className="w-14 h-14 rounded-2xl bg-emerald-700 text-white flex items-center justify-center p-2.5 shadow-sm group-hover:scale-105 transition-transform">
+            <img
+              src="/logo.svg"
+              alt="Habitar"
+              className="w-full h-full object-contain filter invert brightness-200"
+            />
+          </div>
+        </a>
+
+        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          Habi<span className="text-emerald-750">tar</span>
+        </h1>
+        <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 mb-6 leading-relaxed">
+          Comprensión lectora y diagnóstico formativo para instituciones educativas
+        </p>
+
+        {error && (
+          <div className="w-full text-xs font-semibold text-rose-800 bg-rose-50 border border-rose-200 rounded-xl px-3.5 py-2.5 mb-5 text-center leading-snug">
+            {error}
+          </div>
+        )}
+
+        <div className="w-full space-y-2.5">
+          <button
+            disabled={loadingProvider !== null}
+            onClick={() => handleLogin('google')}
+            className="flex items-center justify-center gap-3 w-full px-4 py-3 border border-stone-200 dark:border-stone-700 rounded-xl bg-white dark:bg-[#202533] text-slate-800 dark:text-slate-100 text-xs font-bold hover:border-emerald-600 hover:bg-emerald-50/30 dark:hover:bg-[#282F40] transition-all shadow-2xs disabled:opacity-60 cursor-pointer"
+          >
+            <GoogleIcon />
+            <span>{loadingProvider === 'google' ? 'Conectando con Google…' : 'Continuar con Google Workspace'}</span>
+          </button>
+
+          <button
+            disabled
+            title="Próximamente disponible"
+            className="flex items-center justify-center gap-3 w-full px-4 py-3 border border-stone-200 dark:border-stone-800 rounded-xl bg-stone-50 dark:bg-[#161A24] text-stone-400 dark:text-stone-500 text-xs font-medium opacity-60 cursor-not-allowed"
+          >
+            <MicrosoftIcon />
+            <span className="flex-1 text-left">Continuar con Microsoft 365</span>
+            <span className="text-[10px] bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-400 px-1.5 py-0.5 rounded font-semibold">Próx.</span>
+          </button>
+        </div>
+
+        <div className="w-full my-5 flex items-center gap-3">
+          <div className="flex-1 h-px bg-stone-200 dark:bg-stone-800" />
+          <span className="text-[10.5px] font-bold text-stone-400 uppercase tracking-widest">Alumnos</span>
+          <div className="flex-1 h-px bg-stone-200 dark:bg-stone-800" />
+        </div>
+
+        <div className="w-full space-y-2">
+          <button
+            onClick={handleSoyAlumno}
+            type="button"
+            className="flex items-center justify-center gap-2 w-full px-4 py-3 border border-emerald-300 dark:border-emerald-700/80 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-850 dark:text-emerald-300 text-xs font-bold hover:bg-emerald-100/80 dark:hover:bg-emerald-900/60 transition-all shadow-2xs cursor-pointer group"
+          >
+            <span className="text-sm group-hover:scale-110 transition-transform">🎒</span>
+            <span>Ingreso Alumno con Código</span>
+          </button>
+
+          <button
+            onClick={() => setIsScannerOpen(true)}
+            type="button"
+            className="flex items-center justify-center gap-2 w-full px-4 py-2.5 border border-dashed border-stone-300 dark:border-stone-700 hover:border-emerald-600 rounded-xl text-stone-600 dark:text-stone-300 hover:text-emerald-800 text-xs font-semibold hover:bg-stone-50 dark:hover:bg-stone-800/40 transition-colors cursor-pointer"
+          >
+            <span>📷</span>
+            <span>Escanear QR de Aula</span>
+          </button>
+        </div>
+
+        <p className="text-[11px] text-stone-500 dark:text-stone-400 text-center mt-6 leading-relaxed">
+          Acceso protegido para personal docente y directivo. Alumnos acceden sin contraseña mediante código de actividad o QR permanente.
+        </p>
       </div>
-      <div className="text-[13px] text-text-sec mb-9 text-center">
-        Analítica de comprensión lectora
-        <br />
-        para instituciones educativas
-      </div>
 
-      {error && (
-        <div className="w-[280px] text-[11.5px] text-red-800 bg-red-100 rounded-md px-3 py-2 mb-4 text-center">{error}</div>
-      )}
-
-      <button
-        disabled={loadingProvider !== null}
-        onClick={() => handleLogin('google')}
-        className="flex items-center gap-2.5 w-[280px] px-4 py-[11px] border border-gray-border rounded-md bg-white dark:bg-[#1A1E29] text-text-pri text-[13px] font-medium mb-2.5 hover:border-green-mid transition-colors disabled:opacity-60 cursor-pointer"
-      >
-        <GoogleIcon />
-        {loadingProvider === 'google' ? 'Conectando…' : 'Continuar con Google Workspace'}
-      </button>
-      <button
-        disabled
-        title="Todavía no está disponible"
-        className="flex items-center gap-2.5 w-[280px] px-4 py-[11px] border border-gray-border rounded-md bg-white dark:bg-[#1A1E29] text-text-pri text-[13px] font-medium mb-2.5 opacity-50 cursor-not-allowed"
-      >
-        <MicrosoftIcon />
-        <span className="flex-1 text-left">Continuar con Microsoft 365</span>
-        <span className="text-[10px] text-text-ter">Próximamente</span>
-      </button>
-
-      {}
-      <div className="w-[280px] my-4 flex items-center gap-2.5">
-        <div className="flex-1 h-px bg-gray-200 dark:bg-gray-800" />
-        <span className="text-[11px] font-semibold text-text-ter uppercase tracking-wider">O</span>
-        <div className="flex-1 h-px bg-gray-200 dark:bg-gray-800" />
-      </div>
-
-      <button
-        onClick={handleSoyAlumno}
-        type="button"
-        className="flex items-center justify-center gap-2.5 w-[280px] px-4 py-3 border-2 border-emerald-600/80 dark:border-emerald-500 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-[13px] font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 hover:border-emerald-700 transition-all shadow-sm group cursor-pointer"
-      >
-        <span className="text-base group-hover:scale-110 transition-transform">🎒</span>
-        <span>Soy Alumno / Entrar a clase</span>
-      </button>
-
-      <button
-        onClick={() => setIsScannerOpen(true)}
-        type="button"
-        className="flex items-center justify-center gap-2 w-[280px] mt-2 px-4 py-2 border border-dashed border-emerald-600/70 dark:border-emerald-500/60 rounded-xl text-emerald-700 dark:text-emerald-300 text-xs font-semibold hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors cursor-pointer"
-      >
-        <span>📷</span>
-        <span>Escanear código QR</span>
-      </button>
-
-      <div className="text-[11px] text-text-ter text-center max-w-[260px] mt-5 leading-relaxed">
-        El acceso docente requiere cuenta institucional. Los alumnos ingresan sin contraseña mediante PIN o código QR de su aula.
+      <div className="mt-6 flex items-center gap-4 text-xs text-stone-500">
+        <a href="/" className="hover:text-emerald-700 transition-colors font-medium">← Volver al inicio</a>
+        <span>·</span>
+        <a href="/privacidad" className="hover:text-emerald-700 transition-colors font-medium">Privacidad PBA</a>
       </div>
 
       <StudentQrScannerModal

@@ -308,57 +308,64 @@ export function TeacherDashboard() {
         </div>
       )}
 
-      {}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-3">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <div className="text-lg font-semibold text-text-pri tracking-tight">
-            Mis aulas y cursos
+      {/* Header & Course Switcher */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-5">
+        <div className="flex flex-wrap items-center gap-3">
+          <div>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+              Mis Aulas y Cursos
+            </h1>
+            <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+              Diagnóstico áulico formativo y gestión de actividades
+            </p>
           </div>
           {courses.length > 0 && (
-            <select
-              value={selectedCourseId}
-              onChange={(e) => handleSelectCourse(e.target.value)}
-              className="bg-white border border-gray-border rounded-md px-2.5 py-1 text-xs font-medium text-text-pri hover:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors"
-            >
-              {courses.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name} {c.room ? `(Salón ${c.room})` : ''}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={selectedCourseId}
+                onChange={(e) => handleSelectCourse(e.target.value)}
+                className="bg-white dark:bg-[#1A1E29] border border-stone-200 dark:border-stone-700 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 shadow-2xs hover:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all cursor-pointer"
+              >
+                {courses.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name} {c.room ? `(Salón ${c.room})` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
           )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2 shrink-0">
           <button
             onClick={() => setIsScannerOpen(true)}
-            className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-[6px] px-3 py-1.5 text-[11.5px] font-medium shadow-sm transition-colors"
+            className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
             title="Escanear el código QR fijo del aula"
           >
-            <Icon name="camera" size={13} />
-            Escanear QR de Aula
+            <Icon name="camera" size={14} />
+            <span>Escanear QR</span>
           </button>
           <button
             onClick={() => setIsCreateCourseOpen(true)}
-            className="flex items-center gap-1.5 bg-white border border-gray-border hover:bg-surface rounded-[6px] px-2.5 py-1.5 text-[11.5px] font-medium text-text-pri transition-colors"
+            className="flex items-center gap-1.5 bg-white dark:bg-[#1A1E29] border border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800 text-slate-800 dark:text-slate-200 rounded-xl px-3 py-2 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
           >
-            <Icon name="plus" size={12} />
-            Nueva Aula
+            <Icon name="plus" size={13} />
+            <span>Nueva Aula</span>
           </button>
           {currentCourse && (
             <>
               <button
                 onClick={() => setSelectedQrCourse(currentCourse)}
-                className="flex items-center gap-1.5 bg-white dark:bg-[#1A1E29] border border-gray-border dark:border-[#2D3342] hover:bg-surface rounded-[6px] px-2.5 py-1.5 text-[11.5px] text-text-pri transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 bg-white dark:bg-[#1A1E29] border border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 shadow-2xs transition-all cursor-pointer"
                 title="Ver e imprimir el QR fijo de esta aula"
               >
-                <Icon name="qrCode" size={13} />
+                <Icon name="qrCode" size={13} className="text-emerald-700" />
                 <span>QR Fijo</span>
               </button>
               <button
                 onClick={() => setIsDevicesModalOpen(true)}
-                className="flex items-center gap-1.5 bg-white dark:bg-[#1A1E29] border border-gray-border dark:border-[#2D3342] hover:bg-surface rounded-[6px] px-2.5 py-1.5 text-[11.5px] text-text-pri transition-colors cursor-pointer"
-                title="Ver y desvincular dispositivos de alumnos de esta aula física"
+                className="flex items-center gap-1.5 bg-white dark:bg-[#1A1E29] border border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 shadow-2xs transition-all cursor-pointer"
+                title="Ver dispositivos de alumnos vinculados a esta aula"
               >
                 <Icon name="kanban" size={13} />
                 <span>Dispositivos</span>
@@ -367,72 +374,75 @@ export function TeacherDashboard() {
           )}
           <a
             href={`/docente/actividades/nueva?courseId=${currentCourse?.id || ''}`}
-            className="flex items-center gap-1.5 bg-green-dark hover:opacity-90 text-white rounded-[6px] px-3 py-1.5 text-[11.5px] font-medium shadow-sm transition-colors"
+            className="flex items-center gap-1.5 bg-emerald-750 hover:bg-emerald-850 text-white rounded-xl px-3.5 py-2 text-xs font-bold shadow-2xs hover:shadow-xs transition-all"
           >
-            <Icon name="fileText" size={12} />
-            Subir Lectura
+            <Icon name="fileText" size={13} />
+            <span>Subir Lectura</span>
           </a>
           <button
             onClick={() => setCompareOpen((v) => !v)}
-            className="flex items-center gap-1.5 bg-white border border-gray-border rounded-[6px] px-2.5 py-1.5 text-[11.5px]"
+            className="flex items-center gap-1.5 bg-white dark:bg-[#1A1E29] border border-stone-200 dark:border-stone-700 hover:bg-stone-50 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-2xs transition-colors cursor-pointer"
           >
-            <Icon name="activity" size={12} />
-            Comparar
+            <Icon name="activity" size={13} />
+            <span>Comparar</span>
           </button>
           <button
             onClick={handleExport}
             disabled={exporting}
-            className="flex items-center gap-1.5 bg-white border border-gray-border rounded-[6px] px-2.5 py-1.5 text-[11.5px] disabled:opacity-50"
+            className="flex items-center gap-1.5 bg-white dark:bg-[#1A1E29] border border-stone-200 dark:border-stone-700 hover:bg-stone-50 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-2xs transition-colors disabled:opacity-50 cursor-pointer"
           >
-            <Icon name="download" size={12} />
-            {exporting ? 'Exportando…' : 'Exportar'}
+            <Icon name="download" size={13} />
+            <span>{exporting ? 'Exportando…' : 'Exportar'}</span>
           </button>
         </div>
       </div>
 
-      <div className="text-[12.5px] text-text-sec mb-[18px]">
-        {currentCourse ? (
-          <>
-            Aula: <strong>{currentCourse.name}</strong>
-            {currentCourse.room && <> · Salón: <strong>{currentCourse.room}</strong></>}
-            {currentCourse.qrCode && <> · Código QR: <span className="font-mono text-xs">{currentCourse.qrCode}</span></>}
-            {summary && <> · {summary.studentCount} alumnos</>}
-          </>
-        ) : (
-          summary && `Comprensión lectora · ${summary.courseName} · ${summary.studentCount} alumnos`
+      {/* Classroom Status Pill */}
+      <div className="bg-stone-100 dark:bg-stone-800/40 border border-stone-200/80 dark:border-stone-800 rounded-xl px-3.5 py-2 text-xs text-stone-600 dark:text-stone-300 mb-5 flex items-center justify-between flex-wrap gap-2">
+        <div>
+          {currentCourse ? (
+            <>
+              Aula: <strong className="text-slate-900 dark:text-white">{currentCourse.name}</strong>
+              {currentCourse.room && <> · Salón: <strong>{currentCourse.room}</strong></>}
+              {currentCourse.qrCode && <> · QR: <span className="font-mono text-emerald-800 dark:text-emerald-300 font-bold">{currentCourse.qrCode}</span></>}
+              {summary && <> · {summary.studentCount} alumnos</>}
+            </>
+          ) : (
+            summary && `Comprensión lectora · ${summary.courseName} · ${summary.studentCount} alumnos`
+          )}
+        </div>
+        {aiUsage && (
+          <div className="flex items-center gap-1.5 text-[11px] font-semibold text-stone-500 dark:text-stone-400">
+            <Icon name="sparkles" size={12} className="text-emerald-700" />
+            <span>IA: <strong>{aiUsage.used}</strong>/{aiUsage.quota}</span>
+          </div>
         )}
       </div>
 
-      {aiUsage && (
-        <div className="flex items-center gap-2 text-[11px] text-text-sec bg-surface border border-gray-border rounded-md px-2.5 py-1.5 mb-3.5">
-          <Icon name="sparkles" size={11} />
-          Uso de IA este mes: <strong>{aiUsage.used}</strong> / {aiUsage.quota}
-          {aiUsage.overQuota && <span className="text-red font-medium">— cupo agotado, se usa el generador por plantillas</span>}
-        </div>
-      )}
-
       {compareOpen && summary && (
-        <div className="card bg-white border border-gray-border rounded-md p-3.5 mb-3.5">
-          <div className="text-[12.5px] font-medium mb-2.5">CU-03-07 · Comparar desempeño entre dos períodos</div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2.5">
-            <input type="date" value={range.fromA} onChange={(e) => setRange((r) => ({ ...r, fromA: e.target.value }))} className="border border-gray-border rounded-md px-2 py-1.5 text-[11.5px]" placeholder="Desde A" />
-            <input type="date" value={range.toA} onChange={(e) => setRange((r) => ({ ...r, toA: e.target.value }))} className="border border-gray-border rounded-md px-2 py-1.5 text-[11.5px]" placeholder="Hasta A" />
-            <input type="date" value={range.fromB} onChange={(e) => setRange((r) => ({ ...r, fromB: e.target.value }))} className="border border-gray-border rounded-md px-2 py-1.5 text-[11.5px]" placeholder="Desde B" />
-            <input type="date" value={range.toB} onChange={(e) => setRange((r) => ({ ...r, toB: e.target.value }))} className="border border-gray-border rounded-md px-2 py-1.5 text-[11.5px]" placeholder="Hasta B" />
+        <div className="bg-white dark:bg-[#1A1E29] border border-stone-200 dark:border-stone-700 rounded-2xl p-5 mb-5 shadow-xs">
+          <div className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-3">
+            Comparar desempeño formativo entre dos períodos
           </div>
-          <button onClick={handleCompare} disabled={comparing} className="bg-green-dark text-white text-[11.5px] px-3 py-1.5 rounded-md disabled:opacity-50">
-            {comparing ? 'Comparando…' : 'Comparar'}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-3">
+            <input type="date" value={range.fromA} onChange={(e) => setRange((r) => ({ ...r, fromA: e.target.value }))} className="border border-stone-200 dark:border-stone-700 rounded-xl px-3 py-2 text-xs bg-stone-50 dark:bg-stone-900" />
+            <input type="date" value={range.toA} onChange={(e) => setRange((r) => ({ ...r, toA: e.target.value }))} className="border border-stone-200 dark:border-stone-700 rounded-xl px-3 py-2 text-xs bg-stone-50 dark:bg-stone-900" />
+            <input type="date" value={range.fromB} onChange={(e) => setRange((r) => ({ ...r, fromB: e.target.value }))} className="border border-stone-200 dark:border-stone-700 rounded-xl px-3 py-2 text-xs bg-stone-50 dark:bg-stone-900" />
+            <input type="date" value={range.toB} onChange={(e) => setRange((r) => ({ ...r, toB: e.target.value }))} className="border border-stone-200 dark:border-stone-700 rounded-xl px-3 py-2 text-xs bg-stone-50 dark:bg-stone-900" />
+          </div>
+          <button onClick={handleCompare} disabled={comparing} className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-2xs transition-all disabled:opacity-50 cursor-pointer">
+            {comparing ? 'Comparando períodos…' : 'Ejecutar Comparación'}
           </button>
 
           {comparison && (
-            <div className="grid grid-cols-3 gap-1.5 mt-3">
+            <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-stone-200 dark:border-stone-800">
               {(['literal', 'inferencial', 'critico'] as const).map((axis) => (
-                <div key={axis} className="bg-surface rounded-md px-2.5 py-2 text-center">
-                  <div className="text-[10px] text-text-ter uppercase">{axis}</div>
-                  <div className="text-[13px] font-semibold">
+                <div key={axis} className="bg-stone-50 dark:bg-stone-800/50 rounded-xl p-3 text-center border border-stone-200/80">
+                  <div className="text-[10px] text-stone-500 font-bold uppercase tracking-wider">{axis}</div>
+                  <div className="text-sm font-bold text-slate-900 dark:text-white mt-0.5">
                     {comparison.periodA.averages[axis]}% → {comparison.periodB.averages[axis]}%
                   </div>
-                  <div className={`text-[10.5px] ${comparison.delta[axis] >= 0 ? 'text-green-mid' : 'text-red'}`}>
+                  <div className={`text-xs font-bold mt-0.5 ${comparison.delta[axis] >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
                     {comparison.delta[axis] >= 0 ? '+' : ''}{comparison.delta[axis]} pts
                   </div>
                 </div>
@@ -444,94 +454,105 @@ export function TeacherDashboard() {
 
       {summary && (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-[18px]">
-            <MetricCard value={`${summary.averages.literal}%`} label="Literal" color="var(--color-green-mid)" />
-            <MetricCard value={`${summary.averages.inferencial}%`} label="Inferencial" color="var(--color-amber)" />
-            <MetricCard value={`${summary.averages.critico}%`} label="Crítico" color="var(--color-red)" />
-            <MetricCard value={String(summary.activityCount)} label="Actividades" />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            <MetricCard value={`${summary.averages.literal}%`} label="Comprensión Literal" color="var(--color-green-mid)" />
+            <MetricCard value={`${summary.averages.inferencial}%`} label="Comprensión Inferencial" color="var(--color-amber)" />
+            <MetricCard value={`${summary.averages.critico}%`} label="Comprensión Crítica" color="var(--color-red)" />
+            <MetricCard value={String(summary.activityCount)} label="Actividades Completadas" />
           </div>
 
-          <TableWrap>
-            <thead>
-              <tr>
-                <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Alumno</th>
-                <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Literal</th>
-                <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Inferencial</th>
-                <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Crítico</th>
-                <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {summary.rows.map((row) => (
-                <tr
-                  key={row.studentId}
-                  onClick={() => (window.location.href = `/docente/alumnos?id=${row.studentId}`)}
-                  className={`cursor-pointer hover:bg-surface ${row.status === 'bajo' ? 'bg-red-bg/10' : ''}`}
-                >
-                  <td className="px-2.5 py-2.5 border-b border-gray-border">{row.studentName}</td>
-                  <td className="px-2.5 py-2.5 border-b border-gray-border">{row.scores ? `${row.scores.literal}%` : '—'}</td>
-                  <td className="px-2.5 py-2.5 border-b border-gray-border">{row.scores ? `${row.scores.inferencial}%` : '—'}</td>
-                  <td className="px-2.5 py-2.5 border-b border-gray-border">{row.scores ? `${row.scores.critico}%` : '—'}</td>
-                  <td className="px-2.5 py-2.5 border-b border-gray-border">
-                    <Badge color={statusBadge[row.status].color}>{statusBadge[row.status].label}</Badge>
-                  </td>
+          <div className="mb-6">
+            <div className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2.5">
+              Rendimiento por Alumno en el Aula
+            </div>
+            <TableWrap>
+              <thead>
+                <tr className="bg-stone-50 dark:bg-[#161A24] border-b border-stone-200 dark:border-stone-800">
+                  <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Alumno</th>
+                  <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Literal</th>
+                  <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Inferencial</th>
+                  <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Crítico</th>
+                  <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Estado Diagnóstico</th>
                 </tr>
-              ))}
-            </tbody>
-          </TableWrap>
+              </thead>
+              <tbody className="divide-y divide-stone-200/80 dark:divide-stone-800">
+                {summary.rows.map((row) => (
+                  <tr
+                    key={row.studentId}
+                    onClick={() => (window.location.href = `/docente/alumnos?id=${row.studentId}`)}
+                    className={`cursor-pointer hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors ${row.status === 'bajo' ? 'bg-rose-50/30 dark:bg-rose-950/10' : ''}`}
+                  >
+                    <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">{row.studentName}</td>
+                    <td className="px-4 py-3 text-stone-700 dark:text-stone-300 font-medium">{row.scores ? `${row.scores.literal}%` : '—'}</td>
+                    <td className="px-4 py-3 text-stone-700 dark:text-stone-300 font-medium">{row.scores ? `${row.scores.inferencial}%` : '—'}</td>
+                    <td className="px-4 py-3 text-stone-700 dark:text-stone-300 font-medium">{row.scores ? `${row.scores.critico}%` : '—'}</td>
+                    <td className="px-4 py-3">
+                      <Badge color={statusBadge[row.status].color}>{statusBadge[row.status].label}</Badge>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </TableWrap>
+          </div>
         </>
       )}
 
-      <div className="text-xs font-medium text-text-sec mt-5 mb-2">Actividades del aula</div>
-      <TableWrap>
-        <thead>
-          <tr>
-            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Actividad</th>
-            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Código</th>
-            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Disponible desde</th>
-            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Estado</th>
-            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {activities.length === 0 && (
-            <tr>
-              <td colSpan={5} className="px-2.5 py-3 text-[11.5px] text-text-ter">Todavía no creaste actividades para este curso.</td>
+      <div className="mt-8 mb-6">
+        <div className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2.5">
+          Actividades Asignadas al Aula
+        </div>
+        <TableWrap>
+          <thead>
+            <tr className="bg-stone-50 dark:bg-[#161A24] border-b border-stone-200 dark:border-stone-800">
+              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Actividad</th>
+              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Código</th>
+              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Disponible desde</th>
+              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Estado</th>
+              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Acciones</th>
             </tr>
-          )}
-          {activities.map((act) => (
-            <tr key={act.id}>
-              <td className="px-2.5 py-2.5 border-b border-gray-border">{act.name}</td>
-              <td className="px-2.5 py-2.5 border-b border-gray-border font-mono text-[11px]">{act.code}</td>
-              <td className="px-2.5 py-2.5 border-b border-gray-border">{act.availableFrom}</td>
-              <td className="px-2.5 py-2.5 border-b border-gray-border">
-                <Badge color={activityStatusBadge[act.status].color}>{activityStatusBadge[act.status].label}</Badge>
-              </td>
-              <td className="px-2.5 py-2.5 border-b border-gray-border">
-                <div className="flex gap-1.5">
-                  <button
-                    onClick={() => handleDuplicate(act.id)}
-                    disabled={busyActivityId === act.id}
-                    className="flex items-center gap-1 bg-white border border-gray-border rounded-[6px] px-2 py-1 text-[10.5px] disabled:opacity-50"
-                  >
-                    <Icon name="copy" size={10} />
-                    Duplicar
-                  </button>
-                  {act.status === 'programada' && (
+          </thead>
+          <tbody className="divide-y divide-stone-200/80 dark:divide-stone-800">
+            {activities.length === 0 && (
+              <tr>
+                <td colSpan={5} className="px-4 py-4 text-xs text-stone-500 text-center">
+                  Todavía no creaste actividades para este curso. Hacé clic en "Subir Lectura" para comenzar.
+                </td>
+              </tr>
+            )}
+            {activities.map((act) => (
+              <tr key={act.id} className="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors">
+                <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">{act.name}</td>
+                <td className="px-4 py-3 font-mono text-xs font-bold text-emerald-800 dark:text-emerald-300">{act.code}</td>
+                <td className="px-4 py-3 text-stone-600 dark:text-stone-400 text-xs">{act.availableFrom}</td>
+                <td className="px-4 py-3">
+                  <Badge color={activityStatusBadge[act.status].color}>{activityStatusBadge[act.status].label}</Badge>
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2">
                     <button
-                      onClick={() => handlePublishNow(act.id)}
+                      onClick={() => handleDuplicate(act.id)}
                       disabled={busyActivityId === act.id}
-                      className="flex items-center gap-1 bg-green-dark text-white rounded-[6px] px-2 py-1 text-[10.5px] disabled:opacity-50"
+                      className="flex items-center gap-1.5 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 hover:bg-stone-50 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-colors disabled:opacity-50 cursor-pointer shadow-2xs"
                     >
-                      Publicar ahora
+                      <Icon name="copy" size={11} />
+                      <span>Duplicar</span>
                     </button>
-                  )}
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </TableWrap>
+                    {act.status === 'programada' && (
+                      <button
+                        onClick={() => handlePublishNow(act.id)}
+                        disabled={busyActivityId === act.id}
+                        className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg px-2.5 py-1 text-xs font-semibold shadow-2xs transition-colors disabled:opacity-50 cursor-pointer"
+                      >
+                        <span>Publicar ahora</span>
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </TableWrap>
+      </div>
 
       {}
       <QrScannerModal

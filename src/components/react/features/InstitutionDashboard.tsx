@@ -61,80 +61,90 @@ export function InstitutionDashboard() {
 
   return (
     <div>
-      <div className="text-lg font-semibold text-text-pri mb-[3px] tracking-tight">Dashboard institucional</div>
-      <div className="text-[12.5px] text-text-sec mb-[18px]">
-        {summary.institutionName} · {summary.courses.length} cursos activos
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+            Dashboard Institucional
+          </h1>
+          <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+            {summary.institutionName} · {summary.courses.length} aulas activas en seguimiento
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <select
+            value={levelFilter}
+            onChange={(e) => setLevelFilter(e.target.value)}
+            className="bg-white dark:bg-[#1A1E29] border border-stone-200 dark:border-stone-700 rounded-xl text-xs font-semibold px-3 py-2 text-slate-800 dark:text-slate-200 shadow-2xs hover:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all cursor-pointer"
+          >
+            <option value="todos">Todos los estados</option>
+            <option value="bien">Bien</option>
+            <option value="regular">Regular</option>
+            <option value="bajo">En riesgo (Bajo)</option>
+          </select>
+        </div>
       </div>
 
-      <div className="flex gap-2 mb-[18px]">
-        <select
-          value={levelFilter}
-          onChange={(e) => setLevelFilter(e.target.value)}
-          className="form-select bg-white border border-gray-border rounded-[6px] text-xs px-2.5 py-1.5"
-        >
-          <option value="todos">Todos los estados</option>
-          <option value="bien">Bien</option>
-          <option value="regular">Regular</option>
-          <option value="bajo">Bajo</option>
-        </select>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <MetricCard value={`${summary.averages.literal}%`} label="Promedio Literal" color="var(--color-green-mid)" />
+        <MetricCard value={`${summary.averages.inferencial}%`} label="Promedio Inferencial" color="var(--color-amber)" />
+        <MetricCard value={`${summary.averages.critico}%`} label="Promedio Crítico" color="var(--color-red)" />
+        <MetricCard value={String(summary.totalActivities)} label="Actividades Globales" />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-[18px]">
-        <MetricCard value={`${summary.averages.literal}%`} label="Prom. literal" color="var(--color-green-mid)" />
-        <MetricCard value={`${summary.averages.inferencial}%`} label="Prom. inferencial" color="var(--color-amber)" />
-        <MetricCard value={`${summary.averages.critico}%`} label="Prom. crítico" color="var(--color-red)" />
-        <MetricCard value={String(summary.totalActivities)} label="Actividades" />
-      </div>
-
-      <TableWrap>
-        <thead>
-          <tr>
-            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Curso</th>
-            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Docente</th>
-            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Literal</th>
-            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Inferencial</th>
-            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Crítico</th>
-            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Estado</th>
-          </tr>
-        </thead>
-        <tbody>
-          {courses.map((course) => (
-            <tr key={course.courseId} className={course.status === 'bajo' ? 'bg-red-bg/10' : ''}>
-              <td className="px-2.5 py-2.5 border-b border-gray-border font-medium">{course.courseName}</td>
-              <td className="px-2.5 py-2.5 border-b border-gray-border">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-text-pri">{course.teacherName || 'Sin asignar'}</span>
-                  {teachers.length > 0 && (
-                    <button
-                      onClick={() =>
-                        setReassigningCourse({
-                          id: course.courseId,
-                          name: course.courseName,
-                          subject: '',
-                          teacherId: '',
-                          teacherName: course.teacherName,
-                        })
-                      }
-                      className="p-1 text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 rounded transition-colors"
-                      title="Reasignar docente a este curso"
-                    >
-                      <Icon name="edit" size={12} />
-                    </button>
-                  )}
-                </div>
-              </td>
-              <td className="px-2.5 py-2.5 border-b border-gray-border">{course.averages.literal}%</td>
-              <td className="px-2.5 py-2.5 border-b border-gray-border">{course.averages.inferencial}%</td>
-              <td className="px-2.5 py-2.5 border-b border-gray-border">{course.averages.critico}%</td>
-              <td className="px-2.5 py-2.5 border-b border-gray-border">
-                <Badge color={statusBadge[course.status].color}>{statusBadge[course.status].label}</Badge>
-              </td>
+      <div className="mb-6">
+        <div className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2.5">
+          Desempeño por Curso y Asignación Docente
+        </div>
+        <TableWrap>
+          <thead>
+            <tr className="bg-stone-50 dark:bg-[#161A24] border-b border-stone-200 dark:border-stone-800">
+              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Curso / Aula</th>
+              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Docente a Cargo</th>
+              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Literal</th>
+              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Inferencial</th>
+              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Crítico</th>
+              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Diagnóstico</th>
             </tr>
-          ))}
-        </tbody>
-      </TableWrap>
+          </thead>
+          <tbody className="divide-y divide-stone-200/80 dark:divide-stone-800">
+            {courses.map((course) => (
+              <tr key={course.courseId} className={`hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors ${course.status === 'bajo' ? 'bg-rose-50/30 dark:bg-rose-950/10' : ''}`}>
+                <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">{course.courseName}</td>
+                <td className="px-4 py-3 text-stone-700 dark:text-stone-300">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-xs">{course.teacherName || 'Sin asignar'}</span>
+                    {teachers.length > 0 && (
+                      <button
+                        onClick={() =>
+                          setReassigningCourse({
+                            id: course.courseId,
+                            name: course.courseName,
+                            subject: '',
+                            teacherId: '',
+                            teacherName: course.teacherName,
+                          })
+                        }
+                        className="p-1 text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 rounded-md transition-colors cursor-pointer"
+                        title="Reasignar docente a este curso"
+                      >
+                        <Icon name="edit" size={13} />
+                      </button>
+                    )}
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-stone-700 dark:text-stone-300 font-medium text-xs">{course.averages.literal}%</td>
+                <td className="px-4 py-3 text-stone-700 dark:text-stone-300 font-medium text-xs">{course.averages.inferencial}%</td>
+                <td className="px-4 py-3 text-stone-700 dark:text-stone-300 font-medium text-xs">{course.averages.critico}%</td>
+                <td className="px-4 py-3">
+                  <Badge color={statusBadge[course.status].color}>{statusBadge[course.status].label}</Badge>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </TableWrap>
+      </div>
 
-      {}
       {reassigningCourse && (
         <ReassignCourseTeacherModal
           course={reassigningCourse}
