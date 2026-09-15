@@ -36,13 +36,11 @@ export function InstitutionFinanceScreen() {
   const [expenses, setExpenses] = useState<InstitutionExpense[]>([]);
   const [config, setConfig] = useState<FinanceConfig | null>(null);
 
-  // Modales
   const [isFeeModalOpen, setIsFeeModalOpen] = useState(false);
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [testingMp, setTestingMp] = useState(false);
   const [savingConfig, setSavingConfig] = useState(false);
 
-  // Formulario nueva cuota
   const currentPeriod = new Date().toISOString().slice(0, 7);
   const [feeForm, setFeeForm] = useState({
     title: '',
@@ -53,7 +51,6 @@ export function InstitutionFinanceScreen() {
     tutorName: '',
   });
 
-  // Formulario nuevo gasto del colegio
   const [expenseForm, setExpenseForm] = useState({
     category: 'MANTENIMIENTO',
     title: '',
@@ -64,7 +61,6 @@ export function InstitutionFinanceScreen() {
     status: 'PAGADO',
   });
 
-  // Formulario configuración MP del colegio
   const [mpForm, setMpForm] = useState({
     mpAccessToken: '',
     mpPublicKey: '',
@@ -236,7 +232,7 @@ export function InstitutionFinanceScreen() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-text-pri">
@@ -264,7 +260,7 @@ export function InstitutionFinanceScreen() {
         </div>
       </div>
 
-      {/* KPI Cards */}
+      {}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white border border-gray-border rounded-xl p-4 shadow-2xs">
           <div className="flex items-center justify-between">
@@ -323,7 +319,7 @@ export function InstitutionFinanceScreen() {
         </div>
       </div>
 
-      {/* Tabs */}
+      {}
       <div className="flex items-center gap-1 border-b border-gray-border overflow-x-auto">
         <button
           onClick={() => setActiveTab('cuotas')}
@@ -368,7 +364,7 @@ export function InstitutionFinanceScreen() {
         </button>
       </div>
 
-      {/* TAB 1: CUOTAS */}
+      {}
       {activeTab === 'cuotas' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -476,7 +472,7 @@ export function InstitutionFinanceScreen() {
         </div>
       )}
 
-      {/* TAB 2: GASTOS */}
+      {}
       {activeTab === 'gastos' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -549,7 +545,7 @@ export function InstitutionFinanceScreen() {
         </div>
       )}
 
-      {/* TAB 3: CONFIGURACIÓN CUENTA MP DE LA ESCUELA */}
+      {}
       {activeTab === 'config' && (
         <div className="max-w-2xl bg-white border border-gray-border rounded-xl p-6 shadow-2xs space-y-5">
           <div>
@@ -623,7 +619,7 @@ export function InstitutionFinanceScreen() {
         </div>
       )}
 
-      {/* MODAL 1: EMITIR CUOTA ESCOLAR */}
+      {}
       {isFeeModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white border border-gray-border rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
@@ -726,7 +722,7 @@ export function InstitutionFinanceScreen() {
         </div>
       )}
 
-      {/* MODAL 2: NUEVO GASTO ESCOLAR */}
+      {}
       {isExpenseModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white border border-gray-border rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">

@@ -33,7 +33,7 @@ export function NewActivityStep1() {
           }
         })
         .catch(() => {
-          // fallback if course cannot be fetched
+
         });
     }
   }, []);
@@ -81,7 +81,7 @@ export function NewActivityStep1() {
         ]}
       />
 
-      {/* Classroom Link Banner */}
+      {}
       {(boundCourse || wizard.courseName) && (
         <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2.5">

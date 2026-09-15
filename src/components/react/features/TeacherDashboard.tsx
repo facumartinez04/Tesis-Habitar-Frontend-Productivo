@@ -60,7 +60,6 @@ export function TeacherDashboard() {
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [isDevicesModalOpen, setIsDevicesModalOpen] = useState(false);
 
-  // Modals state
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isCreateCourseOpen, setIsCreateCourseOpen] = useState(false);
   const [selectedQrCourse, setSelectedQrCourse] = useState<Course | null>(null);
@@ -118,7 +117,7 @@ export function TeacherDashboard() {
     setSelectedCourseId(newCourse.id);
     loadCourseData(newCourse.id);
     showToast(`Aula "${newCourse.name}" creada exitosamente`);
-    // Open QR modal immediately so teacher can print/download
+
     setSelectedQrCourse(newCourse);
   }
 
@@ -261,7 +260,7 @@ export function TeacherDashboard() {
     <div>
       <Toast message={message} />
 
-      {/* Classroom Connected Banner */}
+      {}
       {scannedCourse && (
         <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3.5 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -309,7 +308,7 @@ export function TeacherDashboard() {
         </div>
       )}
 
-      {/* Top Header & Actions */}
+      {}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-3">
         <div className="flex flex-wrap items-center gap-2.5">
           <div className="text-lg font-semibold text-text-pri tracking-tight">
@@ -534,7 +533,7 @@ export function TeacherDashboard() {
         </tbody>
       </TableWrap>
 
-      {/* Classroom Modals */}
+      {}
       <QrScannerModal
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}

@@ -10,7 +10,7 @@ export function getStoredTheme(): ThemeMode {
       return value;
     }
   } catch (e) {
-    // LocalStorage might be disabled or restricted
+
   }
   return 'system';
 }
@@ -33,7 +33,7 @@ export function applyTheme(mode: ThemeMode): void {
   try {
     localStorage.setItem(STORAGE_KEY, mode);
   } catch (e) {
-    // Ignore storage errors
+
   }
 
   const resolved = getResolvedTheme(mode);
@@ -49,7 +49,6 @@ export function applyTheme(mode: ThemeMode): void {
 
   root.setAttribute('data-theme-preference', mode);
 
-  // Dispatch event for any reactive component listeners
   window.dispatchEvent(
     new CustomEvent('habitar-theme-change', {
       detail: { mode, resolved },

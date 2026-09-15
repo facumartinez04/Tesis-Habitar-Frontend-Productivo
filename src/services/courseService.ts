@@ -72,4 +72,3 @@ export async function getTeacherCourses(teacherId: string): Promise<Course[]> {
   return apiFetch<Course[]>(`/courses/teachers/${teacherId}/assignments`);
 }
 
-

@@ -69,7 +69,6 @@ export interface Subscription {
   managementStatus: SubscriptionManagementStatus;
   durationMonths: number;
 
-  // Personalizaciones exclusivas por negocio / colegio
   customMaxUsers?: number | null;
   customMaxStudents?: number | null;
   customMaxCourses?: number | null;
@@ -78,7 +77,6 @@ export interface Subscription {
   customNotes?: string | null;
   billingCycle?: 'MONTHLY' | 'ANNUAL';
 
-  // Límites y capacidades efectivas consolidadas
   effectiveMaxUsers?: number;
   effectiveMaxStudents?: number;
   effectiveMaxCourses?: number;

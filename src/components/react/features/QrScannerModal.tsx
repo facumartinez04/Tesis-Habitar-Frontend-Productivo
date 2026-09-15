@@ -90,7 +90,6 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
     setVerifying(true);
     stopCamera();
 
-    // Extraer código de aula (soporta URLs como https://habitar.lat/aula/AULA-6A-7821 o texto plano AULA-6A-7821)
     let cleanCode = rawText.trim();
     if (cleanCode.includes('/aula/')) {
       cleanCode = cleanCode.split('/aula/').pop()?.split('?')[0] || cleanCode;
@@ -111,13 +110,12 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
     }
   }
 
-  // Bucle de escaneo usando BarcodeDetector nativo si está disponible
   async function scanLoop() {
     if (!scanning || !videoRef.current || !canvasRef.current) return;
 
     const video = videoRef.current;
     if (video.readyState === video.HAVE_ENOUGH_DATA) {
-      // 1. Intentar BarcodeDetector nativo (Chrome/Android/Safari iOS reciente)
+
       if ('BarcodeDetector' in window) {
         try {
           const detector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
@@ -130,7 +128,7 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
             }
           }
         } catch {
-          // fallback
+
         }
       }
     }
@@ -176,7 +174,7 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 animate-in fade-in duration-150">
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-border flex flex-col">
-        {/* Cabecera */}
+        {}
         <div className="px-5 py-4 bg-gray-50 border-b border-gray-border flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="p-1.5 bg-emerald-100 text-emerald-800 rounded-lg">
@@ -195,7 +193,7 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
           </button>
         </div>
 
-        {/* Pestañas de modo de escaneo */}
+        {}
         <div className="flex border-b border-gray-border text-xs font-semibold">
           <button
             onClick={() => setActiveTab('camara')}
@@ -232,7 +230,7 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
           </button>
         </div>
 
-        {/* Contenido según pestaña */}
+        {}
         <div className="p-5 flex-1 flex flex-col items-center justify-center min-h-[300px]">
           {activeTab === 'camara' && (
             <div className="w-full flex flex-col items-center">
@@ -257,7 +255,7 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
                   />
                   <canvas ref={canvasRef} className="hidden" />
 
-                  {/* Retícula y láser de escaneo */}
+                  {}
                   <div className="absolute inset-6 border-2 border-emerald-400/80 rounded-xl pointer-events-none flex flex-col justify-between p-2">
                     <div className="w-full flex justify-between">
                       <span className="w-4 h-4 border-t-2 border-l-2 border-emerald-400" />
@@ -338,7 +336,7 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
           )}
         </div>
 
-        {/* Pie */}
+        {}
         <div className="px-5 py-3 bg-gray-50 border-t border-gray-border flex items-center justify-between text-xs text-text-ter">
           <span>Habitar • Conexión de Aula</span>
           <button onClick={onClose} className="hover:text-text-pri font-medium">

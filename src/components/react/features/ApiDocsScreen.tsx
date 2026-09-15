@@ -45,7 +45,7 @@ interface EndpointDef {
 }
 
 const ENDPOINTS: EndpointDef[] = [
-  // JIRA & IA
+
   {
     id: 'jira-get-issues',
     method: 'GET',
@@ -280,7 +280,6 @@ const ENDPOINTS: EndpointDef[] = [
     ],
   },
 
-  // AUTENTICACIÓN
   {
     id: 'auth-login',
     method: 'POST',
@@ -372,7 +371,6 @@ const ENDPOINTS: EndpointDef[] = [
     ],
   },
 
-  // INSTITUCIONES
   {
     id: 'inst-list',
     method: 'GET',
@@ -511,7 +509,6 @@ const ENDPOINTS: EndpointDef[] = [
     ],
   },
 
-  // ACTIVIDADES Y CURSOS
   {
     id: 'courses-list',
     method: 'GET',
@@ -625,7 +622,6 @@ const ENDPOINTS: EndpointDef[] = [
     ],
   },
 
-  // RESULTADOS Y ANALÍTICA
   {
     id: 'results-course',
     method: 'GET',
@@ -679,7 +675,6 @@ const ENDPOINTS: EndpointDef[] = [
     ],
   },
 
-  // CUMPLIMIENTO & GDPR
   {
     id: 'comp-students-search',
     method: 'GET',
@@ -745,7 +740,6 @@ const ENDPOINTS: EndpointDef[] = [
     ],
   },
 
-  // SUSCRIPCIONES
   {
     id: 'sub-list',
     method: 'GET',
@@ -797,7 +791,6 @@ const ENDPOINTS: EndpointDef[] = [
     ],
   },
 
-  // MONITOREO & SALUD
   {
     id: 'mon-snapshot',
     method: 'GET',
@@ -961,7 +954,7 @@ export function ApiDocsScreen() {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-16">
-      {/* HEADER TIPO SWAGGER */}
+      {}
       <div className="bg-white dark:bg-[#1A1E29] border border-gray-border rounded-xl p-6 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 dark:border-gray-800 pb-5">
           <div>
@@ -995,7 +988,7 @@ export function ApiDocsScreen() {
           </div>
         </div>
 
-        {/* CONTROLES DE BÚSQUEDA Y FILTRADO */}
+        {}
         <div className="pt-4 flex flex-col md:flex-row items-center justify-between gap-3">
           <div className="relative w-full md:w-96">
             <svg
@@ -1016,7 +1009,7 @@ export function ApiDocsScreen() {
             />
           </div>
 
-          {/* MÉTODOS Y EXPANDIR/COLAPSAR */}
+          {}
           <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end">
             <div className="flex items-center bg-gray-100 dark:bg-[#131620] p-1 rounded-lg border border-gray-200 dark:border-gray-800 text-xs">
               {['ALL', 'GET', 'POST', 'PATCH', 'DELETE'].map((m) => (
@@ -1051,7 +1044,7 @@ export function ApiDocsScreen() {
           </div>
         </div>
 
-        {/* PILLS DE CATEGORÍAS */}
+        {}
         <div className="flex items-center gap-1.5 overflow-x-auto pt-3 pb-1 border-t border-gray-100 dark:border-gray-800 mt-4 text-xs">
           {TAGS.map((t) => {
             const count = t === 'Todos' ? ENDPOINTS.length : ENDPOINTS.filter((e) => e.tag === t).length;
@@ -1076,7 +1069,7 @@ export function ApiDocsScreen() {
         </div>
       </div>
 
-      {/* LISTADO DE ENDPOINTS ESTILO SWAGGER */}
+      {}
       <div className="space-y-3">
         {filteredEndpoints.length === 0 ? (
           <div className="bg-white dark:bg-[#1A1E29] border border-gray-border rounded-xl p-12 text-center text-text-sec">
@@ -1097,37 +1090,37 @@ export function ApiDocsScreen() {
                 key={ep.id}
                 className={`border rounded-xl overflow-hidden transition-all duration-200 ${colors.border} bg-white dark:bg-[#1A1E29] shadow-xs`}
               >
-                {/* CABECERA CLICKABLE DEL ENDPOINT */}
+                {}
                 <div
                   onClick={() => toggleEndpoint(ep.id)}
                   className={`px-4 py-3 cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-3 ${colors.bg} hover:brightness-95 transition-all`}
                 >
                   <div className="flex items-center gap-3 flex-wrap">
-                    {/* BADGE DEL MÉTODO HTTP */}
+                    {}
                     <span
                       className={`font-mono text-xs font-bold px-2.5 py-1 rounded-md tracking-wider min-w-[70px] text-center ${colors.badgeBg}`}
                     >
                       {ep.method}
                     </span>
 
-                    {/* RUTA */}
+                    {}
                     <code className="font-mono text-sm font-semibold text-text-pri">
                       {ep.path}
                     </code>
 
-                    {/* RESUMEN */}
+                    {}
                     <span className="text-xs text-text-sec hidden sm:inline-block font-normal">
                       — {ep.summary}
                     </span>
                   </div>
 
                   <div className="flex items-center gap-3">
-                    {/* BADGE DE AUTENTICACIÓN */}
+                    {}
                     <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-white/80 dark:bg-zinc-800/80 border border-gray-border text-text-sec">
                       {ep.auth}
                     </span>
 
-                    {/* BOTÓN COPIAR CURL */}
+                    {}
                     <button
                       type="button"
                       onClick={(e) => {
@@ -1147,7 +1140,7 @@ export function ApiDocsScreen() {
                       )}
                     </button>
 
-                    {/* CHEVRON ACCORDION */}
+                    {}
                     <svg
                       className={`w-4 h-4 text-text-ter transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
                       fill="none"
@@ -1159,10 +1152,10 @@ export function ApiDocsScreen() {
                   </div>
                 </div>
 
-                {/* DETALLE EXPANDIBLE TIPO SWAGGER */}
+                {}
                 {isExpanded && (
                   <div className="p-5 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1A1E29] space-y-5 text-xs">
-                    {/* DESCRIPCIÓN DETALLADA / PARA QUÉ SIRVE */}
+                    {}
                     <div className="bg-surface rounded-lg p-4 border border-gray-border">
                       <div className="font-semibold text-text-pri text-xs uppercase tracking-wider mb-1 flex items-center gap-2">
                         <svg className="w-4 h-4 text-green-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1179,7 +1172,7 @@ export function ApiDocsScreen() {
                       </div>
                     </div>
 
-                    {/* PARÁMETROS DE RUTA Y QUERY */}
+                    {}
                     {((ep.pathParams && ep.pathParams.length > 0) || (ep.queryParams && ep.queryParams.length > 0)) && (
                       <div>
                         <div className="font-semibold text-text-pri mb-2 text-xs uppercase tracking-wider">
@@ -1221,7 +1214,7 @@ export function ApiDocsScreen() {
                       </div>
                     )}
 
-                    {/* CUERPO DE LA PETICIÓN (REQUEST BODY) */}
+                    {}
                     {ep.requestBody && (
                       <div>
                         <div className="flex items-center justify-between mb-2">
@@ -1239,7 +1232,7 @@ export function ApiDocsScreen() {
                       </div>
                     )}
 
-                    {/* RESPUESTAS HTTP (RESPONSES) */}
+                    {}
                     <div>
                       <div className="font-semibold text-text-pri mb-2 text-xs uppercase tracking-wider">
                         Respuestas (Responses)
@@ -1274,7 +1267,7 @@ export function ApiDocsScreen() {
                       </div>
                     </div>
 
-                    {/* COMANDO CURL LISTO PARA TESTEAR */}
+                    {}
                     <div className="pt-2 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
                       <span className="text-[11px] text-text-ter">
                         Usa este cURL para probar el endpoint en tu terminal o en un agente autónomo de IA.

@@ -37,7 +37,7 @@ export function ClassroomScannerScreen() {
   const [boundInfo, setBoundInfo] = useState<BoundInfo | null>(null);
 
   useEffect(() => {
-    // 1. Extraer código QR de la URL (?code=AULA-... o /aula/AULA-...)
+
     const params = new URLSearchParams(window.location.search);
     let code = params.get('code');
     if (!code) {
@@ -55,7 +55,6 @@ export function ClassroomScannerScreen() {
     const cleanCode = code.trim().toUpperCase();
     setQrCode(cleanCode);
 
-    // 2. Verificar si hay sesión activa de docente o directivo
     const session = sessionStore.getState().session;
     if (session && session.user) {
       const role = session.user.role?.toUpperCase();
@@ -88,7 +87,6 @@ export function ClassroomScannerScreen() {
       }
     }
 
-    // 3. Flujo Alumno: Cargar información pública del aula
     getPublicCourseInfo(cleanCode)
       .then((data) => {
         setInfo(data);
@@ -97,20 +95,19 @@ export function ClassroomScannerScreen() {
           localStorage.setItem('habitar_last_course_id', data.course.id);
           localStorage.setItem('habitar_last_course_qr', cleanCode);
 
-          // Verificar si este dispositivo ya está vinculado a este curso
           const localStored = localStorage.getItem(`habitar_bound_course_${data.course.id}`);
           if (localStored) {
             const parsed = JSON.parse(localStored) as BoundInfo;
             setBoundInfo(parsed);
           } else {
-            // Cargar nombre anterior si existe como sugerencia
+
             const previousName = localStorage.getItem('habitar_student_name');
             if (previousName) {
               setStudentNameInput(previousName);
             }
           }
         } catch {
-          // no-op
+
         }
       })
       .catch((err: any) => {
@@ -151,7 +148,6 @@ export function ClassroomScannerScreen() {
 
       setBoundInfo(newBound);
 
-      // Si ya hay una actividad activa en el aula, ingresar directamente
       if (info.activeActivity) {
         window.location.href = `/actividad?code=${encodeURIComponent(info.activeActivity.code)}`;
       }
@@ -220,7 +216,7 @@ export function ClassroomScannerScreen() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
-      {/* Barra superior de estado */}
+      {}
       <div className="fixed top-0 inset-x-0 z-40 bg-surface/85 backdrop-blur-md border-b border-gray-border/70 px-4 py-2 flex items-center justify-between text-xs">
         <div className="flex items-center gap-1.5 text-text-sec">
           <span className="text-sm">🎒</span>
@@ -237,7 +233,7 @@ export function ClassroomScannerScreen() {
       </div>
 
       <Card className="w-full max-w-md p-6 space-y-5">
-        {/* Cabecera del Aula */}
+        {}
         <div className="text-center pb-3 border-b border-gray-border/60">
           <Badge color="green" className="mb-2">
             Aula Física Conectada
@@ -252,9 +248,9 @@ export function ClassroomScannerScreen() {
           )}
         </div>
 
-        {/* Estado de Vinculación del Alumno */}
+        {}
         {boundInfo ? (
-          /* Dispositivo ya vinculado con éxito (BLOQUEADO E INMUTABLE) */
+
           <div className="space-y-4">
             <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800/60 rounded-2xl p-4 text-center space-y-1.5">
               <div className="flex items-center justify-center gap-1.5 text-emerald-800 dark:text-emerald-300 font-bold text-sm">
@@ -272,7 +268,7 @@ export function ClassroomScannerScreen() {
               </div>
             </div>
 
-            {/* Actividad en Curso o Espera */}
+            {}
             {activeActivity ? (
               <div className="bg-surface border border-emerald-600/30 rounded-2xl p-4 space-y-3 text-center shadow-xs">
                 <div className="space-y-0.5">
@@ -305,7 +301,7 @@ export function ClassroomScannerScreen() {
             )}
           </div>
         ) : (
-          /* Formulario de Primera Vinculación (Pide Nombre y Apellido) */
+
           <form onSubmit={handleBindDevice} className="space-y-4">
             <div className="text-center space-y-1">
               <h2 className="text-base font-bold text-text-pri">Ingresá tu Nombre y Apellido</h2>

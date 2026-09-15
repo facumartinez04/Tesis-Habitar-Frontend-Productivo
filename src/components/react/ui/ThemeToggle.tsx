@@ -39,7 +39,6 @@ export function ThemeToggle({ variant = 'segmented', className = '' }: ThemeTogg
     applyTheme(mode);
   };
 
-  // Render placeholder during SSR to prevent layout shift
   if (!mounted) {
     return (
       <div className={`h-8 w-24 bg-gray-bg/60 rounded-lg animate-pulse ${className}`} />
@@ -47,7 +46,7 @@ export function ThemeToggle({ variant = 'segmented', className = '' }: ThemeTogg
   }
 
   if (variant === 'compact') {
-    // Quick toggle cycling: light -> dark -> system
+
     const nextModeMap: Record<ThemeMode, ThemeMode> = {
       light: 'dark',
       dark: 'system',
@@ -71,7 +70,6 @@ export function ThemeToggle({ variant = 'segmented', className = '' }: ThemeTogg
     );
   }
 
-  // Segmented control with 3 distinct options
   return (
     <div
       role="group"

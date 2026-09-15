@@ -38,7 +38,7 @@ function saveDraft(code: string, draft: ActivityDraft): void {
   try {
     window.localStorage.setItem(draftKey(code), JSON.stringify(draft));
   } catch {
-    // no-op
+
   }
 }
 
@@ -46,7 +46,7 @@ function clearDraft(code: string): void {
   try {
     window.localStorage.removeItem(draftKey(code));
   } catch {
-    // no-op
+
   }
 }
 
@@ -76,7 +76,6 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     loadActivity(code);
   }
 
-  // Guardar preferencia de "Soy Alumno" en PWA y recuperar nombre anterior si existe
   useEffect(() => {
     try {
       localStorage.setItem('habitar_user_role', 'alumno');
@@ -85,7 +84,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
         setName(savedName);
       }
     } catch {
-      // no-op
+
     }
   }, []);
 
@@ -109,7 +108,6 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
       return;
     }
 
-    // Si es un enlace o código de aula física, redirigir inteligentemente a /aula
     if (raw.includes('/aula') || raw.toUpperCase().startsWith('AULA-')) {
       let code = raw;
       try {
@@ -129,7 +127,6 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
       return;
     }
 
-    // Si es una URL completa de actividad, extraer el parámetro ?code=
     let cleanCode = raw.toUpperCase();
     if (raw.includes('/actividad')) {
       try {
@@ -177,7 +174,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     try {
       localStorage.setItem('habitar_student_name', trimmedName);
     } catch {
-      // no-op
+
     }
     setJoining(true);
     await new Promise((resolve) => setTimeout(resolve, 350));
@@ -189,7 +186,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     try {
       localStorage.removeItem('habitar_user_role');
     } catch {
-      // no-op
+
     }
     window.location.href = '/login?switch=1';
   }
@@ -220,7 +217,6 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     setIndex((prev) => prev + 1);
   }
 
-  // Barra superior de modo alumno PWA
   const studentBar = (
     <div className="fixed top-0 inset-x-0 z-40 bg-surface/85 backdrop-blur-md border-b border-gray-border/70 px-4 py-2 flex items-center justify-between text-xs">
       <div className="flex items-center gap-1.5 text-text-sec">

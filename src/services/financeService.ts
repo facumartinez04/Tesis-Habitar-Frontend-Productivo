@@ -9,8 +9,6 @@ import type {
   PlatformFinanceSummary,
 } from '../types/finance';
 
-// --- PLATAFORMA (ADMIN) ---
-
 export async function getPlatformFinanceSummary(): Promise<PlatformFinanceSummary> {
   return apiFetch<PlatformFinanceSummary>('/finances/platform/summary');
 }
@@ -81,8 +79,6 @@ export async function testMercadoPagoConnection(accessToken: string): Promise<{ 
     body: { accessToken },
   });
 }
-
-// --- INSTITUCIÓN (CADA COLEGIO) ---
 
 export async function getInstitutionFinanceSummary(institutionId: string): Promise<InstitutionFinanceSummary> {
   return apiFetch<InstitutionFinanceSummary>(`/finances/institution/${institutionId}/summary`);

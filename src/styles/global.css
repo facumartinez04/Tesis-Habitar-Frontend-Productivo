@@ -99,12 +99,6 @@ html.dark,
   }
 }
 
-/* =========================================================================
-   GLOBAL DARK THEME ADAPTATIONS
-   Applied when html has .dark or [data-theme="dark"]
-   ========================================================================= */
-
-/* Header and card surfaces */
 html.dark header.bg-white,
 html.dark header,
 :root[data-theme="dark"] header.bg-white,
@@ -119,7 +113,6 @@ html.dark .bg-white:not([data-keep-white]):not([data-keep-white] *),
   border-color: #2D3342 !important;
 }
 
-/* Form controls & inputs */
 html.dark input:not([type="checkbox"]):not([type="radio"]):not([data-keep-white]),
 html.dark select,
 html.dark textarea,
@@ -150,7 +143,6 @@ html.dark .form-select,
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
 }
 
-/* Subtle background tints in dark mode (Swagger / badges / cards) */
 html.dark .bg-emerald-50,
 :root[data-theme="dark"] .bg-emerald-50 {
   background-color: rgba(16, 185, 129, 0.12) !important;
@@ -202,7 +194,6 @@ html.dark [class*="bg-gray-100/"],
   background-color: rgba(255, 255, 255, 0.08) !important;
 }
 
-/* Text color contrast adaptations in dark mode */
 html.dark .text-emerald-700,
 html.dark .text-emerald-800,
 html.dark .text-emerald-900,
@@ -243,7 +234,6 @@ html.dark .text-red-950,
   color: #F87171 !important;
 }
 
-/* Borders in dark mode */
 html.dark .border-gray-100,
 html.dark .border-gray-200,
 html.dark .border-gray-300,
@@ -253,7 +243,6 @@ html.dark .border-gray-300,
   border-color: #2D3342 !important;
 }
 
-/* Shadows in dark mode */
 html.dark .shadow-sm,
 html.dark .shadow-md,
 html.dark .shadow-lg,
@@ -265,7 +254,6 @@ html.dark .shadow-xl,
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.45) !important;
 }
 
-/* SweetAlert2 popups in dark mode */
 html.dark .swal2-popup,
 :root[data-theme="dark"] .swal2-popup {
   background: #181C26 !important;
@@ -279,7 +267,6 @@ html.dark .swal2-html-container,
   color: #F3F4F6 !important;
 }
 
-/* Skeleton animation */
 @keyframes shimmer {
   0% {
     background-position: -200% 0;

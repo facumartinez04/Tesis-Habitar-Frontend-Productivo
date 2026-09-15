@@ -39,8 +39,8 @@ export function ReassignCourseTeacherModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
       <div className="bg-white rounded-2xl max-w-md w-full border border-gray-border shadow-2xl overflow-hidden flex flex-col">
-        
-        {/* Header */}
+
+        {}
         <div className="px-6 py-4 border-b border-gray-border flex items-center justify-between bg-surface/50">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm">
@@ -63,7 +63,7 @@ export function ReassignCourseTeacherModal({
           </button>
         </div>
 
-        {/* Content */}
+        {}
         <div className="p-6 space-y-4 text-xs">
           {error && (
             <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red text-xs">
@@ -95,7 +95,7 @@ export function ReassignCourseTeacherModal({
           </div>
         </div>
 
-        {/* Footer */}
+        {}
         <div className="px-6 py-4 border-t border-gray-border bg-surface/50 flex items-center justify-end gap-2.5">
           <button
             onClick={onClose}

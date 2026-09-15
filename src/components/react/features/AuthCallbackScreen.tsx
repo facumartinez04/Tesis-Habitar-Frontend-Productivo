@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { completeOAuthCallback } from '../../../services/authService';
 
-/** CU-01-01: el backend redirige acá después del login real con `?token=&dashboardPath=`. */
 export function AuthCallbackScreen() {
   const [error, setError] = useState<string | null>(null);
 

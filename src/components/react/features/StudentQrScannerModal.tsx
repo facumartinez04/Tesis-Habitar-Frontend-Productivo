@@ -100,7 +100,6 @@ export function StudentQrScannerModal({
 
     const text = rawText.trim();
 
-    // 1. Detectar si es URL o texto de aula física
     if (text.includes('/aula') || text.toUpperCase().startsWith('AULA-')) {
       let code = text;
       try {
@@ -121,7 +120,6 @@ export function StudentQrScannerModal({
       return;
     }
 
-    // 2. Detectar si es URL de actividad
     if (text.includes('/actividad')) {
       let code = text;
       try {
@@ -142,7 +140,6 @@ export function StudentQrScannerModal({
       return;
     }
 
-    // 3. Por defecto, tratar como código de actividad o PIN
     onCodeScanned(text.toUpperCase(), 'activity');
     onClose();
   }
@@ -152,7 +149,7 @@ export function StudentQrScannerModal({
 
     const video = videoRef.current;
     if (video.readyState === video.HAVE_ENOUGH_DATA) {
-      // 1. Intentar BarcodeDetector nativo
+
       if ('BarcodeDetector' in window) {
         try {
           const detector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
@@ -184,7 +181,7 @@ export function StudentQrScannerModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4 animate-in fade-in duration-150">
       <div className="bg-white dark:bg-[#161A23] rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden border border-gray-border dark:border-[#2D3342] flex flex-col">
-        {/* Cabecera */}
+        {}
         <div className="px-5 py-3.5 bg-gray-50/90 dark:bg-[#1A1E29] border-b border-gray-border dark:border-[#2D3342] flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="p-1.5 bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 rounded-lg">
@@ -203,7 +200,7 @@ export function StudentQrScannerModal({
           </button>
         </div>
 
-        {/* Pestañas de modo */}
+        {}
         <div className="flex border-b border-gray-border dark:border-[#2D3342] text-xs font-semibold">
           <button
             onClick={() => setActiveTab('camara')}
@@ -229,7 +226,7 @@ export function StudentQrScannerModal({
           </button>
         </div>
 
-        {/* Contenido según pestaña */}
+        {}
         <div className="p-5 flex-1 flex flex-col items-center justify-center min-h-[290px]">
           {activeTab === 'camara' && (
             <div className="w-full flex flex-col items-center">
@@ -254,7 +251,7 @@ export function StudentQrScannerModal({
                   />
                   <canvas ref={canvasRef} className="hidden" />
 
-                  {/* Retícula de escaneo */}
+                  {}
                   <div className="absolute inset-5 border-2 border-emerald-400/80 rounded-xl pointer-events-none flex flex-col justify-between p-2">
                     <div className="w-full flex justify-between">
                       <span className="w-3.5 h-3.5 border-t-2 border-l-2 border-emerald-400" />
@@ -313,7 +310,7 @@ export function StudentQrScannerModal({
           )}
         </div>
 
-        {/* Footer */}
+        {}
         <div className="px-5 py-3 bg-gray-50/80 dark:bg-[#1A1E29] border-t border-gray-border dark:border-[#2D3342] flex items-center justify-between text-xs text-text-ter">
           <span>Habitar • Modo Alumno</span>
           <button onClick={onClose} className="hover:text-text-pri font-medium cursor-pointer">

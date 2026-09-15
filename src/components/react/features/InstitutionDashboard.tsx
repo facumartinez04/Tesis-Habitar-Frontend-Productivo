@@ -134,7 +134,7 @@ export function InstitutionDashboard() {
         </tbody>
       </TableWrap>
 
-      {/* Modal para Reasignar Docente al Aula */}
+      {}
       {reassigningCourse && (
         <ReassignCourseTeacherModal
           course={reassigningCourse}

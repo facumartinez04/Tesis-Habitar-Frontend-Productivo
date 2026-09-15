@@ -15,9 +15,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 
 export function LoginScreen() {
   const [loadingProvider, setLoadingProvider] = useState<OAuthProviderId | null>(null);
-  // El ?error= de la URL se lee recién en useEffect (post-hidratación): leerlo durante
-  // el render inicial rompe la hidratación, porque el server no tiene `window` y arma
-  // un HTML distinto al que arma el cliente en su primer render.
+
   const [error, setError] = useState<string | null>(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
@@ -25,18 +23,18 @@ export function LoginScreen() {
     const rawError = new URLSearchParams(window.location.search).get('error');
     if (rawError) {
       setError(ERROR_MESSAGES[rawError] || rawError);
-      // Limpia el ?error=... de la barra de direcciones para que no quede visible en la URL
+
       try {
         window.history.replaceState({}, '', window.location.pathname);
       } catch {
-        // no-op
+
       }
     }
   }, []);
 
   function handleLogin(provider: OAuthProviderId) {
     setLoadingProvider(provider);
-    // CU-01-01: navegación completa — el backend redirige a la pantalla real de Google/Microsoft.
+
     window.location.href = oauthLoginUrl(provider);
   }
 
@@ -44,7 +42,7 @@ export function LoginScreen() {
     try {
       localStorage.setItem('habitar_user_role', 'alumno');
     } catch {
-      // no-op
+
     }
     window.location.href = '/actividad';
   }
@@ -53,7 +51,7 @@ export function LoginScreen() {
     try {
       localStorage.setItem('habitar_user_role', 'alumno');
     } catch {
-      // no-op
+
     }
     if (type === 'course') {
       window.location.href = `/aula?code=${encodeURIComponent(code)}`;
@@ -100,7 +98,7 @@ export function LoginScreen() {
         <span className="text-[10px] text-text-ter">Próximamente</span>
       </button>
 
-      {/* Separador e Ingreso para Alumnos */}
+      {}
       <div className="w-[280px] my-4 flex items-center gap-2.5">
         <div className="flex-1 h-px bg-gray-200 dark:bg-gray-800" />
         <span className="text-[11px] font-semibold text-text-ter uppercase tracking-wider">O</span>

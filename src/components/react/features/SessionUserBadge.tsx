@@ -54,7 +54,7 @@ export function SessionUserBadge() {
 
   return (
     <div className="relative shrink-0" ref={dropdownRef}>
-      {/* Botón de Avatar / Foto */}
+      {}
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
@@ -71,13 +71,13 @@ export function SessionUserBadge() {
         </span>
       </button>
 
-      {/* Mini Dropdown con Rol y Cerrar Sesión */}
+      {}
       {isOpen && (
         <div
           role="menu"
           className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-zinc-900 border border-gray-border rounded-xl shadow-lg p-2.5 z-50 animate-in fade-in zoom-in-95 duration-150"
         >
-          {/* Datos del usuario y rol */}
+          {}
           <div className="px-2 py-1.5 space-y-1">
             <div className="text-xs font-bold text-text-pri truncate">
               {session.user.name}
@@ -94,10 +94,10 @@ export function SessionUserBadge() {
             </div>
           </div>
 
-          {/* Separador */}
+          {}
           <div className="my-1.5 border-t border-gray-border" />
 
-          {/* Botón Cerrar Sesión */}
+          {}
           <button
             type="button"
             role="menuitem"

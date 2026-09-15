@@ -27,13 +27,13 @@ export function AssignTeacherCoursesModal({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Cargar asignaciones actuales del docente
+
     getTeacherCourses(teacher.id)
       .then((assigned) => {
         setSelectedCourseIds(assigned.map((c) => c.id));
       })
       .catch(() => {
-        // Fallback: buscar en los cursos disponibles que tengan teacherId igual
+
         const current = availableCourses.filter((c) => c.teacherId === teacher.id).map((c) => c.id);
         setSelectedCourseIds(current);
       })
@@ -86,8 +86,8 @@ export function AssignTeacherCoursesModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
       <div className="bg-white rounded-2xl max-w-xl w-full border border-gray-border shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        
-        {/* Header */}
+
+        {}
         <div className="px-6 py-4 border-b border-gray-border flex items-center justify-between bg-surface/50">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm">
@@ -110,7 +110,7 @@ export function AssignTeacherCoursesModal({
           </button>
         </div>
 
-        {/* Informative Note */}
+        {}
         <div className="px-6 py-3 bg-emerald-50/70 border-b border-emerald-100 flex items-start gap-2.5 text-xs text-emerald-950 leading-relaxed">
           <span className="mt-0.5 text-emerald-700 shrink-0">
             <Icon name="info" size={14} />
@@ -120,7 +120,7 @@ export function AssignTeacherCoursesModal({
           </p>
         </div>
 
-        {/* Search & Actions bar */}
+        {}
         <div className="px-6 py-3 border-b border-gray-border/70 flex flex-col sm:flex-row items-center justify-between gap-2.5">
           <div className="relative w-full sm:w-64">
             <input
@@ -151,7 +151,7 @@ export function AssignTeacherCoursesModal({
           </div>
         </div>
 
-        {/* Classroom List */}
+        {}
         <div className="p-6 overflow-y-auto flex-1 space-y-2.5">
           {error && (
             <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red text-xs">
@@ -190,7 +190,7 @@ export function AssignTeacherCoursesModal({
                   <input
                     type="checkbox"
                     checked={isSelected}
-                    onChange={() => {}} // Handled by parent container click
+                    onChange={() => {}}
                     className="mt-1 w-4 h-4 text-emerald-700 rounded border-gray-border focus:ring-emerald-500 pointer-events-none"
                   />
                   <div className="flex-1 min-w-0">
@@ -229,7 +229,7 @@ export function AssignTeacherCoursesModal({
           )}
         </div>
 
-        {/* Footer */}
+        {}
         <div className="px-6 py-4 border-t border-gray-border bg-surface/50 flex items-center justify-between gap-3">
           <div className="text-xs text-text-sec">
             Aulas asignadas seleccionadas: <strong className="text-emerald-800">{selectedCourseIds.length}</strong>

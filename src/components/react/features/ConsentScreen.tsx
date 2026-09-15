@@ -41,7 +41,7 @@ export function ConsentScreen() {
         if (doc) setDocument(doc);
       })
       .catch(() => {
-        // En caso de estar offline o sin backend activo, conserva DEFAULT_CONSENT_DOC
+
       });
   }, []);
 
@@ -54,7 +54,7 @@ export function ConsentScreen() {
       await acceptConsent();
       setConfirmed(true);
     } catch {
-      // Fallback amigable
+
       setConfirmed(true);
     } finally {
       setSubmitting(false);
@@ -69,7 +69,7 @@ export function ConsentScreen() {
 
   return (
     <div className="min-h-screen bg-surface text-text-pri font-sans pb-16">
-      {/* Top Header */}
+      {}
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-border">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <a href="/" className="flex items-center gap-2.5">
@@ -114,10 +114,10 @@ export function ConsentScreen() {
         </div>
       </header>
 
-      {/* Main Container */}
+      {}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-10 space-y-8">
-        
-        {/* Document Title & Public Access Badge */}
+
+        {}
         <div className="text-center space-y-3">
           <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-3.5 py-1 rounded-full shadow-xs">
             <Icon name="shield" size={13} />
@@ -142,7 +142,7 @@ export function ConsentScreen() {
           </div>
         </div>
 
-        {/* Roles B2B Card */}
+        {}
         <Card className="border-gray-border/80 shadow-xs">
           <div className="text-xs font-bold uppercase tracking-wider text-text-sec mb-3">
             Roles Jurídicos de Tratamiento (Ley 25.326 & DGCyE PBA)
@@ -176,9 +176,9 @@ export function ConsentScreen() {
           </div>
         </Card>
 
-        {/* Clauses Document */}
+        {}
         <div className="bg-white border border-gray-border rounded-2xl p-6 sm:p-8 space-y-6 shadow-xs text-xs sm:text-sm text-text-sec leading-relaxed">
-          
+
           <div className="space-y-2 border-b border-gray-border/60 pb-4">
             <h2 className="text-base font-bold text-text-pri flex items-center gap-2">
               <span className="w-6 h-6 rounded-md bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs font-bold">1</span>
@@ -240,7 +240,7 @@ export function ConsentScreen() {
           </div>
         </div>
 
-        {/* School Notification Template Helper */}
+        {}
         <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 sm:p-6 space-y-3 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-emerald-950 font-bold text-sm">
@@ -272,7 +272,7 @@ export function ConsentScreen() {
           </div>
         </div>
 
-        {/* Institutional Digital Signature Box */}
+        {}
         {confirmed ? (
           <div className="bg-white border border-emerald-200 rounded-2xl p-6 text-center space-y-2 shadow-xs">
             <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center mx-auto mb-2">
@@ -323,7 +323,7 @@ export function ConsentScreen() {
             </button>
           </div>
         ) : (
-          /* Public Information Card for School Directors */
+
           <div className="bg-white border border-gray-border rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-5 shadow-xs">
             <div className="space-y-1 text-center sm:text-left">
               <h4 className="text-sm font-bold text-text-pri">
@@ -347,7 +347,7 @@ export function ConsentScreen() {
 
       </main>
 
-      {/* Public Footer */}
+      {}
       <footer className="max-w-4xl mx-auto px-4 sm:px-6 pt-12 text-center text-xs text-text-sec border-t border-gray-border/60 mt-12 space-y-2">
         <p>© {new Date().getFullYear()} Habitar — Plataforma de Comprensión Lectora con IA. Proyecto de Tesis de Grado.</p>
         <div className="flex justify-center gap-4 text-[11.5px]">

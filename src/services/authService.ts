@@ -54,12 +54,10 @@ export async function loginWithProvider(provider: OAuthProviderId): Promise<Sess
   return toSession(backendSession);
 }
 
-/** CU-01-01: URL a la que redirigir el navegador para arrancar el login real (Google/Microsoft). */
 export function oauthLoginUrl(provider: OAuthProviderId): string {
   return `${API_URL}/auth/${toUpper(provider)}`;
 }
 
-/** Completa el login real: el backend ya redirigió acá con `?token=`, buscamos los datos del usuario y armamos la sesión. */
 export async function completeOAuthCallback(token: string): Promise<Session> {
   const response = await fetch(`${API_URL}/auth/me`, {
     headers: { Authorization: `Bearer ${token}` },
@@ -77,9 +75,6 @@ export async function completeOAuthCallback(token: string): Promise<Session> {
   return session;
 }
 
-/** Vuelve a pedirle al backend los datos actuales del usuario (rol, institución, activo) y
- *  actualiza la sesión guardada. El token queda igual — lo que puede cambiar es lo que el
- *  usuario tiene permitido hacer, y eso vive en la DB, no en el JWT cacheado en localStorage. */
 export async function refreshSession(): Promise<Session | null> {
   const current = sessionStore.get();
   if (!current?.token) return null;

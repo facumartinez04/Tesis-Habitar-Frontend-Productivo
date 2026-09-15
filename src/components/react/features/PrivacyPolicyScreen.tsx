@@ -3,7 +3,7 @@ import { Icon } from '../ui/Icon';
 export function PrivacyPolicyScreen() {
   return (
     <div className="min-h-screen bg-white text-text-pri font-sans selection:bg-emerald-100 selection:text-emerald-900">
-      {/* Top Header */}
+      {}
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-border">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <a href="/" className="flex items-center gap-2.5">
@@ -32,9 +32,9 @@ export function PrivacyPolicyScreen() {
         </div>
       </header>
 
-      {/* Main Content */}
+      {}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-12 space-y-10">
-        {/* Title Header */}
+        {}
         <div className="space-y-3 text-center sm:text-left border-b border-gray-border pb-8">
           <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full">
             <Icon name="shield" size={13} />
@@ -59,7 +59,7 @@ export function PrivacyPolicyScreen() {
           </div>
         </div>
 
-        {/* 5 Highlights Grid */}
+        {}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="bg-surface border border-gray-border rounded-xl p-4 space-y-2">
             <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">
@@ -122,10 +122,10 @@ export function PrivacyPolicyScreen() {
           </div>
         </div>
 
-        {/* Detailed Sections */}
+        {}
         <div className="space-y-8 text-xs sm:text-sm text-text-sec leading-relaxed">
-          
-          {/* Section 1 */}
+
+          {}
           <section className="space-y-3">
             <h2 className="text-lg font-bold text-text-pri flex items-center gap-2">
               <span className="text-emerald-700 font-mono">1.</span>
@@ -139,7 +139,7 @@ export function PrivacyPolicyScreen() {
             </p>
           </section>
 
-          {/* Section 2 */}
+          {}
           <section className="space-y-3">
             <h2 className="text-lg font-bold text-text-pri flex items-center gap-2">
               <span className="text-emerald-700 font-mono">2.</span>
@@ -164,7 +164,7 @@ export function PrivacyPolicyScreen() {
             </ul>
           </section>
 
-          {/* Section 3 */}
+          {}
           <section className="space-y-3">
             <h2 className="text-lg font-bold text-text-pri flex items-center gap-2">
               <span className="text-emerald-700 font-mono">3.</span>
@@ -185,7 +185,7 @@ export function PrivacyPolicyScreen() {
             </div>
           </section>
 
-          {/* Section 4 */}
+          {}
           <section className="space-y-3">
             <h2 className="text-lg font-bold text-text-pri flex items-center gap-2">
               <span className="text-emerald-700 font-mono">4.</span>
@@ -207,7 +207,7 @@ export function PrivacyPolicyScreen() {
             </ul>
           </section>
 
-          {/* Section 5 */}
+          {}
           <section id="derechos-arco" className="space-y-3 scroll-mt-24">
             <h2 className="text-lg font-bold text-text-pri flex items-center gap-2">
               <span className="text-emerald-700 font-mono">5.</span>
@@ -232,7 +232,7 @@ export function PrivacyPolicyScreen() {
             </ul>
           </section>
 
-          {/* Section 6 */}
+          {}
           <section className="space-y-3">
             <h2 className="text-lg font-bold text-text-pri flex items-center gap-2">
               <span className="text-emerald-700 font-mono">6.</span>
@@ -248,7 +248,7 @@ export function PrivacyPolicyScreen() {
             </ul>
           </section>
 
-          {/* Section 7 */}
+          {}
           <section className="space-y-3 border-t border-gray-border pt-6">
             <h2 className="text-lg font-bold text-text-pri flex items-center gap-2">
               <span className="text-emerald-700 font-mono">7.</span>
@@ -269,7 +269,7 @@ export function PrivacyPolicyScreen() {
         </div>
       </main>
 
-      {/* Footer */}
+      {}
       <footer className="border-t border-gray-border py-8 text-center text-xs text-text-sec bg-surface">
         <p>© {new Date().getFullYear()} Habitar — Plataforma de Comprensión Lectora con IA. Proyecto de Tesis de Grado.</p>
         <div className="flex justify-center gap-4 mt-2">

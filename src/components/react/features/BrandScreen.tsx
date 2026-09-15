@@ -161,7 +161,7 @@ export function BrandScreen() {
 
   return (
     <div className="min-h-screen bg-[#F8FBF9] text-[#1F2937] font-sans selection:bg-[#E0EFEA] selection:text-[#0F6E56]">
-      {/* Toast Notifier */}
+      {}
       {copiedItem && (
         <div className="fixed bottom-6 right-6 z-50 bg-[#064E3B] text-white px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 text-xs font-semibold animate-fade-in border border-emerald-500/30">
           <Icon name="check" size={14} className="text-emerald-300" />
@@ -169,7 +169,7 @@ export function BrandScreen() {
         </div>
       )}
 
-      {/* Top Header Navbar */}
+      {}
       <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <a href="/" className="flex items-center gap-2.5 group">
@@ -203,7 +203,7 @@ export function BrandScreen() {
         </div>
       </header>
 
-      {/* Hero Section */}
+      {}
       <section className="bg-gradient-to-b from-white to-[#F8FBF9] border-b border-gray-200 py-14 sm:py-20 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto text-center space-y-4">
           <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#0F6E56] bg-[#E0EFEA] px-3.5 py-1 rounded-full">
@@ -216,11 +216,11 @@ export function BrandScreen() {
           </h1>
 
           <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Los fundamentos visuales, paleta cromática, tono de voz institucional y logotipos vectoriales de Habitar, 
+            Los fundamentos visuales, paleta cromática, tono de voz institucional y logotipos vectoriales de Habitar,
             disponibles para educadores, directivos, prensa y colaboradores escolares.
           </p>
 
-          {/* Quick Action Pack */}
+          {}
           <div className="pt-4 flex flex-wrap items-center justify-center gap-3">
             <button
               type="button"
@@ -243,9 +243,9 @@ export function BrandScreen() {
         </div>
       </section>
 
-      {/* Main Content Sections */}
+      {}
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-12 space-y-16">
-        {/* 1. Misión, Filosofía y Símbolo */}
+        {}
         <section className="space-y-6">
           <div className="border-b border-gray-200 pb-3">
             <h2 className="text-2xl font-bold text-[#111827] tracking-tight">1. El Símbolo y Propósito</h2>
@@ -264,25 +264,25 @@ export function BrandScreen() {
             <div className="space-y-4 text-sm text-gray-700 leading-relaxed">
               <div className="bg-[#E0EFEA]/60 border border-[#0F6E56]/20 rounded-xl p-4">
                 <span className="font-bold text-[#0F6E56] block mb-1">Misión de Habitar</span>
-                Hacer que el hábito de la lectura habite en la vida diaria de cada estudiante, transformando 
+                Hacer que el hábito de la lectura habite en la vida diaria de cada estudiante, transformando
                 la comprensión lectora mediante tecnología que fortalece al docente sin vulnerar la privacidad de las infancias.
               </div>
 
               <p>
-                El isotipo fusiona dos conceptos vitales: <strong>el libro abierto</strong> que sostiene los cimientos 
-                de la estructura del pensamiento, y <strong>la silueta de la casa con su chimenea</strong>, 
+                El isotipo fusiona dos conceptos vitales: <strong>el libro abierto</strong> que sostiene los cimientos
+                de la estructura del pensamiento, y <strong>la silueta de la casa con su chimenea</strong>,
                 representando calidez, refugio intelectual y el espacio donde habita el conocimiento compartido en el aula.
               </p>
 
               <p>
-                El trazo geométrico continuo simboliza la articulación fluida entre la escuela primaria, 
+                El trazo geométrico continuo simboliza la articulación fluida entre la escuela primaria,
                 la secundaria y los tres ejes cognitivos: <strong>Literal</strong>, <strong>Inferencial</strong> y <strong>Crítico</strong>.
               </p>
             </div>
           </div>
         </section>
 
-        {/* 2. Galería de Logotipos Vectoriales para Descarga */}
+        {}
         <section className="space-y-6">
           <div className="border-b border-gray-200 pb-3 flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -295,7 +295,7 @@ export function BrandScreen() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {/* Card 1: Isotipo Color */}
+            {}
             <div className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -337,7 +337,7 @@ export function BrandScreen() {
               </div>
             </div>
 
-            {/* Card 2: Logotipo Horizontal Color */}
+            {}
             <div className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -379,7 +379,7 @@ export function BrandScreen() {
               </div>
             </div>
 
-            {/* Card 3: Isotipo Invertido (Blanco) */}
+            {}
             <div className="bg-[#0F6E56] rounded-2xl border border-emerald-800 p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow text-white">
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -421,7 +421,7 @@ export function BrandScreen() {
               </div>
             </div>
 
-            {/* Card 4: Logotipo Horizontal Invertido */}
+            {}
             <div className="bg-[#064E3B] rounded-2xl border border-emerald-900 p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow text-white">
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -465,7 +465,7 @@ export function BrandScreen() {
           </div>
         </section>
 
-        {/* 3. Paleta Cromática y Tokens de Diseño */}
+        {}
         <section className="space-y-6">
           <div className="border-b border-gray-200 pb-3">
             <h2 className="text-2xl font-bold text-[#111827] tracking-tight">3. Paleta Cromática Oficial</h2>
@@ -504,7 +504,7 @@ export function BrandScreen() {
           </div>
         </section>
 
-        {/* 4. Tipografía y Jerarquías */}
+        {}
         <section className="space-y-6">
           <div className="border-b border-gray-200 pb-3">
             <h2 className="text-2xl font-bold text-[#111827] tracking-tight">4. Tipografía y Estilo de Texto</h2>
@@ -544,8 +544,8 @@ export function BrandScreen() {
               <div className="space-y-1">
                 <span className="text-[11px] font-mono text-gray-400 uppercase">Cuerpo de Texto · 15px / Regular 400</span>
                 <p className="text-sm sm:text-base text-gray-600 leading-relaxed max-w-3xl">
-                  Habitar prioriza una experiencia limpia que reduce la carga cognitiva de estudiantes y educadores. 
-                  Las fuentes sans-serif de trazo regular garantizan que los textos narrativos e informativos 
+                  Habitar prioriza una experiencia limpia que reduce la carga cognitiva de estudiantes y educadores.
+                  Las fuentes sans-serif de trazo regular garantizan que los textos narrativos e informativos
                   sean leídos con fluidez tanto en dispositivos de pantalla reducida como en proyectores de aula.
                 </p>
               </div>
@@ -560,7 +560,7 @@ export function BrandScreen() {
           </div>
         </section>
 
-        {/* 5. Tono de Voz y Comunicación */}
+        {}
         <section className="space-y-6">
           <div className="border-b border-gray-200 pb-3">
             <h2 className="text-2xl font-bold text-[#111827] tracking-tight">5. Tono de Voz y Estilo Editorial</h2>
@@ -574,7 +574,7 @@ export function BrandScreen() {
               </div>
               <h3 className="font-bold text-base text-[#111827]">Riguroso pero Accesible</h3>
               <p className="text-xs text-gray-600 leading-relaxed">
-                Nos fundamentamos en marcos pedagógicos sólidos de comprensión lectora sin abrumar con terminología 
+                Nos fundamentamos en marcos pedagógicos sólidos de comprensión lectora sin abrumar con terminología
                 tecnológica innecesaria. Hablamos de aulas, lecturas y estudiantes, no de "usuarios y datos".
               </p>
             </div>
@@ -585,7 +585,7 @@ export function BrandScreen() {
               </div>
               <h3 className="font-bold text-base text-[#111827]">Calidez Rioplatense</h3>
               <p className="text-xs text-gray-600 leading-relaxed">
-                Utilizamos el voseo natural y respetuoso de la región educativa bonaerense y argentina 
+                Utilizamos el voseo natural y respetuoso de la región educativa bonaerense y argentina
                 ("podés", "creá", "mirá"), manteniendo el tono institucional que directivos y familias esperan.
               </p>
             </div>
@@ -596,14 +596,14 @@ export function BrandScreen() {
               </div>
               <h3 className="font-bold text-base text-[#111827]">Ética y Transparencia</h3>
               <p className="text-xs text-gray-600 leading-relaxed">
-                Rechazamos las promesas mágicas de la IA. Comunicamos con franqueza que la inteligencia artificial 
+                Rechazamos las promesas mágicas de la IA. Comunicamos con franqueza que la inteligencia artificial
                 es una herramienta asistiva y que la decisión pedagógica y humana siempre reside en el docente.
               </p>
             </div>
           </div>
         </section>
 
-        {/* 6. Normas de Uso (Do's & Don'ts) */}
+        {}
         <section className="space-y-6">
           <div className="border-b border-gray-200 pb-3">
             <h2 className="text-2xl font-bold text-[#111827] tracking-tight">6. Uso Correcto de la Marca</h2>

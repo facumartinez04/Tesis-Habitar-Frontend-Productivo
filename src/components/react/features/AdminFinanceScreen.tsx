@@ -31,13 +31,11 @@ export function AdminFinanceScreen() {
   const [transactions, setTransactions] = useState<PaymentTransaction[]>([]);
   const [config, setConfig] = useState<FinanceConfig | null>(null);
 
-  // Modales
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
   const [testingMp, setTestingMp] = useState(false);
   const [savingConfig, setSavingConfig] = useState(false);
 
-  // Formulario nuevo gasto
   const [expenseForm, setExpenseForm] = useState({
     category: 'INFRAESTRUCTURA',
     title: '',
@@ -48,7 +46,6 @@ export function AdminFinanceScreen() {
     status: 'PAGADO',
   });
 
-  // Formulario nuevo cobro / checkout
   const [checkoutForm, setCheckoutForm] = useState({
     planName: '',
     amountArs: '',
@@ -56,7 +53,6 @@ export function AdminFinanceScreen() {
     payerName: '',
   });
 
-  // Formulario Mercado Pago config
   const [mpForm, setMpForm] = useState({
     mpAccessToken: '',
     mpPublicKey: '',
@@ -209,7 +205,7 @@ export function AdminFinanceScreen() {
 
   return (
     <div className="space-y-6">
-      {/* Header con título y botón de acción rápida */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-text-pri">
@@ -237,7 +233,7 @@ export function AdminFinanceScreen() {
         </div>
       </div>
 
-      {/* Tarjetas KPI Superiores */}
+      {}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white border border-gray-border rounded-xl p-4 shadow-2xs">
           <div className="flex items-center justify-between">
@@ -294,7 +290,7 @@ export function AdminFinanceScreen() {
         </div>
       </div>
 
-      {/* Selector de Pestañas */}
+      {}
       <div className="flex items-center gap-1 border-b border-gray-border overflow-x-auto">
         <button
           onClick={() => setActiveTab('resumen')}
@@ -353,11 +349,11 @@ export function AdminFinanceScreen() {
         </button>
       </div>
 
-      {/* CONTENIDO TAB 1: RESUMEN Y BALANCE */}
+      {}
       {activeTab === 'resumen' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Desglose de Gastos por Categoría */}
+            {}
             <div className="bg-white border border-gray-border rounded-xl p-5 shadow-2xs space-y-4">
               <h3 className="text-sm font-bold text-text-pri flex items-center gap-2">
                 <Icon name="layers" size={16} className="text-emerald-700" />
@@ -382,7 +378,7 @@ export function AdminFinanceScreen() {
               </div>
             </div>
 
-            {/* Conciliación y Estado del Negocio */}
+            {}
             <div className="bg-white border border-gray-border rounded-xl p-5 shadow-2xs space-y-4">
               <h3 className="text-sm font-bold text-text-pri flex items-center gap-2">
                 <Icon name="shield" size={16} className="text-emerald-700" />
@@ -408,7 +404,7 @@ export function AdminFinanceScreen() {
         </div>
       )}
 
-      {/* CONTENIDO TAB 2: GASTOS DEL NEGOCIO */}
+      {}
       {activeTab === 'gastos' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -490,7 +486,7 @@ export function AdminFinanceScreen() {
         </div>
       )}
 
-      {/* CONTENIDO TAB 3: GANANCIAS POR COBROS */}
+      {}
       {activeTab === 'ganancias' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -582,7 +578,7 @@ export function AdminFinanceScreen() {
         </div>
       )}
 
-      {/* CONTENIDO TAB 4: CONEXIÓN MERCADO PAGO */}
+      {}
       {activeTab === 'mercadopago' && (
         <div className="max-w-3xl space-y-6">
           <div className="bg-white border border-gray-border rounded-xl p-6 shadow-2xs space-y-5">
@@ -671,7 +667,7 @@ export function AdminFinanceScreen() {
             </form>
           </div>
 
-          {/* Webhook Configuration Guide */}
+          {}
           <div className="bg-surface border border-gray-border rounded-xl p-5 space-y-3">
             <h4 className="text-xs font-bold uppercase tracking-wider text-text-pri">
               URL del Webhook de Notificaciones
@@ -704,7 +700,7 @@ export function AdminFinanceScreen() {
         </div>
       )}
 
-      {/* MODAL 1: REGISTRAR NUEVO GASTO */}
+      {}
       {isExpenseModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white border border-gray-border rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
@@ -803,7 +799,7 @@ export function AdminFinanceScreen() {
         </div>
       )}
 
-      {/* MODAL 2: GENERAR CHECKOUT MERCADO PAGO */}
+      {}
       {isCheckoutModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white border border-gray-border rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
