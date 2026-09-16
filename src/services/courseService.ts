@@ -54,6 +54,27 @@ export async function createCourse(input: CreateCourseInput): Promise<Course> {
   });
 }
 
+export interface CourseTeacherEntry {
+  id: string;
+  courseId: string;
+  teacherId: string;
+  teacherName: string;
+  teacherEmail: string;
+  roleInCourse: string;
+  assignedAt: string;
+}
+
+export async function listCourseTeachers(courseId: string): Promise<CourseTeacherEntry[]> {
+  return apiFetch<CourseTeacherEntry[]>(`/courses/${courseId}/teachers`);
+}
+
+export async function setCourseTeachers(courseId: string, teacherIds: string[]): Promise<CourseTeacherEntry[]> {
+  return apiFetch<CourseTeacherEntry[]>(`/courses/${courseId}/teachers`, {
+    method: 'PUT',
+    body: { teacherIds },
+  });
+}
+
 export async function assignCourseTeacher(courseId: string, teacherId: string): Promise<Course> {
   return apiFetch<Course>(`/courses/${courseId}/teacher`, {
     method: 'PATCH',
