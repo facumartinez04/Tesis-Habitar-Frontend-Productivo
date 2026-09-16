@@ -35,27 +35,44 @@ export function ClassroomScannerScreen() {
   const [binding, setBinding] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [boundInfo, setBoundInfo] = useState<BoundInfo | null>(null);
+  const [debugLog, setDebugLog] = useState<string[]>([]);
+
+  function dbg(msg: string) {
+    console.log('[AULA]', msg);
+    setDebugLog((prev) => [...prev.slice(-9), `${new Date().toLocaleTimeString()} ${msg}`]);
+  }
 
   useEffect(() => {
+    dbg(`URL: ${window.location.href}`);
 
     const params = new URLSearchParams(window.location.search);
     let code = params.get('code');
+    dbg(`code param: ${code}`);
     if (!code) {
       const match = window.location.pathname.match(/\/aula\/?([^/?#]+)?/);
       if (match && match[1] && match[1] !== 'aula') {
         code = decodeURIComponent(match[1]);
       }
+      dbg(`code from path: ${code}`);
     }
 
     if (!code) {
+      dbg('No code found, stopping');
       setLoading(false);
       return;
     }
 
     const cleanCode = code.trim().toUpperCase();
     setQrCode(cleanCode);
+    dbg(`cleanCode: ${cleanCode}`);
 
-    const session = sessionStore.get();
+    let session: any = null;
+    try {
+      session = sessionStore.get();
+      dbg(`session: ${session ? `user=${session.user?.email} role=${session.user?.role}` : 'null'}`);
+    } catch (e: any) {
+      dbg(`sessionStore.get() error: ${e.message}`);
+    }
     if (session && session.user) {
       const role = session.user.role?.toUpperCase();
       if (role === 'DOCENTE') {
@@ -87,8 +104,10 @@ export function ClassroomScannerScreen() {
       }
     }
 
+    dbg(`Calling getPublicCourseInfo(${cleanCode})...`);
     getPublicCourseInfo(cleanCode)
       .then((data) => {
+        dbg(`API OK: course=${data.course.name}, activity=${data.activeActivity?.code || 'none'}`);
         setInfo(data);
         try {
           localStorage.setItem('habitar_user_role', 'alumno');
@@ -111,9 +130,11 @@ export function ClassroomScannerScreen() {
         }
       })
       .catch((err: any) => {
+        dbg(`API ERROR: ${err.message || err}`);
         setError(err.message || 'No se pudo cargar la información del aula.');
       })
       .finally(() => {
+        dbg('Loading done');
         setLoading(false);
       });
   }, []);
@@ -170,10 +191,21 @@ export function ClassroomScannerScreen() {
     window.location.href = '/login?switch=1';
   }
 
+  const debugPanel = (
+    <div className="fixed bottom-0 inset-x-0 z-50 bg-black/90 text-green-400 text-[10px] font-mono p-2 max-h-32 overflow-y-auto">
+      <div className="font-bold text-yellow-300 mb-0.5">DEBUG AULA v2</div>
+      {debugLog.map((line, i) => (
+        <div key={i}>{line}</div>
+      ))}
+      {debugLog.length === 0 && <div className="text-stone-500">Esperando logs...</div>}
+    </div>
+  );
+
   if (redirecting) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
         <HabitarLoader size="lg" message={redirecting} />
+        {debugPanel}
       </div>
     );
   }
@@ -182,6 +214,7 @@ export function ClassroomScannerScreen() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
         <HabitarLoader size="lg" message="Verificando código de aula..." />
+        {debugPanel}
       </div>
     );
   }
@@ -208,6 +241,7 @@ export function ClassroomScannerScreen() {
             </a>
           </div>
         </Card>
+        {debugPanel}
       </div>
     );
   }
@@ -351,6 +385,7 @@ export function ClassroomScannerScreen() {
           </form>
         )}
       </Card>
+      {debugPanel}
     </div>
   );
 }
