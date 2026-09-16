@@ -122,16 +122,17 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
   }
 
   async function scanLoop() {
-    if (!scanning || !videoRef.current || !canvasRef.current) return;
+    if (!scanning) return;
 
     const video = videoRef.current;
-    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+    const canvas = canvasRef.current;
 
+    if (video && canvas && video.readyState === video.HAVE_ENOUGH_DATA) {
       if ('BarcodeDetector' in window) {
         try {
           const detector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
           const barcodes = await detector.detect(video);
-          if (Math.random() < 0.05) addLog('[Nativo] Analizando fotograma...');
+          if (Math.random() < 0.1) addLog('[Nativo] Analizando...');
           if (barcodes && barcodes.length > 0) {
             const qrValue = barcodes[0].rawValue;
             if (qrValue) {
@@ -141,17 +142,16 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
             }
           }
         } catch (e: any) {
-          if (Math.random() < 0.05) addLog(`[Nativo Error] ${e.message}`);
+          if (Math.random() < 0.1) addLog(`[Nativo Error] ${e.message}`);
         }
       } else {
-        const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
         if (ctx) {
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          if (Math.random() < 0.05) addLog('[jsQR] Analizando fotograma...');
+          if (Math.random() < 0.1) addLog('[jsQR] Analizando...');
           const code = jsQR(imageData.data, imageData.width, imageData.height, {
             inversionAttempts: 'dontInvert',
           });
@@ -164,8 +164,8 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
       }
     }
 
-    if (streamRef.current) {
-      requestAnimationFrame(scanLoop);
+    if (scanning && streamRef.current) {
+      setTimeout(() => requestAnimationFrame(scanLoop), 250);
     }
   }
 
