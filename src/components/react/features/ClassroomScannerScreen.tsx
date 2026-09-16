@@ -55,7 +55,7 @@ export function ClassroomScannerScreen() {
     const cleanCode = code.trim().toUpperCase();
     setQrCode(cleanCode);
 
-    const session = sessionStore.getState().session;
+    const session = sessionStore.get();
     if (session && session.user) {
       const role = session.user.role?.toUpperCase();
       if (role === 'DOCENTE') {
