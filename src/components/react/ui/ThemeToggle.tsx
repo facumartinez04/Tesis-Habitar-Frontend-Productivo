@@ -41,12 +41,11 @@ export function ThemeToggle({ variant = 'segmented', className = '' }: ThemeTogg
 
   if (!mounted) {
     return (
-      <div className={`h-8 w-24 bg-gray-bg/60 rounded-lg animate-pulse ${className}`} />
+      <div className={`h-8 w-24 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse ${className}`} />
     );
   }
 
   if (variant === 'compact') {
-
     const nextModeMap: Record<ThemeMode, ThemeMode> = {
       light: 'dark',
       dark: 'system',
@@ -62,64 +61,43 @@ export function ThemeToggle({ variant = 'segmented', className = '' }: ThemeTogg
         onClick={() => handleSelect(nextModeMap[currentMode])}
         title={`${label} (Click para cambiar)`}
         aria-label={label}
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-gray-border bg-surface hover:bg-gray-bg text-text-pri transition-colors ${className}`}
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1A1E29] hover:bg-gray-50 dark:hover:bg-[#252B3B] text-gray-700 dark:text-gray-300 transition-colors cursor-pointer ${className}`}
       >
-        <Icon name={iconName} size={14} className={resolved === 'dark' ? 'text-amber-400' : 'text-emerald-700'} />
+        <Icon name={iconName} size={14} className={resolved === 'dark' ? 'text-amber-400' : 'text-emerald-600'} />
         <span className="hidden sm:inline capitalize">{currentMode}</span>
       </button>
     );
   }
 
+  const modes: { mode: ThemeMode; icon: 'sun' | 'moon' | 'monitor'; label: string }[] = [
+    { mode: 'light', icon: 'sun', label: 'Claro' },
+    { mode: 'dark', icon: 'moon', label: 'Oscuro' },
+    { mode: 'system', icon: 'monitor', label: 'Sistema' },
+  ];
+
   return (
     <div
       role="group"
       aria-label="Seleccionar tema visual"
-      className={`inline-flex items-center p-0.5 rounded-lg bg-surface border border-gray-border shadow-2xs ${className}`}
+      className={`inline-flex items-center p-0.5 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 ${className}`}
     >
-      <button
-        type="button"
-        onClick={() => handleSelect('light')}
-        aria-pressed={currentMode === 'light'}
-        title="Modo claro"
-        className={`flex items-center justify-center p-1.5 sm:px-2 sm:py-1 rounded-md text-xs font-medium transition-all duration-150 ${
-          currentMode === 'light'
-            ? 'bg-white text-emerald-700 shadow-xs font-semibold'
-            : 'text-text-sec hover:text-text-pri hover:bg-black/5 dark:hover:bg-white/5'
-        }`}
-      >
-        <Icon name="sun" size={14} />
-        <span className="hidden md:inline ml-1.5 text-[11.5px]">Claro</span>
-      </button>
-
-      <button
-        type="button"
-        onClick={() => handleSelect('dark')}
-        aria-pressed={currentMode === 'dark'}
-        title="Modo oscuro"
-        className={`flex items-center justify-center p-1.5 sm:px-2 sm:py-1 rounded-md text-xs font-medium transition-all duration-150 ${
-          currentMode === 'dark'
-            ? 'bg-white dark:bg-zinc-800 text-emerald-400 dark:text-emerald-400 shadow-xs font-semibold'
-            : 'text-text-sec hover:text-text-pri hover:bg-black/5 dark:hover:bg-white/5'
-        }`}
-      >
-        <Icon name="moon" size={14} />
-        <span className="hidden md:inline ml-1.5 text-[11.5px]">Oscuro</span>
-      </button>
-
-      <button
-        type="button"
-        onClick={() => handleSelect('system')}
-        aria-pressed={currentMode === 'system'}
-        title="Automático (se adapta al sistema)"
-        className={`flex items-center justify-center p-1.5 sm:px-2 sm:py-1 rounded-md text-xs font-medium transition-all duration-150 ${
-          currentMode === 'system'
-            ? 'bg-white dark:bg-zinc-800 text-emerald-700 dark:text-emerald-400 shadow-xs font-semibold'
-            : 'text-text-sec hover:text-text-pri hover:bg-black/5 dark:hover:bg-white/5'
-        }`}
-      >
-        <Icon name="monitor" size={14} />
-        <span className="hidden md:inline ml-1.5 text-[11.5px]">Sistema</span>
-      </button>
+      {modes.map(({ mode, icon, label }) => (
+        <button
+          key={mode}
+          type="button"
+          onClick={() => handleSelect(mode)}
+          aria-pressed={currentMode === mode}
+          title={`Modo ${label.toLowerCase()}`}
+          className={`flex items-center justify-center p-1.5 sm:px-2.5 sm:py-1.5 rounded-md text-xs font-medium transition-all duration-150 cursor-pointer ${
+            currentMode === mode
+              ? 'bg-white dark:bg-[#252B3B] text-emerald-700 dark:text-emerald-400 shadow-sm font-semibold'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+          }`}
+        >
+          <Icon name={icon} size={14} />
+          <span className="hidden md:inline ml-1.5 text-[11.5px]">{label}</span>
+        </button>
+      ))}
     </div>
   );
 }

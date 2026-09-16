@@ -6,9 +6,14 @@ interface MetricCardProps {
 
 export function MetricCard({ value, label, color = 'var(--color-text-pri)' }: MetricCardProps) {
   return (
-    <div className="bg-white dark:bg-[#1A1E29] border border-gray-border/80 rounded-xl p-4 text-center shadow-2xs hover:shadow-xs transition-all">
-      <div className="text-[24px] sm:text-[26px] font-bold tracking-tight leading-none" style={{ color }}>{value}</div>
-      <div className="text-[11px] text-text-sec font-medium mt-1.5 leading-tight">{label}</div>
+    <div className="bg-white dark:bg-[#1A1E29] border border-gray-200 dark:border-gray-800 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 group">
+      <div
+        className="text-2xl sm:text-[28px] font-bold tracking-tight leading-none"
+        style={{ color }}
+      >
+        {value}
+      </div>
+      <div className="text-[11px] text-gray-500 dark:text-gray-400 font-medium mt-2 leading-tight">{label}</div>
     </div>
   );
 }
