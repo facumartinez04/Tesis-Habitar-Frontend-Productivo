@@ -45,7 +45,7 @@ export function CourseQrModal({ course, isOpen, onClose, onUploadForCourse }: Co
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in duration-150">
-      <div className="bg-white dark:bg-[#1A1E29] rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-stone-200 dark:border-stone-700 flex flex-col">
+      <div className="bg-white dark:bg-[#1A1E29] rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-stone-200 dark:border-stone-700 flex flex-col max-h-[calc(100dvh-2rem)]">
         {}
         <div className="px-5 py-3.5 bg-stone-50 dark:bg-[#161A24] border-b border-stone-200 dark:border-stone-700 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -63,8 +63,8 @@ export function CourseQrModal({ course, isOpen, onClose, onUploadForCourse }: Co
         </div>
 
         {}
-        <div className="p-6 flex flex-col items-center justify-center text-center">
-          <div className="bg-white border-2 border-emerald-700/60 rounded-2xl p-6 shadow-md max-w-sm w-full space-y-3">
+        <div className="p-4 sm:p-6 flex flex-col items-center justify-center text-center overflow-y-auto">
+          <div className="bg-white border-2 border-emerald-700/60 rounded-2xl p-4 sm:p-6 shadow-md max-w-sm w-full space-y-2 sm:space-y-3">
             <div className="flex items-center justify-center gap-2">
               <img src="/logo.svg" alt="Habitar" className="w-6 h-6 object-contain" />
               <span className="text-base font-bold tracking-tight text-slate-900">
@@ -82,9 +82,9 @@ export function CourseQrModal({ course, isOpen, onClose, onUploadForCourse }: Co
             {}
             <div className="p-3 bg-white border border-stone-200 rounded-xl shadow-xs inline-block mx-auto">
               {qrDataUrl ? (
-                <img src={qrDataUrl} alt={`QR Fijo ${course.name}`} className="w-48 h-48 mx-auto" />
+                <img src={qrDataUrl} alt={`QR Fijo ${course.name}`} className="w-36 h-36 sm:w-48 sm:h-48 mx-auto" />
               ) : (
-                <div className="w-48 h-48 bg-stone-100 animate-pulse rounded-lg" />
+                <div className="w-36 h-36 sm:w-48 sm:h-48 bg-stone-100 animate-pulse rounded-lg" />
               )}
             </div>
 
@@ -93,7 +93,7 @@ export function CourseQrModal({ course, isOpen, onClose, onUploadForCourse }: Co
               <span className="text-[10px] text-stone-400 uppercase tracking-wider font-semibold block">
                 Identificador Fijo de Aula
               </span>
-              <span className="font-mono text-base font-bold tracking-widest text-emerald-800 bg-emerald-50 px-3 py-1 rounded-lg inline-block border border-emerald-200">
+              <span className="font-mono text-xs sm:text-base font-bold tracking-widest text-emerald-800 bg-emerald-50 px-2 sm:px-3 py-1 rounded-lg inline-block border border-emerald-200 break-all">
                 {course.qrCode || `AULA-${course.id.substring(0, 6).toUpperCase()}`}
               </span>
             </div>
