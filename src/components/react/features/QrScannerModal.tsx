@@ -20,6 +20,11 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
   const [manualCode, setManualCode] = useState('');
   const [verifying, setVerifying] = useState(false);
   const [activeTab, setActiveTab] = useState<'camara' | 'manual' | 'archivo'>('camara');
+  const [debugLogs, setDebugLogs] = useState<string[]>([]);
+
+  function addLog(msg: string) {
+    setDebugLogs((prev) => [...prev, `${new Date().toLocaleTimeString()} - ${msg}`].slice(-5));
+  }
 
   useEffect(() => {
     if (!isOpen) {
@@ -129,12 +134,30 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
           if (barcodes && barcodes.length > 0) {
             const qrValue = barcodes[0].rawValue;
             if (qrValue) {
+              addLog(`[Nativo] Detectado: ${qrValue}`);
               await handleCodeScanned(qrValue);
               return;
             }
           }
         } catch {
 
+        }
+      } else {
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const code = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: 'dontInvert',
+          });
+          if (code && code.data) {
+            addLog(`[jsQR] Detectado: ${code.data}`);
+            await handleCodeScanned(code.data);
+            return;
+          }
         }
       }
     }
@@ -275,8 +298,14 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
                   </div>
 
                   {verifying && (
-                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white text-xs font-semibold">
-                      Conectando con el aula…
+                    <div className="absolute inset-0 bg-black/70 flex items-center justify-center text-white text-xs font-semibold">
+                      Conectandoâ€¦
+                    </div>
+                  )}
+
+                  {debugLogs.length > 0 && (
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/80 text-green-400 text-[10px] p-2 font-mono whitespace-pre-wrap break-all z-10 max-h-24 overflow-y-auto">
+                      {debugLogs.join('\n')}
                     </div>
                   )}
                 </div>
