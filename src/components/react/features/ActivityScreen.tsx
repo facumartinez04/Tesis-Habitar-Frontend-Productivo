@@ -9,7 +9,7 @@ import type { Activity } from '../../../types/activity';
 import type { Question } from '../../../types/question';
 
 interface ActivityScreenProps {
-  defaultCode: string;
+  defaultCode?: string;
 }
 
 type Stage = 'loading' | 'not-found' | 'join' | 'answering' | 'submitted';
