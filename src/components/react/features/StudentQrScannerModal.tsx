@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import jsQR from 'jsqr';
 import { Icon } from '../ui/Icon';
 
 interface StudentQrScannerModalProps {
@@ -149,19 +150,20 @@ export function StudentQrScannerModal({
 
     const video = videoRef.current;
     if (video.readyState === video.HAVE_ENOUGH_DATA) {
-
-      if ('BarcodeDetector' in window) {
-        try {
-          const detector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
-          const barcodes = await detector.detect(video);
-          if (barcodes && barcodes.length > 0) {
-            const val = barcodes[0].rawValue;
-            if (val) {
-              handleRawScannedText(val);
-              return;
-            }
-          }
-        } catch {}
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      if (ctx) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: 'dontInvert',
+        });
+        if (code && code.data) {
+          handleRawScannedText(code.data);
+          return;
+        }
       }
     }
 

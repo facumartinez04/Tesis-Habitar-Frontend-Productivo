@@ -217,7 +217,7 @@ export function TeacherDashboard() {
         <QrScannerModal
           isOpen={isScannerOpen}
           onClose={() => setIsScannerOpen(false)}
-          onSelectCourse={handleCourseScanned}
+          onCourseDetected={handleCourseScanned}
         />
         <CourseQrModal
           course={selectedQrCourse}
@@ -523,7 +523,7 @@ export function TeacherDashboard() {
       <QrScannerModal
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
-        onSelectCourse={handleCourseScanned}
+        onCourseDetected={handleCourseScanned}
       />
       <CourseQrModal
         course={selectedQrCourse}
