@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import jsQR from 'jsqr';
 import { Icon } from '../ui/Icon';
 import { getCourseByQrCode } from '../../../services/courseService';
 import type { Course } from '../../../types/activity';
@@ -92,10 +91,16 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
     stopCamera();
 
     let cleanCode = rawText.trim();
-    if (cleanCode.includes('/aula/')) {
-      cleanCode = cleanCode.split('/aula/').pop()?.split('?')[0] || cleanCode;
-    } else if (cleanCode.includes('code=')) {
-      cleanCode = new URL(cleanCode).searchParams.get('code') || cleanCode;
+    try {
+      if (cleanCode.includes('/aula/')) {
+        cleanCode = cleanCode.split('/aula/').pop()?.split('?')[0] || cleanCode;
+      } else if (cleanCode.includes('code=')) {
+        cleanCode = new URL(cleanCode).searchParams.get('code') || cleanCode;
+      }
+    } catch {
+      if (cleanCode.includes('code=')) {
+        cleanCode = cleanCode.split('code=')[1]?.split('&')[0] || cleanCode;
+      }
     }
 
     try {
@@ -116,19 +121,20 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
 
     const video = videoRef.current;
     if (video.readyState === video.HAVE_ENOUGH_DATA) {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d', { willReadFrequently: true });
-      if (ctx) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const code = jsQR(imageData.data, imageData.width, imageData.height, {
-          inversionAttempts: 'dontInvert',
-        });
-        if (code && code.data) {
-          await handleCodeScanned(code.data);
-          return;
+
+      if ('BarcodeDetector' in window) {
+        try {
+          const detector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
+          const barcodes = await detector.detect(video);
+          if (barcodes && barcodes.length > 0) {
+            const qrValue = barcodes[0].rawValue;
+            if (qrValue) {
+              await handleCodeScanned(qrValue);
+              return;
+            }
+          }
+        } catch {
+
         }
       }
     }
@@ -148,26 +154,24 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
     const file = e.target.files?.[0];
     if (!file) return;
 
-    try {
-      const img = new Image();
-      img.src = URL.createObjectURL(file);
-      await img.decode();
-
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error('No canvas context');
-      ctx.drawImage(img, 0, 0);
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const code = jsQR(imageData.data, imageData.width, imageData.height);
-      if (code && code.data) {
-        await handleCodeScanned(code.data);
-        return;
+    if ('BarcodeDetector' in window) {
+      try {
+        const detector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
+        const img = new Image();
+        img.src = URL.createObjectURL(file);
+        await img.decode();
+        const barcodes = await detector.detect(img);
+        if (barcodes && barcodes.length > 0) {
+          await handleCodeScanned(barcodes[0].rawValue);
+          return;
+        }
+        alert('No se detectó ningún código QR en la imagen cargada.');
+      } catch {
+        alert('No se pudo procesar la imagen.');
       }
-      alert('No se detectó ningún código QR en la imagen cargada.');
-    } catch {
-      alert('No se pudo procesar la imagen.');
+    } else {
+      alert('Tu navegador no soporta lectura automática desde imagen. Ingresá el código del aula manualmente.');
+      setActiveTab('manual');
     }
   }
 
