@@ -159,28 +159,32 @@ export function StudentQrScannerModal({
         try {
           const detector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
           const barcodes = await detector.detect(video);
+          if (Math.random() < 0.05) addLog('[Nativo] Analizando fotograma...');
           if (barcodes && barcodes.length > 0) {
             const val = barcodes[0].rawValue;
             if (val) {
-              addLog(`[Nativo] Detectado: ${val}`);
+              addLog(`[Nativo] QR Encontrado: ${val}`);
               handleRawScannedText(val);
               return;
             }
           }
-        } catch {}
+        } catch (e: any) {
+          if (Math.random() < 0.05) addLog(`[Nativo Error] ${e.message}`);
+        }
       } else {
         const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
         if (ctx) {
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          if (Math.random() < 0.05) addLog('[jsQR] Analizando fotograma...');
           const code = jsQR(imageData.data, imageData.width, imageData.height, {
             inversionAttempts: 'dontInvert',
           });
           if (code && code.data) {
-            addLog(`[jsQR] Detectado: ${code.data}`);
+            addLog(`[jsQR] QR Encontrado: ${code.data}`);
             handleRawScannedText(code.data);
             return;
           }
