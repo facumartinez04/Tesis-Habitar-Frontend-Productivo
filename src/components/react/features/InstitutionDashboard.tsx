@@ -11,8 +11,6 @@ import type { InstitutionResultSummary, PerformanceStatus } from '../../../types
 import { Skeleton, SkeletonMetricCards, SkeletonTable } from '../ui/Skeleton';
 import { listInstitutionUsers, type InstitutionUser } from '../../../services/institutionUsersService';
 import { ReassignCourseTeacherModal } from './ReassignCourseTeacherModal';
-import { CreateCourseModal } from './CreateCourseModal';
-import { CourseQrModal } from './CourseQrModal';
 import type { Course } from '../../../types/activity';
 
 const statusBadge: Record<PerformanceStatus, { label: ReactNode; color: 'green' | 'amber' | 'red' | 'gray' }> = {
@@ -36,8 +34,6 @@ export function InstitutionDashboard() {
   const [levelFilter, setLevelFilter] = useState('todos');
   const [teachers, setTeachers] = useState<InstitutionUser[]>([]);
   const [reassigningCourse, setReassigningCourse] = useState<Course | null>(null);
-  const [isCreateCourseOpen, setIsCreateCourseOpen] = useState(false);
-  const [createdQrCourse, setCreatedQrCourse] = useState<Course | null>(null);
 
   useEffect(() => {
     if (session) {
@@ -86,13 +82,13 @@ export function InstitutionDashboard() {
             <option value="regular">Regular</option>
             <option value="bajo">En riesgo (Bajo)</option>
           </select>
-          <button
-            onClick={() => setIsCreateCourseOpen(true)}
-            className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
+          <a
+            href="/institucional/aulas"
+            className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
           >
             <Icon name="plus" size={13} />
-            <span>Crear Aula</span>
-          </button>
+            <span>Gestionar Aulas</span>
+          </a>
         </div>
       </div>
 
@@ -167,19 +163,6 @@ export function InstitutionDashboard() {
         />
       )}
 
-      <CreateCourseModal
-        isOpen={isCreateCourseOpen}
-        onClose={() => setIsCreateCourseOpen(false)}
-        onCreated={(course) => {
-          setCreatedQrCourse(course);
-          if (session) getInstitutionSummary(session.user.institutionId).then(setSummary);
-        }}
-      />
-      <CourseQrModal
-        course={createdQrCourse}
-        isOpen={Boolean(createdQrCourse)}
-        onClose={() => setCreatedQrCourse(null)}
-      />
     </div>
   );
 }

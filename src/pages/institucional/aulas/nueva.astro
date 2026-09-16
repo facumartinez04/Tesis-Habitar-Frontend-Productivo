@@ -1,0 +1,12 @@
+---
+import AppShell from '../../../layouts/AppShell.astro';
+import { CreateCourseScreen } from '../../../components/react/features/CreateCourseScreen';
+import { institucionalNavItems } from '../../../lib/nav';
+---
+<AppShell
+  title="Crear Aula"
+  sectionLabel="Panel institucional"
+  sidebarItems={institucionalNavItems}
+>
+  <CreateCourseScreen client:load />
+</AppShell>

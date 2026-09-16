@@ -7,6 +7,7 @@ export const docenteNavItems: AppSidebarItem[] = [
 
 export const institucionalNavItems: AppSidebarItem[] = [
   { icon: 'school', label: 'Institucional', href: '/institucional' },
+  { icon: 'chart', label: 'Aulas', href: '/institucional/aulas' },
   { icon: 'dollarSign', label: 'Finanzas Escolares', href: '/institucional/finanzas' },
   { icon: 'bell', label: 'Alertas', href: '/institucional/alertas' },
   { icon: 'shield', label: 'Datos personales', href: '/institucional/datos-personales' },
