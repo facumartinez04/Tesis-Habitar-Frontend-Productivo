@@ -46,7 +46,7 @@ export function StudentQrScannerModal({
       if (!scannerRef.current) {
         scannerRef.current = new Html5Qrcode('qr-reader-container');
       }
-      addLog('[html5-qrcode] Iniciando cámara...');
+      addLog('[html5-qrcode] Iniciando cï¿½mara...');
       await scannerRef.current.start(
         { facingMode: 'environment' },
         { 
@@ -62,10 +62,10 @@ export function StudentQrScannerModal({
           // ignore empty scans
         }
       );
-      addLog('[html5-qrcode] Cámara iniciada y analizando.');
+      addLog('[html5-qrcode] Cï¿½mara iniciada y analizando.');
     } catch (err: any) {
-      console.warn('Error iniciando cámara:', err);
-      setCameraError('No se pudo iniciar la cámara. Podés ingresar el código manualmente.');
+      console.warn('Error iniciando cï¿½mara:', err);
+      setCameraError('No se pudo iniciar la cï¿½mara. Podï¿½s ingresar el cï¿½digo manualmente.');
       setActiveTab('manual');
     }
   }
@@ -141,8 +141,8 @@ export function StudentQrScannerModal({
               <Icon name="camera" size={16} />
             </span>
             <div>
-              <h2 className="text-sm font-bold text-text-pri">Escanear Código QR</h2>
-              <p className="text-[11px] text-text-sec">Del aula física o de la actividad</p>
+              <h2 className="text-sm font-bold text-text-pri">Escanear Cï¿½digo QR</h2>
+              <p className="text-[11px] text-text-sec">Del aula fï¿½sica o de la actividad</p>
             </div>
           </div>
           <button onClick={onClose} className="text-text-ter hover:text-text-pri p-1 rounded-lg text-sm font-bold cursor-pointer">?</button>
@@ -150,7 +150,7 @@ export function StudentQrScannerModal({
 
         <div className="flex border-b border-gray-border dark:border-[#2D3342] text-xs font-semibold">
           <button onClick={() => setActiveTab('camara')} className={\lex-1 py-2.5 text-center transition-colors border-b-2 flex items-center justify-center gap-1.5 cursor-pointer \\}>
-            <Icon name="camera" size={13} /> Cámara
+            <Icon name="camera" size={13} /> Cï¿½mara
           </button>
           <button onClick={() => setActiveTab('manual')} className={\lex-1 py-2.5 text-center transition-colors border-b-2 flex items-center justify-center gap-1.5 cursor-pointer \\}>
             <Icon name="code" size={13} /> Escribir PIN
@@ -164,7 +164,7 @@ export function StudentQrScannerModal({
                 <div className="text-center p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl text-xs text-amber-900 dark:text-amber-200 space-y-3">
                   <p>{cameraError}</p>
                   <button onClick={() => setActiveTab('manual')} className="px-4 py-2 bg-emerald-700 text-white font-semibold rounded-lg text-xs cursor-pointer">
-                    Ingresar Código Manualmente
+                    Ingresar Cï¿½digo Manualmente
                   </button>
                 </div>
               ) : (
@@ -173,7 +173,7 @@ export function StudentQrScannerModal({
                   
                   {verifying && (
                     <div className="absolute inset-0 bg-black/70 flex items-center justify-center text-white text-xs font-semibold z-20">
-                      Conectando…
+                      Conectandoï¿½
                     </div>
                   )}
 
@@ -186,7 +186,7 @@ export function StudentQrScannerModal({
               )}
 
               <p className="text-[11px] text-text-ter text-center mt-3 max-w-xs">
-                Apuntá la cámara al código QR impreso en el aula o mostrado en la pantalla del docente.
+                Apuntï¿½ la cï¿½mara al cï¿½digo QR impreso en el aula o mostrado en la pantalla del docente.
               </p>
             </div>
           )}
@@ -194,21 +194,21 @@ export function StudentQrScannerModal({
           {activeTab === 'manual' && (
             <form onSubmit={handleManualSubmit} className="w-full space-y-4">
               <div className="text-center space-y-1">
-                <p className="text-xs font-semibold text-text-pri">Ingresá el Código o PIN</p>
-                <p className="text-[11.5px] text-text-sec">Puede ser el PIN de la actividad (ej: <strong>HAB-4B29</strong>) o el código del aula (ej: <strong>AULA-6A-7821</strong>).</p>
+                <p className="text-xs font-semibold text-text-pri">Ingresï¿½ el Cï¿½digo o PIN</p>
+                <p className="text-[11.5px] text-text-sec">Puede ser el PIN de la actividad (ej: <strong>HAB-4B29</strong>) o el cï¿½digo del aula (ej: <strong>AULA-6A-7821</strong>).</p>
               </div>
               <div>
                 <input type="text" required placeholder="HAB-4B29" value={manualCode} onChange={(e) => setManualCode(e.target.value.toUpperCase())} className="w-full border-2 border-emerald-600 rounded-xl px-3.5 py-2.5 text-center font-mono text-base font-bold tracking-widest text-text-pri bg-emerald-50/30 dark:bg-emerald-950/30 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500" autoFocus />
               </div>
               <button type="submit" disabled={verifying || !manualCode.trim()} className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-colors shadow-xs cursor-pointer">
-                {verifying ? 'Verificando…' : 'Ingresar ?'}
+                {verifying ? 'Verificandoï¿½' : 'Ingresar ?'}
               </button>
             </form>
           )}
         </div>
 
         <div className="px-5 py-3 bg-gray-50/80 dark:bg-[#1A1E29] border-t border-gray-border dark:border-[#2D3342] flex items-center justify-between text-xs text-text-ter">
-          <span>Habitar • Modo Alumno</span>
+          <span>Habitar ï¿½ Modo Alumno</span>
           <button onClick={onClose} className="hover:text-text-pri font-medium cursor-pointer">Cerrar</button>
         </div>
       </div>

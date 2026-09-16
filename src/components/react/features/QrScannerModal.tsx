@@ -42,7 +42,7 @@ export function QrScannerModal({ isOpen, onClose, onCodeScanned }: QrScannerModa
       if (!scannerRef.current) {
         scannerRef.current = new Html5Qrcode('teacher-qr-reader-container');
       }
-      addLog('[html5-qrcode] Iniciando cámara...');
+      addLog('[html5-qrcode] Iniciando cï¿½mara...');
       await scannerRef.current.start(
         { facingMode: 'environment' },
         { 
@@ -56,10 +56,10 @@ export function QrScannerModal({ isOpen, onClose, onCodeScanned }: QrScannerModa
         },
         (errorMessage) => {}
       );
-      addLog('[html5-qrcode] Cámara iniciada y analizando.');
+      addLog('[html5-qrcode] Cï¿½mara iniciada y analizando.');
     } catch (err: any) {
-      console.warn('Error accediendo a cámara:', err);
-      setCameraError('Permiso de cámara no concedido o no disponible. Escribí el código manualmente.');
+      console.warn('Error accediendo a cï¿½mara:', err);
+      setCameraError('Permiso de cï¿½mara no concedido o no disponible. Escribï¿½ el cï¿½digo manualmente.');
       setActiveTab('manual');
     }
   }
@@ -113,7 +113,7 @@ export function QrScannerModal({ isOpen, onClose, onCodeScanned }: QrScannerModa
             </span>
             <div>
               <h2 className="text-sm font-bold text-text-pri">Vincular Aula</h2>
-              <p className="text-[11px] text-text-sec">Escaneá el código físico del aula</p>
+              <p className="text-[11px] text-text-sec">Escaneï¿½ el cï¿½digo fï¿½sico del aula</p>
             </div>
           </div>
           <button onClick={onClose} className="text-text-ter hover:text-text-pri p-2 rounded-lg transition-colors">?</button>
@@ -135,7 +135,7 @@ export function QrScannerModal({ isOpen, onClose, onCodeScanned }: QrScannerModa
                 <div className="text-center p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl text-xs text-amber-900 dark:text-amber-200 space-y-3">
                   <p>{cameraError}</p>
                   <button onClick={() => setActiveTab('manual')} className="px-4 py-2 bg-emerald-700 text-white font-semibold rounded-lg text-xs cursor-pointer">
-                    Ingresar Código Manualmente
+                    Ingresar Cï¿½digo Manualmente
                   </button>
                 </div>
               ) : (
@@ -157,7 +157,7 @@ export function QrScannerModal({ isOpen, onClose, onCodeScanned }: QrScannerModa
                 </div>
               )}
               <p className="text-[11px] text-text-ter text-center max-w-[240px] leading-relaxed">
-                Apuntá la cámara al código QR impreso que se encuentra en la pared o puerta del aula.
+                Apuntï¿½ la cï¿½mara al cï¿½digo QR impreso que se encuentra en la pared o puerta del aula.
               </p>
             </div>
           )}
@@ -165,8 +165,8 @@ export function QrScannerModal({ isOpen, onClose, onCodeScanned }: QrScannerModa
           {activeTab === 'manual' && (
             <form onSubmit={handleManualSubmit} className="w-full space-y-5">
               <div className="text-center space-y-2">
-                <p className="text-sm font-semibold text-text-pri">Ingresá el Código del Aula</p>
-                <p className="text-xs text-text-sec">Se encuentra debajo del código QR (ej: AULA-6A-7821)</p>
+                <p className="text-sm font-semibold text-text-pri">Ingresï¿½ el Cï¿½digo del Aula</p>
+                <p className="text-xs text-text-sec">Se encuentra debajo del cï¿½digo QR (ej: AULA-6A-7821)</p>
               </div>
               <input type="text" required placeholder="AULA-..." value={manualCode} onChange={(e) => setManualCode(e.target.value.toUpperCase())} className="w-full border-2 border-emerald-600 rounded-xl px-4 py-3 text-center font-mono text-lg font-bold tracking-widest text-text-pri bg-emerald-50/30 dark:bg-emerald-950/30 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-shadow" autoFocus />
               <button type="submit" disabled={verifying || !manualCode.trim()} className="w-full py-3.5 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 text-white rounded-xl text-sm font-bold transition-colors shadow-lg shadow-emerald-900/20">
