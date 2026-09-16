@@ -17,7 +17,7 @@ import { confirmAction } from '../../../lib/alerts';
 import type { CourseResultSummary, PerformanceStatus } from '../../../types/result';
 import type { Course } from '../../../types/activity';
 import { QrScannerModal } from './QrScannerModal';
-import { CreateCourseModal } from './CreateCourseModal';
+// CreateCourseModal solo se usa desde el panel de coordinador/admin
 import { CourseQrModal } from './CourseQrModal';
 import { CourseDevicesModal } from './CourseDevicesModal';
 
@@ -61,7 +61,6 @@ export function TeacherDashboard() {
   const [isDevicesModalOpen, setIsDevicesModalOpen] = useState(false);
 
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const [isCreateCourseOpen, setIsCreateCourseOpen] = useState(false);
   const [selectedQrCourse, setSelectedQrCourse] = useState<Course | null>(null);
   const [scannedCourse, setScannedCourse] = useState<Course | null>(null);
 
@@ -112,14 +111,6 @@ export function TeacherDashboard() {
     showToast(`Conectado al aula: ${course.name}`);
   }
 
-  function handleCourseCreated(newCourse: Course) {
-    setCourses((prev) => [newCourse, ...prev]);
-    setSelectedCourseId(newCourse.id);
-    loadCourseData(newCourse.id);
-    showToast(`Aula "${newCourse.name}" creada exitosamente`);
-
-    setSelectedQrCourse(newCourse);
-  }
 
   async function handleDuplicate(activityId: string) {
     setBusyActivityId(activityId);
@@ -201,13 +192,6 @@ export function TeacherDashboard() {
               <Icon name="camera" size={13} />
               Escanear QR de Aula
             </button>
-            <button
-              onClick={() => setIsCreateCourseOpen(true)}
-              className="flex items-center gap-1.5 bg-green-dark hover:opacity-95 text-white rounded-[6px] px-3 py-1.5 text-[11.5px] font-medium transition-colors"
-            >
-              <Icon name="plus" size={12} />
-              Crear Nueva Aula
-            </button>
           </div>
         </div>
 
@@ -215,24 +199,17 @@ export function TeacherDashboard() {
           <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-200">
             <Icon name="school" size={28} />
           </div>
-          <h2 className="text-base font-semibold text-text-pri mb-1">Aún no tenés aulas creadas</h2>
+          <h2 className="text-base font-semibold text-text-pri mb-1">Aún no tenés aulas asignadas</h2>
           <p className="text-xs text-text-sec mb-5 leading-relaxed">
-            Creá un aula física fija (con salón, grado y división) para generar su código QR permanente, o escaneá el QR fijo de un aula existente.
+            Pedile a tu coordinador o director que te asigne un aula, o escaneá el QR fijo de un aula existente para conectarte.
           </p>
           <div className="flex justify-center gap-2.5">
             <button
-              onClick={() => setIsCreateCourseOpen(true)}
-              className="px-4 py-2 bg-green-dark text-white rounded-lg text-xs font-medium shadow-sm hover:opacity-95 transition-all flex items-center gap-1.5"
-            >
-              <Icon name="plus" size={13} />
-              Crear mi primera aula
-            </button>
-            <button
               onClick={() => setIsScannerOpen(true)}
-              className="px-3 py-2 bg-surface hover:bg-gray-100 border border-gray-border text-text-pri rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5"
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-medium shadow-sm transition-all flex items-center gap-1.5"
             >
               <Icon name="camera" size={13} />
-              Escanear QR existente
+              Escanear QR de Aula
             </button>
           </div>
         </div>
@@ -241,11 +218,6 @@ export function TeacherDashboard() {
           isOpen={isScannerOpen}
           onClose={() => setIsScannerOpen(false)}
           onSelectCourse={handleCourseScanned}
-        />
-        <CreateCourseModal
-          isOpen={isCreateCourseOpen}
-          onClose={() => setIsCreateCourseOpen(false)}
-          onCreated={handleCourseCreated}
         />
         <CourseQrModal
           course={selectedQrCourse}
@@ -344,13 +316,6 @@ export function TeacherDashboard() {
           >
             <Icon name="camera" size={14} />
             <span>Escanear QR</span>
-          </button>
-          <button
-            onClick={() => setIsCreateCourseOpen(true)}
-            className="flex items-center gap-1.5 bg-white dark:bg-[#1A1E29] border border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800 text-slate-800 dark:text-slate-200 rounded-xl px-3 py-2 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
-          >
-            <Icon name="plus" size={13} />
-            <span>Nueva Aula</span>
           </button>
           {currentCourse && (
             <>
@@ -559,11 +524,6 @@ export function TeacherDashboard() {
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
         onSelectCourse={handleCourseScanned}
-      />
-      <CreateCourseModal
-        isOpen={isCreateCourseOpen}
-        onClose={() => setIsCreateCourseOpen(false)}
-        onCreated={handleCourseCreated}
       />
       <CourseQrModal
         course={selectedQrCourse}
