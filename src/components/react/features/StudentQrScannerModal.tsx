@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Html5Qrcode } from 'html5-qrcode';
 import { Icon } from '../ui/Icon';
 
 interface StudentQrScannerModalProps {
@@ -12,20 +13,16 @@ export function StudentQrScannerModal({
   onClose,
   onCodeScanned,
 }: StudentQrScannerModalProps) {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
 
-  const [hasCamera, setHasCamera] = useState(true);
   const [cameraError, setCameraError] = useState<string | null>(null);
-  const [scanning, setScanning] = useState(false);
   const [manualCode, setManualCode] = useState('');
   const [verifying, setVerifying] = useState(false);
-  const [activeTab, setActiveTab] = useState<'camara' | 'manual' | 'archivo'>('camara');
+  const [activeTab, setActiveTab] = useState<'camara' | 'manual'>('camara');
   const [debugLogs, setDebugLogs] = useState<string[]>([]);
 
   function addLog(msg: string) {
-    setDebugLogs((prev) => [...prev, `${new Date().toLocaleTimeString()} - ${msg}`].slice(-5));
+    setDebugLogs((prev) => [...prev, \\ - \\].slice(-5));
   }
 
   useEffect(() => {
@@ -33,13 +30,11 @@ export function StudentQrScannerModal({
       stopCamera();
       return;
     }
-
     if (activeTab === 'camara') {
-      startCamera();
+      setTimeout(startCamera, 100); // Wait for DOM element
     } else {
       stopCamera();
     }
-
     return () => {
       stopCamera();
     };
@@ -47,48 +42,37 @@ export function StudentQrScannerModal({
 
   async function startCamera() {
     setCameraError(null);
-    setScanning(true);
-
     try {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('La cÃ¡mara no estÃ¡ disponible en este navegador o dispositivo.');
+      if (!scannerRef.current) {
+        scannerRef.current = new Html5Qrcode('qr-reader-container');
       }
-
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'environment',
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
+      addLog('[html5-qrcode] Iniciando cámara...');
+      await scannerRef.current.start(
+        { facingMode: 'environment' },
+        { 
+          fps: 10, 
+          qrbox: { width: 250, height: 250 },
+          aspectRatio: 1.0 
         },
-      });
-
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.setAttribute('playsinline', 'true');
-        await videoRef.current.play();
-        requestAnimationFrame(scanLoop);
-      }
-    } catch (err: any) {
-      console.warn('Error accediendo a cÃ¡mara:', err);
-      setHasCamera(false);
-      setCameraError(
-        err.name === 'NotAllowedError'
-          ? 'Permiso de cÃ¡mara no concedido. PodÃ©s escribir el cÃ³digo PIN manualmente.'
-          : 'No se pudo iniciar la cÃ¡mara en este equipo. PodÃ©s ingresar el cÃ³digo a continuaciÃ³n.'
+        (decodedText) => {
+          addLog(\[html5-qrcode] QR Encontrado: \\);
+          handleRawScannedText(decodedText);
+        },
+        (errorMessage) => {
+          // ignore empty scans
+        }
       );
+      addLog('[html5-qrcode] Cámara iniciada y analizando.');
+    } catch (err: any) {
+      console.warn('Error iniciando cámara:', err);
+      setCameraError('No se pudo iniciar la cámara. Podés ingresar el código manualmente.');
       setActiveTab('manual');
     }
   }
 
   function stopCamera() {
-    setScanning(false);
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
+    if (scannerRef.current && scannerRef.current.isScanning) {
+      scannerRef.current.stop().catch(console.error);
     }
   }
 
@@ -98,13 +82,10 @@ export function StudentQrScannerModal({
     stopCamera();
 
     try {
-      if ('vibrate' in navigator) {
-        navigator.vibrate(100);
-      }
+      if ('vibrate' in navigator) navigator.vibrate(100);
     } catch {}
 
     const text = rawText.trim();
-
     if (text.includes('/aula') || text.toUpperCase().startsWith('AULA-')) {
       let code = text;
       try {
@@ -114,11 +95,8 @@ export function StudentQrScannerModal({
           code = url.pathname.split('/aula/')[1]?.split('/')[0] || '';
         }
       } catch {
-        if (text.includes('code=')) {
-          code = text.split('code=')[1]?.split('&')[0] || '';
-        } else if (text.includes('/aula/')) {
-          code = text.split('/aula/')[1]?.split('?')[0]?.split('/')[0] || '';
-        }
+        if (text.includes('code=')) code = text.split('code=')[1]?.split('&')[0] || '';
+        else if (text.includes('/aula/')) code = text.split('/aula/')[1]?.split('?')[0]?.split('/')[0] || '';
       }
       onCodeScanned((code || text).toUpperCase(), 'course');
       onClose();
@@ -134,11 +112,8 @@ export function StudentQrScannerModal({
           code = url.pathname.split('/actividad/')[1]?.split('/')[0] || '';
         }
       } catch {
-        if (text.includes('code=')) {
-          code = text.split('code=')[1]?.split('&')[0] || '';
-        } else if (text.includes('/actividad/')) {
-          code = text.split('/actividad/')[1]?.split('?')[0]?.split('/')[0] || '';
-        }
+        if (text.includes('code=')) code = text.split('code=')[1]?.split('&')[0] || '';
+        else if (text.includes('/actividad/')) code = text.split('/actividad/')[1]?.split('?')[0]?.split('/')[0] || '';
       }
       onCodeScanned((code || text).toUpperCase(), 'activity');
       onClose();
@@ -147,54 +122,6 @@ export function StudentQrScannerModal({
 
     onCodeScanned(text.toUpperCase(), 'activity');
     onClose();
-  }
-
-  async function scanLoop() {
-    if (!scanning) return;
-
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-
-    if (video && canvas && video.readyState === video.HAVE_ENOUGH_DATA) {
-      if ('BarcodeDetector' in window) {
-        try {
-          const detector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
-          const barcodes = await detector.detect(video);
-          if (Math.random() < 0.1) addLog('[Nativo] Analizando...');
-          if (barcodes && barcodes.length > 0) {
-            const val = barcodes[0].rawValue;
-            if (val) {
-              addLog(`[Nativo] QR Encontrado: ${val}`);
-              handleRawScannedText(val);
-              return;
-            }
-          }
-        } catch (e: any) {
-          if (Math.random() < 0.1) addLog(`[Nativo Error] ${e.message}`);
-        }
-      } else {
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
-        if (ctx) {
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          if (Math.random() < 0.1) addLog('[jsQR] Analizando...');
-          const code = jsQR(imageData.data, imageData.width, imageData.height, {
-            inversionAttempts: 'dontInvert',
-          });
-          if (code && code.data) {
-            addLog(`[jsQR] QR Encontrado: ${code.data}`);
-            handleRawScannedText(code.data);
-            return;
-          }
-        }
-      }
-    }
-
-    if (scanning && streamRef.current) {
-      setTimeout(() => requestAnimationFrame(scanLoop), 250);
-    }
   }
 
   function handleManualSubmit(e: React.FormEvent) {
@@ -208,92 +135,45 @@ export function StudentQrScannerModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4 animate-in fade-in duration-150">
       <div className="bg-white dark:bg-[#161A23] rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden border border-gray-border dark:border-[#2D3342] flex flex-col">
-        {}
         <div className="px-5 py-3.5 bg-gray-50/90 dark:bg-[#1A1E29] border-b border-gray-border dark:border-[#2D3342] flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="p-1.5 bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 rounded-lg">
               <Icon name="camera" size={16} />
             </span>
             <div>
-              <h2 className="text-sm font-bold text-text-pri">Escanear CÃ³digo QR</h2>
-              <p className="text-[11px] text-text-sec">Del aula fÃ­sica o de la actividad</p>
+              <h2 className="text-sm font-bold text-text-pri">Escanear Código QR</h2>
+              <p className="text-[11px] text-text-sec">Del aula física o de la actividad</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="text-text-ter hover:text-text-pri p-1 rounded-lg text-sm font-bold cursor-pointer"
-          >
-            âœ•
-          </button>
+          <button onClick={onClose} className="text-text-ter hover:text-text-pri p-1 rounded-lg text-sm font-bold cursor-pointer">?</button>
         </div>
 
-        {}
         <div className="flex border-b border-gray-border dark:border-[#2D3342] text-xs font-semibold">
-          <button
-            onClick={() => setActiveTab('camara')}
-            className={`flex-1 py-2.5 text-center transition-colors border-b-2 flex items-center justify-center gap-1.5 cursor-pointer ${
-              activeTab === 'camara'
-                ? 'border-emerald-600 text-emerald-700 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30'
-                : 'border-transparent text-text-sec hover:bg-gray-50 dark:hover:bg-[#1A1E29]'
-            }`}
-          >
-            <Icon name="camera" size={13} />
-            CÃ¡mara
+          <button onClick={() => setActiveTab('camara')} className={\lex-1 py-2.5 text-center transition-colors border-b-2 flex items-center justify-center gap-1.5 cursor-pointer \\}>
+            <Icon name="camera" size={13} /> Cámara
           </button>
-          <button
-            onClick={() => setActiveTab('manual')}
-            className={`flex-1 py-2.5 text-center transition-colors border-b-2 flex items-center justify-center gap-1.5 cursor-pointer ${
-              activeTab === 'manual'
-                ? 'border-emerald-600 text-emerald-700 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30'
-                : 'border-transparent text-text-sec hover:bg-gray-50 dark:hover:bg-[#1A1E29]'
-            }`}
-          >
-            <Icon name="code" size={13} />
-            Escribir PIN
+          <button onClick={() => setActiveTab('manual')} className={\lex-1 py-2.5 text-center transition-colors border-b-2 flex items-center justify-center gap-1.5 cursor-pointer \\}>
+            <Icon name="code" size={13} /> Escribir PIN
           </button>
         </div>
 
-        {}
         <div className="p-5 flex-1 flex flex-col items-center justify-center min-h-[290px]">
           {activeTab === 'camara' && (
             <div className="w-full flex flex-col items-center">
               {cameraError ? (
                 <div className="text-center p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl text-xs text-amber-900 dark:text-amber-200 space-y-3">
                   <p>{cameraError}</p>
-                  <button
-                    onClick={() => setActiveTab('manual')}
-                    className="px-4 py-2 bg-emerald-700 text-white font-semibold rounded-lg text-xs cursor-pointer"
-                  >
-                    Ingresar CÃ³digo Manualmente
+                  <button onClick={() => setActiveTab('manual')} className="px-4 py-2 bg-emerald-700 text-white font-semibold rounded-lg text-xs cursor-pointer">
+                    Ingresar Código Manualmente
                   </button>
                 </div>
               ) : (
                 <div className="relative w-full max-w-[260px] aspect-square rounded-2xl overflow-hidden bg-black shadow-inner flex items-center justify-center border-2 border-emerald-500">
-                  <video
-                    ref={videoRef}
-                    className="w-full h-full object-cover"
-                    muted
-                    autoPlay
-                    playsInline
-                  />
-                  <canvas ref={canvasRef} className="hidden" />
-
-                  {}
-                  <div className="absolute inset-5 border-2 border-emerald-400/80 rounded-xl pointer-events-none flex flex-col justify-between p-2">
-                    <div className="w-full flex justify-between">
-                      <span className="w-3.5 h-3.5 border-t-2 border-l-2 border-emerald-400" />
-                      <span className="w-3.5 h-3.5 border-t-2 border-r-2 border-emerald-400" />
-                    </div>
-                    <div className="w-full h-0.5 bg-emerald-400 shadow-[0_0_8px_#34d399] animate-bounce" />
-                    <div className="w-full flex justify-between">
-                      <span className="w-3.5 h-3.5 border-b-2 border-l-2 border-emerald-400" />
-                      <span className="w-3.5 h-3.5 border-b-2 border-r-2 border-emerald-400" />
-                    </div>
-                  </div>
-
+                  <div id="qr-reader-container" className="w-full h-full [&_video]:object-cover" />
+                  
                   {verifying && (
-                    <div className="absolute inset-0 bg-black/70 flex items-center justify-center text-white text-xs font-semibold">
-                      Conectandoâ€¦
+                    <div className="absolute inset-0 bg-black/70 flex items-center justify-center text-white text-xs font-semibold z-20">
+                      Conectando…
                     </div>
                   )}
 
@@ -306,7 +186,7 @@ export function StudentQrScannerModal({
               )}
 
               <p className="text-[11px] text-text-ter text-center mt-3 max-w-xs">
-                ApuntÃ¡ la cÃ¡mara al cÃ³digo QR impreso en el aula o mostrado en la pantalla del docente.
+                Apuntá la cámara al código QR impreso en el aula o mostrado en la pantalla del docente.
               </p>
             </div>
           )}
@@ -314,41 +194,22 @@ export function StudentQrScannerModal({
           {activeTab === 'manual' && (
             <form onSubmit={handleManualSubmit} className="w-full space-y-4">
               <div className="text-center space-y-1">
-                <p className="text-xs font-semibold text-text-pri">IngresÃ¡ el CÃ³digo o PIN</p>
-                <p className="text-[11.5px] text-text-sec">
-                  Puede ser el PIN de la actividad (ej: <strong>HAB-4B29</strong>) o el cÃ³digo del aula (ej: <strong>AULA-6A-7821</strong>).
-                </p>
+                <p className="text-xs font-semibold text-text-pri">Ingresá el Código o PIN</p>
+                <p className="text-[11.5px] text-text-sec">Puede ser el PIN de la actividad (ej: <strong>HAB-4B29</strong>) o el código del aula (ej: <strong>AULA-6A-7821</strong>).</p>
               </div>
-
               <div>
-                <input
-                  type="text"
-                  required
-                  placeholder="HAB-4B29"
-                  value={manualCode}
-                  onChange={(e) => setManualCode(e.target.value.toUpperCase())}
-                  className="w-full border-2 border-emerald-600 rounded-xl px-3.5 py-2.5 text-center font-mono text-base font-bold tracking-widest text-text-pri bg-emerald-50/30 dark:bg-emerald-950/30 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  autoFocus
-                />
+                <input type="text" required placeholder="HAB-4B29" value={manualCode} onChange={(e) => setManualCode(e.target.value.toUpperCase())} className="w-full border-2 border-emerald-600 rounded-xl px-3.5 py-2.5 text-center font-mono text-base font-bold tracking-widest text-text-pri bg-emerald-50/30 dark:bg-emerald-950/30 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500" autoFocus />
               </div>
-
-              <button
-                type="submit"
-                disabled={verifying || !manualCode.trim()}
-                className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-colors shadow-xs cursor-pointer"
-              >
-                {verifying ? 'Verificandoâ€¦' : 'Ingresar â†’'}
+              <button type="submit" disabled={verifying || !manualCode.trim()} className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-colors shadow-xs cursor-pointer">
+                {verifying ? 'Verificando…' : 'Ingresar ?'}
               </button>
             </form>
           )}
         </div>
 
-        {}
         <div className="px-5 py-3 bg-gray-50/80 dark:bg-[#1A1E29] border-t border-gray-border dark:border-[#2D3342] flex items-center justify-between text-xs text-text-ter">
-          <span>Habitar â€¢ Modo Alumno</span>
-          <button onClick={onClose} className="hover:text-text-pri font-medium cursor-pointer">
-            Cerrar
-          </button>
+          <span>Habitar • Modo Alumno</span>
+          <button onClick={onClose} className="hover:text-text-pri font-medium cursor-pointer">Cerrar</button>
         </div>
       </div>
     </div>
