@@ -1,0 +1,8 @@
+---
+import AppShell from '../../../layouts/AppShell.astro';
+import { AdminInstitutionUsersScreen } from '../../../components/react/features/AdminInstitutionUsersScreen';
+import { adminNavItems } from '../../../lib/nav';
+---
+<AppShell title="Usuarios" sectionLabel="Administración de plataforma" sidebarItems={adminNavItems}>
+  <AdminInstitutionUsersScreen client:load />
+</AppShell>

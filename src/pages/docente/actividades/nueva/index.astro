@@ -1,0 +1,12 @@
+---
+import AppShell from '../../../../layouts/AppShell.astro';
+import { NewActivityStep1 } from '../../../../components/react/features/wizard/NewActivityStep1';
+import { docenteNavItems } from '../../../../lib/nav';
+---
+<AppShell
+  title="Nueva actividad"
+  sectionLabel="Panel docente"
+  sidebarItems={docenteNavItems}
+>
+  <NewActivityStep1 client:load />
+</AppShell>

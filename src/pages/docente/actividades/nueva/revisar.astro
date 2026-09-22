@@ -1,0 +1,12 @@
+---
+import AppShell from '../../../../layouts/AppShell.astro';
+import { ReviewQuestionsStep } from '../../../../components/react/features/wizard/ReviewQuestionsStep';
+import { docenteNavItems } from '../../../../lib/nav';
+---
+<AppShell
+  title="Revisar preguntas"
+  sectionLabel="Panel docente"
+  sidebarItems={docenteNavItems}
+>
+  <ReviewQuestionsStep client:load />
+</AppShell>

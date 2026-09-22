@@ -1,0 +1,12 @@
+---
+import AppShell from '../../layouts/AppShell.astro';
+import { MonitoringScreen } from '../../components/react/features/MonitoringScreen';
+import { adminNavItems } from '../../lib/nav';
+---
+<AppShell
+  title="Monitoreo"
+  sectionLabel="Administración de plataforma"
+  sidebarItems={adminNavItems}
+>
+  <MonitoringScreen client:load />
+</AppShell>

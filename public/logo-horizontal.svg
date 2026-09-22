@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 120" fill="none">
+  <!-- Logotipo Horizontal Oficial de Habitar -->
+  <g transform="translate(10, 8) scale(0.42)">
+    <g stroke="#0F6E56" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <path d="M 44 60 L 44 168 C 72 172, 102 184, 128 202 C 154 184, 184 172, 212 168 L 212 60" />
+      <path d="M 128 72 C 104 50, 74 46, 56 46 L 56 156 C 78 156, 106 166, 128 186 C 150 166, 178 156, 200 156 L 200 46 C 182 46, 152 50, 128 72 Z" stroke-width="9" />
+      <path d="M 56 156 C 78 160, 106 172, 128 190 C 150 172, 178 160, 200 156" />
+      <path d="M 44 168 C 72 174, 102 188, 128 204 C 154 188, 184 174, 212 168" />
+      <path d="M 74 98 L 128 48 L 182 98" stroke-width="12" />
+      <path d="M 162 76 L 162 48 L 172 48 L 172 85" stroke-width="6" fill="#0F6E56" />
+      <line x1="94" y1="92" x2="94" y2="150" stroke-width="10" />
+      <line x1="162" y1="92" x2="162" y2="150" stroke-width="10" />
+    </g>
+  </g>
+  
+  <!-- Tipografía de Marca -->
+  <text x="135" y="70" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="52" font-weight="800" fill="#111827" letter-spacing="-1">
+    Habi<tspan fill="#0F6E56">tar</tspan>
+  </text>
+  <text x="138" y="96" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#4B5563" letter-spacing="2.5">
+    COMPRENSIÓN LECTORA
+  </text>
+</svg>

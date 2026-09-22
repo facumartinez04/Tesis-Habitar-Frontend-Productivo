@@ -1,0 +1,12 @@
+---
+import AppShell from '../../layouts/AppShell.astro';
+import { JiraScreen } from '../../components/react/features/JiraScreen';
+import { adminNavItems } from '../../lib/nav';
+---
+<AppShell
+  title="Jira de Administración"
+  sectionLabel="Administración de plataforma"
+  sidebarItems={adminNavItems}
+>
+  <JiraScreen client:load />
+</AppShell>

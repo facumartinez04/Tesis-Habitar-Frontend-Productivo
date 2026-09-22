@@ -1,0 +1,12 @@
+---
+import AppShell from '../../layouts/AppShell.astro';
+import { InstitutionFinanceScreen } from '../../components/react/features/InstitutionFinanceScreen';
+import { institucionalNavItems } from '../../lib/nav';
+---
+<AppShell
+  title="Finanzas Escolares"
+  sectionLabel="Panel institucional"
+  sidebarItems={institucionalNavItems}
+>
+  <InstitutionFinanceScreen client:load />
+</AppShell>

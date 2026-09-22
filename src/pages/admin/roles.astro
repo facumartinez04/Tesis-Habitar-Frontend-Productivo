@@ -1,0 +1,12 @@
+---
+import AppShell from '../../layouts/AppShell.astro';
+import { RolesManagementScreen } from '../../components/react/features/RolesManagementScreen';
+import { adminNavItems } from '../../lib/nav';
+---
+<AppShell
+  title="Roles y Permisos"
+  sectionLabel="Administración de plataforma"
+  sidebarItems={adminNavItems}
+>
+  <RolesManagementScreen client:load />
+</AppShell>
