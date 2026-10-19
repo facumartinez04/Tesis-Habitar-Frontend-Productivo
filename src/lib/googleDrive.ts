@@ -74,10 +74,10 @@ function openPicker(accessToken: string, apiKey: string, appId: string): Promise
       .setMimeTypes([GOOGLE_DOC, ...SUPPORTED_MIME_TYPES].join(','))
       .setIncludeFolders(true)
       .setSelectFolderEnabled(false);
-    new picker.PickerBuilder()
-      .setAppId(appId)
-      .setOAuthToken(accessToken)
-      .setDeveloperKey(apiKey)
+    const builder = new picker.PickerBuilder().setAppId(appId).setOAuthToken(accessToken);
+    // La clave de API es opcional cuando hay token OAuth; si el servidor la tiene configurada, se usa.
+    if (apiKey) builder.setDeveloperKey(apiKey);
+    builder
       .addView(view)
       .addView(new picker.DocsView(picker.ViewId.DOCS).setMimeTypes(GOOGLE_DOC).setOwnedByMe(false))
       .setLocale('es-419')
