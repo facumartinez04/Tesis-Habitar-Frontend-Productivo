@@ -2,7 +2,7 @@ import type { Activity, AttemptPolicy, ComprehensionAxis, DiagnosticType } from 
 import type { StudentIdMode } from '../lib/studentDevice';
 import { ApiError } from '../lib/apiClient';
 import type { Question } from '../types/question';
-import { apiFetch } from '../lib/apiClient';
+import { apiFetch, apiUrl, authHeaders } from '../lib/apiClient';
 import { toLower, toUpper } from '../lib/caseAdapters';
 
 export interface CreateActivityInput {
@@ -61,6 +61,7 @@ interface BackendQuestion {
 
 interface GetActivityResponse {
   activity: BackendActivity;
+  document?: ActivityDocumentMeta | null;
   questions: BackendQuestion[];
   questionCount?: number;
   questionsReleased?: boolean;
@@ -153,6 +154,8 @@ export type PublicActivityResult =
       questionCount: number;
       /** Si el alumno puede preguntarle a la IA qué significa algo del texto. */
       readingHelp: boolean;
+      /** PDF o Word original para leer tal cual; null si el docente cargó texto. */
+      document: ActivityDocumentMeta | null;
     }
   | { ok: false; notFound: boolean; message: string };
 
@@ -170,6 +173,7 @@ export async function getActivityByCode(code: string): Promise<PublicActivityRes
       questionsReleasedAt: result.activity.questionsReleasedAt ?? null,
       questionCount: result.questionCount ?? result.questions.length,
       readingHelp: result.activity.readingHelp ?? true,
+      document: result.document ?? null,
     };
   } catch (err) {
     if (err instanceof ApiError && err.status !== 404) {
@@ -300,6 +304,45 @@ export async function askReadingHelp(
   question: string,
 ): Promise<{ message: HelpMessage; remaining: number }> {
   return apiFetch(`/activities/${code}/help`, { method: 'POST', auth: false, body: { studentDisplayName, deviceId, question } });
+}
+
+/** Documento original de la actividad (PDF o Word), tal como lo subió el docente. */
+export interface ActivityDocumentMeta {
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  /** Páginas del PDF a mostrar; null = todas. */
+  pages: number[] | null;
+}
+
+/** Sube el PDF o Word original para que los alumnos lo lean tal cual. */
+export async function uploadActivityDocument(
+  activityId: string,
+  doc: { name: string; mimeType: string; file: Blob; pages: number[] | null },
+): Promise<ActivityDocumentMeta> {
+  const res = await fetch(apiUrl(`/activities/${activityId}/document`), {
+    method: 'POST',
+    headers: {
+      ...authHeaders(),
+      'Content-Type': doc.mimeType || 'application/octet-stream',
+      'X-File-Name': encodeURIComponent(doc.name),
+      ...(doc.pages ? { 'X-Pages': doc.pages.join(',') } : {}),
+    },
+    body: doc.file,
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new ApiError(res.status, data?.error ?? (res.status === 413 ? 'El archivo supera los 15 MB' : 'No se pudo subir el documento'));
+  return data as ActivityDocumentMeta;
+}
+
+/** El documento para leer en la actividad (sólo mientras está abierta). */
+export async function fetchActivityDocument(code: string): Promise<Blob> {
+  const res = await fetch(apiUrl(`/activities/${code}/document`));
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new ApiError(res.status, data?.error ?? 'No se pudo abrir el documento');
+  }
+  return res.blob();
 }
 
 export async function closeActivityNow(activityId: string): Promise<void> {

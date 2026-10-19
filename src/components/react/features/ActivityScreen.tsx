@@ -11,9 +11,11 @@ import {
   saveProgress,
   submitResponse,
   type AnswerPayload,
+  type ActivityDocumentMeta,
   type DraftAnswers,
   type ReadingMode,
 } from '../../../services/activityService';
+import { DocumentViewer } from './DocumentViewer';
 import { ApiError } from '../../../lib/apiClient';
 import { getOrCreateDeviceId, studentIdLabel, type StudentIdMode } from '../../../lib/studentDevice';
 import { useLiveUpdates } from '../../../lib/realtime';
@@ -52,6 +54,8 @@ interface ActivityMeta {
   questionsReleasedAt: string | null;
   questionCount: number;
   readingHelp: boolean;
+  /** PDF o Word original que subió el docente; null si cargó texto. */
+  document: ActivityDocumentMeta | null;
 }
 
 function fromServerDraft(draft: DraftAnswers): Record<string, string> {
@@ -129,7 +133,10 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     questionsReleasedAt: null,
     questionCount: 0,
     readingHelp: false,
+    document: null,
   });
+  /** El alumno eligió leer el texto en lugar del documento (o el documento no se pudo abrir). */
+  const [asText, setAsText] = useState(false);
   /** Palabra o frase que el alumno seleccionó en el texto, para preguntar qué significa. */
   const [selection, setSelection] = useState<string | null>(null);
   const metaRef = useRef(meta);
@@ -236,6 +243,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
         questionsReleasedAt: result.questionsReleasedAt,
         questionCount: result.questionCount,
         readingHelp: result.readingHelp,
+        document: result.document,
       };
       setMeta(nextMeta);
       setShowText(result.readingMode === 'LIBRE');
@@ -442,6 +450,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
       questionsReleasedAt: result.questionsReleasedAt,
       questionCount: result.questionCount,
       readingHelp: result.readingHelp,
+      document: result.document,
     });
     const releasedNow = reason === 'released' || (!before.questionsReleasedAt && Boolean(result.questionsReleasedAt));
     if (releasedNow && result.questionsReleased && stageRef.current === 'reading') {
@@ -851,15 +860,30 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
           <p className="text-xs text-stone-500 dark:text-stone-400 mb-3">
             Leé el texto con atención. {waitingTeacher ? 'Las preguntas aparecen cuando tu docente las habilite.' : `Después vas a responder ${meta.questionCount} preguntas.`}
           </p>
-          <div className="max-h-[58vh] overflow-y-auto p-4 sm:p-5 bg-stone-50 dark:bg-stone-800/40 border border-stone-200/80 dark:border-stone-700 rounded-xl">
-            <div
-              onMouseUp={captureSelection}
-              onTouchEnd={captureSelection}
-              className="text-[14px] sm:text-[15px] text-slate-800 dark:text-stone-200 leading-[1.75] whitespace-pre-line"
-            >
-              {activity.sourceText}
+          {meta.document && !asText ? (
+            <div className="max-h-[70vh] overflow-y-auto p-2 sm:p-3 bg-stone-100 dark:bg-stone-800/40 border border-stone-200/80 dark:border-stone-700 rounded-xl">
+              <DocumentViewer code={currentCode} document={meta.document} onError={() => setAsText(true)} />
             </div>
-          </div>
+          ) : (
+            <div className="max-h-[58vh] overflow-y-auto p-4 sm:p-5 bg-stone-50 dark:bg-stone-800/40 border border-stone-200/80 dark:border-stone-700 rounded-xl">
+              <div
+                onMouseUp={captureSelection}
+                onTouchEnd={captureSelection}
+                className="text-[14px] sm:text-[15px] text-slate-800 dark:text-stone-200 leading-[1.75] whitespace-pre-line"
+              >
+                {activity.sourceText}
+              </div>
+            </div>
+          )}
+          {meta.document && (
+            <button
+              type="button"
+              onClick={() => setAsText((v) => !v)}
+              className="mt-2 text-[11.5px] font-semibold text-emerald-800 dark:text-emerald-300 hover:underline cursor-pointer"
+            >
+              {asText ? 'Ver el documento original' : 'Leer como texto (más grande, y para seleccionar palabras)'}
+            </button>
+          )}
           <div className="pt-4 mt-4 border-t border-stone-200 dark:border-stone-800">
             {waitingTeacher ? (
               <div className="flex items-center justify-center gap-2.5 text-xs font-semibold text-stone-600 dark:text-stone-300 bg-stone-100 dark:bg-stone-800/60 rounded-xl px-4 py-3">
@@ -960,9 +984,14 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
             className="flex items-center gap-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300 hover:underline cursor-pointer"
           >
             <Icon name="fileText" size={13} />
-            {showText ? 'Ocultar el texto' : 'Volver a ver el texto'}
+            {showText ? 'Ocultar el texto' : meta.document ? 'Volver a ver el documento' : 'Volver a ver el texto'}
           </button>
-          {showText && (
+          {showText && meta.document && !asText && (
+            <div className="mt-2 max-h-[55vh] overflow-y-auto p-2 bg-stone-100 dark:bg-stone-800/40 border border-stone-200/80 dark:border-stone-700 rounded-xl">
+              <DocumentViewer code={currentCode} document={meta.document} onError={() => setAsText(true)} />
+            </div>
+          )}
+          {showText && (!meta.document || asText) && (
             <div className="mt-2 max-h-[220px] overflow-y-auto p-3.5 bg-stone-50 dark:bg-stone-800/40 border border-stone-200/80 dark:border-stone-700 rounded-xl">
               <div
                 onMouseUp={captureSelection}
@@ -972,6 +1001,15 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
                 {activity.sourceText}
               </div>
             </div>
+          )}
+          {showText && meta.document && (
+            <button
+              type="button"
+              onClick={() => setAsText((v) => !v)}
+              className="mt-1.5 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 hover:underline cursor-pointer"
+            >
+              {asText ? 'Ver el documento original' : 'Leer como texto'}
+            </button>
           )}
         </div>
 

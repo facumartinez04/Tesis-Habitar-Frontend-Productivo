@@ -22,20 +22,24 @@ interface ApiFetchOptions {
   auth?: boolean;
 }
 
+/** URL completa de un recurso de la API (para pedidos que no son JSON, como archivos). */
+export function apiUrl(path: string): string {
+  return `${API_URL}${path}`;
+}
+
+/** Encabezados de la sesión: token y, si el administrador está viendo como otra institución, a cuál. */
+export function authHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {};
+  const session = sessionStore.get();
+  if (session?.token) headers.Authorization = `Bearer ${session.token}`;
+  if (session?.impersonatedInstitutionId) headers['X-Impersonate-Institution'] = session.impersonatedInstitutionId;
+  if (session?.impersonatedRole) headers['X-Impersonate-Role'] = session.impersonatedRole;
+  return headers;
+}
+
 export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): Promise<T> {
   const { method = 'GET', body, auth = true } = options;
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-
-  if (auth) {
-    const session = sessionStore.get();
-    if (session?.token) headers.Authorization = `Bearer ${session.token}`;
-    if (session?.impersonatedInstitutionId) {
-      headers['X-Impersonate-Institution'] = session.impersonatedInstitutionId;
-    }
-    if (session?.impersonatedRole) {
-      headers['X-Impersonate-Role'] = session.impersonatedRole;
-    }
-  }
+  const headers: Record<string, string> = { 'Content-Type': 'application/json', ...(auth ? authHeaders() : {}) };
 
   const response = await fetch(`${API_URL}${path}`, {
     method,

@@ -1,10 +1,12 @@
 import { useStore } from '@nanostores/react';
+import { showError } from '../../../../lib/alerts';
 import { useEffect, useState } from 'react';
 import { Icon } from '../../ui/Icon';
 import { RadioGroup } from '../../ui/RadioGroup';
 import { ToggleSwitch } from '../../ui/ToggleSwitch';
 import { Stepper } from '../../ui/Stepper';
-import { createActivity, type ReadingMode } from '../../../../services/activityService';
+import { createActivity, uploadActivityDocument, type ReadingMode } from '../../../../services/activityService';
+import { clearWizardDocument, loadWizardDocument } from '../../../../lib/wizardDocument';
 import { listMyCourses } from '../../../../services/courseService';
 import { activityWizardStore, updateWizard, currentTimeInArgentina, defaultActivityWindow, todayInArgentina } from '../../../../store/activityWizardStore';
 import type { AttemptPolicy, Course, DiagnosticType } from '../../../../types/activity';
@@ -70,7 +72,22 @@ export function ConfigureActivityStep() {
         questions: wizard.questions,
         diagnosticType: wizard.diagnosticType,
       });
-      updateWizard({ name, generatedCode: activity.code, generatedActivityId: activity.id });
+      // El PDF o Word original se sube aparte; si falla, la actividad queda igual y los alumnos leen el texto.
+      if (wizard.documentName) {
+        const doc = await loadWizardDocument();
+        if (doc) {
+          try {
+            await uploadActivityDocument(activity.id, doc);
+            await clearWizardDocument();
+          } catch (err) {
+            await showError(
+              'La actividad se creó, pero el documento no se pudo subir',
+              `${err instanceof Error ? err.message : ''} Los alumnos van a leer el texto.`.trim(),
+            );
+          }
+        }
+      }
+      updateWizard({ name, generatedCode: activity.code, generatedActivityId: activity.id, documentName: null });
       window.location.href = '/docente/actividades/nueva/qr';
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'No se pudo crear la actividad. Intentá de nuevo.');

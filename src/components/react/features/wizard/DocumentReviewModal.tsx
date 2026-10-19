@@ -15,7 +15,8 @@ export interface ImportedDocument {
 interface DocumentReviewModalProps {
   document: ImportedDocument | null;
   onClose: () => void;
-  onUse: (text: string, label: string) => void;
+  /** `pages`: páginas elegidas del PDF (null en Word o si eligió todas). */
+  onUse: (text: string, label: string, pages: number[] | null) => void;
 }
 
 interface PageState {
@@ -268,7 +269,14 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
                 <button
                   type="button"
                   disabled={!text.trim() || Boolean(ocrRunning)}
-                  onClick={() => onUse(text, pdf ? `${doc.name} (págs. ${selected.slice().sort((a, b) => a - b).join(', ')})` : doc.name)}
+                  onClick={() => {
+                    const pages = pdf ? selected.slice().sort((a, b) => a - b) : null;
+                    onUse(
+                      text,
+                      pdf && pages ? `${doc.name} (págs. ${pages.join(', ')})` : doc.name,
+                      pdf && pages && pages.length < pdf.numPages ? pages : null,
+                    );
+                  }}
                   className="bg-green-dark hover:opacity-90 text-white text-xs font-bold px-4 py-2 rounded-xl disabled:opacity-50 cursor-pointer"
                 >
                   Usar este texto

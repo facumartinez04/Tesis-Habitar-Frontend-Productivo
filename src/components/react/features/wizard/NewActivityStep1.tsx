@@ -12,6 +12,7 @@ import { DocumentReviewModal, type ImportedDocument } from './DocumentReviewModa
 import { getOneDriveToken } from '../../../../lib/oneDrive';
 import { getIntegrationsConfig, type IntegrationsConfig } from '../../../../services/integrationsService';
 import { OneDrivePickerModal } from './OneDrivePickerModal';
+import { clearWizardDocument, documentKind, saveWizardDocument } from '../../../../lib/wizardDocument';
 
 const DEFAULT_TEXT =
   'La biodiversidad es el conjunto de formas de vida que habitan nuestro planeta. Cada ecosistema alberga especies que dependen entre sí para sobrevivir. Cuando una especie desaparece, las consecuencias se propagan en cadena hacia el resto del sistema. Proteger la biodiversidad no es solo una cuestión ambiental, sino también cultural y económica.';
@@ -263,7 +264,26 @@ export function NewActivityStep1() {
         {importedFrom && !importError && (
           <div className="text-[11.5px] text-text-sec mb-2 flex items-center gap-1.5">
             <Icon name="check" size={12} className="text-green-mid" />
-            Texto cargado desde {importedFrom}. Revisalo y editalo si hace falta: el archivo no se guarda en Habitar.
+            Texto cargado desde {importedFrom}. Es el que usa la IA para las preguntas: revisalo y editalo si hace falta.
+          </div>
+        )}
+        {wizard.documentName && (
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-emerald-900 dark:text-emerald-200 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 rounded-[6px] px-3 py-2 mb-2">
+            <Icon name="fileText" size={13} />
+            <span>
+              Los alumnos van a leer el documento original: <strong>{wizard.documentName}</strong>. Se borra de Habitar al cerrar la
+              actividad.
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                void clearWizardDocument();
+                updateWizard({ documentName: null });
+              }}
+              className="font-semibold underline cursor-pointer"
+            >
+              Mostrar sólo el texto
+            </button>
           </div>
         )}
         {lastDoc && (
@@ -316,10 +336,18 @@ export function NewActivityStep1() {
       <DocumentReviewModal
         document={reviewDoc}
         onClose={() => setReviewDoc(null)}
-        onUse={(content, label) => {
+        onUse={(content, label, pages) => {
           if (reviewDoc) {
             applyImported(label, content, reviewDoc.origin);
             setLastDoc(reviewDoc);
+            // El PDF o Word original se guarda para que los alumnos lo lean tal cual (el .txt ya es su texto).
+            if (documentKind(reviewDoc.name, reviewDoc.mimeType)) {
+              void saveWizardDocument({ name: reviewDoc.name, mimeType: reviewDoc.mimeType, file: reviewDoc.file, pages });
+              updateWizard({ documentName: label });
+            } else {
+              void clearWizardDocument();
+              updateWizard({ documentName: null });
+            }
           }
           setReviewDoc(null);
         }}

@@ -2,6 +2,7 @@ import { persistentAtom } from '@nanostores/persistent';
 import type { AttemptPolicy, ComprehensionAxis, DiagnosticType } from '../types/activity';
 import type { Question } from '../types/question';
 import type { ReadingMode } from '../services/activityService';
+import { clearWizardDocument } from '../lib/wizardDocument';
 
 export interface ActivityWizardState {
   educationLevel: string;
@@ -25,6 +26,8 @@ export interface ActivityWizardState {
   readingMode?: ReadingMode;
   /** Ayuda de la IA con el texto para los alumnos. */
   readingHelp?: boolean;
+  /** Nombre del PDF o Word original que van a leer los alumnos (el archivo queda en el navegador hasta crearla). */
+  documentName?: string | null;
   name: string;
   generatedCode: string | null;
   /** Id de la actividad creada: el panel en vivo la sigue por WebSocket. */
@@ -102,4 +105,5 @@ export function updateWizard(patch: Partial<ActivityWizardState>): void {
 
 export function resetWizard(): void {
   activityWizardStore.set({ ...initialWizardState, ...defaultActivityWindow() });
+  void clearWizardDocument();
 }
