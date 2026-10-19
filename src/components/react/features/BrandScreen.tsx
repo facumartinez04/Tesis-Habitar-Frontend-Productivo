@@ -639,7 +639,7 @@ export function BrandScreen() {
           </div>
         </section>
 
-        {}
+        {/* 7. Textos Oficiales para Prensa y Medios (Boilerplates) */}
         <section className="space-y-6">
           <div className="border-b border-gray-200 pb-3">
             <h2 className="text-2xl font-bold text-[#111827] tracking-tight">7. Textos Institucionales para Medios</h2>
@@ -695,7 +695,7 @@ export function BrandScreen() {
         </section>
       </main>
 
-      {}
+      {/* Footer */}
       <footer className="bg-white border-t border-gray-200 py-10 px-4 sm:px-6 mt-16 text-center text-xs text-gray-500">
         <div className="max-w-4xl mx-auto space-y-3">
           <div className="flex items-center justify-center gap-2 text-sm font-bold text-[#111827]">

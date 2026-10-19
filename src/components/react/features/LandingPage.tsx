@@ -143,7 +143,7 @@ export function LandingPage() {
   return (
     <div className="min-h-screen bg-white text-gray-900 font-sans antialiased selection:bg-emerald-100 selection:text-emerald-950">
 
-      {}
+      {/* ───── NAVBAR ───── */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <a href="/" className="flex items-center gap-2.5 shrink-0">
@@ -298,7 +298,7 @@ export function LandingPage() {
         )}
       </header>
 
-      {}
+      {/* ───── HERO ───── */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/60 via-white to-white" />
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-emerald-100/40 to-transparent rounded-full -translate-y-1/2 translate-x-1/4 blur-3xl" />
@@ -337,7 +337,7 @@ export function LandingPage() {
             </div>
           </div>
 
-          {}
+          {/* Stats strip */}
           <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-px bg-gray-200 rounded-2xl overflow-hidden max-w-2xl mx-auto">
             {[
               { value: '3 Ejes', label: 'Literal, Inferencial y Critico' },
@@ -353,7 +353,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {}
+      {/* ───── DEMO INTERACTIVA ───── */}
       <section id="demo" className="py-20 sm:py-24 bg-gray-50/50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-12">
@@ -367,7 +367,7 @@ export function LandingPage() {
           </div>
 
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-            {}
+            {/* Axis tabs */}
             <div className="flex border-b border-gray-200">
               {(['literal', 'inferencial', 'critico'] as const).map((tab) => {
                 const active = activeAxisTab === tab;
@@ -393,7 +393,7 @@ export function LandingPage() {
             </div>
 
             <div className="p-5 sm:p-8 space-y-6">
-              {}
+              {/* Reading passage */}
               <div className="bg-gray-50 rounded-xl p-4 sm:p-5 border border-gray-100">
                 <div className="flex items-center gap-2 mb-3">
                   <Icon name="fileText" size={14} className="text-gray-400" />
@@ -404,7 +404,7 @@ export function LandingPage() {
                 </p>
               </div>
 
-              {}
+              {/* Axis info */}
               <div>
                 <span
                   className="inline-block text-[11px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-md mb-3"
@@ -417,7 +417,7 @@ export function LandingPage() {
                 </h3>
               </div>
 
-              {}
+              {/* Options */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {ax.options.map((opt, idx) => {
                   const selected = selectedDemoAnswer === idx;
@@ -438,7 +438,7 @@ export function LandingPage() {
                 })}
               </div>
 
-              {}
+              {/* Feedback */}
               {selectedDemoAnswer !== null && (
                 <div
                   className="p-4 rounded-xl text-sm border"
@@ -457,7 +457,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {}
+      {/* ───── 3 EJES COGNITIVOS ───── */}
       <section id="ejes" className="py-20 sm:py-24">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-14">
@@ -512,7 +512,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {}
+      {/* ───── AULAS QR ───── */}
       <section id="aulas-qr" className="py-20 sm:py-24 bg-gray-50/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -547,7 +547,7 @@ export function LandingPage() {
               </div>
             </div>
 
-            {}
+            {/* QR Poster mockup */}
             <div className="flex justify-center">
               <div className="w-full max-w-xs bg-white border border-gray-200 rounded-2xl p-6 shadow-sm text-center space-y-4">
                 <span className="inline-block text-[10px] font-semibold uppercase tracking-widest text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
@@ -576,7 +576,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {}
+      {/* ───── ANALITICA ───── */}
       <section id="analitica" className="py-20 sm:py-24">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-14">
@@ -625,7 +625,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {}
+      {/* ───── PRECIOS ───── */}
       <section id="precios" className="py-20 sm:py-24 bg-gray-50/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-12">
@@ -734,7 +734,7 @@ export function LandingPage() {
             })}
           </div>
 
-          {}
+          {/* Enterprise */}
           <div className="mt-12 bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="text-center sm:text-left">
               <h4 className="text-base font-bold text-gray-900">Red escolar o distrito educativo?</h4>
@@ -752,7 +752,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {}
+      {/* ───── PRIVACIDAD ───── */}
       <section id="privacidad" className="py-20 sm:py-24">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-14">
@@ -825,7 +825,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {}
+      {/* ───── FAQ ───── */}
       <section id="faq" className="py-20 sm:py-24 bg-gray-50/50">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
@@ -863,7 +863,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {}
+      {/* ───── FINAL CTA ───── */}
       <section className="py-20 sm:py-24 bg-[#0F6E56]">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center space-y-6">
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
@@ -890,7 +890,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {}
+      {/* ───── FOOTER ───── */}
       <footer className="bg-white border-t border-gray-200 py-12">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-10">

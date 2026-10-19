@@ -1,4 +1,4 @@
-
+// @ts-check
 import { defineConfig } from 'astro/config';
 
 import tailwindcss from '@tailwindcss/vite';
@@ -6,7 +6,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 import react from '@astrojs/react';
 
-
+// https://astro.build/config
 export default defineConfig({
   vite: {
     plugins: [
@@ -34,13 +34,13 @@ export default defineConfig({
           ],
         },
         workbox: {
-
-
-
+          // Sin navigateFallback a propósito: es multi-página (cada ruta tiene su propio
+          // HTML precacheado), no una SPA con app-shell — Workbox precachea /login/
+          // (con barra), no /login, así que un fallback fijo rompía con "non-precached-url".
           runtimeCaching: [
             {
-
-
+              // Pantalla del alumno (CU-02-06 / RNF-09): que quede disponible offline
+              // una vez visitada, y que la app la sirva rápido en conexiones de baja velocidad.
               urlPattern: ({ url, sameOrigin }) => sameOrigin && url.pathname === '/actividad',
               handler: 'NetworkFirst',
               options: { cacheName: 'habitar-actividad', networkTimeoutSeconds: 3 },

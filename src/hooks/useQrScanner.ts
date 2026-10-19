@@ -4,7 +4,7 @@ import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 export type QrScannerStatus = 'idle' | 'starting' | 'scanning' | 'error';
 
 interface UseQrScannerOptions {
-  
+  /** id del div contenedor donde html5-qrcode monta el <video> */
   elementId: string;
   enabled: boolean;
   onScan: (text: string) => void;
@@ -14,7 +14,7 @@ interface UseQrScannerResult {
   status: QrScannerStatus;
   error: string | null;
   logs: string[];
-  
+  /** Vuelve a habilitar la lectura después de un escaneo (que deja el lector bloqueado). */
   resume: () => void;
 }
 
@@ -41,7 +41,7 @@ function describeCameraError(err: unknown): string {
   }
 }
 
-
+/** El contenedor puede no estar pintado todavía cuando corre el efecto. */
 function waitForElement(id: string, timeoutMs = 1500): Promise<HTMLElement | null> {
   return new Promise((resolve) => {
     const deadline = performance.now() + timeoutMs;
@@ -58,8 +58,8 @@ function waitForElement(id: string, timeoutMs = 1500): Promise<HTMLElement | nul
 export function useQrScanner({ elementId, enabled, onScan }: UseQrScannerOptions): UseQrScannerResult {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const onScanRef = useRef(onScan);
-
-
+  // Bloquea lecturas repetidas: html5-qrcode sigue emitiendo frames mientras
+  // stop() resuelve, y el callback quedó registrado con el estado del primer render.
   const lockedRef = useRef(false);
   const runIdRef = useRef(0);
 
@@ -82,12 +82,12 @@ export function useQrScanner({ elementId, enabled, onScan }: UseQrScannerOptions
     try {
       if (scanner.isScanning) await scanner.stop();
     } catch {
-
+      // ya estaba detenido
     }
     try {
       scanner.clear();
     } catch {
-
+      // el contenedor pudo desmontarse antes
     }
   }, []);
 
@@ -130,8 +130,8 @@ export function useQrScanner({ elementId, enabled, onScan }: UseQrScannerOptions
 
       const config = {
         fps: 10,
-
-
+        // Proporcional al visor: un recuadro fijo de 250px desborda en pantallas
+        // chicas y html5-qrcode aborta con "qrbox dimensions > video".
         qrbox: (viewW: number, viewH: number) => {
           const size = Math.max(140, Math.floor(Math.min(viewW, viewH) * 0.7));
           return { width: size, height: size };
@@ -146,7 +146,7 @@ export function useQrScanner({ elementId, enabled, onScan }: UseQrScannerOptions
         try {
           if ('vibrate' in navigator) navigator.vibrate(100);
         } catch {
-
+          // iOS no expone vibrate
         }
         onScanRef.current(decodedText);
       };
@@ -156,7 +156,7 @@ export function useQrScanner({ elementId, enabled, onScan }: UseQrScannerOptions
         await scanner.start({ facingMode: 'environment' }, config, handleSuccess, () => {});
       } catch (firstErr) {
         if (isStale()) return;
-
+        // Algunos equipos rechazan la constraint; reintentamos con la cámara que haya.
         addLog('Fallback: enumerando cámaras…');
         try {
           const cameras = await Html5Qrcode.getCameras();

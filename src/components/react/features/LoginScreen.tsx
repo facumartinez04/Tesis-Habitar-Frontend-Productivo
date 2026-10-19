@@ -54,7 +54,7 @@ export function LoginScreen() {
 
   return (
     <div className="flex flex-col items-center justify-center px-4 py-12 min-h-screen bg-[#FAF9F6] dark:bg-[#0D0F14] selection:bg-emerald-100 selection:text-emerald-950 font-sans antialiased">
-      {}
+      {/* Background ambient glow */}
       <div className="absolute top-1/3 w-80 h-80 bg-emerald-200/20 dark:bg-emerald-950/20 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative w-full max-w-sm bg-white dark:bg-[#1A1E29] border border-stone-200/90 dark:border-stone-800 rounded-3xl p-7 sm:p-9 shadow-xl flex flex-col items-center text-center">
