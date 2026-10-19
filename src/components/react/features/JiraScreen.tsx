@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Icon } from '../ui/Icon';
 import { usePagination } from '../../../hooks/usePagination';
 import { Pagination } from '../ui/Pagination';
 import { useAuthGuard } from '../../../hooks/useAuthGuard';
@@ -379,7 +380,7 @@ export function JiraScreen() {
                 onClick={() => setSelectedIssue(null)}
                 className="text-gray-400 hover:text-gray-700 text-sm"
               >
-                ✕
+                <Icon name="close" size={16} />
               </button>
             </div>
             <h3 className="text-base font-bold text-gray-900">{selectedIssue.title}</h3>
@@ -440,7 +441,7 @@ function TokenModal({ onClose }: { onClose: () => void }) {
         <div className="flex items-center justify-between border-b pb-3">
           <h3 className="text-base font-bold text-gray-900">Access Tokens para IA</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-sm">
-            ✕
+            <Icon name="close" size={16} />
           </button>
         </div>
 

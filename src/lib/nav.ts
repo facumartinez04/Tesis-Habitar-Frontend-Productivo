@@ -19,6 +19,7 @@ export const adminNavItems: AppSidebarItem[] = [
   { icon: 'building', label: 'Instituciones', href: '/admin/instituciones' },
   { icon: 'shield', label: 'Roles y Permisos', href: '/admin/roles' },
   { icon: 'wallet', label: 'Finanzas Globales', href: '/admin/finanzas' },
+  { icon: 'sparkles', label: 'Costos de IA', href: '/admin/ia' },
   { icon: 'refresh', label: 'Suscripciones', href: '/admin/suscripciones' },
   { icon: 'activity', label: 'Monitoreo', href: '/admin/monitoreo' },
   { icon: 'kanban', label: 'Jira / Tareas', href: '/admin/jira' },

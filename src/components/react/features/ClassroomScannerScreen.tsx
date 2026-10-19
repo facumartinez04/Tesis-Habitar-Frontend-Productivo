@@ -231,7 +231,7 @@ export function ClassroomScannerScreen() {
       <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
         <Card className="w-full max-w-sm text-center p-6 space-y-4">
           <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex items-center justify-center mx-auto text-2xl">
-            ⚠️
+            <Icon name="alertTriangle" size={26} className="text-amber-700 dark:text-amber-400" />
           </div>
           <div>
             <h1 className="text-lg font-bold text-text-pri">Código de Aula No Válido</h1>
@@ -260,7 +260,7 @@ export function ClassroomScannerScreen() {
       {}
       <div className="fixed top-0 inset-x-0 z-40 bg-surface/85 backdrop-blur-md border-b border-gray-border/70 px-4 py-2 flex items-center justify-between text-xs">
         <div className="flex items-center gap-1.5 text-text-sec">
-          <span className="text-sm">🎒</span>
+          <Icon name="backpack" size={14} />
           <span className="font-semibold text-text-pri">Aula Física</span>
           <span className="text-text-ter font-mono">{course.qrCode || qrCode}</span>
         </div>
@@ -304,7 +304,8 @@ export function ClassroomScannerScreen() {
               </p>
               <div className="pt-1">
                 <span className="inline-flex items-center gap-1 text-[10.5px] font-mono text-emerald-700 dark:text-emerald-400 bg-white/70 dark:bg-[#1A1E29] px-2.5 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800/50">
-                  🔒 Identidad bloqueada en este equipo
+                  <Icon name="lock" size={11} />
+                  Identidad bloqueada en este equipo
                 </span>
               </div>
             </div>
@@ -333,7 +334,7 @@ export function ClassroomScannerScreen() {
               </div>
             ) : (
               <div className="text-center py-4 px-2 space-y-1.5 bg-surface rounded-xl border border-gray-border/50">
-                <div className="text-2xl">⏳</div>
+                <Icon name="clock" size={28} className="mx-auto text-amber-600 dark:text-amber-400" />
                 {info.upcomingActivity ? (
                   <>
                     <div className="text-sm font-semibold text-text-pri">{info.upcomingActivity.name}</div>

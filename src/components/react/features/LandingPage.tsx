@@ -432,7 +432,7 @@ export function LandingPage() {
                       className={`p-4 rounded-xl text-left text-sm border transition-all cursor-pointer flex items-start justify-between gap-2 ${cls}`}
                     >
                       <span className="leading-snug">{String.fromCharCode(65 + idx)}) {opt}</span>
-                      {selected && <span className="shrink-0 text-sm">{correct ? '✓' : '✗'}</span>}
+                      {selected && <Icon name={correct ? 'check' : 'close'} size={14} className="shrink-0" />}
                     </button>
                   );
                 })}

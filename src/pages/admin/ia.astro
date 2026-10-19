@@ -1,0 +1,8 @@
+---
+import AppShell from '../../layouts/AppShell.astro';
+import { AdminAiCostsScreen } from '../../components/react/features/AdminAiCostsScreen';
+import { adminNavItems } from '../../lib/nav';
+---
+<AppShell title="Costos de IA" sectionLabel="Administración de plataforma" sidebarItems={adminNavItems}>
+  <AdminAiCostsScreen client:load />
+</AppShell>

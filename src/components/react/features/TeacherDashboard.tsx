@@ -401,7 +401,7 @@ export function TeacherDashboard() {
               className="text-emerald-600 hover:text-emerald-900 p-1 text-sm leading-none"
               title="Cerrar notificación"
             >
-              ✕
+              <Icon name="close" size={16} />
             </button>
           </div>
         </div>

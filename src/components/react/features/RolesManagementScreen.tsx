@@ -445,17 +445,17 @@ export function RolesManagementScreen() {
                       {}
                       {role.permissions.some((p) => p.module === 'finanzas' && p.canRead) && (
                         <span className="text-[11px] px-2 py-0.5 rounded bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800/40">
-                          💳 Finanzas / MP
+                          <Icon name="creditCard" size={11} className="inline-block align-[-2px] mr-1" />Finanzas / MP
                         </span>
                       )}
                       {role.permissions.some((p) => p.module === 'actividades' && p.canCreate) && (
                         <span className="text-[11px] px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40">
-                          ✨ Crear Actividades
+                          <Icon name="sparkles" size={11} className="inline-block align-[-2px] mr-1" />Crear actividades
                         </span>
                       )}
                       {role.permissions.some((p) => p.module === 'cumplimiento' && p.canDelete) && (
                         <span className="text-[11px] px-2 py-0.5 rounded bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/40">
-                          🔒 Purga ARCO
+                          <Icon name="lock" size={11} className="inline-block align-[-2px] mr-1" />Purga ARCO
                         </span>
                       )}
                     </div>
@@ -545,21 +545,21 @@ export function RolesManagementScreen() {
                   onClick={() => handleSetGlobal('all')}
                   className="px-2.5 py-1 text-[11px] font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 rounded-md border border-emerald-200 dark:border-emerald-800/40 transition-colors cursor-pointer"
                 >
-                  ✓ Conceder Todo
+                  <Icon name="check" size={11} className="inline-block align-[-2px] mr-1" />Conceder todo
                 </button>
                 <button
                   type="button"
                   onClick={() => handleSetGlobal('read')}
                   className="px-2.5 py-1 text-[11px] font-medium bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 rounded-md border border-blue-200 dark:border-blue-800/40 transition-colors cursor-pointer"
                 >
-                  👁 Solo Lectura
+                  <Icon name="eye" size={11} className="inline-block align-[-2px] mr-1" />Sólo lectura
                 </button>
                 <button
                   type="button"
                   onClick={() => handleSetGlobal('none')}
                   className="px-2.5 py-1 text-[11px] font-medium bg-gray-100 dark:bg-zinc-800 text-text-sec hover:text-text-pri rounded-md border border-gray-200 dark:border-gray-700 transition-colors cursor-pointer"
                 >
-                  ✕ Desactivar Todo
+                  <Icon name="close" size={11} className="inline-block align-[-2px] mr-1" />Desactivar todo
                 </button>
                 <span className="text-gray-300 dark:text-gray-700">|</span>
                 <button

@@ -155,7 +155,7 @@ export function ReassignCourseTeacherModal({
                       onClick={() => toggleTeacher(id)}
                       className="hover:text-red-600 transition-colors cursor-pointer"
                     >
-                      ✕
+                      <Icon name="close" size={16} />
                     </button>
                   </span>
                 );

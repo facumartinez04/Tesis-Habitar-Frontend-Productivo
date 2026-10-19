@@ -65,7 +65,7 @@ export function CreateCourseModal({ isOpen, onClose, onCreated }: CreateCourseMo
             </div>
           </div>
           <button onClick={onClose} className="text-text-ter hover:text-text-pri text-sm font-bold p-1">
-            ✕
+            <Icon name="close" size={16} />
           </button>
         </div>
 

@@ -605,7 +605,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   const studentBar = (
     <div className="fixed top-0 inset-x-0 z-40 bg-white/90 dark:bg-[#161A24]/90 backdrop-blur-md border-b border-stone-200/80 px-4 py-2 flex items-center justify-between text-xs">
       <div className="flex items-center gap-2 text-stone-600 dark:text-stone-300">
-        <span className="text-base">🎒</span>
+        <Icon name="backpack" size={16} className="text-emerald-700 dark:text-emerald-400" />
         <span className="font-bold text-slate-900 dark:text-white">Modo Alumno</span>
         <span className="hidden sm:inline text-stone-400">· Guardado automático local</span>
       </div>
@@ -645,7 +645,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
         {studentBar}
         <div className="w-full max-w-sm bg-white dark:bg-[#1A1E29] border border-stone-200/80 dark:border-stone-800 rounded-2xl p-6 sm:p-7 shadow-md text-center space-y-4">
           <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center mx-auto text-2xl shadow-2xs">
-            🎒
+            <Icon name="backpack" size={26} className="text-emerald-700 dark:text-emerald-300" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Portal del Alumno</h1>
@@ -842,7 +842,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
         <div className="flex items-start justify-between gap-2 text-xs font-semibold text-sky-900 dark:text-sky-200 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-xl px-3 py-2 mb-3">
           <span>{notice}</span>
           <button type="button" onClick={() => setNotice(null)} className="text-sky-700 dark:text-sky-300 cursor-pointer" aria-label="Cerrar aviso">
-            ×
+            <Icon name="close" size={13} />
           </button>
         </div>
       )}

@@ -90,13 +90,13 @@ export function CourseDevicesModal({ course, isOpen, onClose }: CourseDevicesMod
             onClick={onClose}
             className="text-text-ter hover:text-text-pri text-base font-bold p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
           >
-            ✕
+            <Icon name="close" size={16} />
           </button>
         </div>
 
         {}
         <div className="bg-emerald-50/70 dark:bg-emerald-950/30 border-b border-emerald-200/60 dark:border-emerald-800/40 px-6 py-3 flex items-start gap-2.5 text-xs text-emerald-900 dark:text-emerald-200">
-          <span className="text-sm mt-0.5">🔒</span>
+          <Icon name="lock" size={14} className="mt-0.5 shrink-0" />
           <div className="leading-relaxed">
             <strong>Control de Identidad Única:</strong> Cada alumno puede tener un solo dispositivo vinculado al aula física. Si un alumno cambió de celular o tablet, presioná <strong>"Desvincular"</strong> para que pueda escanear y registrar su nuevo equipo.
           </div>
@@ -125,7 +125,7 @@ export function CourseDevicesModal({ course, isOpen, onClose }: CourseDevicesMod
             </div>
           ) : filteredDevices.length === 0 ? (
             <div className="text-center py-12 space-y-2">
-              <div className="text-3xl">📱</div>
+              <Icon name="smartphone" size={30} className="mx-auto text-text-ter" />
               <div className="text-sm font-semibold text-text-pri">
                 {search ? 'No se encontraron alumnos con esa búsqueda' : 'No hay dispositivos vinculados aún'}
               </div>

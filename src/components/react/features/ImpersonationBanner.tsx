@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Icon } from '../ui/Icon';
 import { useStore } from '@nanostores/react';
 import { sessionStore } from '../../../store/sessionStore';
 import { listInstitutions } from '../../../services/institutionService';
@@ -93,7 +94,8 @@ export function ImpersonationBanner() {
               onClick={handleStopImpersonate}
               className="px-2.5 py-1 bg-amber-900 text-white hover:bg-black rounded font-bold transition-colors shadow-xs"
             >
-              ✕ Salir a Admin Global
+              <Icon name="close" size={11} className="inline-block align-[-2px] mr-1" />
+              Salir a Admin Global
             </button>
           </div>
         </div>
@@ -131,7 +133,7 @@ export function ImpersonationBanner() {
                 onClick={() => setIsOpen(false)}
                 className="text-text-ter hover:text-text-pri p-1 rounded-md"
               >
-                ✕
+                <Icon name="close" size={16} />
               </button>
             </div>
 

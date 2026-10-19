@@ -118,7 +118,7 @@ export function LoginScreen() {
             type="button"
             className="flex items-center justify-center gap-2.5 w-full px-4 py-3.5 border border-emerald-300 dark:border-emerald-700/80 rounded-2xl bg-emerald-50/90 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300 text-xs font-extrabold hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-all shadow-xs cursor-pointer group"
           >
-            <span className="text-base group-hover:scale-110 transition-transform">🎒</span>
+            <Icon name="backpack" size={16} className="group-hover:scale-110 transition-transform" />
             <span>Ingreso Alumno con Código</span>
           </button>
 

@@ -399,25 +399,25 @@ export function RenewalScreen() {
                       {}
                       <div className="pt-2 flex flex-wrap items-center gap-3 text-[11px] text-text-sec font-mono">
                         <span className="bg-gray-50 border border-gray-border px-2 py-1 rounded">
-                          👥 Docentes: <strong>{sub.effectiveMaxUsers ?? 50}</strong>
+                          <Icon name="users" size={12} className="inline-block align-[-2px] mr-1" />Docentes: <strong>{sub.effectiveMaxUsers ?? 50}</strong>
                         </span>
                         <span className="bg-gray-50 border border-gray-border px-2 py-1 rounded">
-                          🎓 Alumnos: <strong>{sub.effectiveMaxStudents ?? 500}</strong>
+                          <Icon name="school" size={12} className="inline-block align-[-2px] mr-1" />Alumnos: <strong>{sub.effectiveMaxStudents ?? 500}</strong>
                         </span>
                         <span className="bg-gray-50 border border-gray-border px-2 py-1 rounded">
-                          📚 Cursos: <strong>{sub.effectiveMaxCourses ?? 20}</strong>
+                          <Icon name="book" size={12} className="inline-block align-[-2px] mr-1" />Cursos: <strong>{sub.effectiveMaxCourses ?? 20}</strong>
                         </span>
                         <span className="bg-gray-50 border border-gray-border px-2 py-1 rounded">
-                          💾 Storage: <strong>{sub.effectiveStorageGb ?? 10} GB</strong>
+                          <Icon name="database" size={12} className="inline-block align-[-2px] mr-1" />Almacenamiento: <strong>{sub.effectiveStorageGb ?? 10} GB</strong>
                         </span>
                         {sub.effectiveFeatures?.hasAiAnalytics && (
                           <span className="bg-purple-50 text-purple-700 border border-purple-200 px-2 py-1 rounded font-sans font-medium">
-                            ✨ IA Activa
+                            <Icon name="sparkles" size={12} className="inline-block align-[-2px] mr-1" />IA activa
                           </span>
                         )}
                         {sub.effectiveFeatures?.hasApiAccess && (
                           <span className="bg-blue-50 text-blue-700 border border-blue-200 px-2 py-1 rounded font-sans font-medium">
-                            🔌 API Conectada
+                            <Icon name="plug" size={12} className="inline-block align-[-2px] mr-1" />API conectada
                           </span>
                         )}
                       </div>
@@ -628,7 +628,7 @@ export function RenewalScreen() {
                 {plans.map((p) => (
                   <td key={p.id} className="px-4 py-2.5 text-center">
                     {p.features.hasEarlyAlerts ? (
-                      <span className="text-emerald-700 font-bold">✓ Incluido</span>
+                      <span className="text-emerald-700 font-bold"><Icon name="check" size={12} className="inline-block align-[-2px] mr-1" />Incluido</span>
                     ) : (
                       <span className="text-gray-400">—</span>
                     )}
@@ -640,7 +640,7 @@ export function RenewalScreen() {
                 {plans.map((p) => (
                   <td key={p.id} className="px-4 py-2.5 text-center">
                     {p.features.hasAiAnalytics ? (
-                      <span className="text-purple-700 font-bold">✓ Incluido</span>
+                      <span className="text-purple-700 font-bold"><Icon name="check" size={12} className="inline-block align-[-2px] mr-1" />Incluido</span>
                     ) : (
                       <span className="text-gray-400">—</span>
                     )}
@@ -652,7 +652,7 @@ export function RenewalScreen() {
                 {plans.map((p) => (
                   <td key={p.id} className="px-4 py-2.5 text-center">
                     {p.features.hasArcoCompliance ? (
-                      <span className="text-emerald-700 font-bold">✓ Incluido</span>
+                      <span className="text-emerald-700 font-bold"><Icon name="check" size={12} className="inline-block align-[-2px] mr-1" />Incluido</span>
                     ) : (
                       <span className="text-gray-400">—</span>
                     )}
@@ -664,7 +664,7 @@ export function RenewalScreen() {
                 {plans.map((p) => (
                   <td key={p.id} className="px-4 py-2.5 text-center">
                     {p.features.hasCustomDomain ? (
-                      <span className="text-emerald-700 font-bold">✓ Incluido</span>
+                      <span className="text-emerald-700 font-bold"><Icon name="check" size={12} className="inline-block align-[-2px] mr-1" />Incluido</span>
                     ) : (
                       <span className="text-gray-400">—</span>
                     )}
@@ -676,7 +676,7 @@ export function RenewalScreen() {
                 {plans.map((p) => (
                   <td key={p.id} className="px-4 py-2.5 text-center">
                     {p.features.hasApiAccess ? (
-                      <span className="text-emerald-700 font-bold">✓ Incluido</span>
+                      <span className="text-emerald-700 font-bold"><Icon name="check" size={12} className="inline-block align-[-2px] mr-1" />Incluido</span>
                     ) : (
                       <span className="text-gray-400">—</span>
                     )}
@@ -688,7 +688,7 @@ export function RenewalScreen() {
                 {plans.map((p) => (
                   <td key={p.id} className="px-4 py-2.5 text-center">
                     {p.features.hasSlaSupport ? (
-                      <span className="text-emerald-700 font-bold">✓ Incluido</span>
+                      <span className="text-emerald-700 font-bold"><Icon name="check" size={12} className="inline-block align-[-2px] mr-1" />Incluido</span>
                     ) : (
                       <span className="text-gray-400">—</span>
                     )}
@@ -700,7 +700,7 @@ export function RenewalScreen() {
                 {plans.map((p) => (
                   <td key={p.id} className="px-4 py-2.5 text-center">
                     {p.features.hasExportReports ? (
-                      <span className="text-emerald-700 font-bold">✓ Incluido</span>
+                      <span className="text-emerald-700 font-bold"><Icon name="check" size={12} className="inline-block align-[-2px] mr-1" />Incluido</span>
                     ) : (
                       <span className="text-gray-400">—</span>
                     )}
@@ -730,7 +730,7 @@ export function RenewalScreen() {
                 onClick={() => setCustomizingSub(null)}
                 className="text-text-ter hover:text-text-pri p-1 rounded-md"
               >
-                ✕
+                <Icon name="close" size={16} />
               </button>
             </div>
 
@@ -955,7 +955,7 @@ export function RenewalScreen() {
                 onClick={() => setIsPlanModalOpen(false)}
                 className="text-text-ter hover:text-text-pri p-1 rounded-md"
               >
-                ✕
+                <Icon name="close" size={16} />
               </button>
             </div>
 
@@ -1206,7 +1206,7 @@ export function RenewalScreen() {
                         onClick={() => handleRemoveBullet(idx)}
                         className="hover:text-red-700 font-bold ml-1"
                       >
-                        ✕
+                        <Icon name="close" size={16} />
                       </button>
                     </span>
                   ))}
