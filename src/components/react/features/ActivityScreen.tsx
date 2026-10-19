@@ -135,6 +135,9 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   const [notice, setNotice] = useState<string | null>(null);
   const [confirmSubmit, setConfirmSubmit] = useState(false);
   const [showText, setShowText] = useState(false);
+  /** La actividad cerró mientras el alumno estaba adentro: ya no puede avanzar. */
+  const [closedReason, setClosedReason] = useState<'docente' | 'tiempo' | null>(null);
+  const closedRef = useRef<'docente' | 'tiempo' | null>(null);
 
   function handleCodeScanned(code: string, type: 'activity' | 'course' | 'url') {
     if (type === 'course') {
@@ -207,6 +210,8 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
 
     setCurrentCode(cleanCode);
     setStage('loading');
+    closedRef.current = null;
+    setClosedReason(null);
     getActivityByCode(cleanCode).then((result) => {
       if (!result.ok) {
         if (result.notFound) {
@@ -403,6 +408,8 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
           clearDraft(currentCode);
           setSubmittedNote(err.message);
           setStage('submitted');
+        } else if (err instanceof ApiError && err.status === 409 && err.message.includes('ya no está disponible')) {
+          handleClosedRef.current('docente');
         }
       });
     }, 700);
@@ -415,7 +422,10 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
    */
   async function refreshQuestions(reason: 'released' | 'updated' | 'reconnect') {
     const result = await getActivityByCode(currentCode);
-    if (!result.ok) return;
+    if (!result.ok) {
+      if (!result.notFound && result.message.includes('ya no está disponible')) handleClosedRef.current('docente');
+      return;
+    }
     const before = metaRef.current;
     setActivity(result.activity);
     setQuestions(result.questions);
@@ -448,13 +458,23 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     try {
       await submitResponse(currentCode, name, getOrCreateDeviceId(), buildPayload());
       clearDraft(currentCode);
-      setSubmittedNote(automatic ? 'El tiempo de la actividad terminó: enviamos las respuestas que tenías.' : null);
+      setSubmittedNote(
+        !automatic
+          ? null
+          : closedRef.current === 'docente'
+            ? 'Tu docente cerró la actividad: enviamos las respuestas que tenías.'
+            : 'El tiempo de la actividad terminó: enviamos las respuestas que tenías.',
+      );
       setStage('submitted');
     } catch (err) {
       if (err instanceof ApiError && err.status === 409 && err.message.startsWith('Ya enviaste')) {
         clearDraft(currentCode);
         setSubmittedNote(err.message);
         setStage('submitted');
+      } else if (err instanceof ApiError && err.status >= 400 && err.status < 500 && closedRef.current) {
+        clearDraft(currentCode);
+        setUnavailableMessage('La actividad cerró y ya no se pudieron recibir tus respuestas. Avisale a tu docente.');
+        setStage('unavailable');
       } else if (err instanceof ApiError && err.status >= 400 && err.status < 500) {
         setSubmitError(err.message);
       } else {
@@ -468,6 +488,26 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   // El temporizador de cierre llama siempre a la versión más reciente, con las respuestas actuales.
   const submitRef = useRef(submitAll);
   submitRef.current = submitAll;
+
+  /**
+   * La actividad cerró (la cerró el docente o venció el horario) con el alumno adentro: se bloquean las preguntas,
+   * se le avisa y se envía lo que tenía respondido. Si no había respondido nada, sólo se le avisa.
+   */
+  function handleClosed(reason: 'docente' | 'tiempo') {
+    if (closedRef.current) return;
+    closedRef.current = reason;
+    setClosedReason(reason);
+    setConfirmSubmit(false);
+    if (stageRef.current === 'answering' && answeredCount > 0) {
+      void submitRef.current(true);
+    } else if (stageRef.current === 'reading' || stageRef.current === 'answering' || stageRef.current === 'join') {
+      clearDraft(currentCode);
+      setUnavailableMessage(reason === 'docente' ? 'Tu docente cerró la actividad.' : 'El tiempo de la actividad terminó.');
+      setStage('unavailable');
+    }
+  }
+  const handleClosedRef = useRef(handleClosed);
+  handleClosedRef.current = handleClosed;
 
   async function handleSend() {
     if (answeredCount < questions.length && !confirmSubmit) {
@@ -490,15 +530,8 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     } else if (!payload && inside) {
       // Al reconectar, por si mientras tanto el docente habilitó o corrigió preguntas.
       void refreshQuestions('reconnect');
-    } else if (status === 'CERRADA' && stage === 'reading' && answeredCount === 0) {
-      clearDraft(currentCode);
-      setUnavailableMessage('Tu docente cerró la actividad.');
-      setStage('unavailable');
-    } else if (status === 'CERRADA' && inside) {
-      void submitRef.current(true);
-    } else if (status === 'CERRADA' && stage === 'join') {
-      setUnavailableMessage('[Error-REA_001] La actividad ya no está disponible');
-      setStage('unavailable');
+    } else if (status === 'CERRADA' && (inside || stage === 'join')) {
+      handleClosed('docente');
     } else if (status === 'PUBLICADA' && stage === 'unavailable') {
       loadActivity(currentCode);
     }
@@ -511,7 +544,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     if (end === null) return;
     const wait = end - Date.now();
     const timer = window.setTimeout(() => {
-      void submitRef.current(true);
+      handleClosedRef.current('tiempo');
     }, Math.max(0, wait));
     return () => window.clearTimeout(timer);
   }, [stage, activity]);
@@ -824,6 +857,43 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
           </div>
         </div>
         {scanner}
+      </div>
+    );
+  }
+
+  // Cerró con el alumno respondiendo: no puede seguir; se le avisa mientras se envía lo que tenía.
+  if (closedReason) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 py-16 bg-[#FAF9F6] dark:bg-[#0D0F14]">
+        {studentBar}
+        <div className="w-full max-w-sm bg-white dark:bg-[#1A1E29] border border-stone-200/80 dark:border-stone-800 rounded-2xl p-6 sm:p-7 shadow-md text-center space-y-3" role="alert">
+          <Icon name="clock" size={28} className="mx-auto text-amber-700 dark:text-amber-400" />
+          <div className="text-lg font-bold text-slate-900 dark:text-white">La actividad cerró</div>
+          <p className="text-xs text-stone-500 dark:text-stone-400">
+            {closedReason === 'docente' ? 'Tu docente cerró la actividad.' : 'Se terminó el horario de la actividad.'} Ya no se
+            pueden cambiar las respuestas.
+          </p>
+          {submitError ? (
+            <>
+              <div className="text-xs font-semibold text-rose-800 dark:text-rose-200 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl px-3 py-2">
+                {submitError}
+              </div>
+              <button
+                type="button"
+                onClick={() => void submitAll(true)}
+                disabled={submitting}
+                className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl text-xs disabled:opacity-50 cursor-pointer"
+              >
+                {submitting ? 'Enviando…' : 'Reintentar el envío'}
+              </button>
+            </>
+          ) : (
+            <div className="flex items-center justify-center gap-2 text-xs font-semibold text-stone-600 dark:text-stone-300">
+              <span className="w-3.5 h-3.5 rounded-full border-2 border-emerald-600 border-t-transparent motion-safe:animate-spin" />
+              Enviando las {answeredCount} respuestas que tenías…
+            </div>
+          )}
+        </div>
       </div>
     );
   }
