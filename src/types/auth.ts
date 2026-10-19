@@ -1,4 +1,4 @@
-export type Role = 'docente' | 'coordinador' | 'admin';
+export type Role = 'docente' | 'coordinador' | 'director' | 'admin';
 
 export type OAuthProviderId = 'google' | 'microsoft';
 

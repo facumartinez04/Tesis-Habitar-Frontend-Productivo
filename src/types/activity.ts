@@ -2,7 +2,10 @@ export type ComprehensionAxis = 'literal' | 'inferencial' | 'critico';
 
 export type AttemptPolicy = 'unico' | 'reintentos';
 
-export type ActivityStatus = 'borrador' | 'publicada' | 'cerrada';
+export type ActivityStatus = 'borrador' | 'programada' | 'publicada' | 'cerrada';
+
+/** Actividad diagnóstica de inicio o de cierre del ciclo lectivo. */
+export type DiagnosticType = 'inicio' | 'cierre';
 
 export interface Activity {
   id: string;
@@ -11,7 +14,8 @@ export interface Activity {
   courseId: string;
   educationLevel: string;
   axis: ComprehensionAxis;
-  sourceText: string;
+  /** null cuando la actividad se cerró: el texto se borra al cerrarse. */
+  sourceText: string | null;
   availableFrom: string;
   startTime: string;
   endTime: string;
@@ -19,6 +23,7 @@ export interface Activity {
   status: ActivityStatus;
   qrValidUntil: string;
   responsesCount: number;
+  diagnosticType: DiagnosticType | null;
 }
 
 export interface Course {
@@ -69,5 +74,7 @@ export interface PublicCourseInfo {
     name: string;
     endTime: string;
   } | null;
+  /** Cómo se identifica el alumno en la institución: número de lista (por defecto) o nombre y apellido. */
+  studentIdMode?: 'LISTA' | 'NOMBRE';
 }
 

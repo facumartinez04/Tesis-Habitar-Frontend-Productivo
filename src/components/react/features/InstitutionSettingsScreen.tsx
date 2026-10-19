@@ -23,7 +23,8 @@ import type { ComprehensionAxis, EducationLevel, Institution, AiProvider, AiKeyS
 import type { Course } from '../../../types/activity';
 import type { Role } from '../../../types/auth';
 
-const ROLE_LABEL: Record<Role, string> = { docente: 'Docente', coordinador: 'Coordinador/a', admin: 'Admin' };
+const ROLE_LABEL: Record<Role, string> = { docente: 'Docente', coordinador: 'Coordinador/a',
+  director: 'Director/a', admin: 'Admin' };
 const LEVEL_LABEL: Record<EducationLevel, string> = { primario: 'Primario', secundario: 'Secundario' };
 const AXIS_LABEL: Record<ComprehensionAxis, string> = { literal: 'Literal', inferencial: 'Inferencial', critico: 'Crítico' };
 
@@ -45,6 +46,10 @@ export function InstitutionSettingsScreen() {
   const [aiKeySource, setAiKeySource] = useState<AiKeySource>('platform');
   const [aiCustomApiKey, setAiCustomApiKey] = useState('');
   const [aiModel, setAiModel] = useState('');
+  const [studentIdMode, setStudentIdMode] = useState<'lista' | 'nombre'>('lista');
+  const [alertThreshold, setAlertThreshold] = useState(60);
+  const [alertEmailsEnabled, setAlertEmailsEnabled] = useState(true);
+  const [savingStudents, setSavingStudents] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const [testingAi, setTestingAi] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message?: string; error?: string } | null>(null);
@@ -84,8 +89,29 @@ export function InstitutionSettingsScreen() {
       setAiModel(institution.aiModel ?? (institution.aiProvider === 'openai' ? 'gpt-4o-mini' : 'deepseek-chat'));
       setAiCustomApiKey('');
       setTestResult(null);
+      setStudentIdMode(institution.studentIdMode);
+      setAlertThreshold(institution.alertThreshold);
+      setAlertEmailsEnabled(institution.alertEmailsEnabled);
     }
   }, [institution]);
+
+  async function handleSaveStudentsAndAlerts() {
+    if (!session) return;
+    setSavingStudents(true);
+    try {
+      const updated = await updateInstitutionConfig(session.user.institutionId, {
+        studentIdMode,
+        alertThreshold,
+        alertEmailsEnabled,
+      });
+      setInstitution(updated);
+      showToast('Identificación de alumnos y alertas guardadas');
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Error al guardar la configuración');
+    } finally {
+      setSavingStudents(false);
+    }
+  }
 
   function toggle<T>(list: T[], value: T, setter: (v: T[]) => void) {
     setter(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
@@ -250,6 +276,57 @@ export function InstitutionSettingsScreen() {
         </div>
         <button onClick={handleSaveConfig} disabled={savingConfig} className="mt-3 bg-green-dark text-white text-[11.5px] px-3 py-1.5 rounded-md disabled:opacity-50">
           {savingConfig ? 'Guardando…' : 'Guardar configuración'}
+        </button>
+      </Card>
+
+      <Card>
+        <div className="text-[12.5px] font-medium mb-1">Identificación de los alumnos</div>
+        <div className="text-[11.5px] text-text-sec mb-3 leading-relaxed">
+          Los alumnos no crean cuenta. Por defecto se identifican con su número de lista, y el docente sabe quién es quién
+          por su lista del curso: así Habitar no guarda nombres de menores. Si la institución lo prefiere, puede pedir el
+          nombre y apellido.
+        </div>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {([
+            { value: 'lista', label: 'Número de lista (recomendado)' },
+            { value: 'nombre', label: 'Nombre y apellido' },
+          ] as const).map((opt) => (
+            <label key={opt.value} className="flex items-center gap-1.5 text-[12px] bg-surface rounded-md px-2.5 py-1.5 cursor-pointer">
+              <input type="radio" name="studentIdMode" checked={studentIdMode === opt.value} onChange={() => setStudentIdMode(opt.value)} />
+              {opt.label}
+            </label>
+          ))}
+        </div>
+
+        <div className="text-[12.5px] font-medium mb-1">Alertas de rendimiento (CU-03-03)</div>
+        <div className="text-[11.5px] text-text-sec mb-2 leading-relaxed">
+          Cuando el promedio de un curso en un eje, en sus últimas cinco actividades, queda debajo del umbral, Habitar genera
+          una alerta. Más de 15 puntos debajo, la alerta es crítica.
+        </div>
+        <div className="flex flex-wrap items-center gap-4 mb-3">
+          <label className="flex items-center gap-2 text-[12px]">
+            Umbral
+            <input
+              type="number"
+              min={0}
+              max={100}
+              value={alertThreshold}
+              onChange={(e) => setAlertThreshold(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
+              className="w-[70px] px-2 py-1 border border-gray-border rounded-md text-[12px] bg-white"
+            />
+            puntos
+          </label>
+          <label className="flex items-center gap-1.5 text-[12px] cursor-pointer">
+            <input type="checkbox" checked={alertEmailsEnabled} onChange={(e) => setAlertEmailsEnabled(e.target.checked)} />
+            Avisar por correo a la coordinación
+          </label>
+        </div>
+        <button
+          onClick={handleSaveStudentsAndAlerts}
+          disabled={savingStudents}
+          className="bg-green-dark text-white text-[11.5px] px-3 py-1.5 rounded-md disabled:opacity-50"
+        >
+          {savingStudents ? 'Guardando…' : 'Guardar identificación y alertas'}
         </button>
       </Card>
 

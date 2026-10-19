@@ -11,7 +11,7 @@ interface RadioGroupProps<T extends string> {
 
 export function RadioGroup<T extends string>({ options, value, onChange }: RadioGroupProps<T>) {
   return (
-    <div className="flex gap-3.5">
+    <div className="flex flex-wrap gap-x-3.5 gap-y-2">
       {options.map((option) => {
         const selected = option.value === value;
         return (

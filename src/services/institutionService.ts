@@ -31,6 +31,9 @@ interface BackendInstitution {
   aiCustomApiKeyMasked?: string | null;
   hasCustomApiKey?: boolean;
   aiModel?: string | null;
+  studentIdMode?: 'LISTA' | 'NOMBRE';
+  alertThreshold?: number;
+  alertEmailsEnabled?: boolean;
   createdAt: string;
 }
 
@@ -49,6 +52,9 @@ function toInstitution(backend: BackendInstitution): Institution {
     aiCustomApiKeyMasked: backend.aiCustomApiKeyMasked ?? null,
     hasCustomApiKey: Boolean(backend.hasCustomApiKey),
     aiModel: backend.aiModel ?? null,
+    studentIdMode: backend.studentIdMode === 'NOMBRE' ? 'nombre' : 'lista',
+    alertThreshold: backend.alertThreshold ?? 60,
+    alertEmailsEnabled: backend.alertEmailsEnabled ?? true,
     createdAt: backend.createdAt,
   };
 }
@@ -89,6 +95,9 @@ export interface UpdateInstitutionConfigPayload {
   aiKeySource?: AiKeySource;
   aiCustomApiKey?: string | null;
   aiModel?: string | null;
+  studentIdMode?: 'lista' | 'nombre';
+  alertThreshold?: number;
+  alertEmailsEnabled?: boolean;
 }
 
 export async function updateInstitutionConfig(
@@ -104,6 +113,9 @@ export async function updateInstitutionConfig(
       aiKeySource: input.aiKeySource ? toUpper(input.aiKeySource) : undefined,
       aiCustomApiKey: input.aiCustomApiKey,
       aiModel: input.aiModel,
+      studentIdMode: input.studentIdMode ? toUpper(input.studentIdMode) : undefined,
+      alertThreshold: input.alertThreshold,
+      alertEmailsEnabled: input.alertEmailsEnabled,
     },
   });
   return toInstitution(backend);

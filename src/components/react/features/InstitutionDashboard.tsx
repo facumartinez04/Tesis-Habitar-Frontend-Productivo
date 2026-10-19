@@ -1,3 +1,5 @@
+import { pct } from '../../../lib/scores';
+import { UsageMetricsPanel } from './UsageMetricsPanel';
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Badge } from '../ui/Badge';
@@ -93,9 +95,9 @@ export function InstitutionDashboard() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <MetricCard value={`${summary.averages.literal}%`} label="Promedio Literal" color="var(--color-green-mid)" />
-        <MetricCard value={`${summary.averages.inferencial}%`} label="Promedio Inferencial" color="var(--color-amber)" />
-        <MetricCard value={`${summary.averages.critico}%`} label="Promedio Crítico" color="var(--color-red)" />
+        <MetricCard value={pct(summary.averages.literal)} label="Promedio Literal" color="var(--color-green-mid)" />
+        <MetricCard value={pct(summary.averages.inferencial)} label="Promedio Inferencial" color="var(--color-amber)" />
+        <MetricCard value={pct(summary.averages.critico)} label="Promedio Crítico" color="var(--color-red)" />
         <MetricCard value={String(summary.totalActivities)} label="Actividades Globales" />
       </div>
 
@@ -140,9 +142,9 @@ export function InstitutionDashboard() {
                     )}
                   </div>
                 </td>
-                <td className="px-4 py-3 text-stone-700 dark:text-stone-300 font-medium text-xs">{course.averages.literal}%</td>
-                <td className="px-4 py-3 text-stone-700 dark:text-stone-300 font-medium text-xs">{course.averages.inferencial}%</td>
-                <td className="px-4 py-3 text-stone-700 dark:text-stone-300 font-medium text-xs">{course.averages.critico}%</td>
+                <td className="px-4 py-3 text-stone-700 dark:text-stone-300 font-medium text-xs">{pct(course.averages.literal)}</td>
+                <td className="px-4 py-3 text-stone-700 dark:text-stone-300 font-medium text-xs">{pct(course.averages.inferencial)}</td>
+                <td className="px-4 py-3 text-stone-700 dark:text-stone-300 font-medium text-xs">{pct(course.averages.critico)}</td>
                 <td className="px-4 py-3">
                   <Badge color={statusBadge[course.status].color}>{statusBadge[course.status].label}</Badge>
                 </td>
@@ -150,6 +152,11 @@ export function InstitutionDashboard() {
             ))}
           </tbody>
         </TableWrap>
+      </div>
+
+      <div className="mt-6">
+        <div className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2.5">Uso del producto</div>
+        <UsageMetricsPanel institutionId={session.user.institutionId} />
       </div>
 
       {reassigningCourse && (

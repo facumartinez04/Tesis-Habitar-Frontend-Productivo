@@ -14,11 +14,17 @@ export function NewActivityStep1() {
   const wizard = useStore(activityWizardStore);
   const [text, setText] = useState(wizard.sourceText || DEFAULT_TEXT);
   const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState<string | null>(null);
   const [boundCourse, setBoundCourse] = useState<Course | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const courseIdParam = params.get('courseId');
+    // La recomendación del tablero abre el asistente con el eje foco ya elegido.
+    const focusParam = params.get('focus');
+    if (focusParam === 'literal' || focusParam === 'inferencial' || focusParam === 'critico') {
+      updateWizard({ focusAxis: focusParam, axis: focusParam });
+    }
     const targetCourseId = courseIdParam || wizard.courseId;
 
     if (targetCourseId) {
@@ -57,14 +63,20 @@ export function NewActivityStep1() {
 
   async function handleGenerate() {
     setGenerating(true);
-    const result = await generateQuestions(text);
-    updateWizard({
-      sourceText: text,
-      wordCount: result.wordCount,
-      questions: result.questions,
-    });
-    setGenerating(false);
-    window.location.href = '/docente/actividades/nueva/revisar';
+    setGenerateError(null);
+    try {
+      const result = await generateQuestions(text, wizard.focusAxis ?? undefined);
+      updateWizard({
+        sourceText: text,
+        wordCount: result.wordCount,
+        questions: result.questions,
+      });
+      window.location.href = '/docente/actividades/nueva/revisar';
+    } catch (err) {
+      setGenerateError(err instanceof Error ? err.message : 'No se pudieron generar las preguntas. Intentá de nuevo.');
+    } finally {
+      setGenerating(false);
+    }
   }
 
   return (
@@ -126,15 +138,19 @@ export function NewActivityStep1() {
           </select>
         </div>
         <div className="form-group">
-          <label className="block text-[11px] text-text-sec mb-[5px] font-medium">Eje de comprensión</label>
+          <label className="block text-[11px] text-text-sec mb-[5px] font-medium">Eje foco</label>
           <select
             className="form-select w-full px-2.5 py-[7px] border border-gray-border rounded-[6px] text-[12.5px] bg-white"
-            value={wizard.axis}
-            onChange={(e) => updateWizard({ axis: e.target.value as ComprehensionAxis })}
+            value={wizard.focusAxis ?? ''}
+            onChange={(e) => {
+              const value = e.target.value as ComprehensionAxis | '';
+              updateWizard({ focusAxis: value || null, axis: value || 'inferencial' });
+            }}
           >
-            <option value="inferencial">Inferencial</option>
-            <option value="literal">Literal</option>
-            <option value="critico">Crítico</option>
+            <option value="">Sin foco — mezcla estándar</option>
+            <option value="literal">Literal (3 de 5 preguntas)</option>
+            <option value="inferencial">Inferencial (3 de 5 preguntas)</option>
+            <option value="critico">Crítico (3 de 5 preguntas)</option>
           </select>
         </div>
       </div>
@@ -176,6 +192,10 @@ export function NewActivityStep1() {
           className="w-full px-2.5 py-2 border border-gray-border rounded-[6px] text-xs bg-white leading-relaxed resize-none"
         />
       </div>
+
+      {generateError && (
+        <div className="text-xs text-red bg-red-50 border border-red-200 rounded-[6px] px-3 py-2 mb-2.5">{generateError}</div>
+      )}
 
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2.5">
         <div className="text-[11.5px] text-text-sec">

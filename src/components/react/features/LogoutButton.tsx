@@ -1,7 +1,9 @@
 import { clearSession } from '../../../store/sessionStore';
+import { logout } from '../../../services/authService';
 
 export function LogoutButton() {
-  function handleLogout() {
+  async function handleLogout() {
+    await logout();
     clearSession();
     window.location.href = '/login';
   }

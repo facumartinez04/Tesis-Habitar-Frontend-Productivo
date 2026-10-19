@@ -23,6 +23,7 @@ export async function createPlatformExpense(data: {
   description?: string;
   amountArs: number;
   supplier?: string;
+  receiptUrl?: string;
   status?: string;
   date?: string;
 }): Promise<PlatformExpense> {

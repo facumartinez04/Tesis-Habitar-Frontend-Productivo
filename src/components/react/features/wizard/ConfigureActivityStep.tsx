@@ -6,12 +6,13 @@ import { Stepper } from '../../ui/Stepper';
 import { createActivity } from '../../../../services/activityService';
 import { listMyCourses } from '../../../../services/courseService';
 import { activityWizardStore, updateWizard } from '../../../../store/activityWizardStore';
-import type { AttemptPolicy, Course } from '../../../../types/activity';
+import type { AttemptPolicy, Course, DiagnosticType } from '../../../../types/activity';
 
 export function ConfigureActivityStep() {
   const wizard = useStore(activityWizardStore);
   const [name, setName] = useState(wizard.name || 'Comprensión lectora — Biodiversidad');
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
 
   useEffect(() => {
@@ -34,22 +35,33 @@ export function ConfigureActivityStep() {
   }
 
   async function handleSubmit() {
+    if (wizard.endTime <= wizard.startTime) {
+      setSubmitError('[Error-PAR_002] El horario de cierre debe ser posterior al de inicio');
+      return;
+    }
     setSubmitting(true);
-    const activity = await createActivity({
-      name,
-      courseId: wizard.courseId,
-      educationLevel: wizard.educationLevel,
-      axis: wizard.axis,
-      sourceText: wizard.sourceText,
-      availableFrom: wizard.availableFrom,
-      startTime: wizard.startTime,
-      endTime: wizard.endTime,
-      attemptPolicy: wizard.attemptPolicy,
-      questions: wizard.questions,
-    });
-    updateWizard({ name, generatedCode: activity.code });
-    setSubmitting(false);
-    window.location.href = '/docente/actividades/nueva/qr';
+    setSubmitError(null);
+    try {
+      const activity = await createActivity({
+        name,
+        courseId: wizard.courseId,
+        educationLevel: wizard.educationLevel,
+        axis: wizard.axis,
+        sourceText: wizard.sourceText,
+        availableFrom: wizard.availableFrom,
+        startTime: wizard.startTime,
+        endTime: wizard.endTime,
+        attemptPolicy: wizard.attemptPolicy,
+        questions: wizard.questions,
+        diagnosticType: wizard.diagnosticType,
+      });
+      updateWizard({ name, generatedCode: activity.code });
+      window.location.href = '/docente/actividades/nueva/qr';
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'No se pudo crear la actividad. Intentá de nuevo.');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   if (wizard.questions.length === 0) return null;
@@ -123,6 +135,25 @@ export function ConfigureActivityStep() {
         />
       </div>
 
+      <div className="form-group mb-3.5">
+        <label className="block text-[11px] text-text-sec mb-[5px] font-medium">Tipo de actividad</label>
+        <RadioGroup
+          options={[
+            { value: '' as DiagnosticType | '', label: 'Actividad común' },
+            { value: 'inicio' as DiagnosticType | '', label: 'Diagnóstica de inicio del ciclo' },
+            { value: 'cierre' as DiagnosticType | '', label: 'Diagnóstica de cierre del ciclo' },
+          ]}
+          value={wizard.diagnosticType ?? ''}
+          onChange={(value) => updateWizard({ diagnosticType: value || null })}
+        />
+        {wizard.diagnosticType && (
+          <div className="text-[11px] text-text-sec mt-1.5">
+            Habitar compara la diagnóstica de inicio con la de cierre para mostrar cuánto mejoró cada alumno en cada eje.
+            Para que sean comparables, conviene usar textos de dificultad similar.
+          </div>
+        )}
+      </div>
+
       <div className="form-group mb-4">
         <label className="block text-[11px] text-text-sec mb-[5px] font-medium">Nombre de la actividad (opcional)</label>
         <input
@@ -131,6 +162,10 @@ export function ConfigureActivityStep() {
           className="w-full px-2.5 py-[7px] border border-gray-border rounded-[6px] text-[12.5px] bg-white"
         />
       </div>
+
+      {submitError && (
+        <div className="text-xs text-red bg-red-50 border border-red-200 rounded-[6px] px-3 py-2 mb-3">{submitError}</div>
+      )}
 
       <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end">
         <a href="/docente/actividades/nueva/revisar" className="flex items-center gap-1.5 bg-white border border-gray-border rounded-[6px] px-3.5 py-2 text-[12.5px]">

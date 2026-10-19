@@ -6,19 +6,7 @@ import { HabitarLoader } from '../ui/HabitarLoader';
 import { getPublicCourseInfo, bindStudentDevice } from '../../../services/courseService';
 import { sessionStore } from '../../../store/sessionStore';
 import type { PublicCourseInfo } from '../../../types/activity';
-
-function getOrCreateDeviceId(): string {
-  try {
-    let deviceId = localStorage.getItem('habitar_device_id');
-    if (!deviceId) {
-      deviceId = `dev_${crypto.randomUUID().replace(/-/g, '').substring(0, 16)}`;
-      localStorage.setItem('habitar_device_id', deviceId);
-    }
-    return deviceId;
-  } catch {
-    return 'dev_browser_fallback';
-  }
-}
+import { getOrCreateDeviceId } from '../../../lib/studentDevice';
 
 interface BoundInfo {
   studentName: string;
@@ -139,12 +127,19 @@ export function ClassroomScannerScreen() {
       });
   }, []);
 
+  // Por defecto el alumno se identifica con su número de lista; el nombre sólo si la institución lo habilitó.
+  const byList = (info?.studentIdMode ?? 'LISTA') === 'LISTA';
+
   async function handleBindDevice(e: React.FormEvent) {
     e.preventDefault();
     if (!info) return;
 
     const trimmedName = studentNameInput.trim();
-    if (trimmedName.length < 3) {
+    if (byList && !/^\d{1,3}$/.test(trimmedName)) {
+      setError('Ingresá sólo tu número de lista, por ejemplo 12.');
+      return;
+    }
+    if (!byList && trimmedName.length < 3) {
       setError('Por favor ingresá tu nombre y apellido completo (mínimo 3 caracteres).');
       return;
     }
@@ -338,9 +333,12 @@ export function ClassroomScannerScreen() {
 
           <form onSubmit={handleBindDevice} className="space-y-4">
             <div className="text-center space-y-1">
-              <h2 className="text-base font-bold text-text-pri">Ingresá tu Nombre y Apellido</h2>
+              <h2 className="text-base font-bold text-text-pri">
+                {byList ? 'Ingresá tu número de lista' : 'Ingresá tu Nombre y Apellido'}
+              </h2>
               <p className="text-xs text-text-sec leading-relaxed">
-                Por seguridad del aula, este dispositivo quedará vinculado a tu nombre. No podrás cambiarlo después.
+                Por seguridad del aula, este dispositivo quedará vinculado a tu {byList ? 'número de lista' : 'nombre'}.
+                No podrás cambiarlo después.
               </p>
             </div>
 
@@ -352,19 +350,21 @@ export function ClassroomScannerScreen() {
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-text-pri block">
-                Nombre y Apellido del Alumno
+                {byList ? 'Número de lista' : 'Nombre y Apellido del Alumno'}
               </label>
               <input
                 type="text"
                 required
+                inputMode={byList ? 'numeric' : 'text'}
+                maxLength={byList ? 3 : 80}
                 value={studentNameInput}
                 onChange={(e) => setStudentNameInput(e.target.value)}
-                placeholder="Ej: Mateo González"
+                placeholder={byList ? 'Ej: 12' : 'Ej: Mateo González'}
                 className="w-full px-4 py-2.5 border border-gray-border rounded-xl text-sm bg-white dark:bg-[#1A1E29] text-text-pri focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none"
                 autoFocus
               />
               <p className="text-[11px] text-text-ter">
-                Escribí tu nombre tal como figura en la lista del curso.
+                {byList ? 'El número con el que figurás en la lista del curso.' : 'Escribí tu nombre tal como figura en la lista del curso.'}
               </p>
             </div>
 

@@ -5,9 +5,13 @@ export function AuthCallbackScreen() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    // El token llega en el fragmento (#), que el navegador no envía a ningún servidor. Se borra de la barra
+    // de direcciones apenas se lee, para que no quede en el historial.
+    const params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
     const token = params.get('token');
-    const dashboardPath = params.get('dashboardPath') ?? '/docente/cursos';
+    const requested = params.get('dashboardPath') ?? '/docente/cursos';
+    const dashboardPath = requested.startsWith('/') && !requested.startsWith('//') ? requested : '/docente/cursos';
+    window.history.replaceState(null, '', window.location.pathname);
 
     if (!token) {
       window.location.replace('/login?error=Falta el token de sesión');

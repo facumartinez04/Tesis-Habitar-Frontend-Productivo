@@ -1,18 +1,32 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Card } from '../ui/Card';
 import { Icon } from '../ui/Icon';
 import { HabitarLoader } from '../ui/HabitarLoader';
 import { StudentQrScannerModal } from './StudentQrScannerModal';
 import { useQueryParam } from '../../../hooks/useQueryParam';
-import { getActivityByCode, submitResponse } from '../../../services/activityService';
+import { getActivityByCode, submitResponse, type AnswerPayload } from '../../../services/activityService';
+import { ApiError } from '../../../lib/apiClient';
+import { getOrCreateDeviceId, studentIdLabel, type StudentIdMode } from '../../../lib/studentDevice';
 import type { Activity } from '../../../types/activity';
 import type { Question } from '../../../types/question';
+
+/** Pregunta abierta (eje crítico): se responde con texto, no con opciones. */
+function isOpen(question: Question): boolean {
+  return !question.options || question.options.length === 0;
+}
+
+/** Cierre de la ventana horaria en hora argentina (UTC−3), o null si no es válido. */
+function closesAt(activity: Activity): number | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(activity.availableFrom) || !/^\d{2}:\d{2}$/.test(activity.endTime)) return null;
+  const t = new Date(`${activity.availableFrom}T${activity.endTime}:00-03:00`).getTime();
+  return Number.isNaN(t) ? null : t;
+}
 
 interface ActivityScreenProps {
   defaultCode?: string;
 }
 
-type Stage = 'loading' | 'not-found' | 'join' | 'answering' | 'submitted';
+type Stage = 'loading' | 'not-found' | 'unavailable' | 'join' | 'answering' | 'submitted';
 
 interface ActivityDraft {
   name: string;
@@ -66,6 +80,11 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   const [resumed, setResumed] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [studentIdMode, setStudentIdMode] = useState<StudentIdMode>('lista');
+  const [unavailableMessage, setUnavailableMessage] = useState('');
+  const [joinError, setJoinError] = useState<string | null>(null);
+  const [criticoPending, setCriticoPending] = useState(false);
+  const [submittedNote, setSubmittedNote] = useState<string | null>(null);
 
   function handleCodeScanned(code: string, type: 'activity' | 'course' | 'url') {
     if (type === 'course') {
@@ -139,12 +158,18 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     setCurrentCode(cleanCode);
     setStage('loading');
     getActivityByCode(cleanCode).then((result) => {
-      if (!result) {
-        setStage('not-found');
+      if (!result.ok) {
+        if (result.notFound) {
+          setStage('not-found');
+        } else {
+          setUnavailableMessage(result.message);
+          setStage('unavailable');
+        }
         return;
       }
       setActivity(result.activity);
-      setQuestions(result.questions.filter((q) => q.options && q.options.length > 0));
+      setStudentIdMode(result.studentIdMode);
+      setQuestions(result.questions);
 
       const draft = loadDraft(cleanCode);
       if (draft) {
@@ -171,6 +196,11 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   async function handleJoin() {
     const trimmedName = name.trim();
     if (!trimmedName) return;
+    if (studentIdMode === 'lista' && !/^\d{1,3}$/.test(trimmedName.replace(/^(n\.?\s*[º°o]?\.?\s*|#\s*)/i, ''))) {
+      setJoinError('Ingresá sólo tu número de lista, por ejemplo 12.');
+      return;
+    }
+    setJoinError(null);
     try {
       localStorage.setItem('habitar_student_name', trimmedName);
     } catch {
@@ -198,24 +228,59 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     setAnswers((prev) => ({ ...prev, [currentQuestion.id]: option }));
   }
 
+  function buildPayload(): AnswerPayload[] {
+    return questions
+      .filter((q) => answers[q.id] !== undefined && answers[q.id] !== '')
+      .map((q) => (isOpen(q) ? { questionId: q.id, textAnswer: answers[q.id] } : { questionId: q.id, selectedOption: answers[q.id] }));
+  }
+
+  async function submitAll(automatic: boolean) {
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const result = await submitResponse(currentCode, name, getOrCreateDeviceId(), buildPayload());
+      clearDraft(currentCode);
+      setCriticoPending(result.criticoPending);
+      setSubmittedNote(automatic ? 'El tiempo de la actividad terminó: enviamos las respuestas que tenías.' : null);
+      setStage('submitted');
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 409 && err.message.startsWith('Ya enviaste')) {
+        clearDraft(currentCode);
+        setSubmittedNote(err.message);
+        setStage('submitted');
+      } else if (err instanceof ApiError && err.status >= 400 && err.status < 500) {
+        setSubmitError(err.message);
+      } else {
+        setSubmitError('No se pudo enviar. Tus respuestas están guardadas: reintentá cuando tengas conexión.');
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  // El temporizador de cierre llama siempre a la versión más reciente, con las respuestas actuales.
+  const submitRef = useRef(submitAll);
+  submitRef.current = submitAll;
+
   async function handleNext() {
     if (isLast) {
-      setSubmitting(true);
-      setSubmitError(null);
-      const payload = questions.map((q) => ({ questionId: q.id, selectedOption: answers[q.id] }));
-      try {
-        await submitResponse(currentCode, name, payload);
-        clearDraft(currentCode);
-        setStage('submitted');
-      } catch {
-        setSubmitError('No se pudo enviar. Tus respuestas están guardadas: reintentá cuando tengas conexión.');
-      } finally {
-        setSubmitting(false);
-      }
+      await submitAll(false);
       return;
     }
     setIndex((prev) => prev + 1);
   }
+
+  // Si la ventana horaria vence mientras el alumno responde, se envían sus respuestas parciales (CU-02-06, 2.1).
+  useEffect(() => {
+    if (stage !== 'answering' || !activity) return;
+    const end = closesAt(activity);
+    if (end === null) return;
+    const wait = end - Date.now();
+    const timer = window.setTimeout(() => {
+      void submitRef.current(true);
+    }, Math.max(0, wait));
+    return () => window.clearTimeout(timer);
+  }, [stage, activity]);
 
   const studentBar = (
     <div className="fixed top-0 inset-x-0 z-40 bg-white/90 dark:bg-[#161A24]/90 backdrop-blur-md border-b border-stone-200/80 px-4 py-2 flex items-center justify-between text-xs">
@@ -323,23 +388,52 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     );
   }
 
+  if (stage === 'unavailable') {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 pt-16 bg-[#FAF9F6] dark:bg-[#0D0F14]">
+        {studentBar}
+        <div className="w-full max-w-sm bg-white dark:bg-[#1A1E29] border border-stone-200/80 dark:border-stone-800 rounded-2xl p-6 sm:p-7 shadow-md text-center space-y-3">
+          <Icon name="clock" size={28} className="mx-auto text-amber-700" />
+          <div className="text-base font-bold text-slate-900 dark:text-white">{unavailableMessage}</div>
+          <p className="text-xs text-stone-500">Consultá a tu docente si la actividad sigue abierta.</p>
+          <button
+            type="button"
+            onClick={() => {
+              setStage('not-found');
+              setCurrentCode('');
+              setPinInput('');
+            }}
+            className="text-xs font-semibold text-emerald-800 hover:underline"
+          >
+            Ingresar otro código
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (stage === 'join') {
+    const label = studentIdLabel(studentIdMode);
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-4 pt-16 bg-[#FAF9F6] dark:bg-[#0D0F14]">
         {studentBar}
         <div className="w-full max-w-sm bg-white dark:bg-[#1A1E29] border border-stone-200/80 dark:border-stone-800 rounded-2xl p-6 sm:p-7 shadow-md">
           <div className="text-center mb-5">
             <div className="text-base font-extrabold text-emerald-750 dark:text-emerald-400 mb-0.5">Habitar</div>
-            <div className="text-lg font-bold text-slate-900 dark:text-white">¡Hola! ¿Cómo te llamás?</div>
-            <div className="text-xs text-stone-500 mt-0.5">No necesitás cuenta ni contraseña</div>
+            <div className="text-lg font-bold text-slate-900 dark:text-white">{label.title}</div>
+            <div className="text-xs text-stone-500 mt-0.5">{label.hint}</div>
           </div>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-4 py-3 border border-stone-200 dark:border-stone-700 rounded-xl text-sm text-center mb-4 bg-stone-50 dark:bg-[#202533] text-slate-900 dark:text-white font-medium focus:border-emerald-600 focus:bg-white outline-none shadow-inner"
-            placeholder="Tu nombre o nº de lista"
+            inputMode={studentIdMode === 'lista' ? 'numeric' : 'text'}
+            maxLength={studentIdMode === 'lista' ? 6 : 80}
+            className="w-full px-4 py-3 border border-stone-200 dark:border-stone-700 rounded-xl text-sm text-center mb-2 bg-stone-50 dark:bg-[#202533] text-slate-900 dark:text-white font-medium focus:border-emerald-600 focus:bg-white outline-none shadow-inner"
+            placeholder={label.placeholder}
             autoFocus
           />
+          {joinError && <div className="text-xs text-rose-700 text-center mb-2">{joinError}</div>}
+          <div className="mb-2" />
           <button
             onClick={handleJoin}
             disabled={!name.trim() || joining}
@@ -368,7 +462,10 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
             <Icon name="check" size={32} className="text-emerald-700 dark:text-emerald-300" />
           </div>
           <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-1">¡Actividad enviada!</h2>
-          <p className="text-xs text-stone-500 dark:text-stone-400 mb-5">Tus respuestas fueron registradas correctamente por el docente.</p>
+          <p className="text-xs text-stone-500 dark:text-stone-400 mb-5">
+            {submittedNote ?? 'Tus respuestas quedaron registradas.'}
+            {criticoPending && ' Tu docente va a revisar tus respuestas escritas.'}
+          </p>
           <div className="bg-stone-50 dark:bg-stone-800/50 rounded-xl p-3.5 border border-stone-200/80 dark:border-stone-700">
             <div className="text-xs text-stone-500">{answeredCount} de {questions.length} preguntas respondidas</div>
             <div className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-1">{activity.name}</div>
@@ -414,7 +511,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
 
         <div className="mb-5 max-h-[160px] overflow-y-auto p-3.5 bg-stone-50 dark:bg-stone-800/40 border border-stone-200/80 rounded-xl">
           <div className="text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-1">TEXTO DE LECTURA</div>
-          <div className="text-xs sm:text-[13px] text-slate-800 dark:text-stone-200 leading-relaxed">{activity.sourceText}</div>
+          <div className="text-xs sm:text-[13px] text-slate-800 dark:text-stone-200 leading-relaxed whitespace-pre-line">{activity.sourceText}</div>
         </div>
 
         {resumed && (
@@ -438,13 +535,26 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
         <div className="flex items-center justify-between text-xs text-stone-500 font-semibold mb-2">
           <span>Pregunta {index + 1} de {questions.length}</span>
           <span className="text-[10px] uppercase bg-stone-100 dark:bg-stone-800 px-2 py-0.5 rounded font-bold">
-            {currentQuestion.axis || 'Ítem formativo'}
+            {isOpen(currentQuestion) ? 'Respuesta escrita' : 'Elegí una opción'}
           </span>
         </div>
 
         <div className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-4 leading-snug">
           {currentQuestion.prompt}
         </div>
+
+        {isOpen(currentQuestion) && (
+          <div className="mb-6">
+            <textarea
+              value={answers[currentQuestion.id] ?? ''}
+              onChange={(e) => setAnswers((prev) => ({ ...prev, [currentQuestion.id]: e.target.value.slice(0, 2000) }))}
+              rows={6}
+              placeholder="Escribí tu respuesta. Fundamentala con lo que dice el texto."
+              className="w-full px-3.5 py-3 border border-stone-200 dark:border-stone-700 rounded-xl text-sm bg-stone-50 dark:bg-[#202533] text-slate-900 dark:text-white focus:border-emerald-600 focus:bg-white outline-none leading-relaxed"
+            />
+            <div className="text-[11px] text-stone-400 mt-1 text-right">{(answers[currentQuestion.id] ?? '').length} / 2000</div>
+          </div>
+        )}
 
         <div className="flex flex-col gap-2.5 mb-6">
           {currentQuestion.options?.map((option) => {
@@ -475,7 +585,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
           <span className="text-[11px] text-stone-400">Guardado automático</span>
           <button
             onClick={handleNext}
-            disabled={!answers[currentQuestion.id] || submitting}
+            disabled={!(answers[currentQuestion.id] ?? '').trim() || submitting}
             className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-2xs hover:shadow-xs transition-all disabled:opacity-50 cursor-pointer"
           >
             <span>{submitting ? 'Enviando…' : isLast ? 'Enviar respuestas' : 'Siguiente pregunta'}</span>

@@ -46,10 +46,10 @@ export function CourseDevicesModal({ course, isOpen, onClose }: CourseDevicesMod
   async function handleUnlink(device: CourseStudentDevice) {
     if (!course) return;
 
-    const confirmed = await confirmDestructive(
-      `¿Desvincular dispositivo de ${device.studentName}?`,
-      'El alumno podrá registrar un nuevo dispositivo (celular o tablet) la próxima vez que escanee el código QR del aula.'
-    );
+    const confirmed = await confirmDestructive({
+      title: `¿Desvincular dispositivo de ${device.studentName}?`,
+      text: 'El alumno podrá registrar un nuevo dispositivo (celular o tablet) la próxima vez que escanee el código QR del aula.',
+    });
 
     if (!confirmed) return;
 

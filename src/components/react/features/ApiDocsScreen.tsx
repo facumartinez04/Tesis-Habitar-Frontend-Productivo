@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useAuthGuard } from '../../../hooks/useAuthGuard';
 
 type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
 type ApiTag =
@@ -887,6 +888,8 @@ const METHOD_COLORS: Record<HttpMethod, { bg: string; border: string; text: stri
 };
 
 export function ApiDocsScreen() {
+  // Página interna: sólo para la administración de la plataforma.
+  useAuthGuard(['admin']);
   const [selectedTag, setSelectedTag] = useState<ApiTag>('Todos');
   const [searchQuery, setSearchQuery] = useState('');
   const [methodFilter, setMethodFilter] = useState<string>('ALL');

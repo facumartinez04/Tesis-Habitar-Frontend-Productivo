@@ -1,3 +1,4 @@
+import { pct, deltaPts } from '../../../lib/scores';
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Badge } from '../ui/Badge';
@@ -12,13 +13,22 @@ import { HabitarLoader } from '../ui/HabitarLoader';
 import { listMyCourses } from '../../../services/courseService';
 import { compareCoursePeriods, exportCourseReport, getTeacherCourseSummary, type PeriodComparison } from '../../../services/resultsService';
 import { getAiUsage, type AiUsageSnapshot } from '../../../services/aiUsageService';
-import { duplicateActivity, listActivitiesByCourse, publishActivityNow, type ActivitySummary } from '../../../services/activityService';
+import {
+  closeActivityNow,
+  duplicateActivity,
+  listActivitiesByCourse,
+  publishActivityNow,
+  type ActivitySummary,
+} from '../../../services/activityService';
 import { confirmAction } from '../../../lib/alerts';
 import type { CourseResultSummary, PerformanceStatus } from '../../../types/result';
 import type { Course } from '../../../types/activity';
-import { QrScannerModal } from './QrScannerModal';
+import { QrScannerModal } from './QrScannerModal';
+
 import { CourseQrModal } from './CourseQrModal';
 import { CourseDevicesModal } from './CourseDevicesModal';
+import { ReviewAnswersModal } from './ReviewAnswersModal';
+import { CourseInsightsPanel } from './CourseInsightsPanel';
 
 const activityStatusBadge: Record<ActivitySummary['status'], { label: string; color: 'green' | 'amber' | 'gray' }> = {
   borrador: { label: 'Borrador', color: 'gray' },
@@ -62,6 +72,8 @@ export function TeacherDashboard() {
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [selectedQrCourse, setSelectedQrCourse] = useState<Course | null>(null);
   const [scannedCourse, setScannedCourse] = useState<Course | null>(null);
+  const [reviewActivity, setReviewActivity] = useState<{ id: string; name: string } | null>(null);
+  const [insightsKey, setInsightsKey] = useState(0);
 
   function refreshActivities(courseId: string) {
     listActivitiesByCourse(courseId).then(setActivities);
@@ -117,9 +129,36 @@ export function TeacherDashboard() {
       await duplicateActivity(activityId);
       showToast('Actividad duplicada como borrador');
       if (summary) refreshActivities(summary.courseId);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'No se pudo duplicar la actividad');
     } finally {
       setBusyActivityId(null);
     }
+  }
+
+  async function handleCloseNow(activityId: string) {
+    const confirmed = await confirmAction({
+      title: '¿Cerrar la actividad ahora?',
+      text: 'Los alumnos ya no van a poder responder, y el texto se borra de Habitar como prevé la política de datos.',
+      confirmButtonText: 'Sí, cerrar',
+    });
+    if (!confirmed) return;
+    setBusyActivityId(activityId);
+    try {
+      await closeActivityNow(activityId);
+      showToast('Actividad cerrada');
+      if (summary) refreshActivities(summary.courseId);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'No se pudo cerrar la actividad');
+    } finally {
+      setBusyActivityId(null);
+    }
+  }
+
+  function handleReviewed() {
+    if (!selectedCourseId) return;
+    getTeacherCourseSummary(selectedCourseId).then((result) => setSummary(result ?? null));
+    setInsightsKey((k) => k + 1);
   }
 
   async function handlePublishNow(activityId: string) {
@@ -404,10 +443,10 @@ export function TeacherDashboard() {
                 <div key={axis} className="bg-stone-50 dark:bg-stone-800/50 rounded-xl p-3 text-center border border-stone-200/80">
                   <div className="text-[10px] text-stone-500 font-bold uppercase tracking-wider">{axis}</div>
                   <div className="text-sm font-bold text-slate-900 dark:text-white mt-0.5">
-                    {comparison.periodA.averages[axis]}% → {comparison.periodB.averages[axis]}%
+                    {pct(comparison.periodA.averages[axis])} → {pct(comparison.periodB.averages[axis])}
                   </div>
-                  <div className={`text-xs font-bold mt-0.5 ${comparison.delta[axis] >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
-                    {comparison.delta[axis] >= 0 ? '+' : ''}{comparison.delta[axis]} pts
+                  <div className={`text-xs font-bold mt-0.5 ${(comparison.delta[axis] ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
+                    {deltaPts(comparison.delta[axis])}
                   </div>
                 </div>
               ))}
@@ -419,11 +458,21 @@ export function TeacherDashboard() {
       {summary && (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-            <MetricCard value={`${summary.averages.literal}%`} label="Comprensión Literal" color="var(--color-green-mid)" />
-            <MetricCard value={`${summary.averages.inferencial}%`} label="Comprensión Inferencial" color="var(--color-amber)" />
-            <MetricCard value={`${summary.averages.critico}%`} label="Comprensión Crítica" color="var(--color-red)" />
+            <MetricCard value={pct(summary.averages.literal)} label="Comprensión Literal" color="var(--color-green-mid)" />
+            <MetricCard value={pct(summary.averages.inferencial)} label="Comprensión Inferencial" color="var(--color-amber)" />
+            <MetricCard value={pct(summary.averages.critico)} label="Comprensión Crítica" color="var(--color-red)" />
             <MetricCard value={String(summary.activityCount)} label="Actividades Completadas" />
           </div>
+
+          {summary.pendingReviews > 0 && (
+            <div className="flex items-center gap-2 text-xs text-amber-900 dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-xl px-3.5 py-2.5 mb-4">
+              <Icon name="edit" size={13} />
+              Hay {summary.pendingReviews} respuestas escritas sin revisar. El eje crítico de esos alumnos figura como
+              pendiente hasta que confirmes el puntaje (botón «Revisar respuestas» en cada actividad).
+            </div>
+          )}
+
+          <CourseInsightsPanel courseId={summary.courseId} refreshKey={insightsKey} />
 
           <div className="mb-6">
             <div className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2.5">
@@ -447,9 +496,9 @@ export function TeacherDashboard() {
                     className={`cursor-pointer hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors ${row.status === 'bajo' ? 'bg-rose-50/30 dark:bg-rose-950/10' : ''}`}
                   >
                     <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">{row.studentName}</td>
-                    <td className="px-4 py-3 text-stone-700 dark:text-stone-300 font-medium">{row.scores ? `${row.scores.literal}%` : '—'}</td>
-                    <td className="px-4 py-3 text-stone-700 dark:text-stone-300 font-medium">{row.scores ? `${row.scores.inferencial}%` : '—'}</td>
-                    <td className="px-4 py-3 text-stone-700 dark:text-stone-300 font-medium">{row.scores ? `${row.scores.critico}%` : '—'}</td>
+                    <td className="px-4 py-3 text-stone-700 dark:text-stone-300 font-medium">{pct(row.scores?.literal)}</td>
+                    <td className="px-4 py-3 text-stone-700 dark:text-stone-300 font-medium">{pct(row.scores?.inferencial)}</td>
+                    <td className="px-4 py-3 text-stone-700 dark:text-stone-300 font-medium">{row.criticoPending ? <span className="text-amber-700 text-xs font-semibold">pendiente</span> : pct(row.scores?.critico)}</td>
                     <td className="px-4 py-3">
                       <Badge color={statusBadge[row.status].color}>{statusBadge[row.status].label}</Badge>
                     </td>
@@ -501,6 +550,25 @@ export function TeacherDashboard() {
                       <Icon name="copy" size={11} />
                       <span>Duplicar</span>
                     </button>
+                    {(act.status === 'publicada' || act.status === 'cerrada') && (
+                      <button
+                        onClick={() => setReviewActivity({ id: act.id, name: act.name })}
+                        className="flex items-center gap-1.5 bg-white dark:bg-stone-800 border border-amber-300 dark:border-amber-700/60 hover:bg-amber-50 rounded-lg px-2.5 py-1 text-xs font-semibold text-amber-900 dark:text-amber-200 transition-colors cursor-pointer shadow-2xs"
+                      >
+                        <Icon name="edit" size={11} />
+                        <span>Revisar respuestas</span>
+                      </button>
+                    )}
+                    {act.status === 'publicada' && (
+                      <button
+                        onClick={() => handleCloseNow(act.id)}
+                        disabled={busyActivityId === act.id}
+                        className="flex items-center gap-1.5 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 hover:bg-stone-50 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-colors disabled:opacity-50 cursor-pointer shadow-2xs"
+                      >
+                        <Icon name="lock" size={11} />
+                        <span>Cerrar</span>
+                      </button>
+                    )}
                     {act.status === 'programada' && (
                       <button
                         onClick={() => handlePublishNow(act.id)}
@@ -533,6 +601,12 @@ export function TeacherDashboard() {
         course={currentCourse}
         isOpen={isDevicesModalOpen}
         onClose={() => setIsDevicesModalOpen(false)}
+      />
+      <ReviewAnswersModal
+        activity={reviewActivity}
+        isOpen={Boolean(reviewActivity)}
+        onClose={() => setReviewActivity(null)}
+        onReviewed={handleReviewed}
       />
     </div>
   );

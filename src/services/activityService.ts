@@ -1,4 +1,6 @@
-import type { Activity, AttemptPolicy, ComprehensionAxis } from '../types/activity';
+import type { Activity, AttemptPolicy, ComprehensionAxis, DiagnosticType } from '../types/activity';
+import type { StudentIdMode } from '../lib/studentDevice';
+import { ApiError } from '../lib/apiClient';
 import type { Question } from '../types/question';
 import { apiFetch } from '../lib/apiClient';
 import { toLower, toUpper } from '../lib/caseAdapters';
@@ -14,6 +16,7 @@ export interface CreateActivityInput {
   endTime: string;
   attemptPolicy: AttemptPolicy;
   questions: Question[];
+  diagnosticType?: DiagnosticType | null;
 }
 
 interface BackendActivity {
@@ -22,7 +25,7 @@ interface BackendActivity {
   name: string;
   educationLevel: string;
   axis: string;
-  sourceText: string;
+  sourceText: string | null;
   availableFrom: string;
   startTime: string;
   endTime: string;
@@ -30,15 +33,17 @@ interface BackendActivity {
   status: string;
   qrValidUntil: string;
   courseId: string;
+  diagnosticType?: string | null;
 }
 
 interface BackendQuestion {
   id: string;
   axis: string;
   prompt: string;
-  expectedAnswer: string;
+  /** La vista pública del alumno no trae la respuesta esperada ni la opción correcta. */
+  expectedAnswer?: string;
   options: string[] | null;
-  correctOption: string | null;
+  correctOption?: string | null;
   edited: boolean;
   approved: boolean;
 }
@@ -46,13 +51,15 @@ interface BackendQuestion {
 interface GetActivityResponse {
   activity: BackendActivity;
   questions: BackendQuestion[];
-  responsesCount: number;
+  studentIdMode: 'LISTA' | 'NOMBRE';
 }
 
-interface SubmitResponseResult {
+export interface SubmitResponseResult {
   responseId: string;
   resultId: string;
-  scores: { literal: number; inferencial: number; critico: number };
+  scores: { literal: number | null; inferencial: number | null; critico: number | null };
+  /** Hay respuestas abiertas que el docente todavía tiene que revisar. */
+  criticoPending: boolean;
 }
 
 function toActivity(backendActivity: BackendActivity, responsesCount = 0): Activity {
@@ -71,6 +78,7 @@ function toActivity(backendActivity: BackendActivity, responsesCount = 0): Activ
     status: toLower<Activity['status']>(backendActivity.status),
     qrValidUntil: backendActivity.qrValidUntil,
     responsesCount,
+    diagnosticType: backendActivity.diagnosticType ? toLower<DiagnosticType>(backendActivity.diagnosticType) : null,
   };
 }
 
@@ -79,7 +87,7 @@ function toQuestion(backendQuestion: BackendQuestion): Question {
     id: backendQuestion.id,
     axis: toLower<ComprehensionAxis>(backendQuestion.axis),
     prompt: backendQuestion.prompt,
-    expectedAnswer: backendQuestion.expectedAnswer,
+    expectedAnswer: backendQuestion.expectedAnswer ?? '',
     options: backendQuestion.options ?? undefined,
     correctOption: backendQuestion.correctOption ?? undefined,
     edited: backendQuestion.edited,
@@ -100,6 +108,7 @@ export async function createActivity(input: CreateActivityInput): Promise<Activi
       startTime: input.startTime,
       endTime: input.endTime,
       attemptPolicy: toUpper(input.attemptPolicy),
+      diagnosticType: input.diagnosticType ? toUpper(input.diagnosticType) : null,
       questions: input.questions.map((question) => ({
         axis: toUpper(question.axis),
         prompt: question.prompt,
@@ -107,6 +116,7 @@ export async function createActivity(input: CreateActivityInput): Promise<Activi
         options: question.options,
         correctOption: question.correctOption,
         approved: question.approved,
+        edited: question.edited,
       })),
     },
   });
@@ -114,15 +124,25 @@ export async function createActivity(input: CreateActivityInput): Promise<Activi
   return toActivity(backendActivity);
 }
 
-export async function getActivityByCode(code: string): Promise<{ activity: Activity; questions: Question[] } | undefined> {
+export type PublicActivityResult =
+  | { ok: true; activity: Activity; questions: Question[]; studentIdMode: StudentIdMode }
+  | { ok: false; notFound: boolean; message: string };
+
+/** Vista del alumno: el backend no envía las opciones correctas ni las respuestas esperadas. */
+export async function getActivityByCode(code: string): Promise<PublicActivityResult> {
   try {
     const result = await apiFetch<GetActivityResponse>(`/activities/${code}`, { auth: false });
     return {
-      activity: toActivity(result.activity, result.responsesCount),
+      ok: true,
+      activity: toActivity(result.activity),
       questions: result.questions.map(toQuestion),
+      studentIdMode: result.studentIdMode === 'NOMBRE' ? 'nombre' : 'lista',
     };
-  } catch {
-    return undefined;
+  } catch (err) {
+    if (err instanceof ApiError && err.status !== 404) {
+      return { ok: false, notFound: false, message: err.message };
+    }
+    return { ok: false, notFound: true, message: '' };
   }
 }
 
@@ -153,14 +173,56 @@ export async function publishActivityNow(activityId: string): Promise<void> {
   await apiFetch(`/activities/${activityId}/publish`, { method: 'POST' });
 }
 
+export interface AnswerPayload {
+  questionId: string;
+  selectedOption?: string;
+  textAnswer?: string;
+}
+
 export async function submitResponse(
   code: string,
   studentDisplayName: string,
-  answers: { questionId: string; selectedOption: string }[],
+  deviceId: string,
+  answers: AnswerPayload[],
 ): Promise<SubmitResponseResult> {
   return apiFetch<SubmitResponseResult>(`/activities/${code}/responses`, {
     method: 'POST',
     auth: false,
-    body: { studentDisplayName, answers },
+    body: { studentDisplayName, deviceId, answers },
+  });
+}
+
+export async function closeActivityNow(activityId: string): Promise<void> {
+  await apiFetch(`/activities/${activityId}/close`, { method: 'POST' });
+}
+
+export interface ReviewItem {
+  answerId: string;
+  responseId: string;
+  studentDisplayName: string;
+  submittedAt: string;
+  questionPrompt: string;
+  expectedAnswer: string;
+  textAnswer: string | null;
+  aiScore: number | null;
+  aiRationale: string | null;
+  teacherScore: number | null;
+  reviewedAt: string | null;
+}
+
+export interface ReviewQueue {
+  pending: number;
+  items: ReviewItem[];
+}
+
+/** Bandeja de revisión de respuestas abiertas: propuesta de la IA y confirmación del docente. */
+export async function getReviewQueue(activityId: string): Promise<ReviewQueue> {
+  return apiFetch<ReviewQueue>(`/activities/${activityId}/reviews`);
+}
+
+export async function reviewAnswer(activityId: string, answerId: string, score: number): Promise<ReviewQueue> {
+  return apiFetch<ReviewQueue>(`/activities/${activityId}/answers/${answerId}/review`, {
+    method: 'PATCH',
+    body: { score },
   });
 }

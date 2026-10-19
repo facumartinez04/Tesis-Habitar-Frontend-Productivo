@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useAuthGuard } from '../../../hooks/useAuthGuard';
 import type {
   JiraFiltersState,
   JiraIssue,
@@ -19,6 +20,8 @@ const COLUMNS: { id: JiraStatus; title: string; accent: string }[] = [
 ];
 
 export function JiraScreen() {
+  // Página interna: sólo para la administración de la plataforma.
+  useAuthGuard(['admin']);
   const [issues, setIssues] = useState<JiraIssue[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIssue, setSelectedIssue] = useState<JiraIssue | null>(null);

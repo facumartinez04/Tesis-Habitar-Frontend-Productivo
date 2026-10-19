@@ -1,3 +1,4 @@
+import { pct } from '../../../lib/scores';
 import { useEffect, useState } from 'react';
 import { Avatar } from '../ui/Avatar';
 import { Badge } from '../ui/Badge';
@@ -30,12 +31,16 @@ const axisColor = { literal: '#1D9E75', inferencial: '#EF9F27', critico: '#E24B4
 function buildLine(trend: StudentTrendPoint[], key: 'literal' | 'inferencial' | 'critico') {
   if (trend.length === 0) return '';
   const stepX = 430 / Math.max(trend.length - 1, 1);
+  // Los intentos sin dato en el eje (no medido o pendiente de revisión) no se dibujan.
   return trend
     .map((point, i) => {
+      const value = point[key];
+      if (value === null) return null;
       const x = 60 + i * stepX;
-      const y = 100 - (point[key] / 100) * 90;
+      const y = 100 - (value / 100) * 90;
       return `${x},${y.toFixed(1)}`;
     })
+    .filter((p): p is string => p !== null)
     .join(' ');
 }
 
@@ -152,9 +157,9 @@ export function StudentDetailScreen() {
             <tr key={row.activityName + row.date}>
               <td className="px-2.5 py-2.5 border-b border-gray-border">{row.activityName}</td>
               <td className="px-2.5 py-2.5 border-b border-gray-border">{row.date}</td>
-              <td className="px-2.5 py-2.5 border-b border-gray-border">{row.scores.literal}%</td>
-              <td className="px-2.5 py-2.5 border-b border-gray-border">{row.scores.inferencial}%</td>
-              <td className="px-2.5 py-2.5 border-b border-gray-border">{row.scores.critico}%</td>
+              <td className="px-2.5 py-2.5 border-b border-gray-border">{pct(row.scores.literal)}</td>
+              <td className="px-2.5 py-2.5 border-b border-gray-border">{pct(row.scores.inferencial)}</td>
+              <td className="px-2.5 py-2.5 border-b border-gray-border">{pct(row.scores.critico)}</td>
             </tr>
           ))}
         </tbody>

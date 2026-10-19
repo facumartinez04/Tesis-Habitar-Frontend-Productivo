@@ -1,4 +1,12 @@
-import type { AxisScores, CourseResultSummary, InstitutionResultSummary, PerformanceStatus } from '../types/result';
+import type {
+  AxisRecommendation,
+  AxisScores,
+  CourseResultSummary,
+  DiagnosticComparison,
+  InstitutionResultSummary,
+  PerformanceStatus,
+  UsageMetrics,
+} from '../types/result';
 import { apiFetch } from '../lib/apiClient';
 import { toLower } from '../lib/caseAdapters';
 import { sessionStore } from '../store/sessionStore';
@@ -14,6 +22,7 @@ interface BackendStudentResultRow {
   studentName: string;
   scores: AxisScores | null;
   status: string;
+  criticoPending?: boolean;
 }
 
 interface BackendCourseResultSummary {
@@ -25,6 +34,7 @@ interface BackendCourseResultSummary {
   averages: AxisScores;
   status: string;
   rows: BackendStudentResultRow[];
+  pendingReviews?: number;
 }
 
 interface BackendInstitutionResultSummary {
@@ -49,7 +59,9 @@ function toCourseSummary(backend: BackendCourseResultSummary): CourseResultSumma
       studentName: row.studentName,
       scores: row.scores,
       status: toLower<PerformanceStatus>(row.status),
+      criticoPending: row.criticoPending ?? false,
     })),
+    pendingReviews: backend.pendingReviews ?? 0,
   };
 }
 
@@ -104,4 +116,22 @@ export async function compareCoursePeriods(
 ): Promise<PeriodComparison> {
   const params = new URLSearchParams({ fromA: periodA.from, toA: periodA.to, fromB: periodB.from, toB: periodB.to });
   return apiFetch<PeriodComparison>(`/results/courses/${courseId}/compare?${params.toString()}`);
+}
+
+/** Evolución entre la diagnóstica de inicio y la de cierre del ciclo. */
+export async function getCourseDiagnostic(courseId: string): Promise<DiagnosticComparison> {
+  return apiFetch<DiagnosticComparison>(`/results/courses/${courseId}/diagnostic`);
+}
+
+/** Eje que conviene reforzar con la próxima actividad. */
+export async function getCourseRecommendation(courseId: string): Promise<AxisRecommendation> {
+  return apiFetch<AxisRecommendation>(`/results/courses/${courseId}/recommendation`);
+}
+
+export async function getInstitutionMetrics(institutionId: string): Promise<UsageMetrics> {
+  return apiFetch<UsageMetrics>(`/institutions/${institutionId}/metrics`);
+}
+
+export async function getPlatformMetrics(): Promise<UsageMetrics> {
+  return apiFetch<UsageMetrics>('/monitoring/usage');
 }

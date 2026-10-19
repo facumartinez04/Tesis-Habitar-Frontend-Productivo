@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useAuthGuard } from '../../../hooks/useAuthGuard';
 import QRCode from 'qrcode';
 import { StudentQrScannerModal } from './StudentQrScannerModal';
 
 export function TestScannerPage() {
+  // Página interna: sólo para la administración de la plataforma.
+  useAuthGuard(['admin']);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [scannedResult, setScannedResult] = useState<string | null>(null);
   const [qrImageUrl, setQrImageUrl] = useState<string | null>(null);

@@ -20,7 +20,8 @@ import { confirmDestructive, showError } from '../../../lib/alerts';
 import type { Institution } from '../../../types/institution';
 import type { Role } from '../../../types/auth';
 
-const ROLE_LABEL: Record<Role, string> = { docente: 'Docente', coordinador: 'Coordinador/a', admin: 'Admin' };
+const ROLE_LABEL: Record<Role, string> = { docente: 'Docente', coordinador: 'Coordinador/a',
+  director: 'Director/a', admin: 'Admin' };
 
 export function AdminInstitutionUsersScreen() {
   const institutionSlug = useQueryParam('slug', '');

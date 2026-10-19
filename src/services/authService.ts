@@ -1,5 +1,4 @@
 import type { OAuthProviderId, Role, Session, User } from '../types/auth';
-import { apiFetch } from '../lib/apiClient';
 import { toLower, toUpper } from '../lib/caseAdapters';
 import { sessionStore } from '../store/sessionStore';
 
@@ -19,12 +18,6 @@ interface BackendUser {
   institutionId: string;
 }
 
-interface BackendSession {
-  token: string;
-  user: BackendUser;
-  dashboardPath: string;
-}
-
 function toUser(backendUser: BackendUser): User {
   return {
     id: backendUser.id,
@@ -34,24 +27,6 @@ function toUser(backendUser: BackendUser): User {
     role: toLower<Role>(backendUser.role),
     institutionId: backendUser.institutionId,
   };
-}
-
-function toSession(backendSession: BackendSession): Session {
-  return {
-    token: backendSession.token,
-    user: toUser(backendSession.user),
-    provider: toLower<OAuthProviderId>(backendSession.user.provider),
-    issuedAt: new Date().toISOString(),
-  };
-}
-
-export async function loginWithProvider(provider: OAuthProviderId): Promise<Session> {
-  const backendSession = await apiFetch<BackendSession>('/auth/login', {
-    method: 'POST',
-    auth: false,
-    body: { provider: toUpper(provider) },
-  });
-  return toSession(backendSession);
 }
 
 export function oauthLoginUrl(provider: OAuthProviderId): string {
@@ -85,9 +60,6 @@ export async function refreshSession(): Promise<Session | null> {
     });
     if (!response.ok) {
       if (response.status === 401) {
-        if (current.user.role === 'admin') {
-          return ensureAdminSession();
-        }
         sessionStore.set(null);
         return null;
       }
@@ -107,21 +79,31 @@ export async function refreshSession(): Promise<Session | null> {
   }
 }
 
+/**
+ * Las pantallas de administración exigen una sesión de administrador obtenida por el login institucional.
+ * Ya no existe un atajo que emita tokens sin credenciales: sin sesión de admin, se vuelve al login.
+ */
 export async function ensureAdminSession(): Promise<Session> {
   const current = sessionStore.get();
   if (current?.user.role === 'admin') return current;
+  window.location.href = '/login';
+  throw new Error('Se necesita una sesión de administración');
+}
 
-  const backendSession = await apiFetch<BackendSession>('/auth/admin-session', {
-    method: 'POST',
-    auth: false,
-  });
-  const session = toSession(backendSession);
-  sessionStore.set(session);
-  return session;
+/** Cierra la sesión también en el servidor, que revoca el token. */
+export async function logout(): Promise<void> {
+  const current = sessionStore.get();
+  if (current?.token) {
+    await fetch(`${API_URL}/auth/logout`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${current.token}` },
+    }).catch(() => undefined);
+  }
+  sessionStore.set(null);
 }
 
 export function dashboardPathForRole(role: Role): string {
   if (role === 'admin') return '/admin/instituciones/nueva';
-  if (role === 'coordinador') return '/institucional';
+  if (role === 'coordinador' || role === 'director') return '/institucional';
   return '/docente/cursos';
 }

@@ -6,6 +6,7 @@ import { MetricCard } from '../ui/MetricCard';
 import { ProgressBar } from '../ui/ProgressBar';
 import { TableWrap } from '../ui/TableWrap';
 import { ensureAdminSession } from '../../../services/authService';
+import { UsageMetricsPanel } from './UsageMetricsPanel';
 import { getMonitoringSnapshot } from '../../../services/monitoringService';
 import type { ComponentHealth, MonitoringSnapshot } from '../../../types/monitoring';
 
@@ -108,6 +109,9 @@ export function MonitoringScreen() {
           ))}
         </tbody>
       </TableWrap>
+
+      <div className="text-[13px] font-semibold text-text-pri mt-6 mb-2">Uso del producto en toda la plataforma</div>
+      <UsageMetricsPanel />
     </div>
   );
 }
