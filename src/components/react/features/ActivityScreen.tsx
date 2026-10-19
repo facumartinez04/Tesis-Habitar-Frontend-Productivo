@@ -8,6 +8,7 @@ import { getActivityByCode, submitResponse, type AnswerPayload } from '../../../
 import { ApiError } from '../../../lib/apiClient';
 import { getOrCreateDeviceId, studentIdLabel, type StudentIdMode } from '../../../lib/studentDevice';
 import { useLiveUpdates } from '../../../lib/realtime';
+import { arInstant, whenLabel } from '../../../lib/activityDates';
 import type { Activity } from '../../../types/activity';
 import type { Question } from '../../../types/question';
 
@@ -18,9 +19,7 @@ function isOpen(question: Question): boolean {
 
 /** Cierre de la ventana horaria en hora argentina (UTC−3), o null si no es válido. */
 function closesAt(activity: Activity): number | null {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(activity.availableFrom) || !/^\d{2}:\d{2}$/.test(activity.endTime)) return null;
-  const t = new Date(`${activity.availableFrom}T${activity.endTime}:00-03:00`).getTime();
-  return Number.isNaN(t) ? null : t;
+  return arInstant(activity.endDate || activity.availableFrom, activity.endTime);
 }
 
 interface ActivityScreenProps {
@@ -459,7 +458,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
             <span className="font-bold text-slate-800 dark:text-slate-200">{activity.name}</span>
             <br />
             Código: <span className="font-mono text-emerald-800 dark:text-emerald-300 font-bold">{currentCode}</span>
-            {activity.endTime && <> · Disponible hasta {activity.endTime} hs</>}
+            {activity.endTime && <> · Disponible hasta {whenLabel(activity.endDate || activity.availableFrom, activity.endTime)}</>}
           </div>
         </div>
       </div>

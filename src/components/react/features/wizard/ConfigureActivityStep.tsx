@@ -7,6 +7,7 @@ import { createActivity } from '../../../../services/activityService';
 import { listMyCourses } from '../../../../services/courseService';
 import { activityWizardStore, updateWizard, currentTimeInArgentina, defaultActivityWindow, todayInArgentina } from '../../../../store/activityWizardStore';
 import type { AttemptPolicy, Course, DiagnosticType } from '../../../../types/activity';
+import { arInstant, durationLabel, whenLabel } from '../../../../lib/activityDates';
 
 export function ConfigureActivityStep() {
   const wizard = useStore(activityWizardStore);
@@ -34,9 +35,19 @@ export function ConfigureActivityStep() {
     updateWizard({ courseId, courseName: course?.name ?? '' });
   }
 
+  // Ventana: la fecha de cierre puede ser otro día (por ejemplo, de las 22:00 a las 10:00 del día siguiente).
+  const endDate = wizard.endDate || wizard.availableFrom;
+  const opensAt = arInstant(wizard.availableFrom, wizard.startTime);
+  const closesAt = arInstant(endDate, wizard.endTime);
+  const windowValid = opensAt !== null && closesAt !== null && closesAt > opensAt;
+
   async function handleSubmit() {
-    if (wizard.endTime <= wizard.startTime) {
-      setSubmitError('[Error-PAR_002] El horario de cierre debe ser posterior al de inicio');
+    if (!windowValid) {
+      setSubmitError('[Error-PAR_002] El cierre tiene que ser posterior a la apertura');
+      return;
+    }
+    if (closesAt !== null && closesAt <= Date.now()) {
+      setSubmitError('El cierre ya pasó. Elegí una fecha y hora de cierre futuras.');
       return;
     }
     setSubmitting(true);
@@ -50,6 +61,7 @@ export function ConfigureActivityStep() {
         sourceText: wizard.sourceText,
         availableFrom: wizard.availableFrom,
         startTime: wizard.startTime,
+        endDate: endDate,
         endTime: wizard.endTime,
         attemptPolicy: wizard.attemptPolicy,
         questions: wizard.questions,
@@ -93,26 +105,38 @@ export function ConfigureActivityStep() {
         </select>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-1.5">
         <div className="form-group">
-          <label className="block text-[11px] text-text-sec mb-[5px] font-medium">Fecha de disponibilidad</label>
-          <input
-            type="date"
-            value={wizard.availableFrom}
-            onChange={(e) => updateWizard({ availableFrom: e.target.value })}
-            className="w-full px-2.5 py-[7px] border border-gray-border rounded-[6px] text-[12.5px] bg-white"
-          />
-        </div>
-        <div className="form-group">
-          <label className="block text-[11px] text-text-sec mb-[5px] font-medium">Horario (inicio → fin)</label>
-          <div className="flex gap-2 items-center">
+          <label className="block text-[11px] text-text-sec mb-[5px] font-medium">Abre</label>
+          <div className="flex gap-2">
+            <input
+              type="date"
+              value={wizard.availableFrom}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Si el cierre quedaba antes de la nueva fecha de apertura, se corre al mismo día.
+                updateWizard({ availableFrom: value, ...(endDate < value ? { endDate: value } : {}) });
+              }}
+              className="flex-1 min-w-0 px-2.5 py-[7px] border border-gray-border rounded-[6px] text-[12.5px] bg-white"
+            />
             <input
               type="time"
               value={wizard.startTime}
               onChange={(e) => updateWizard({ startTime: e.target.value })}
               className="w-[100px] px-2.5 py-[7px] border border-gray-border rounded-[6px] text-[12.5px] bg-white"
             />
-            <Icon name="arrowRight" size={14} className="text-text-sec" />
+          </div>
+        </div>
+        <div className="form-group">
+          <label className="block text-[11px] text-text-sec mb-[5px] font-medium">Cierra</label>
+          <div className="flex gap-2">
+            <input
+              type="date"
+              value={endDate}
+              min={wizard.availableFrom}
+              onChange={(e) => updateWizard({ endDate: e.target.value })}
+              className="flex-1 min-w-0 px-2.5 py-[7px] border border-gray-border rounded-[6px] text-[12.5px] bg-white"
+            />
             <input
               type="time"
               value={wizard.endTime}
@@ -121,6 +145,16 @@ export function ConfigureActivityStep() {
             />
           </div>
         </div>
+      </div>
+      <div className={`text-[11.5px] mb-3.5 ${windowValid ? 'text-text-sec' : 'text-red'}`}>
+        {windowValid && opensAt !== null && closesAt !== null ? (
+          <>
+            Abre {whenLabel(wizard.availableFrom, wizard.startTime)} y cierra {whenLabel(endDate, wizard.endTime)} · dura{' '}
+            <strong>{durationLabel(opensAt, closesAt)}</strong>
+          </>
+        ) : (
+          'El cierre tiene que ser posterior a la apertura. Si termina después de las 00:00, elegí el día siguiente en «Cierra».'
+        )}
       </div>
 
       <div className="form-group mb-3.5">

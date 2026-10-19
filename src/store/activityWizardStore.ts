@@ -16,6 +16,8 @@ export interface ActivityWizardState {
   courseName: string;
   availableFrom: string;
   startTime: string;
+  /** Fecha de cierre: puede ser otro día (por ejemplo, abre a las 22:00 y cierra al día siguiente). */
+  endDate: string;
   endTime: string;
   attemptPolicy: AttemptPolicy;
   name: string;
@@ -40,29 +42,25 @@ export function currentTimeInArgentina(): string {
 }
 
 /**
- * Ventana por defecto: arranca ahora (redondeado a 5 minutos) y dura 4 horas (o hasta 23:59),
- * para que la actividad nunca nazca cerrada ni con horario vencido.
+ * Ventana por defecto: arranca ahora (redondeado a 5 minutos) y dura 4 horas, aunque eso la lleve al día
+ * siguiente, para que la actividad nunca nazca cerrada ni con horario vencido.
  */
-export function defaultActivityWindow(): { availableFrom: string; startTime: string; endTime: string } {
-  const today = todayInArgentina();
-  const timeStr = currentTimeInArgentina();
-  const [hourStr, minStr] = timeStr.split(':');
-  let h = parseInt(hourStr ?? '8', 10);
-  let m = parseInt(minStr ?? '0', 10);
-  m = Math.ceil(m / 5) * 5;
-  if (m >= 60) {
-    m = 0;
-    h = (h + 1) % 24;
-  }
-  const startTime = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-  const endH = h + 4;
-  let endTime: string;
-  if (endH >= 24) {
-    endTime = '23:59';
-  } else {
-    endTime = `${String(endH).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-  }
-  return { availableFrom: today, startTime, endTime };
+export function defaultActivityWindow(): { availableFrom: string; startTime: string; endDate: string; endTime: string } {
+  const step = 5 * 60 * 1000;
+  const start = new Date(Math.ceil(Date.now() / step) * step);
+  const end = new Date(start.getTime() + 4 * 60 * 60 * 1000);
+  const part = (d: Date) => ({
+    date: d.toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }),
+    time: new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'America/Argentina/Buenos_Aires',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).format(d),
+  });
+  const a = part(start);
+  const b = part(end);
+  return { availableFrom: a.date, startTime: a.time, endDate: b.date, endTime: b.time };
 }
 
 export const initialWizardState: ActivityWizardState = {

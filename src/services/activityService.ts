@@ -13,6 +13,7 @@ export interface CreateActivityInput {
   sourceText: string;
   availableFrom: string;
   startTime: string;
+  endDate?: string;
   endTime: string;
   attemptPolicy: AttemptPolicy;
   questions: Question[];
@@ -28,6 +29,7 @@ interface BackendActivity {
   sourceText: string | null;
   availableFrom: string;
   startTime: string;
+  endDate?: string | null;
   endTime: string;
   attemptPolicy: string;
   status: string;
@@ -73,6 +75,7 @@ function toActivity(backendActivity: BackendActivity, responsesCount = 0): Activ
     sourceText: backendActivity.sourceText,
     availableFrom: backendActivity.availableFrom,
     startTime: backendActivity.startTime,
+    endDate: backendActivity.endDate ?? backendActivity.availableFrom,
     endTime: backendActivity.endTime,
     attemptPolicy: toLower<AttemptPolicy>(backendActivity.attemptPolicy),
     status: toLower<Activity['status']>(backendActivity.status),
@@ -106,6 +109,7 @@ export async function createActivity(input: CreateActivityInput): Promise<Activi
       sourceText: input.sourceText,
       availableFrom: input.availableFrom,
       startTime: input.startTime,
+      endDate: input.endDate && input.endDate !== input.availableFrom ? input.endDate : null,
       endTime: input.endTime,
       attemptPolicy: toUpper(input.attemptPolicy),
       diagnosticType: input.diagnosticType ? toUpper(input.diagnosticType) : null,
@@ -236,6 +240,7 @@ export interface LiveActivity {
   diagnosticType: 'INICIO' | 'CIERRE' | null;
   availableFrom: string;
   startTime: string;
+  endDate: string;
   endTime: string;
   opensAt: string | null;
   closesAt: string | null;

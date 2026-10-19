@@ -8,6 +8,7 @@ import { closeActivityNow, getActivityLive, publishActivityNow, type LiveActivit
 import { useLiveUpdates, usePolling } from '../../../lib/realtime';
 import { confirmAction, showError } from '../../../lib/alerts';
 import { pct } from '../../../lib/scores';
+import { whenLabel } from '../../../lib/activityDates';
 
 interface ActivityLivePanelProps {
   activityId: string;
@@ -235,7 +236,7 @@ export function ActivityLivePanel({ activityId, footer }: ActivityLivePanelProps
                   <div className="text-xs text-text-sec mt-0.5">Se cierra sola a las {timeOf(new Date(Date.parse(live.closesAt) + GRACE_MS).toISOString())} h</div>
                 )}
                 <div className="text-xs text-text-sec mt-1">
-                  {live.availableFrom.split('-').reverse().join('/')} · {live.startTime} a {live.endTime} h
+                  Abre {whenLabel(live.availableFrom, live.startTime)} · cierra {whenLabel(live.endDate || live.availableFrom, live.endTime)}
                 </div>
               </div>
               <div>

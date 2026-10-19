@@ -8,6 +8,7 @@ import { sessionStore } from '../../../store/sessionStore';
 import type { PublicCourseInfo } from '../../../types/activity';
 import { getOrCreateDeviceId } from '../../../lib/studentDevice';
 import { useLiveUpdates, usePolling } from '../../../lib/realtime';
+import { todayAR, whenLabel } from '../../../lib/activityDates';
 
 interface BoundInfo {
   studentName: string;
@@ -318,7 +319,7 @@ export function ClassroomScannerScreen() {
                   <h2 className="text-base font-bold text-text-pri">{activeActivity.name}</h2>
                   <p className="text-xs text-text-sec">
                     Código PIN: <span className="font-mono font-bold">{activeActivity.code}</span>
-                    {activeActivity.endTime && ` • Disponible hasta las ${activeActivity.endTime} hs`}
+                    {activeActivity.endTime && ` • Disponible hasta ${whenLabel(activeActivity.endDate || todayAR(), activeActivity.endTime)}`}
                   </p>
                 </div>
 
