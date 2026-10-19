@@ -83,3 +83,46 @@ export async function extractText(file: Blob, name: string, mimeType = file.type
   }
   return normalized;
 }
+
+
+export interface DocumentPreviewData {
+  text: string;
+  previewType: 'pdf' | 'docx' | 'text';
+  docxHtml?: string;
+}
+
+export async function extractDocumentWithPreview(
+  file: Blob,
+  name: string,
+  mimeType = file.type,
+): Promise<DocumentPreviewData> {
+  const ext = extensionOf(name);
+  if (ext === '.docx' || mimeType === SUPPORTED_MIME_TYPES[2]) {
+    const mammoth = await import('mammoth');
+    const arrayBuffer = await file.arrayBuffer();
+    const [rawTextResult, htmlResult] = await Promise.all([
+      mammoth.extractRawText({ arrayBuffer }),
+      mammoth.convertToHtml({ arrayBuffer }),
+    ]);
+    const text = normalizeText(rawTextResult.value);
+    if (!text) throw new Error('No se encontró texto en el archivo Word.');
+    return {
+      text,
+      previewType: 'docx',
+      docxHtml: htmlResult.value,
+    };
+  }
+
+  const text = await extractText(file, name, mimeType);
+  if (ext === '.pdf' || mimeType === 'application/pdf') {
+    return {
+      text,
+      previewType: 'pdf',
+    };
+  }
+
+  return {
+    text,
+    previewType: 'text',
+  };
+}

@@ -22,6 +22,47 @@ export interface ActivityWizardState {
   generatedCode: string | null;
 }
 
+/** Fecha de hoy en hora argentina, en el formato del campo de fecha (AAAA-MM-DD). */
+export function todayInArgentina(): string {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' });
+}
+
+/** Hora actual en hora argentina (HH:mm). */
+export function currentTimeInArgentina(): string {
+  return new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'America/Argentina/Buenos_Aires',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(new Date());
+}
+
+/**
+ * Ventana por defecto: arranca ahora (redondeado a 5 minutos) y dura 4 horas (o hasta 23:59),
+ * para que la actividad nunca nazca cerrada ni con horario vencido.
+ */
+export function defaultActivityWindow(): { availableFrom: string; startTime: string; endTime: string } {
+  const today = todayInArgentina();
+  const timeStr = currentTimeInArgentina();
+  const [hourStr, minStr] = timeStr.split(':');
+  let h = parseInt(hourStr ?? '8', 10);
+  let m = parseInt(minStr ?? '0', 10);
+  m = Math.ceil(m / 5) * 5;
+  if (m >= 60) {
+    m = 0;
+    h = (h + 1) % 24;
+  }
+  const startTime = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  const endH = h + 4;
+  let endTime: string;
+  if (endH >= 24) {
+    endTime = '23:59';
+  } else {
+    endTime = `${String(endH).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  }
+  return { availableFrom: today, startTime, endTime };
+}
+
 export const initialWizardState: ActivityWizardState = {
   educationLevel: 'Secundario — 4°',
   axis: 'inferencial',
@@ -32,18 +73,11 @@ export const initialWizardState: ActivityWizardState = {
   questions: [],
   courseId: '',
   courseName: '',
-  availableFrom: todayInArgentina(),
-  startTime: '08:00',
-  endTime: '12:00',
+  ...defaultActivityWindow(),
   attemptPolicy: 'unico',
   name: '',
   generatedCode: null,
 };
-
-/** Fecha de hoy en hora argentina, en el formato del campo de fecha (AAAA-MM-DD). */
-export function todayInArgentina(): string {
-  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' });
-}
 
 export const activityWizardStore = persistentAtom<ActivityWizardState>(
   'habitar-activity-wizard',
@@ -59,5 +93,5 @@ export function updateWizard(patch: Partial<ActivityWizardState>): void {
 }
 
 export function resetWizard(): void {
-  activityWizardStore.set({ ...initialWizardState, availableFrom: todayInArgentina() });
+  activityWizardStore.set({ ...initialWizardState, ...defaultActivityWindow() });
 }

@@ -86,9 +86,9 @@ export function GeneratedQrStep() {
       </div>
 
       <div className="flex flex-col sm:flex-row gap-7 justify-center items-center sm:items-start">
-        <div className="text-center" id="qr-generated-box">
+        <div className="text-center flex flex-col items-center" id="qr-generated-box">
           <QrBox code={wizard.generatedCode} size="lg" />
-          <div className="text-[11px] text-text-ter mt-2">Código QR para proyectar o imprimir</div>
+          <div className="text-[12px] text-text-sec mt-3 font-medium">Código QR para proyectar o imprimir</div>
         </div>
 
         <div className="w-full max-w-[240px]">

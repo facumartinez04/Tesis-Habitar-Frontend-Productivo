@@ -7,7 +7,7 @@ import { getCourseById } from '../../../../services/courseService';
 import { activityWizardStore, resetWizard, updateWizard } from '../../../../store/activityWizardStore';
 import type { ComprehensionAxis, Course } from '../../../../types/activity';
 import { useSession } from '../../../../hooks/useSession';
-import { extractText } from '../../../../lib/documentText';
+import { extractDocumentWithPreview } from '../../../../lib/documentText';
 import { pickTextFromGoogleDrive } from '../../../../lib/googleDrive';
 import { getOneDriveToken } from '../../../../lib/oneDrive';
 import { getIntegrationsConfig, type IntegrationsConfig } from '../../../../services/integrationsService';
@@ -28,6 +28,23 @@ export function NewActivityStep1() {
   const [importError, setImportError] = useState<string | null>(null);
   const [importedFrom, setImportedFrom] = useState<string | null>(null);
   const [oneDriveToken, setOneDriveToken] = useState<string | null>(null);
+  const [filePreview, setFilePreview] = useState<{
+    name: string;
+    size: number;
+    type: 'pdf' | 'docx' | 'text';
+    objectUrl?: string;
+    docxHtml?: string;
+  } | null>(null);
+  const [previewTab, setPreviewTab] = useState<'preview' | 'text'>('preview');
+
+  useEffect(() => {
+    return () => {
+      if (filePreview?.objectUrl) {
+        URL.revokeObjectURL(filePreview.objectUrl);
+      }
+    };
+  }, [filePreview?.objectUrl]);
+
 
   useEffect(() => {
     getIntegrationsConfig().then(setIntegrations).catch(() => setIntegrations({ googleDrive: null, oneDrive: null }));
@@ -101,14 +118,33 @@ export function NewActivityStep1() {
   const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
   const isValid = validateWordCount(wordCount);
 
-  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
     setImporting('archivo');
     setImportError(null);
     try {
-      applyImported(file.name, await extractText(file, file.name), 'Archivo');
+      const result = await extractDocumentWithPreview(file, file.name);
+      applyImported(file.name, result.text, 'Archivo');
+
+      if (filePreview?.objectUrl) {
+        URL.revokeObjectURL(filePreview.objectUrl);
+      }
+
+      let objectUrl: string | undefined;
+      if (result.previewType === 'pdf') {
+        objectUrl = URL.createObjectURL(file);
+      }
+
+      setFilePreview({
+        name: file.name,
+        size: file.size,
+        type: result.previewType,
+        objectUrl,
+        docxHtml: result.docxHtml,
+      });
+      setPreviewTab('preview');
     } catch (err) {
       setImportError(err instanceof Error ? err.message : 'No se pudo leer el archivo.');
     } finally {
@@ -269,10 +305,123 @@ export function NewActivityStep1() {
             Texto cargado desde {importedFrom}. Revisalo y editalo si hace falta: el archivo no se guarda en Habitar.
           </div>
         )}
+                {filePreview && (
+          <div className="mb-3.5 bg-white border border-gray-border rounded-lg overflow-hidden shadow-xs">
+            <div className="bg-gray-50/80 border-b border-gray-border px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
+                  filePreview.type === 'pdf' ? 'bg-red-100 text-red-700' :
+                  filePreview.type === 'docx' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'
+                }`}>
+                  {filePreview.type === 'docx' ? 'Word (.docx)' : filePreview.type.toUpperCase()}
+                </span>
+                <span className="text-xs font-medium text-text-pri truncate max-w-[200px] sm:max-w-[320px]">
+                  {filePreview.name}
+                </span>
+                <span className="text-[11px] text-text-sec">
+                  ({(filePreview.size / 1024).toFixed(0)} KB)
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <div className="inline-flex rounded-md p-0.5 bg-gray-200">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewTab('preview')}
+                    className={`px-2.5 py-1 text-xs font-medium rounded transition-colors flex items-center gap-1 ${
+                      previewTab === 'preview'
+                        ? 'bg-white text-text-pri shadow-xs'
+                        : 'text-text-sec hover:text-text-pri'
+                    }`}
+                  >
+                    <Icon name="eye" size={12} />
+                    Vista previa
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewTab('text')}
+                    className={`px-2.5 py-1 text-xs font-medium rounded transition-colors flex items-center gap-1 ${
+                      previewTab === 'text'
+                        ? 'bg-white text-text-pri shadow-xs'
+                        : 'text-text-sec hover:text-text-pri'
+                    }`}
+                  >
+                    <Icon name="fileText" size={12} />
+                    Texto extraído ({wordCount} pal.)
+                  </button>
+                </div>
+
+                {filePreview.objectUrl && (
+                  <a
+                    href={filePreview.objectUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Abrir en pestaña nueva"
+                    className="p-1.5 text-text-sec hover:text-text-pri rounded hover:bg-gray-200 transition-colors"
+                  >
+                    <Icon name="cast" size={13} />
+                  </a>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (filePreview.objectUrl) URL.revokeObjectURL(filePreview.objectUrl);
+                    setFilePreview(null);
+                  }}
+                  title="Cerrar vista previa"
+                  className="p-1.5 text-text-sec hover:text-red rounded hover:bg-red-50 transition-colors"
+                >
+                  <Icon name="close" size={13} />
+                </button>
+              </div>
+            </div>
+
+            {previewTab === 'preview' ? (
+              <div className="p-3 bg-gray-50/50">
+                {filePreview.type === 'pdf' && filePreview.objectUrl && (
+                  <iframe
+                    src={filePreview.objectUrl}
+                    title={`Vista previa de ${filePreview.name}`}
+                    className="w-full h-[460px] rounded border border-gray-border bg-white"
+                  />
+                )}
+                {filePreview.type === 'docx' && (
+                  <div className="w-full h-[460px] overflow-y-auto p-6 bg-white border border-gray-border rounded text-text-pri text-xs leading-relaxed font-sans shadow-inner">
+                    <div
+                      className="prose prose-sm max-w-none [&_p]:mb-2.5 [&_h1]:text-base [&_h1]:font-bold [&_h1]:mb-2 [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:mb-1.5 [&_table]:w-full [&_table]:border-collapse [&_td]:border [&_td]:border-gray-200 [&_td]:p-1.5 [&_th]:border [&_th]:border-gray-200 [&_th]:p-1.5 [&_th]:bg-gray-50 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
+                      dangerouslySetInnerHTML={{ __html: filePreview.docxHtml || '<p>No se pudo generar vista previa visual.</p>' }}
+                    />
+                  </div>
+                )}
+                {filePreview.type === 'text' && (
+                  <pre className="w-full h-[460px] overflow-y-auto p-4 bg-white border border-gray-border rounded font-mono text-xs whitespace-pre-wrap leading-relaxed text-text-pri">
+                    {text}
+                  </pre>
+                )}
+                <div className="mt-2 text-[11px] text-text-sec flex items-center justify-between">
+                  <span>Revisá el documento original arriba o editá abajo el texto extraído que procesará la IA.</span>
+                  {filePreview.type === 'pdf' && filePreview.objectUrl && (
+                    <a href={filePreview.objectUrl} target="_blank" rel="noopener noreferrer" className="text-green-dark hover:underline font-medium">
+                      Ver PDF en pantalla completa
+                    </a>
+                  )}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        )}
+
+        {filePreview && previewTab === 'preview' && (
+          <div className="text-[11px] font-medium text-text-sec mb-1">
+            Texto extraído del documento (editable):
+          </div>
+        )}
+
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          rows={5}
+          rows={filePreview && previewTab === 'preview' ? 3 : 5}
           className="w-full px-2.5 py-2 border border-gray-border rounded-[6px] text-xs bg-white leading-relaxed resize-none"
         />
       </div>

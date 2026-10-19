@@ -5,7 +5,7 @@ import { RadioGroup } from '../../ui/RadioGroup';
 import { Stepper } from '../../ui/Stepper';
 import { createActivity } from '../../../../services/activityService';
 import { listMyCourses } from '../../../../services/courseService';
-import { activityWizardStore, updateWizard } from '../../../../store/activityWizardStore';
+import { activityWizardStore, updateWizard, currentTimeInArgentina, defaultActivityWindow, todayInArgentina } from '../../../../store/activityWizardStore';
 import type { AttemptPolicy, Course, DiagnosticType } from '../../../../types/activity';
 
 export function ConfigureActivityStep() {
