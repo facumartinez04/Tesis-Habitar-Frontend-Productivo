@@ -34,7 +34,10 @@ const EVENTS = { course: 'course:changed', activity: 'activity:changed', live: '
  * Se suscribe a una sala y llama a `onChange` cada vez que el servidor avisa un cambio. Devuelve si el canal en
  * vivo está conectado, para mostrarlo en pantalla. Al reconectar, vuelve a unirse a la sala y refresca una vez.
  */
-export function useLiveUpdates(subscription: Subscription | null, onChange: (payload?: { status?: string }) => void): boolean {
+export function useLiveUpdates(
+  subscription: Subscription | null,
+  onChange: (payload?: { status?: string; event?: string }) => void,
+): boolean {
   const [connected, setConnected] = useState(false);
   const handler = useRef(onChange);
   handler.current = onChange;
@@ -45,7 +48,7 @@ export function useLiveUpdates(subscription: Subscription | null, onChange: (pay
     let socket: Socket | null = null;
     let cancelled = false;
     const event = EVENTS[subscription.kind];
-    const onEvent = (payload?: { status?: string }) => handler.current(payload);
+    const onEvent = (payload?: { status?: string; event?: string }) => handler.current(payload);
 
     const join = () => {
       if (!socket) return;

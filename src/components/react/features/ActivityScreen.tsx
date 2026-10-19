@@ -4,7 +4,15 @@ import { Icon } from '../ui/Icon';
 import { HabitarLoader } from '../ui/HabitarLoader';
 import { StudentQrScannerModal } from './StudentQrScannerModal';
 import { useQueryParam } from '../../../hooks/useQueryParam';
-import { getActivityByCode, submitResponse, type AnswerPayload } from '../../../services/activityService';
+import {
+  getActivityByCode,
+  getStudentState,
+  saveProgress,
+  submitResponse,
+  type AnswerPayload,
+  type DraftAnswers,
+  type ReadingMode,
+} from '../../../services/activityService';
 import { ApiError } from '../../../lib/apiClient';
 import { getOrCreateDeviceId, studentIdLabel, type StudentIdMode } from '../../../lib/studentDevice';
 import { useLiveUpdates } from '../../../lib/realtime';
@@ -26,13 +34,42 @@ interface ActivityScreenProps {
   defaultCode?: string;
 }
 
-type Stage = 'loading' | 'not-found' | 'unavailable' | 'join' | 'answering' | 'submitted';
+type Stage = 'loading' | 'not-found' | 'unavailable' | 'join' | 'reading' | 'answering' | 'submitted';
 
 interface ActivityDraft {
   name: string;
   index: number;
   answers: Record<string, string>;
+  phase?: 'reading' | 'answering';
   savedAt: string;
+}
+
+/** Cómo llegó la actividad: modo de lectura y si el docente ya habilitó las preguntas. */
+interface ActivityMeta {
+  readingMode: ReadingMode;
+  questionsReleased: boolean;
+  questionsReleasedAt: string | null;
+  questionCount: number;
+}
+
+function fromServerDraft(draft: DraftAnswers): Record<string, string> {
+  const result: Record<string, string> = {};
+  for (const [id, value] of Object.entries(draft)) {
+    const v = value.selectedOption ?? value.textAnswer;
+    if (v) result[id] = v;
+  }
+  return result;
+}
+
+/** Deja sólo las respuestas que siguen siendo válidas (el docente pudo haber corregido una opción). */
+function keepValidAnswers(questions: Question[], answers: Record<string, string>): Record<string, string> {
+  const result: Record<string, string> = {};
+  for (const q of questions) {
+    const value = answers[q.id];
+    if (!value) continue;
+    if (isOpen(q) || (q.options ?? []).includes(value)) result[q.id] = value;
+  }
+  return result;
 }
 
 function draftKey(code: string): string {
@@ -83,8 +120,21 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   const [studentIdMode, setStudentIdMode] = useState<StudentIdMode>('lista');
   const [unavailableMessage, setUnavailableMessage] = useState('');
   const [joinError, setJoinError] = useState<string | null>(null);
-  const [criticoPending, setCriticoPending] = useState(false);
   const [submittedNote, setSubmittedNote] = useState<string | null>(null);
+  const [meta, setMeta] = useState<ActivityMeta>({
+    readingMode: 'LECTURA_PRIMERO',
+    questionsReleased: true,
+    questionsReleasedAt: null,
+    questionCount: 0,
+  });
+  const metaRef = useRef(meta);
+  metaRef.current = meta;
+  const stageRef = useRef(stage);
+  stageRef.current = stage;
+  const [canRetry, setCanRetry] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [confirmSubmit, setConfirmSubmit] = useState(false);
+  const [showText, setShowText] = useState(false);
 
   function handleCodeScanned(code: string, type: 'activity' | 'course' | 'url') {
     if (type === 'course') {
@@ -170,14 +220,19 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
       setActivity(result.activity);
       setStudentIdMode(result.studentIdMode);
       setQuestions(result.questions);
+      const nextMeta: ActivityMeta = {
+        readingMode: result.readingMode,
+        questionsReleased: result.questionsReleased,
+        questionsReleasedAt: result.questionsReleasedAt,
+        questionCount: result.questionCount,
+      };
+      setMeta(nextMeta);
+      setShowText(result.readingMode === 'LIBRE');
 
       const draft = loadDraft(cleanCode);
       if (draft) {
         setName(draft.name);
-        setAnswers(draft.answers);
-        setIndex(draft.index);
-        setResumed(true);
-        setStage('answering');
+        void enterActivity(cleanCode, draft.name, nextMeta, result.questions, draft);
       } else {
         setStage('join');
       }
@@ -189,9 +244,77 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   }, [queryCode]);
 
   useEffect(() => {
-    if (stage !== 'answering' || !name) return;
-    saveDraft(currentCode, { name, index, answers, savedAt: new Date().toISOString() });
+    if ((stage !== 'answering' && stage !== 'reading') || !name) return;
+    saveDraft(currentCode, {
+      name,
+      index,
+      answers,
+      phase: stage,
+      savedAt: new Date().toISOString(),
+    });
   }, [currentCode, stage, name, index, answers]);
+
+  /**
+   * Entra a la actividad: el servidor dice si el alumno ya la envió (y entonces no puede volver a empezar), si tenía
+   * un borrador para retomar, o si arranca de cero. El borrador local, si existe, es el más reciente.
+   */
+  async function enterActivity(
+    code: string,
+    studentName: string,
+    activityMeta: ActivityMeta,
+    activityQuestions: Question[],
+    localDraft: ActivityDraft | null,
+  ) {
+    setJoining(true);
+    try {
+      const state = await getStudentState(code, studentName, getOrCreateDeviceId());
+      if (state.status === 'ENVIADO') {
+        clearDraft(code);
+        setCanRetry(state.canRetry);
+        setSubmittedNote(
+          state.canRetry
+            ? 'Ya enviaste esta actividad. Tu docente permite volver a hacerla.'
+            : 'Ya completaste esta actividad: tus respuestas quedaron registradas y no se puede volver a hacer.',
+        );
+        setStage('submitted');
+        return;
+      }
+      const restored = keepValidAnswers(activityQuestions, {
+        ...fromServerDraft(state.answers),
+        ...(localDraft?.answers ?? {}),
+      });
+      setAnswers(restored);
+      setIndex(localDraft?.index ?? state.currentIndex);
+      setResumed(state.status === 'EN_CURSO' || Boolean(localDraft));
+      const wantsQuestions =
+        activityMeta.readingMode === 'LIBRE' ||
+        state.phase === 'RESPONDIENDO' ||
+        localDraft?.phase === 'answering' ||
+        Boolean(activityMeta.questionsReleasedAt);
+      setStage(wantsQuestions && activityMeta.questionsReleased ? 'answering' : 'reading');
+    } catch (err) {
+      if (err instanceof ApiError && err.status >= 400 && err.status < 500) {
+        clearDraft(code);
+        setJoinError(err.message);
+        setStage(err.status === 409 && err.message.includes('no está disponible') ? 'unavailable' : 'join');
+        if (err.status === 409 && err.message.includes('no está disponible')) setUnavailableMessage(err.message);
+      } else {
+        // Sin conexión: sigue con lo guardado en el dispositivo y se sincroniza cuando vuelva la red.
+        if (localDraft) {
+          setAnswers(localDraft.answers);
+          setIndex(localDraft.index);
+          setResumed(true);
+        }
+        setStage(
+          activityMeta.questionsReleased && (activityMeta.readingMode === 'LIBRE' || localDraft?.phase === 'answering')
+            ? 'answering'
+            : 'reading',
+        );
+      }
+    } finally {
+      setJoining(false);
+    }
+  }
 
   async function handleJoin() {
     const trimmedName = name.trim();
@@ -206,10 +329,29 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     } catch {
 
     }
-    setJoining(true);
-    await new Promise((resolve) => setTimeout(resolve, 350));
-    setJoining(false);
-    setStage('answering');
+    await enterActivity(currentCode, trimmedName, metaRef.current, questions, null);
+  }
+
+  /** Con reintentos habilitados, quien ya envió puede volver a hacerla desde cero. */
+  async function handleRetry() {
+    try {
+      await saveProgress(currentCode, {
+        studentDisplayName: name,
+        deviceId: getOrCreateDeviceId(),
+        phase: 'LEYENDO',
+        currentIndex: 0,
+        answers: {},
+        retry: true,
+      });
+      setAnswers({});
+      setIndex(0);
+      setCanRetry(false);
+      setSubmittedNote(null);
+      setResumed(false);
+      setStage(metaRef.current.readingMode === 'LIBRE' && metaRef.current.questionsReleased ? 'answering' : 'reading');
+    } catch (err) {
+      setSubmittedNote(err instanceof ApiError ? err.message : 'No se pudo reiniciar. Revisá la conexión.');
+    }
   }
 
   function handleSwitchToTeacher() {
@@ -221,11 +363,77 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     window.location.href = '/login?switch=1';
   }
 
-  const currentQuestion = questions[index];
-  const isLast = index === questions.length - 1;
+  const safeIndex = Math.min(index, Math.max(questions.length - 1, 0));
+  const currentQuestion = questions[safeIndex];
+  const isLast = safeIndex === questions.length - 1;
+  const answeredCount = questions.filter((q) => (answers[q.id] ?? '').trim()).length;
 
   function selectOption(option: string) {
     setAnswers((prev) => ({ ...prev, [currentQuestion.id]: option }));
+    setConfirmSubmit(false);
+  }
+
+  function goTo(nextIndex: number) {
+    setIndex(Math.max(0, Math.min(nextIndex, questions.length - 1)));
+    setConfirmSubmit(false);
+  }
+
+  function toDraft(): DraftAnswers {
+    const draft: DraftAnswers = {};
+    for (const q of questions) {
+      const value = answers[q.id];
+      if (!value || !value.trim()) continue;
+      draft[q.id] = isOpen(q) ? { textAnswer: value } : { selectedOption: value };
+    }
+    return draft;
+  }
+
+  // El avance viaja al servidor con una pausa corta: el docente lo ve en vivo y el alumno puede retomarlo.
+  useEffect(() => {
+    if ((stage !== 'reading' && stage !== 'answering') || !name || !currentCode) return;
+    const timer = window.setTimeout(() => {
+      saveProgress(currentCode, {
+        studentDisplayName: name,
+        deviceId: getOrCreateDeviceId(),
+        phase: stage === 'reading' ? 'LEYENDO' : 'RESPONDIENDO',
+        currentIndex: safeIndex,
+        answers: toDraft(),
+      }).catch((err) => {
+        if (err instanceof ApiError && err.status === 409 && err.message.startsWith('Ya completaste')) {
+          clearDraft(currentCode);
+          setSubmittedNote(err.message);
+          setStage('submitted');
+        }
+      });
+    }, 700);
+    return () => window.clearTimeout(timer);
+  }, [stage, safeIndex, answers, name, currentCode, questions]);
+
+  /**
+   * Vuelve a pedir las preguntas (sin las respuestas correctas). Si el docente pasó a todos a las preguntas, el
+   * alumno que estaba leyendo avanza solo; si corrigió una, se conservan las respuestas que siguen siendo válidas.
+   */
+  async function refreshQuestions(reason: 'released' | 'updated' | 'reconnect') {
+    const result = await getActivityByCode(currentCode);
+    if (!result.ok) return;
+    const before = metaRef.current;
+    setActivity(result.activity);
+    setQuestions(result.questions);
+    setAnswers((prev) => keepValidAnswers(result.questions, prev));
+    setMeta({
+      readingMode: result.readingMode,
+      questionsReleased: result.questionsReleased,
+      questionsReleasedAt: result.questionsReleasedAt,
+      questionCount: result.questionCount,
+    });
+    const releasedNow = reason === 'released' || (!before.questionsReleasedAt && Boolean(result.questionsReleasedAt));
+    if (releasedNow && result.questionsReleased && stageRef.current === 'reading') {
+      setIndex(0);
+      setNotice('Tu docente habilitó las preguntas. ¡A responder!');
+      setStage('answering');
+    } else if (reason === 'updated') {
+      setNotice('Tu docente corrigió una pregunta. Revisá tu respuesta antes de enviar.');
+    }
   }
 
   function buildPayload(): AnswerPayload[] {
@@ -238,9 +446,8 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const result = await submitResponse(currentCode, name, getOrCreateDeviceId(), buildPayload());
+      await submitResponse(currentCode, name, getOrCreateDeviceId(), buildPayload());
       clearDraft(currentCode);
-      setCriticoPending(result.criticoPending);
       setSubmittedNote(automatic ? 'El tiempo de la actividad terminó: enviamos las respuestas que tenías.' : null);
       setStage('submitted');
     } catch (err) {
@@ -262,18 +469,32 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   const submitRef = useRef(submitAll);
   submitRef.current = submitAll;
 
-  async function handleNext() {
-    if (isLast) {
-      await submitAll(false);
+  async function handleSend() {
+    if (answeredCount < questions.length && !confirmSubmit) {
+      setConfirmSubmit(true);
       return;
     }
-    setIndex((prev) => prev + 1);
+    setConfirmSubmit(false);
+    await submitAll(false);
   }
 
-  // Avisos en vivo de la actividad: el docente la abre o la cierra y la pantalla reacciona sin recargar.
+  // Avisos en vivo de la actividad: el docente la abre, la cierra, habilita o corrige preguntas, y la pantalla
+  // reacciona sin recargar.
   useLiveUpdates(currentCode && stage !== 'not-found' && stage !== 'submitted' ? { kind: 'activity', code: currentCode } : null, (payload) => {
     const status = payload?.status;
-    if (status === 'CERRADA' && stage === 'answering') {
+    const inside = stage === 'reading' || stage === 'answering';
+    if (status !== 'CERRADA' && inside && payload?.event === 'questions-released') {
+      void refreshQuestions('released');
+    } else if (status !== 'CERRADA' && inside && payload?.event === 'questions-updated') {
+      void refreshQuestions('updated');
+    } else if (!payload && inside) {
+      // Al reconectar, por si mientras tanto el docente habilitó o corrigió preguntas.
+      void refreshQuestions('reconnect');
+    } else if (status === 'CERRADA' && stage === 'reading' && answeredCount === 0) {
+      clearDraft(currentCode);
+      setUnavailableMessage('Tu docente cerró la actividad.');
+      setStage('unavailable');
+    } else if (status === 'CERRADA' && inside) {
       void submitRef.current(true);
     } else if (status === 'CERRADA' && stage === 'join') {
       setUnavailableMessage('[Error-REA_001] La actividad ya no está disponible');
@@ -466,7 +687,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   }
 
   if (stage === 'submitted') {
-    const answeredCount = Object.keys(answers).length;
+    const total = questions.length || meta.questionCount;
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-4 pt-16 bg-[#FAF9F6] dark:bg-[#0D0F14]">
         {studentBar}
@@ -476,14 +697,26 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
           </div>
           <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-1">¡Actividad enviada!</h2>
           <p className="text-xs text-stone-500 dark:text-stone-400 mb-5">
-            {submittedNote ?? 'Tus respuestas quedaron registradas.'}
-            {criticoPending && ' Tu docente va a revisar tus respuestas escritas.'}
+            {submittedNote ?? 'Tus respuestas quedaron registradas. Tu docente es quien ve los resultados.'}
           </p>
           <div className="bg-stone-50 dark:bg-stone-800/50 rounded-xl p-3.5 border border-stone-200/80 dark:border-stone-700">
-            <div className="text-xs text-stone-500">{answeredCount} de {questions.length} preguntas respondidas</div>
+            {answeredCount > 0 && (
+              <div className="text-xs text-stone-500">
+                {answeredCount} de {total} preguntas respondidas
+              </div>
+            )}
             <div className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-1">{activity.name}</div>
           </div>
           <div className="flex flex-col gap-2 mt-5">
+            {canRetry && (
+              <button
+                onClick={handleRetry}
+                type="button"
+                className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl text-xs transition-all cursor-pointer"
+              >
+                Volver a hacerla
+              </button>
+            )}
             <button
               onClick={() => setIsScannerOpen(true)}
               type="button"
@@ -513,54 +746,178 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     );
   }
 
+  const scanner = (
+    <StudentQrScannerModal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} onCodeScanned={handleCodeScanned} />
+  );
+
+  const banners = (
+    <>
+      {notice && (
+        <div className="flex items-start justify-between gap-2 text-xs font-semibold text-sky-900 dark:text-sky-200 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-xl px-3 py-2 mb-3">
+          <span>{notice}</span>
+          <button type="button" onClick={() => setNotice(null)} className="text-sky-700 dark:text-sky-300 cursor-pointer" aria-label="Cerrar aviso">
+            ×
+          </button>
+        </div>
+      )}
+      {resumed && (
+        <div className="flex items-center gap-1.5 text-xs font-medium text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 rounded-xl px-3 py-2 mb-3">
+          <Icon name="refresh" size={13} />
+          Retomaste la actividad donde la habías dejado
+        </div>
+      )}
+      {!isOnline && (
+        <div className="flex items-center gap-1.5 text-xs text-stone-600 bg-stone-100 rounded-xl px-3 py-2 mb-3">
+          <Icon name="alertTriangle" size={13} />
+          Sin conexión — tus respuestas se siguen guardando en este dispositivo
+        </div>
+      )}
+      {submitError && (
+        <div className="text-xs font-semibold text-rose-800 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2 mb-3">{submitError}</div>
+      )}
+    </>
+  );
+
+  // Paso 1: lectura. Las preguntas aparecen cuando el alumno termina de leer, o cuando el docente las habilita.
+  if (stage === 'reading') {
+    const waitingTeacher = !meta.questionsReleased;
+    return (
+      <div className="min-h-screen flex flex-col items-center px-4 py-16 bg-[#FAF9F6] dark:bg-[#0D0F14]">
+        {studentBar}
+        <div className="w-full max-w-2xl bg-white dark:bg-[#1A1E29] border border-stone-200/80 dark:border-stone-800 rounded-2xl p-5 sm:p-7 shadow-md">
+          <div className="flex justify-between items-center gap-3 mb-4 pb-3 border-b border-stone-200 dark:border-stone-800">
+            <div>
+              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">Paso 1 de 2 · Lectura</div>
+              <div className="text-sm font-bold text-emerald-750 dark:text-emerald-400">{activity.name}</div>
+            </div>
+            <div className="text-xs text-stone-500 font-semibold bg-stone-100 dark:bg-stone-800 px-2.5 py-1 rounded-full shrink-0">{name}</div>
+          </div>
+          {banners}
+          <p className="text-xs text-stone-500 dark:text-stone-400 mb-3">
+            Leé el texto con atención. {waitingTeacher ? 'Las preguntas aparecen cuando tu docente las habilite.' : `Después vas a responder ${meta.questionCount} preguntas.`}
+          </p>
+          <div className="max-h-[58vh] overflow-y-auto p-4 sm:p-5 bg-stone-50 dark:bg-stone-800/40 border border-stone-200/80 dark:border-stone-700 rounded-xl">
+            <div className="text-[14px] sm:text-[15px] text-slate-800 dark:text-stone-200 leading-[1.75] whitespace-pre-line">{activity.sourceText}</div>
+          </div>
+          <div className="pt-4 mt-4 border-t border-stone-200 dark:border-stone-800">
+            {waitingTeacher ? (
+              <div className="flex items-center justify-center gap-2.5 text-xs font-semibold text-stone-600 dark:text-stone-300 bg-stone-100 dark:bg-stone-800/60 rounded-xl px-4 py-3">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="motion-safe:animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-60" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-600" />
+                </span>
+                Esperando a que tu docente habilite las preguntas…
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setIndex(0);
+                  setStage('answering');
+                }}
+                className="w-full flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold py-3 rounded-xl shadow-2xs transition-all cursor-pointer"
+              >
+                Terminé de leer · Ir a las preguntas
+                <Icon name="arrowRight" size={14} />
+              </button>
+            )}
+          </div>
+        </div>
+        {scanner}
+      </div>
+    );
+  }
+
+  if (!currentQuestion) {
+    return (
+      <div className="min-h-screen flex flex-col justify-center items-center px-4 pt-12 bg-[#FAF9F6] dark:bg-[#0D0F14]">
+        {studentBar}
+        <HabitarLoader size="lg" message="Cargando las preguntas..." />
+      </div>
+    );
+  }
+
+  const missing = questions.length - answeredCount;
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-16 bg-[#FAF9F6] dark:bg-[#0D0F14]">
+    <div className="min-h-screen flex flex-col items-center px-4 py-16 bg-[#FAF9F6] dark:bg-[#0D0F14]">
       {studentBar}
-      <div className="w-full max-w-lg bg-white dark:bg-[#1A1E29] border border-stone-200/80 dark:border-stone-800 rounded-2xl p-6 sm:p-7 shadow-md">
-        <div className="flex justify-between items-center mb-4 pb-3 border-b border-stone-200 dark:border-stone-800">
-          <div className="text-sm font-bold text-emerald-750 dark:text-emerald-400">{activity.name}</div>
-          <div className="text-xs text-stone-500 font-semibold bg-stone-100 dark:bg-stone-800 px-2.5 py-1 rounded-full">{name}</div>
+      <div className="w-full max-w-lg bg-white dark:bg-[#1A1E29] border border-stone-200/80 dark:border-stone-800 rounded-2xl p-5 sm:p-7 shadow-md">
+        <div className="flex justify-between items-center gap-3 mb-4 pb-3 border-b border-stone-200 dark:border-stone-800">
+          <div>
+            {meta.readingMode !== 'LIBRE' && (
+              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">Paso 2 de 2 · Preguntas</div>
+            )}
+            <div className="text-sm font-bold text-emerald-750 dark:text-emerald-400">{activity.name}</div>
+          </div>
+          <div className="text-xs text-stone-500 font-semibold bg-stone-100 dark:bg-stone-800 px-2.5 py-1 rounded-full shrink-0">{name}</div>
         </div>
 
-        <div className="mb-5 max-h-[160px] overflow-y-auto p-3.5 bg-stone-50 dark:bg-stone-800/40 border border-stone-200/80 rounded-xl">
-          <div className="text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-1">TEXTO DE LECTURA</div>
-          <div className="text-xs sm:text-[13px] text-slate-800 dark:text-stone-200 leading-relaxed whitespace-pre-line">{activity.sourceText}</div>
+        <div className="mb-4">
+          <button
+            type="button"
+            onClick={() => setShowText((v) => !v)}
+            aria-expanded={showText}
+            className="flex items-center gap-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300 hover:underline cursor-pointer"
+          >
+            <Icon name="fileText" size={13} />
+            {showText ? 'Ocultar el texto' : 'Volver a ver el texto'}
+          </button>
+          {showText && (
+            <div className="mt-2 max-h-[220px] overflow-y-auto p-3.5 bg-stone-50 dark:bg-stone-800/40 border border-stone-200/80 dark:border-stone-700 rounded-xl">
+              <div className="text-xs sm:text-[13px] text-slate-800 dark:text-stone-200 leading-relaxed whitespace-pre-line">{activity.sourceText}</div>
+            </div>
+          )}
         </div>
 
-        {resumed && (
-          <div className="flex items-center gap-1.5 text-xs font-medium text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 rounded-xl px-3 py-2 mb-3">
-            <Icon name="refresh" size={13} />
-            Retomaste la actividad donde la habías dejado
-          </div>
-        )}
+        {banners}
 
-        {!isOnline && (
-          <div className="flex items-center gap-1.5 text-xs text-stone-600 bg-stone-100 rounded-xl px-3 py-2 mb-3">
-            <Icon name="alertTriangle" size={13} />
-            Sin conexión — tus respuestas se siguen guardando en este dispositivo
-          </div>
-        )}
-
-        {submitError && (
-          <div className="text-xs font-semibold text-rose-800 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2 mb-3">{submitError}</div>
-        )}
+        {/* Navegación: cada punto es una pregunta; se puede volver a cualquiera y cambiar la respuesta antes de enviar. */}
+        <div className="flex flex-wrap gap-1.5 mb-4" role="navigation" aria-label="Preguntas">
+          {questions.map((q, i) => {
+            const done = Boolean((answers[q.id] ?? '').trim());
+            const current = i === safeIndex;
+            return (
+              <button
+                key={q.id}
+                type="button"
+                onClick={() => goTo(i)}
+                aria-current={current ? 'step' : undefined}
+                aria-label={`Pregunta ${i + 1}${done ? ', respondida' : ''}`}
+                className={`w-8 h-8 rounded-lg text-xs font-bold tabular-nums border transition-all cursor-pointer ${
+                  current
+                    ? 'bg-emerald-700 border-emerald-700 text-white'
+                    : done
+                      ? 'bg-emerald-50 dark:bg-emerald-950/50 border-emerald-300 dark:border-emerald-700 text-emerald-900 dark:text-emerald-200'
+                      : 'bg-white dark:bg-stone-800/40 border-stone-200 dark:border-stone-700 text-stone-500'
+                }`}
+              >
+                {i + 1}
+              </button>
+            );
+          })}
+        </div>
 
         <div className="flex items-center justify-between text-xs text-stone-500 font-semibold mb-2">
-          <span>Pregunta {index + 1} de {questions.length}</span>
+          <span>
+            Pregunta {safeIndex + 1} de {questions.length}
+          </span>
           <span className="text-[10px] uppercase bg-stone-100 dark:bg-stone-800 px-2 py-0.5 rounded font-bold">
             {isOpen(currentQuestion) ? 'Respuesta escrita' : 'Elegí una opción'}
           </span>
         </div>
 
-        <div className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-4 leading-snug">
-          {currentQuestion.prompt}
-        </div>
+        <div className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-4 leading-snug">{currentQuestion.prompt}</div>
 
         {isOpen(currentQuestion) && (
           <div className="mb-6">
             <textarea
               value={answers[currentQuestion.id] ?? ''}
-              onChange={(e) => setAnswers((prev) => ({ ...prev, [currentQuestion.id]: e.target.value.slice(0, 2000) }))}
+              onChange={(e) => {
+                const value = e.target.value.slice(0, 2000);
+                setAnswers((prev) => ({ ...prev, [currentQuestion.id]: value }));
+                setConfirmSubmit(false);
+              }}
               rows={6}
               placeholder="Escribí tu respuesta. Fundamentala con lo que dice el texto."
               className="w-full px-3.5 py-3 border border-stone-200 dark:border-stone-700 rounded-xl text-sm bg-stone-50 dark:bg-[#202533] text-slate-900 dark:text-white focus:border-emerald-600 focus:bg-white outline-none leading-relaxed"
@@ -594,23 +951,59 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
           })}
         </div>
 
-        <div className="flex justify-between items-center pt-3 border-t border-stone-200 dark:border-stone-800">
-          <span className="text-[11px] text-stone-400">Guardado automático</span>
+        {confirmSubmit && (
+          <div className="text-xs text-amber-900 dark:text-amber-200 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl px-3 py-2.5 mb-3">
+            Te {missing === 1 ? 'falta 1 pregunta' : `faltan ${missing} preguntas`} sin responder. Tocá «Enviar igual» para
+            enviar así, o volvé a las que están en blanco.
+          </div>
+        )}
+
+        <div className="flex justify-between items-center gap-2 pt-3 border-t border-stone-200 dark:border-stone-800">
           <button
-            onClick={handleNext}
-            disabled={!(answers[currentQuestion.id] ?? '').trim() || submitting}
-            className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-2xs hover:shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+            type="button"
+            onClick={() => goTo(safeIndex - 1)}
+            disabled={safeIndex === 0}
+            className="flex items-center gap-1.5 text-xs font-bold text-stone-600 dark:text-stone-300 px-3 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800 disabled:opacity-40 cursor-pointer"
           >
-            <span>{submitting ? 'Enviando…' : isLast ? 'Enviar respuestas' : 'Siguiente pregunta'}</span>
-            <Icon name="arrowRight" size={13} />
+            <Icon name="arrowLeft" size={13} />
+            Anterior
           </button>
+          <span className="text-[11px] text-stone-400 tabular-nums">
+            {answeredCount}/{questions.length} respondidas
+          </span>
+          {isLast ? (
+            <button
+              type="button"
+              onClick={handleSend}
+              disabled={submitting}
+              className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-2xs transition-all disabled:opacity-50 cursor-pointer"
+            >
+              {submitting ? 'Enviando…' : confirmSubmit ? 'Enviar igual' : 'Enviar respuestas'}
+              <Icon name="check" size={13} />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => goTo(safeIndex + 1)}
+              className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-2xs transition-all cursor-pointer"
+            >
+              Siguiente
+              <Icon name="arrowRight" size={13} />
+            </button>
+          )}
         </div>
+        {!isLast && answeredCount === questions.length && (
+          <button
+            type="button"
+            onClick={handleSend}
+            disabled={submitting}
+            className="w-full mt-3 text-xs font-bold text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl py-2.5 cursor-pointer disabled:opacity-50"
+          >
+            {submitting ? 'Enviando…' : 'Ya respondí todo · Enviar respuestas'}
+          </button>
+        )}
       </div>
-      <StudentQrScannerModal
-        isOpen={isScannerOpen}
-        onClose={() => setIsScannerOpen(false)}
-        onCodeScanned={handleCodeScanned}
-      />
+      {scanner}
     </div>
   );
 }

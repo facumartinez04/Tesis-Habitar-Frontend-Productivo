@@ -2,6 +2,8 @@
  * Identificador anónimo del dispositivo del alumno. Vincula el número de lista (o el nombre) con un equipo
  * dentro del aula, para que nadie responda a nombre de otro desde otro dispositivo. No contiene datos personales.
  */
+let sessionDeviceId: string | null = null;
+
 export function getOrCreateDeviceId(): string {
   try {
     let deviceId = localStorage.getItem('habitar_device_id');
@@ -11,7 +13,8 @@ export function getOrCreateDeviceId(): string {
     }
     return deviceId;
   } catch {
-    return 'dev_browser_fallback';
+    sessionDeviceId ??= `tmp_${Math.random().toString(36).slice(2, 12)}${Date.now().toString(36)}`;
+    return sessionDeviceId;
   }
 }
 

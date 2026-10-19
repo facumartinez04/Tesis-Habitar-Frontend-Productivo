@@ -1,6 +1,7 @@
 import { persistentAtom } from '@nanostores/persistent';
 import type { AttemptPolicy, ComprehensionAxis, DiagnosticType } from '../types/activity';
 import type { Question } from '../types/question';
+import type { ReadingMode } from '../services/activityService';
 
 export interface ActivityWizardState {
   educationLevel: string;
@@ -20,6 +21,8 @@ export interface ActivityWizardState {
   endDate: string;
   endTime: string;
   attemptPolicy: AttemptPolicy;
+  /** Cómo empieza el alumno: primero lee (por defecto), espera que el docente habilite las preguntas, o todo junto. */
+  readingMode?: ReadingMode;
   name: string;
   generatedCode: string | null;
   /** Id de la actividad creada: el panel en vivo la sigue por WebSocket. */
@@ -75,6 +78,7 @@ export const initialWizardState: ActivityWizardState = {
   courseName: '',
   ...defaultActivityWindow(),
   attemptPolicy: 'unico',
+  readingMode: 'LECTURA_PRIMERO',
   name: '',
   generatedCode: null,
   generatedActivityId: null,

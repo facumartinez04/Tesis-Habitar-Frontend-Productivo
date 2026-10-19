@@ -194,6 +194,11 @@ html.dark .bg-rose-50\/60:not([class*="dark:bg-"]),
   background-color: rgba(244, 63, 94, 0.060) !important;
 }
 
+html.dark .bg-sky-50:not([class*="dark:bg-"]),
+:root[data-theme="dark"] .bg-sky-50:not([class*="dark:bg-"]) {
+  background-color: rgba(14, 165, 233, 0.100) !important;
+}
+
 html.dark .bg-slate-100:not([class*="dark:bg-"]),
 :root[data-theme="dark"] .bg-slate-100:not([class*="dark:bg-"]) {
   background-color: rgba(255, 255, 255, 0.07) !important;
@@ -314,6 +319,11 @@ html.dark .border-red-200:not([class*="dark:border-"]),
   border-color: rgba(239, 68, 68, 0.35) !important;
 }
 
+html.dark .border-red-300:not([class*="dark:border-"]),
+:root[data-theme="dark"] .border-red-300:not([class*="dark:border-"]) {
+  border-color: rgba(239, 68, 68, 0.35) !important;
+}
+
 html.dark .border-rose-200:not([class*="dark:border-"]),
 :root[data-theme="dark"] .border-rose-200:not([class*="dark:border-"]) {
   border-color: rgba(244, 63, 94, 0.35) !important;
@@ -322,6 +332,11 @@ html.dark .border-rose-200:not([class*="dark:border-"]),
 html.dark .border-rose-300:not([class*="dark:border-"]),
 :root[data-theme="dark"] .border-rose-300:not([class*="dark:border-"]) {
   border-color: rgba(244, 63, 94, 0.35) !important;
+}
+
+html.dark .border-sky-200:not([class*="dark:border-"]),
+:root[data-theme="dark"] .border-sky-200:not([class*="dark:border-"]) {
+  border-color: rgba(14, 165, 233, 0.35) !important;
 }
 
 html.dark .border-stone-200:not([class*="dark:border-"]),
@@ -757,6 +772,21 @@ html.dark .text-rose-900:not([class*="dark:text-"]),
 html.dark .text-rose-950:not([class*="dark:text-"]),
 :root[data-theme="dark"] .text-rose-950:not([class*="dark:text-"]) {
   color: #FDA4AF !important;
+}
+
+html.dark .text-sky-700:not([class*="dark:text-"]),
+:root[data-theme="dark"] .text-sky-700:not([class*="dark:text-"]) {
+  color: #7DD3FC !important;
+}
+
+html.dark .text-sky-800:not([class*="dark:text-"]),
+:root[data-theme="dark"] .text-sky-800:not([class*="dark:text-"]) {
+  color: #7DD3FC !important;
+}
+
+html.dark .text-sky-900:not([class*="dark:text-"]),
+:root[data-theme="dark"] .text-sky-900:not([class*="dark:text-"]) {
+  color: #7DD3FC !important;
 }
 
 html.dark .text-slate-500:not([class*="dark:text-"]),

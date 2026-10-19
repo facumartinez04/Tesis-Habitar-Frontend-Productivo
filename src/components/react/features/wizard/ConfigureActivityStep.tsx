@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Icon } from '../../ui/Icon';
 import { RadioGroup } from '../../ui/RadioGroup';
 import { Stepper } from '../../ui/Stepper';
-import { createActivity } from '../../../../services/activityService';
+import { createActivity, type ReadingMode } from '../../../../services/activityService';
 import { listMyCourses } from '../../../../services/courseService';
 import { activityWizardStore, updateWizard, currentTimeInArgentina, defaultActivityWindow, todayInArgentina } from '../../../../store/activityWizardStore';
 import type { AttemptPolicy, Course, DiagnosticType } from '../../../../types/activity';
@@ -64,6 +64,7 @@ export function ConfigureActivityStep() {
         endDate: endDate,
         endTime: wizard.endTime,
         attemptPolicy: wizard.attemptPolicy,
+        readingMode: wizard.readingMode ?? 'LECTURA_PRIMERO',
         questions: wizard.questions,
         diagnosticType: wizard.diagnosticType,
       });
@@ -167,6 +168,22 @@ export function ConfigureActivityStep() {
           value={wizard.attemptPolicy}
           onChange={(value) => updateWizard({ attemptPolicy: value })}
         />
+      </div>
+
+      <div className="form-group mb-3.5">
+        <label className="block text-[11px] text-text-sec mb-[5px] font-medium">Lectura</label>
+        <RadioGroup
+          options={[
+            { value: 'LECTURA_PRIMERO' as ReadingMode, label: 'Primero leen el texto, después responden' },
+            { value: 'DOCENTE_HABILITA' as ReadingMode, label: 'Leen y yo habilito las preguntas para todos' },
+            { value: 'LIBRE' as ReadingMode, label: 'Texto y preguntas juntos' },
+          ]}
+          value={wizard.readingMode ?? 'LECTURA_PRIMERO'}
+          onChange={(value) => updateWizard({ readingMode: value })}
+        />
+        <div className="text-[11px] text-text-ter mt-1">
+          En cualquier modo podés pasar a todos a las preguntas desde el panel en vivo.
+        </div>
       </div>
 
       <div className="form-group mb-3.5">
