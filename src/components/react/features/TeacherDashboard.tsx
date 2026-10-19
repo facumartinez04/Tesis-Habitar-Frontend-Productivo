@@ -29,6 +29,7 @@ import { CourseQrModal } from './CourseQrModal';
 import { CourseDevicesModal } from './CourseDevicesModal';
 import { ReviewAnswersModal } from './ReviewAnswersModal';
 import { CourseInsightsPanel } from './CourseInsightsPanel';
+import { CourseCardsGrid } from './CourseCardsGrid';
 
 const activityStatusBadge: Record<ActivitySummary['status'], { label: string; color: 'green' | 'amber' | 'gray' }> = {
   borrador: { label: 'Borrador', color: 'gray' },
@@ -56,6 +57,8 @@ export function TeacherDashboard() {
   const session = useAuthGuard(['docente']);
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState<string>('');
+  // Grilla de tarjetas de aulas, o detalle de un aula. El aula abierta queda en la URL (?curso=…).
+  const [view, setView] = useState<'grid' | 'detail'>('grid');
   const [summary, setSummary] = useState<CourseResultSummary | null>(null);
   const [aiUsage, setAiUsage] = useState<AiUsageSnapshot | null>(null);
   const { message, showToast } = useToast();
@@ -89,10 +92,13 @@ export function TeacherDashboard() {
     try {
       const list = await listMyCourses();
       setCourses(list);
-      const activeId = targetId || selectedCourseId || list[0]?.id || '';
-      if (activeId) {
-        setSelectedCourseId(activeId);
-        loadCourseData(activeId);
+      const fromUrl = targetId || new URLSearchParams(window.location.search).get('curso') || '';
+      if (fromUrl && list.some((c) => c.id === fromUrl)) {
+        setSelectedCourseId(fromUrl);
+        loadCourseData(fromUrl);
+        setView('detail');
+      } else {
+        setView('grid');
       }
     } catch {
       showToast('Error al cargar la lista de aulas');
@@ -106,9 +112,48 @@ export function TeacherDashboard() {
     if (session) getAiUsage(session.user.institutionId).then(setAiUsage);
   }, [session]);
 
-  function handleSelectCourse(id: string) {
+  function setCourseInUrl(id: string | null) {
+    const url = new URL(window.location.href);
+    if (id) url.searchParams.set('curso', id);
+    else url.searchParams.delete('curso');
+    window.history.pushState(null, '', url.toString());
+  }
+
+  function openCourse(id: string) {
     setSelectedCourseId(id);
+    setSummary(null);
+    setComparison(null);
     loadCourseData(id);
+    setView('detail');
+    setCourseInUrl(id);
+    window.scrollTo({ top: 0 });
+  }
+
+  function backToGrid() {
+    setView('grid');
+    setCourseInUrl(null);
+    // Vuelve a pedir la lista para que la cantidad de alumnos de cada tarjeta esté al día.
+    listMyCourses().then(setCourses).catch(() => undefined);
+  }
+
+  // Botones Atrás y Adelante del navegador.
+  useEffect(() => {
+    const onPop = () => {
+      const id = new URLSearchParams(window.location.search).get('curso');
+      if (id && courses.some((c) => c.id === id)) {
+        setSelectedCourseId(id);
+        loadCourseData(id);
+        setView('detail');
+      } else {
+        setView('grid');
+      }
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [courses]);
+
+  function handleSelectCourse(id: string) {
+    openCourse(id);
   }
 
   function handleCourseScanned(course: Course) {
@@ -117,8 +162,7 @@ export function TeacherDashboard() {
       const exists = prev.some((c) => c.id === course.id);
       return exists ? prev : [course, ...prev];
     });
-    setSelectedCourseId(course.id);
-    loadCourseData(course.id);
+    openCourse(course.id);
     showToast(`Conectado al aula: ${course.name}`);
   }
 
@@ -266,9 +310,50 @@ export function TeacherDashboard() {
     );
   }
 
+  if (view === 'grid') {
+    const totalStudents = courses.reduce((sum, c) => sum + (c.studentsCount ?? 0), 0);
+    return (
+      <div>
+        <Toast message={message} />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+          <div>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Mis Aulas y Cursos</h1>
+            <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+              {courses.length === 1 ? '1 aula' : `${courses.length} aulas`} · {totalStudents}{' '}
+              {totalStudents === 1 ? 'alumno registrado' : 'alumnos registrados'}. Entrá a un aula para ver sus resultados y
+              actividades.
+            </p>
+          </div>
+          <button
+            onClick={() => setIsScannerOpen(true)}
+            className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all cursor-pointer self-start sm:self-auto"
+            title="Escanear el código QR fijo del aula"
+          >
+            <Icon name="camera" size={14} />
+            <span>Escanear QR</span>
+          </button>
+        </div>
+
+        <CourseCardsGrid courses={courses} onOpen={openCourse} onShowQr={setSelectedQrCourse} />
+
+        <QrScannerModal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} onCourseDetected={handleCourseScanned} />
+        <CourseQrModal course={selectedQrCourse} isOpen={Boolean(selectedQrCourse)} onClose={() => setSelectedQrCourse(null)} />
+      </div>
+    );
+  }
+
   return (
     <div>
       <Toast message={message} />
+
+      <button
+        type="button"
+        onClick={backToGrid}
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 dark:text-stone-300 hover:text-emerald-700 dark:hover:text-emerald-300 mb-3 cursor-pointer"
+      >
+        <Icon name="arrowLeft" size={13} />
+        Todas mis aulas
+      </button>
 
       {}
       {scannedCourse && (
@@ -323,27 +408,12 @@ export function TeacherDashboard() {
         <div className="flex flex-wrap items-center gap-3">
           <div>
             <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-              Mis Aulas y Cursos
+              {currentCourse?.name ?? 'Aula'}
             </h1>
             <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
               Diagnóstico áulico formativo y gestión de actividades
             </p>
           </div>
-          {courses.length > 0 && (
-            <div className="relative">
-              <select
-                value={selectedCourseId}
-                onChange={(e) => handleSelectCourse(e.target.value)}
-                className="bg-white dark:bg-[#1A1E29] border border-stone-200 dark:border-stone-700 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 shadow-2xs hover:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all cursor-pointer"
-              >
-                {courses.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} {c.room ? `(Salón ${c.room})` : ''}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2 shrink-0">
