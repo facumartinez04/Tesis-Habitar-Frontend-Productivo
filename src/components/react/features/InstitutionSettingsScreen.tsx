@@ -46,7 +46,7 @@ export function InstitutionSettingsScreen() {
   const [aiKeySource, setAiKeySource] = useState<AiKeySource>('platform');
   const [aiCustomApiKey, setAiCustomApiKey] = useState('');
   const [aiModel, setAiModel] = useState('');
-  const [studentIdMode, setStudentIdMode] = useState<'lista' | 'nombre'>('lista');
+  const [studentIdMode, setStudentIdMode] = useState<'lista' | 'nombre'>('nombre');
   const [alertThreshold, setAlertThreshold] = useState(60);
   const [alertEmailsEnabled, setAlertEmailsEnabled] = useState(true);
   const [savingStudents, setSavingStudents] = useState(false);
@@ -282,14 +282,14 @@ export function InstitutionSettingsScreen() {
       <Card>
         <div className="text-[12.5px] font-medium mb-1">Identificación de los alumnos</div>
         <div className="text-[11.5px] text-text-sec mb-3 leading-relaxed">
-          Los alumnos no crean cuenta. Por defecto se identifican con su número de lista, y el docente sabe quién es quién
-          por su lista del curso: así Habitar no guarda nombres de menores. Si la institución lo prefiere, puede pedir el
-          nombre y apellido.
+          Los alumnos no crean cuenta. Por defecto se identifican con su nombre y apellido, que es lo que ve el docente en el
+          panel y en los resultados. Si la institución prefiere no guardar nombres de menores, puede pedir sólo el número de
+          lista: el docente sabe quién es quién por su lista del curso.
         </div>
         <div className="flex flex-wrap gap-2 mb-4">
           {([
-            { value: 'lista', label: 'Número de lista (recomendado)' },
             { value: 'nombre', label: 'Nombre y apellido' },
+            { value: 'lista', label: 'Sólo número de lista' },
           ] as const).map((opt) => (
             <label key={opt.value} className="flex items-center gap-1.5 text-[12px] bg-surface rounded-md px-2.5 py-1.5 cursor-pointer">
               <input type="radio" name="studentIdMode" checked={studentIdMode === opt.value} onChange={() => setStudentIdMode(opt.value)} />

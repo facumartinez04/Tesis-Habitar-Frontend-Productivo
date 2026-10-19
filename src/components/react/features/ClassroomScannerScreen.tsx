@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { StudentNameFields, fullStudentName, studentNameError } from '../ui/StudentNameFields';
 import { Card } from '../ui/Card';
 import { Icon } from '../ui/Icon';
 import { Badge } from '../ui/Badge';
@@ -22,6 +23,7 @@ export function ClassroomScannerScreen() {
   const [qrCode, setQrCode] = useState<string>('');
   const [redirecting, setRedirecting] = useState<string | null>(null);
   const [studentNameInput, setStudentNameInput] = useState('');
+  const [nameParts, setNameParts] = useState({ firstName: '', lastName: '' });
   const [binding, setBinding] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [boundInfo, setBoundInfo] = useState<BoundInfo | null>(null);
@@ -137,20 +139,21 @@ export function ClassroomScannerScreen() {
   const liveConnected = useLiveUpdates(qrCode && info ? { kind: 'course', qrCode } : null, refreshInfo);
   usePolling(refreshInfo, 20_000, Boolean(qrCode && info) && !liveConnected);
 
-  // Por defecto el alumno se identifica con su número de lista; el nombre sólo si la institución lo habilitó.
-  const byList = (info?.studentIdMode ?? 'LISTA') === 'LISTA';
+  // Por defecto el alumno se identifica con nombre y apellido; con número de lista si la institución lo eligió.
+  const byList = (info?.studentIdMode ?? 'NOMBRE') === 'LISTA';
 
   async function handleBindDevice(e: React.FormEvent) {
     e.preventDefault();
     if (!info) return;
 
-    const trimmedName = studentNameInput.trim();
+    const nameProblem = byList ? null : studentNameError(nameParts.firstName, nameParts.lastName);
+    const trimmedName = byList ? studentNameInput.trim() : fullStudentName(nameParts.firstName, nameParts.lastName);
     if (byList && !/^\d{1,3}$/.test(trimmedName)) {
       setError('Ingresá sólo tu número de lista, por ejemplo 12.');
       return;
     }
-    if (!byList && trimmedName.length < 3) {
-      setError('Por favor ingresá tu nombre y apellido completo (mínimo 3 caracteres).');
+    if (nameProblem) {
+      setError(nameProblem);
       return;
     }
 
@@ -378,29 +381,37 @@ export function ClassroomScannerScreen() {
               </div>
             )}
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-text-pri block">
-                {byList ? 'Número de lista' : 'Nombre y Apellido del Alumno'}
-              </label>
-              <input
-                type="text"
-                required
-                inputMode={byList ? 'numeric' : 'text'}
-                maxLength={byList ? 3 : 80}
-                value={studentNameInput}
-                onChange={(e) => setStudentNameInput(e.target.value)}
-                placeholder={byList ? 'Ej: 12' : 'Ej: Mateo González'}
-                className="w-full px-4 py-2.5 border border-gray-border rounded-xl text-sm bg-white dark:bg-[#1A1E29] text-text-pri focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none"
+            {byList ? (
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-text-pri block">Número de lista</label>
+                <input
+                  type="text"
+                  required
+                  inputMode="numeric"
+                  maxLength={3}
+                  value={studentNameInput}
+                  onChange={(e) => setStudentNameInput(e.target.value)}
+                  placeholder="Ej: 12"
+                  className="w-full px-3 py-2.5 border border-gray-border rounded-xl text-sm bg-white dark:bg-[#1A1E29] text-text-pri focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none"
+                  autoFocus
+                />
+              </div>
+            ) : (
+              <StudentNameFields
+                firstName={nameParts.firstName}
+                lastName={nameParts.lastName}
+                onChange={(v) => {
+                  setNameParts(v);
+                  setError(null);
+                }}
+                inputClassName="w-full px-3 py-2.5 border border-gray-border rounded-xl text-sm bg-white dark:bg-[#1A1E29] text-text-pri focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none"
                 autoFocus
               />
-              <p className="text-[11px] text-text-ter">
-                {byList ? 'El número con el que figurás en la lista del curso.' : 'Escribí tu nombre tal como figura en la lista del curso.'}
-              </p>
-            </div>
+            )}
 
             <button
               type="submit"
-              disabled={binding || !studentNameInput.trim()}
+              disabled={binding || (byList ? !studentNameInput.trim() : !nameParts.firstName.trim() || !nameParts.lastName.trim())}
               className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl text-sm transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
             >
               {binding ? (

@@ -52,6 +52,13 @@ function timeOf(iso: string): string {
   return new Date(iso).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Argentina/Buenos_Aires' });
 }
 
+/** Lo que va en el círculo del alumno: su número de lista o las iniciales de su nombre. */
+function avatarOf(name: string): string {
+  if (name.startsWith('N.º ')) return name.slice(4);
+  const words = name.split(/\s+/).filter(Boolean);
+  return ((words[0]?.[0] ?? '') + (words.length > 1 ? words[words.length - 1][0] : '')).toUpperCase();
+}
+
 /** Sin moverse durante este tiempo, el alumno figura como inactivo (puede haberse ido de la página). */
 const IDLE_MS = 3 * 60 * 1000;
 
@@ -464,7 +471,7 @@ export function ActivityLivePanel({ activityId, footer }: ActivityLivePanelProps
                       className={`flex items-center gap-3 px-5 py-2.5 transition-colors duration-700 ${highlight === r.name ? 'bg-emerald-50 dark:bg-emerald-500/10' : ''}`}
                     >
                       <span className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 text-[11px] font-bold flex items-center justify-center shrink-0">
-                        {r.name.replace('N.º ', '')}
+                        {avatarOf(r.name)}
                       </span>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 min-w-0">

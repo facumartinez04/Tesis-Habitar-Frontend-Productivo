@@ -4,6 +4,7 @@ import { Icon } from '../ui/Icon';
 import { HabitarLoader } from '../ui/HabitarLoader';
 import { StudentQrScannerModal } from './StudentQrScannerModal';
 import { ReadingHelpChat } from './ReadingHelpChat';
+import { StudentNameFields, fullStudentName, splitStudentName, studentNameError } from '../ui/StudentNameFields';
 import { useQueryParam } from '../../../hooks/useQueryParam';
 import {
   getActivityByCode,
@@ -124,7 +125,9 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   const [resumed, setResumed] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const [studentIdMode, setStudentIdMode] = useState<StudentIdMode>('lista');
+  const [studentIdMode, setStudentIdMode] = useState<StudentIdMode>('nombre');
+  /** Con nombre y apellido, cada uno en su campo. */
+  const [nameParts, setNameParts] = useState({ firstName: '', lastName: '' });
   const [unavailableMessage, setUnavailableMessage] = useState('');
   const [joinError, setJoinError] = useState<string | null>(null);
   const [submittedNote, setSubmittedNote] = useState<string | null>(null);
@@ -166,6 +169,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
       const savedName = localStorage.getItem('habitar_student_name');
       if (savedName && !name) {
         setName(savedName);
+        if (!/^(n\.º\s*)?\d+$/i.test(savedName)) setNameParts(splitStudentName(savedName));
       }
     } catch {
 
@@ -336,7 +340,16 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   }
 
   async function handleJoin() {
-    const trimmedName = name.trim();
+    let trimmedName = name.trim();
+    if (studentIdMode === 'nombre') {
+      const problem = studentNameError(nameParts.firstName, nameParts.lastName);
+      if (problem) {
+        setJoinError(problem);
+        return;
+      }
+      trimmedName = fullStudentName(nameParts.firstName, nameParts.lastName);
+      setName(trimmedName);
+    }
     if (!trimmedName) return;
     if (studentIdMode === 'lista' && !/^\d{1,3}$/.test(trimmedName.replace(/^(n\.?\s*[º°o]?\.?\s*|#\s*)/i, ''))) {
       setJoinError('Ingresá sólo tu número de lista, por ejemplo 12.');
@@ -743,20 +756,35 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
             <div className="text-lg font-bold text-slate-900 dark:text-white">{label.title}</div>
             <div className="text-xs text-stone-500 mt-0.5">{label.hint}</div>
           </div>
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            inputMode={studentIdMode === 'lista' ? 'numeric' : 'text'}
-            maxLength={studentIdMode === 'lista' ? 6 : 80}
-            className="w-full px-4 py-3 border border-stone-200 dark:border-stone-700 rounded-xl text-sm text-center mb-2 bg-stone-50 dark:bg-[#202533] text-slate-900 dark:text-white font-medium focus:border-emerald-600 focus:bg-white outline-none shadow-inner"
-            placeholder={label.placeholder}
-            autoFocus
-          />
+          {studentIdMode === 'nombre' ? (
+            <div className="mb-2">
+              <StudentNameFields
+                firstName={nameParts.firstName}
+                lastName={nameParts.lastName}
+                onChange={(v) => {
+                  setNameParts(v);
+                  setJoinError(null);
+                }}
+                inputClassName="w-full px-3 py-2.5 border border-stone-200 dark:border-stone-700 rounded-xl text-sm bg-stone-50 dark:bg-[#202533] text-slate-900 dark:text-white font-medium focus:border-emerald-600 focus:bg-white outline-none shadow-inner"
+                autoFocus
+              />
+            </div>
+          ) : (
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              inputMode="numeric"
+              maxLength={6}
+              className="w-full px-4 py-3 border border-stone-200 dark:border-stone-700 rounded-xl text-sm text-center mb-2 bg-stone-50 dark:bg-[#202533] text-slate-900 dark:text-white font-medium focus:border-emerald-600 focus:bg-white outline-none shadow-inner"
+              placeholder={label.placeholder}
+              autoFocus
+            />
+          )}
           {joinError && <div className="text-xs text-rose-700 text-center mb-2">{joinError}</div>}
           <div className="mb-2" />
           <button
             onClick={handleJoin}
-            disabled={!name.trim() || joining}
+            disabled={(studentIdMode === 'nombre' ? !nameParts.firstName.trim() || !nameParts.lastName.trim() : !name.trim()) || joining}
             className="w-full bg-emerald-700 hover:bg-emerald-800 text-white py-3 rounded-xl text-xs sm:text-sm font-bold transition-all disabled:opacity-50 cursor-pointer shadow-2xs hover:shadow-xs"
           >
             {joining ? 'Ingresando…' : 'Comenzar actividad de lectura'}

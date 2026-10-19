@@ -18,7 +18,7 @@ export function getOrCreateDeviceId(): string {
   }
 }
 
-/** Cómo se identifica el alumno en la institución: número de lista (por defecto) o nombre y apellido. */
+/** Cómo se identifica el alumno en la institución: nombre y apellido (por defecto) o número de lista. */
 export type StudentIdMode = 'lista' | 'nombre';
 
 export function studentIdLabel(mode: StudentIdMode): { title: string; placeholder: string; hint: string } {
@@ -31,6 +31,6 @@ export function studentIdLabel(mode: StudentIdMode): { title: string; placeholde
     : {
         title: '¡Hola! ¿Cómo te llamás?',
         placeholder: 'Nombre y apellido',
-        hint: 'No necesitás cuenta ni contraseña.',
+        hint: 'Escribí tu nombre y tu apellido. No necesitás cuenta ni contraseña.',
       };
 }
