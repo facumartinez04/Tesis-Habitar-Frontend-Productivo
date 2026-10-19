@@ -1,0 +1,12 @@
+---
+import AppShell from '../../../layouts/AppShell.astro';
+import { ActivityLivePage } from '../../../components/react/features/ActivityLivePage';
+import { docenteNavItems } from '../../../lib/nav';
+---
+<AppShell
+  title="Actividad en vivo"
+  sectionLabel="Panel docente"
+  sidebarItems={docenteNavItems}
+>
+  <ActivityLivePage client:load />
+</AppShell>

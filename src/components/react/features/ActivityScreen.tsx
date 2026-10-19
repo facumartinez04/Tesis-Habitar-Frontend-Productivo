@@ -7,6 +7,7 @@ import { useQueryParam } from '../../../hooks/useQueryParam';
 import { getActivityByCode, submitResponse, type AnswerPayload } from '../../../services/activityService';
 import { ApiError } from '../../../lib/apiClient';
 import { getOrCreateDeviceId, studentIdLabel, type StudentIdMode } from '../../../lib/studentDevice';
+import { useLiveUpdates } from '../../../lib/realtime';
 import type { Activity } from '../../../types/activity';
 import type { Question } from '../../../types/question';
 
@@ -269,6 +270,19 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     }
     setIndex((prev) => prev + 1);
   }
+
+  // Avisos en vivo de la actividad: el docente la abre o la cierra y la pantalla reacciona sin recargar.
+  useLiveUpdates(currentCode && stage !== 'not-found' && stage !== 'submitted' ? { kind: 'activity', code: currentCode } : null, (payload) => {
+    const status = payload?.status;
+    if (status === 'CERRADA' && stage === 'answering') {
+      void submitRef.current(true);
+    } else if (status === 'CERRADA' && stage === 'join') {
+      setUnavailableMessage('[Error-REA_001] La actividad ya no está disponible');
+      setStage('unavailable');
+    } else if (status === 'PUBLICADA' && stage === 'unavailable') {
+      loadActivity(currentCode);
+    }
+  });
 
   // Si la ventana horaria vence mientras el alumno responde, se envían sus respuestas parciales (CU-02-06, 2.1).
   useEffect(() => {

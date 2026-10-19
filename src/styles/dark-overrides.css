@@ -149,6 +149,11 @@ html.dark .bg-green-50\/50:not([class*="dark:bg-"]),
   background-color: rgba(34, 197, 94, 0.060) !important;
 }
 
+html.dark .bg-neutral-100:not([class*="dark:bg-"]),
+:root[data-theme="dark"] .bg-neutral-100:not([class*="dark:bg-"]) {
+  background-color: rgba(255, 255, 255, 0.07) !important;
+}
+
 html.dark .bg-purple-50:not([class*="dark:bg-"]),
 :root[data-theme="dark"] .bg-purple-50:not([class*="dark:bg-"]) {
   background-color: rgba(168, 85, 247, 0.100) !important;
@@ -504,6 +509,11 @@ html.dark .hover\:text-gray-900:not([class*="dark:hover:text-"]):hover,
   color: #F3F4F6 !important;
 }
 
+html.dark .hover\:text-neutral-900:not([class*="dark:hover:text-"]):hover,
+:root[data-theme="dark"] .hover\:text-neutral-900:not([class*="dark:hover:text-"]):hover {
+  color: #F3F4F6 !important;
+}
+
 html.dark .hover\:text-red-600:not([class*="dark:hover:text-"]):hover,
 :root[data-theme="dark"] .hover\:text-red-600:not([class*="dark:hover:text-"]):hover {
   color: #FCA5A5 !important;
@@ -677,6 +687,11 @@ html.dark .text-green-800:not([class*="dark:text-"]),
 html.dark .text-green-900:not([class*="dark:text-"]),
 :root[data-theme="dark"] .text-green-900:not([class*="dark:text-"]) {
   color: #86EFAC !important;
+}
+
+html.dark .text-neutral-500:not([class*="dark:text-"]),
+:root[data-theme="dark"] .text-neutral-500:not([class*="dark:text-"]) {
+  color: #9CA3AF !important;
 }
 
 html.dark .text-neutral-900:not([class*="dark:text-"]),

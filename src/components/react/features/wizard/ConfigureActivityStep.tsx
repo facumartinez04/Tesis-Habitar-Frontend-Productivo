@@ -55,7 +55,7 @@ export function ConfigureActivityStep() {
         questions: wizard.questions,
         diagnosticType: wizard.diagnosticType,
       });
-      updateWizard({ name, generatedCode: activity.code });
+      updateWizard({ name, generatedCode: activity.code, generatedActivityId: activity.id });
       window.location.href = '/docente/actividades/nueva/qr';
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'No se pudo crear la actividad. Intentá de nuevo.');

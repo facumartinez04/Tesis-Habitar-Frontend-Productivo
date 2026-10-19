@@ -7,6 +7,7 @@ import { getPublicCourseInfo, bindStudentDevice } from '../../../services/course
 import { sessionStore } from '../../../store/sessionStore';
 import type { PublicCourseInfo } from '../../../types/activity';
 import { getOrCreateDeviceId } from '../../../lib/studentDevice';
+import { useLiveUpdates, usePolling } from '../../../lib/realtime';
 
 interface BoundInfo {
   studentName: string;
@@ -126,6 +127,14 @@ export function ClassroomScannerScreen() {
         setLoading(false);
       });
   }, []);
+
+  // El aula se actualiza sola: cuando el docente abre, crea o cierra una actividad, aparece sin recargar.
+  const refreshInfo = () => {
+    if (!qrCode) return;
+    getPublicCourseInfo(qrCode).then(setInfo).catch(() => undefined);
+  };
+  const liveConnected = useLiveUpdates(qrCode && info ? { kind: 'course', qrCode } : null, refreshInfo);
+  usePolling(refreshInfo, 20_000, Boolean(qrCode && info) && !liveConnected);
 
   // Por defecto el alumno se identifica con su número de lista; el nombre sólo si la institución lo habilitó.
   const byList = (info?.studentIdMode ?? 'LISTA') === 'LISTA';
@@ -324,10 +333,27 @@ export function ClassroomScannerScreen() {
             ) : (
               <div className="text-center py-4 px-2 space-y-1.5 bg-surface rounded-xl border border-gray-border/50">
                 <div className="text-2xl">⏳</div>
-                <div className="text-sm font-semibold text-text-pri">Sin actividades abiertas ahora</div>
-                <p className="text-xs text-text-sec max-w-xs mx-auto leading-relaxed">
-                  Tu dispositivo ya está listo. Esperá la indicación de tu docente para comenzar la lectura.
-                </p>
+                {info.upcomingActivity ? (
+                  <>
+                    <div className="text-sm font-semibold text-text-pri">{info.upcomingActivity.name}</div>
+                    <p className="text-xs text-text-sec max-w-xs mx-auto leading-relaxed">
+                      Empieza a las <strong>{info.upcomingActivity.startTime} h</strong>. Dejá esta pantalla abierta: el botón
+                      para comenzar aparece solo.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-sm font-semibold text-text-pri">Sin actividades abiertas ahora</div>
+                    <p className="text-xs text-text-sec max-w-xs mx-auto leading-relaxed">
+                      Tu dispositivo ya está listo. Dejá esta pantalla abierta: cuando tu docente abra la actividad, aparece
+                      sola.
+                    </p>
+                  </>
+                )}
+                <div className="inline-flex items-center gap-1.5 text-[10.5px] text-text-ter pt-1">
+                  <span className={`w-1.5 h-1.5 rounded-full ${liveConnected ? 'bg-emerald-500 animate-pulse' : 'bg-stone-400'}`} />
+                  {liveConnected ? 'Conectado en vivo' : 'Buscando actualizaciones…'}
+                </div>
               </div>
             )}
           </div>

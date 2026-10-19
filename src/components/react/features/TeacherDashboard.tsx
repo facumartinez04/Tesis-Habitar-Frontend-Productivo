@@ -620,6 +620,19 @@ export function TeacherDashboard() {
                       <Icon name="copy" size={11} />
                       <span>Duplicar</span>
                     </button>
+                    {act.status !== 'borrador' && (
+                      <a
+                        href={`/docente/actividades/vivo?id=${act.id}`}
+                        className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold shadow-2xs transition-colors ${
+                          act.status === 'cerrada'
+                            ? 'bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 hover:bg-stone-50 text-slate-700 dark:text-slate-300'
+                            : 'bg-emerald-700 hover:bg-emerald-800 text-white'
+                        }`}
+                      >
+                        {act.status === 'cerrada' ? <Icon name="eye" size={11} /> : <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+                        <span>{act.status === 'cerrada' ? 'Ver' : 'En vivo'}</span>
+                      </a>
+                    )}
                     {(act.status === 'publicada' || act.status === 'cerrada') && (
                       <button
                         onClick={() => setReviewActivity({ id: act.id, name: act.name })}

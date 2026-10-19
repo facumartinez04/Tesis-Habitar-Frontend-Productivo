@@ -74,6 +74,8 @@ export interface PublicCourseInfo {
     name: string;
     endTime: string;
   } | null;
+  /** Próxima actividad programada, si no hay ninguna abierta. */
+  upcomingActivity?: { code: string; name: string; availableFrom: string; startTime: string } | null;
   /** Cómo se identifica el alumno en la institución: número de lista (por defecto) o nombre y apellido. */
   studentIdMode?: 'LISTA' | 'NOMBRE';
 }

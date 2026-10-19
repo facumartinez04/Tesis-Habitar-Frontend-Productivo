@@ -226,3 +226,35 @@ export async function reviewAnswer(activityId: string, answerId: string, score: 
     body: { score },
   });
 }
+
+export interface LiveActivity {
+  id: string;
+  code: string;
+  name: string;
+  status: 'BORRADOR' | 'PROGRAMADA' | 'PUBLICADA' | 'CERRADA';
+  attemptPolicy: 'UNICO' | 'REINTENTOS';
+  diagnosticType: 'INICIO' | 'CIERRE' | null;
+  availableFrom: string;
+  startTime: string;
+  endTime: string;
+  opensAt: string | null;
+  closesAt: string | null;
+  courseId: string;
+  courseName: string;
+  courseQrCode: string | null;
+  questionCount: number;
+  devicesInClassroom: number;
+  pendingReviews: number;
+  responses: {
+    responseId: string;
+    studentDisplayName: string;
+    submittedAt: string;
+    scores: { literal: number | null; inferencial: number | null; critico: number | null };
+    criticoPending: boolean;
+  }[];
+}
+
+/** Estado en vivo de la actividad para el panel del docente. */
+export async function getActivityLive(activityId: string): Promise<LiveActivity> {
+  return apiFetch<LiveActivity>(`/activities/${activityId}/live`);
+}

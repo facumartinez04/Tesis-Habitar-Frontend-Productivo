@@ -20,6 +20,8 @@ export interface ActivityWizardState {
   attemptPolicy: AttemptPolicy;
   name: string;
   generatedCode: string | null;
+  /** Id de la actividad creada: el panel en vivo la sigue por WebSocket. */
+  generatedActivityId?: string | null;
 }
 
 /** Fecha de hoy en hora argentina, en el formato del campo de fecha (AAAA-MM-DD). */
@@ -77,6 +79,7 @@ export const initialWizardState: ActivityWizardState = {
   attemptPolicy: 'unico',
   name: '',
   generatedCode: null,
+  generatedActivityId: null,
 };
 
 export const activityWizardStore = persistentAtom<ActivityWizardState>(
