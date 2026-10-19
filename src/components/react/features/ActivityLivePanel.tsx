@@ -527,6 +527,49 @@ export function ActivityLivePanel({ activityId, footer }: ActivityLivePanelProps
               </ul>
             )}
           </div>
+          {/* Dudas sobre el texto */}
+          {live.readingHelp && (
+            <div className="bg-card-bg border border-gray-border rounded-2xl">
+              <div className="px-5 py-3 border-b border-gray-border flex items-center justify-between gap-3">
+                <span className="text-sm font-bold text-text-pri">Dudas sobre el texto</span>
+                <span className="text-[11px] text-text-ter">
+                  {live.helpQuestions.length === 0
+                    ? 'La ayuda de la IA explica palabras y frases, sin responder la actividad'
+                    : `${live.helpQuestions.length} ${live.helpQuestions.length === 1 ? 'consulta' : 'consultas'}`}
+                </span>
+              </div>
+              {live.helpQuestions.length === 0 ? (
+                <div className="px-5 py-6 text-center text-xs text-text-sec">
+                  Cuando un alumno pregunte qué significa algo del texto, lo vas a ver acá.
+                </div>
+              ) : (
+                <ul className="divide-y divide-gray-border max-h-[360px] overflow-y-auto">
+                  {live.helpQuestions.map((h) => (
+                    <li key={h.id} className="px-5 py-2.5">
+                      <details className="group">
+                        <summary className="flex items-start gap-3 cursor-pointer list-none">
+                          <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 w-12 shrink-0 pt-px">
+                            {h.studentDisplayName.replace('N.º ', 'N.º ')}
+                          </span>
+                          <span className="flex-1 min-w-0 text-[13px] text-text-pri">{h.question}</span>
+                          {h.declined && (
+                            <span
+                              className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-800 dark:text-amber-300"
+                              title="La IA no respondió: buscaba la respuesta de la actividad o no era sobre el texto"
+                            >
+                              No respondida
+                            </span>
+                          )}
+                          <span className="shrink-0 text-[11px] text-text-ter tabular-nums">{timeOf(h.createdAt)}</span>
+                        </summary>
+                        <p className="mt-1.5 ml-[60px] text-xs text-text-sec leading-relaxed whitespace-pre-line">{h.answer}</p>
+                      </details>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
           {footer}
         </div>
       </div>

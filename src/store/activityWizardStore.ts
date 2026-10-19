@@ -23,6 +23,8 @@ export interface ActivityWizardState {
   attemptPolicy: AttemptPolicy;
   /** Cómo empieza el alumno: primero lee (por defecto), espera que el docente habilite las preguntas, o todo junto. */
   readingMode?: ReadingMode;
+  /** Ayuda de la IA con el texto para los alumnos. */
+  readingHelp?: boolean;
   name: string;
   generatedCode: string | null;
   /** Id de la actividad creada: el panel en vivo la sigue por WebSocket. */
@@ -79,6 +81,7 @@ export const initialWizardState: ActivityWizardState = {
   ...defaultActivityWindow(),
   attemptPolicy: 'unico',
   readingMode: 'LECTURA_PRIMERO',
+  readingHelp: true,
   name: '',
   generatedCode: null,
   generatedActivityId: null,

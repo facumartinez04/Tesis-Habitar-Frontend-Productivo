@@ -19,6 +19,8 @@ export interface CreateActivityInput {
   questions: Question[];
   diagnosticType?: DiagnosticType | null;
   readingMode?: ReadingMode;
+  /** Ayuda de la IA con el texto para los alumnos (por defecto, sí). */
+  readingHelp?: boolean;
 }
 
 /** Cómo empieza el alumno: lee primero (por defecto), espera que el docente habilite las preguntas, o todo junto. */
@@ -42,6 +44,7 @@ interface BackendActivity {
   diagnosticType?: string | null;
   readingMode?: ReadingMode;
   questionsReleasedAt?: string | null;
+  readingHelp?: boolean;
 }
 
 interface BackendQuestion {
@@ -120,6 +123,7 @@ export async function createActivity(input: CreateActivityInput): Promise<Activi
       attemptPolicy: toUpper(input.attemptPolicy),
       diagnosticType: input.diagnosticType ? toUpper(input.diagnosticType) : null,
       readingMode: input.readingMode ?? 'LECTURA_PRIMERO',
+      readingHelp: input.readingHelp ?? true,
       questions: input.questions.map((question) => ({
         axis: toUpper(question.axis),
         prompt: question.prompt,
@@ -147,6 +151,8 @@ export type PublicActivityResult =
       /** Cuándo el docente pasó a todos a las preguntas (null si todavía no lo hizo). */
       questionsReleasedAt: string | null;
       questionCount: number;
+      /** Si el alumno puede preguntarle a la IA qué significa algo del texto. */
+      readingHelp: boolean;
     }
   | { ok: false; notFound: boolean; message: string };
 
@@ -163,6 +169,7 @@ export async function getActivityByCode(code: string): Promise<PublicActivityRes
       questionsReleased: result.questionsReleased ?? true,
       questionsReleasedAt: result.activity.questionsReleasedAt ?? null,
       questionCount: result.questionCount ?? result.questions.length,
+      readingHelp: result.activity.readingHelp ?? true,
     };
   } catch (err) {
     if (err instanceof ApiError && err.status !== 404) {
@@ -267,6 +274,34 @@ export async function editLiveQuestion(
   await apiFetch(`/activities/${activityId}/questions/${questionId}`, { method: 'PATCH', body: input });
 }
 
+export interface HelpMessage {
+  id: string;
+  question: string;
+  answer: string;
+  /** La IA no respondió porque buscaba la respuesta de la actividad o no era sobre el texto. */
+  declined: boolean;
+  createdAt: string;
+}
+
+/** Conversación del alumno con la ayuda de lectura en esta actividad. */
+export async function getHelpConversation(
+  code: string,
+  studentDisplayName: string,
+  deviceId: string,
+): Promise<{ enabled: boolean; remaining: number; messages: HelpMessage[] }> {
+  return apiFetch(`/activities/${code}/help/history`, { method: 'POST', auth: false, body: { studentDisplayName, deviceId } });
+}
+
+/** Duda sobre el texto: la IA explica qué significa sin responder las preguntas de la actividad. */
+export async function askReadingHelp(
+  code: string,
+  studentDisplayName: string,
+  deviceId: string,
+  question: string,
+): Promise<{ message: HelpMessage; remaining: number }> {
+  return apiFetch(`/activities/${code}/help`, { method: 'POST', auth: false, body: { studentDisplayName, deviceId, question } });
+}
+
 export async function closeActivityNow(activityId: string): Promise<void> {
   await apiFetch(`/activities/${activityId}/close`, { method: 'POST' });
 }
@@ -332,6 +367,15 @@ export interface LiveActivity {
     createdAt: string;
   }[];
   questions: LiveQuestion[];
+  readingHelp: boolean;
+  helpQuestions: {
+    id: string;
+    studentDisplayName: string;
+    question: string;
+    answer: string;
+    declined: boolean;
+    createdAt: string;
+  }[];
   responses: {
     responseId: string;
     studentDisplayName: string;

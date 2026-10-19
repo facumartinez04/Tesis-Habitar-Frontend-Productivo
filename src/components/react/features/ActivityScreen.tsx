@@ -3,6 +3,7 @@ import { Card } from '../ui/Card';
 import { Icon } from '../ui/Icon';
 import { HabitarLoader } from '../ui/HabitarLoader';
 import { StudentQrScannerModal } from './StudentQrScannerModal';
+import { ReadingHelpChat } from './ReadingHelpChat';
 import { useQueryParam } from '../../../hooks/useQueryParam';
 import {
   getActivityByCode,
@@ -50,6 +51,7 @@ interface ActivityMeta {
   questionsReleased: boolean;
   questionsReleasedAt: string | null;
   questionCount: number;
+  readingHelp: boolean;
 }
 
 function fromServerDraft(draft: DraftAnswers): Record<string, string> {
@@ -126,7 +128,10 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     questionsReleased: true,
     questionsReleasedAt: null,
     questionCount: 0,
+    readingHelp: false,
   });
+  /** Palabra o frase que el alumno seleccionó en el texto, para preguntar qué significa. */
+  const [selection, setSelection] = useState<string | null>(null);
   const metaRef = useRef(meta);
   metaRef.current = meta;
   const stageRef = useRef(stage);
@@ -230,6 +235,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
         questionsReleased: result.questionsReleased,
         questionsReleasedAt: result.questionsReleasedAt,
         questionCount: result.questionCount,
+        readingHelp: result.readingHelp,
       };
       setMeta(nextMeta);
       setShowText(result.readingMode === 'LIBRE');
@@ -435,6 +441,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
       questionsReleased: result.questionsReleased,
       questionsReleasedAt: result.questionsReleasedAt,
       questionCount: result.questionCount,
+      readingHelp: result.readingHelp,
     });
     const releasedNow = reason === 'released' || (!before.questionsReleasedAt && Boolean(result.questionsReleasedAt));
     if (releasedNow && result.questionsReleased && stageRef.current === 'reading') {
@@ -508,6 +515,21 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   }
   const handleClosedRef = useRef(handleClosed);
   handleClosedRef.current = handleClosed;
+
+  /** Selección corta en el texto (una palabra o una expresión): se ofrece preguntar qué significa. */
+  function captureSelection() {
+    if (!meta.readingHelp) return;
+    window.setTimeout(() => {
+      const text = (window.getSelection()?.toString() ?? '').replace(/\s+/g, ' ').trim();
+      const words = text ? text.split(' ').length : 0;
+      setSelection(text.length >= 2 && text.length <= 60 && words <= 6 ? text : null);
+    }, 0);
+  }
+
+  const helpChat =
+    meta.readingHelp && name ? (
+      <ReadingHelpChat code={currentCode} studentName={name} selection={selection} onSelectionUsed={() => setSelection(null)} />
+    ) : null;
 
   async function handleSend() {
     if (answeredCount < questions.length && !confirmSubmit) {
@@ -815,7 +837,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   if (stage === 'reading') {
     const waitingTeacher = !meta.questionsReleased;
     return (
-      <div className="min-h-screen flex flex-col items-center px-4 py-16 bg-[#FAF9F6] dark:bg-[#0D0F14]">
+      <div className="min-h-screen flex flex-col items-center px-4 pt-16 pb-24 bg-[#FAF9F6] dark:bg-[#0D0F14]">
         {studentBar}
         <div className="w-full max-w-2xl bg-white dark:bg-[#1A1E29] border border-stone-200/80 dark:border-stone-800 rounded-2xl p-5 sm:p-7 shadow-md">
           <div className="flex justify-between items-center gap-3 mb-4 pb-3 border-b border-stone-200 dark:border-stone-800">
@@ -830,7 +852,13 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
             Leé el texto con atención. {waitingTeacher ? 'Las preguntas aparecen cuando tu docente las habilite.' : `Después vas a responder ${meta.questionCount} preguntas.`}
           </p>
           <div className="max-h-[58vh] overflow-y-auto p-4 sm:p-5 bg-stone-50 dark:bg-stone-800/40 border border-stone-200/80 dark:border-stone-700 rounded-xl">
-            <div className="text-[14px] sm:text-[15px] text-slate-800 dark:text-stone-200 leading-[1.75] whitespace-pre-line">{activity.sourceText}</div>
+            <div
+              onMouseUp={captureSelection}
+              onTouchEnd={captureSelection}
+              className="text-[14px] sm:text-[15px] text-slate-800 dark:text-stone-200 leading-[1.75] whitespace-pre-line"
+            >
+              {activity.sourceText}
+            </div>
           </div>
           <div className="pt-4 mt-4 border-t border-stone-200 dark:border-stone-800">
             {waitingTeacher ? (
@@ -856,6 +884,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
             )}
           </div>
         </div>
+        {helpChat}
         {scanner}
       </div>
     );
@@ -910,7 +939,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   const missing = questions.length - answeredCount;
 
   return (
-    <div className="min-h-screen flex flex-col items-center px-4 py-16 bg-[#FAF9F6] dark:bg-[#0D0F14]">
+    <div className="min-h-screen flex flex-col items-center px-4 pt-16 pb-24 bg-[#FAF9F6] dark:bg-[#0D0F14]">
       {studentBar}
       <div className="w-full max-w-lg bg-white dark:bg-[#1A1E29] border border-stone-200/80 dark:border-stone-800 rounded-2xl p-5 sm:p-7 shadow-md">
         <div className="flex justify-between items-center gap-3 mb-4 pb-3 border-b border-stone-200 dark:border-stone-800">
@@ -935,7 +964,13 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
           </button>
           {showText && (
             <div className="mt-2 max-h-[220px] overflow-y-auto p-3.5 bg-stone-50 dark:bg-stone-800/40 border border-stone-200/80 dark:border-stone-700 rounded-xl">
-              <div className="text-xs sm:text-[13px] text-slate-800 dark:text-stone-200 leading-relaxed whitespace-pre-line">{activity.sourceText}</div>
+              <div
+                onMouseUp={captureSelection}
+                onTouchEnd={captureSelection}
+                className="text-xs sm:text-[13px] text-slate-800 dark:text-stone-200 leading-relaxed whitespace-pre-line"
+              >
+                {activity.sourceText}
+              </div>
             </div>
           )}
         </div>
@@ -1073,6 +1108,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
           </button>
         )}
       </div>
+      {helpChat}
       {scanner}
     </div>
   );

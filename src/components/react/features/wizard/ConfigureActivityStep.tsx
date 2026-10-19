@@ -2,6 +2,7 @@ import { useStore } from '@nanostores/react';
 import { useEffect, useState } from 'react';
 import { Icon } from '../../ui/Icon';
 import { RadioGroup } from '../../ui/RadioGroup';
+import { ToggleSwitch } from '../../ui/ToggleSwitch';
 import { Stepper } from '../../ui/Stepper';
 import { createActivity, type ReadingMode } from '../../../../services/activityService';
 import { listMyCourses } from '../../../../services/courseService';
@@ -65,6 +66,7 @@ export function ConfigureActivityStep() {
         endTime: wizard.endTime,
         attemptPolicy: wizard.attemptPolicy,
         readingMode: wizard.readingMode ?? 'LECTURA_PRIMERO',
+        readingHelp: wizard.readingHelp ?? true,
         questions: wizard.questions,
         diagnosticType: wizard.diagnosticType,
       });
@@ -184,6 +186,16 @@ export function ConfigureActivityStep() {
         <div className="text-[11px] text-text-ter mt-1">
           En cualquier modo podés pasar a todos a las preguntas desde el panel en vivo.
         </div>
+      </div>
+
+      <div className="form-group mb-3.5">
+        <ToggleSwitch
+          checked={wizard.readingHelp ?? true}
+          onChange={(value) => updateWizard({ readingHelp: value })}
+          label="Ayuda con el texto"
+          description="Cada alumno puede preguntarle a la IA qué significa una palabra o una frase. No le responde las preguntas de la actividad, y vos ves sus dudas en el panel en vivo."
+          size="sm"
+        />
       </div>
 
       <div className="form-group mb-3.5">
