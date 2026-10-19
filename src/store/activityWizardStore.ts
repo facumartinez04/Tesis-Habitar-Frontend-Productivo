@@ -28,6 +28,12 @@ export interface ActivityWizardState {
   readingHelp?: boolean;
   /** Nombre del PDF o Word original que van a leer los alumnos (el archivo queda en el navegador hasta crearla). */
   documentName?: string | null;
+  /** Actividad del banco de la que sale esta (su documento lo copia el servidor). */
+  templateId?: string | null;
+  /** Al cerrarse, el alumno ve sus respuestas corregidas. */
+  showFeedback?: boolean;
+  /** Guardar la actividad en el banco de la institución al crearla. */
+  saveToBank?: boolean;
   name: string;
   generatedCode: string | null;
   /** Id de la actividad creada: el panel en vivo la sigue por WebSocket. */

@@ -21,6 +21,10 @@ export interface CreateActivityInput {
   readingMode?: ReadingMode;
   /** Ayuda de la IA con el texto para los alumnos (por defecto, sí). */
   readingHelp?: boolean;
+  /** Al cerrarse, el alumno ve sus respuestas corregidas (por defecto, sí). */
+  showFeedback?: boolean;
+  /** Actividad del banco de la que sale (el servidor copia su documento). */
+  templateId?: string | null;
 }
 
 /** Cómo empieza el alumno: lee primero (por defecto), espera que el docente habilite las preguntas, o todo junto. */
@@ -125,6 +129,8 @@ export async function createActivity(input: CreateActivityInput): Promise<Activi
       diagnosticType: input.diagnosticType ? toUpper(input.diagnosticType) : null,
       readingMode: input.readingMode ?? 'LECTURA_PRIMERO',
       readingHelp: input.readingHelp ?? true,
+      showFeedback: input.showFeedback ?? true,
+      ...(input.templateId ? { templateId: input.templateId } : {}),
       questions: input.questions.map((question) => ({
         axis: toUpper(question.axis),
         prompt: question.prompt,
@@ -343,6 +349,71 @@ export async function fetchActivityDocument(code: string): Promise<Blob> {
     throw new ApiError(res.status, data?.error ?? 'No se pudo abrir el documento');
   }
   return res.blob();
+}
+
+/** Devolución al alumno: sus respuestas corregidas, cuando la actividad ya cerró. */
+export interface StudentFeedback {
+  activityName: string;
+  submittedAt: string;
+  scores: { literal: number | null; inferencial: number | null; critico: number | null; criticoPending: boolean };
+  questions: {
+    axis: 'LITERAL' | 'INFERENCIAL' | 'CRITICO';
+    prompt: string;
+    options: string[] | null;
+    selectedOption: string | null;
+    correctOption: string | null;
+    correct: boolean | null;
+    textAnswer: string | null;
+    score: number | null;
+    scoreLabel: string | null;
+    pendingReview: boolean;
+  }[];
+}
+
+export async function getStudentFeedback(code: string, studentDisplayName: string, deviceId: string): Promise<StudentFeedback> {
+  return apiFetch(`/activities/${code}/feedback`, { method: 'POST', auth: false, body: { studentDisplayName, deviceId } });
+}
+
+/** Banco de actividades de la institución. */
+export interface ActivityTemplateSummary {
+  id: string;
+  name: string;
+  educationLevel: string;
+  axis: string;
+  authorName: string;
+  questionCount: number;
+  wordCount: number;
+  hasDocument: boolean;
+  documentFileName: string | null;
+  uses: number;
+  createdAt: string;
+  mine: boolean;
+}
+
+export async function listActivityTemplates(q = ''): Promise<ActivityTemplateSummary[]> {
+  return apiFetch(`/activities/templates${q ? `?q=${encodeURIComponent(q)}` : ''}`);
+}
+
+/** Trae texto y preguntas de una actividad del banco, listos para el asistente. */
+export async function fetchActivityTemplate(id: string): Promise<{ template: ActivityTemplateSummary; sourceText: string; questions: Question[] }> {
+  const data = await apiFetch<ActivityTemplateSummary & { sourceText: string; questions: BackendQuestion[] }>(`/activities/templates/${id}/use`, {
+    method: 'POST',
+  });
+  const { sourceText, questions, ...template } = data;
+  return {
+    template: { ...template, mine: false },
+    sourceText,
+    questions: questions.map((q, i) => ({ ...toQuestion({ ...q, id: `banco-${id}-${i}`, edited: false, approved: true }) })),
+  };
+}
+
+export async function deleteActivityTemplate(id: string): Promise<void> {
+  await apiFetch(`/activities/templates/${id}`, { method: 'DELETE' });
+}
+
+/** Guarda una actividad (todavía abierta) en el banco de la institución. */
+export async function saveActivityAsTemplate(activityId: string): Promise<ActivityTemplateSummary> {
+  return apiFetch(`/activities/${activityId}/save-template`, { method: 'POST' });
 }
 
 export async function closeActivityNow(activityId: string): Promise<void> {

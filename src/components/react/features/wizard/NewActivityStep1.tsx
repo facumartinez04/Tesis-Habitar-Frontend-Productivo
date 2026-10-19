@@ -12,6 +12,8 @@ import { DocumentReviewModal, type ImportedDocument } from './DocumentReviewModa
 import { getOneDriveToken } from '../../../../lib/oneDrive';
 import { getIntegrationsConfig, type IntegrationsConfig } from '../../../../services/integrationsService';
 import { OneDrivePickerModal } from './OneDrivePickerModal';
+import { ActivityBankModal } from './ActivityBankModal';
+import { fetchActivityTemplate, type ActivityTemplateSummary } from '../../../../services/activityService';
 import { clearWizardDocument, documentKind, saveWizardDocument } from '../../../../lib/wizardDocument';
 
 const DEFAULT_TEXT =
@@ -33,10 +35,34 @@ export function NewActivityStep1() {
   // Documento abierto en «Revisar documento», y el último usado (para volver a verlo).
   const [reviewDoc, setReviewDoc] = useState<ImportedDocument | null>(null);
   const [lastDoc, setLastDoc] = useState<ImportedDocument | null>(null);
+  const [bankOpen, setBankOpen] = useState(false);
+  const [loadingTemplate, setLoadingTemplate] = useState(false);
+
+  /** Actividad del banco: carga su texto y sus preguntas y pasa directo a revisarlas (sin volver a generar). */
+  async function handlePickTemplate(t: ActivityTemplateSummary) {
+    setLoadingTemplate(true);
+    try {
+      const { sourceText, questions, template } = await fetchActivityTemplate(t.id);
+      await clearWizardDocument();
+      updateWizard({
+        sourceText,
+        wordCount: template.wordCount,
+        questions,
+        templateId: template.id,
+        documentName: template.hasDocument ? `${template.documentFileName ?? 'documento'} (del banco)` : null,
+        educationLevel: template.educationLevel || wizard.educationLevel,
+        name: template.name,
+      });
+      window.location.href = '/docente/actividades/nueva/revisar';
+    } catch (err) {
+      setImportError(err instanceof Error ? err.message : 'No se pudo usar la actividad del banco.');
+      setLoadingTemplate(false);
+    }
+  }
 
 
   useEffect(() => {
-    updateWizard({ sourceText: '', wordCount: 0, questions: [], documentName: null, generatedCode: null, generatedActivityId: null });
+    updateWizard({ sourceText: '', wordCount: 0, questions: [], documentName: null, templateId: null, generatedCode: null, generatedActivityId: null });
     void clearWizardDocument();
   }, []);
 
@@ -229,6 +255,15 @@ export function NewActivityStep1() {
           </label>
           <button
             type="button"
+            onClick={() => setBankOpen(true)}
+            disabled={loadingTemplate}
+            className="flex items-center gap-1.5 bg-white border border-gray-border rounded-[6px] px-2.5 py-1.5 text-xs text-text-pri font-medium hover:bg-gray-50 disabled:opacity-50 cursor-pointer"
+          >
+            <Icon name="layers" size={12} />
+            {loadingTemplate ? 'Cargando…' : 'Banco de la institución'}
+          </button>
+          <button
+            type="button"
             onClick={() => { setText(DEFAULT_TEXT); resetWizard(); }}
             className="flex items-center gap-1.5 bg-white border border-gray-border rounded-[6px] px-2.5 py-1.5 text-xs text-text-sec hover:text-text-pri"
           >
@@ -346,6 +381,7 @@ export function NewActivityStep1() {
           setReviewDoc({ ...picked, origin: 'OneDrive' });
         }}
       />
+      <ActivityBankModal isOpen={bankOpen} onClose={() => setBankOpen(false)} onPick={(t) => { setBankOpen(false); void handlePickTemplate(t); }} />
       <DocumentReviewModal
         document={reviewDoc}
         onClose={() => setReviewDoc(null)}

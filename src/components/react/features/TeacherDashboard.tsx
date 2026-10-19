@@ -21,6 +21,7 @@ import {
   listActivitiesByCourse,
   publishActivityNow,
   type ActivitySummary,
+  saveActivityAsTemplate,
 } from '../../../services/activityService';
 import { confirmAction } from '../../../lib/alerts';
 import type { CourseResultSummary, PerformanceStatus } from '../../../types/result';
@@ -179,6 +180,19 @@ export function TeacherDashboard() {
       if (summary) refreshActivities(summary.courseId);
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'No se pudo duplicar la actividad');
+    } finally {
+      setBusyActivityId(null);
+    }
+  }
+
+  /** Guarda la actividad en el banco de la institución (antes de cerrarla, mientras todavía tiene el texto). */
+  async function handleSaveToBank(activityId: string, activityName: string) {
+    setBusyActivityId(activityId);
+    try {
+      await saveActivityAsTemplate(activityId);
+      showToast(`«${activityName}» quedó en el banco de la institución`);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'No se pudo guardar en el banco');
     } finally {
       setBusyActivityId(null);
     }
@@ -645,6 +659,17 @@ export function TeacherDashboard() {
                       >
                         <Icon name="edit" size={11} />
                         <span>Revisar respuestas</span>
+                      </button>
+                    )}
+                    {act.status !== 'cerrada' && (
+                      <button
+                        onClick={() => handleSaveToBank(act.id, act.name)}
+                        disabled={busyActivityId === act.id}
+                        title="Guarda el texto, las preguntas y el documento para reutilizarla"
+                        className="flex items-center gap-1.5 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-700 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 transition-colors cursor-pointer disabled:opacity-50"
+                      >
+                        <Icon name="layers" size={11} />
+                        <span>Guardar en el banco</span>
                       </button>
                     )}
                     {act.status === 'publicada' && (

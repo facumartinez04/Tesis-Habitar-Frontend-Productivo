@@ -27,7 +27,14 @@ interface Dashboard {
   byCourse: { id: string; name: string; responses: number; students: number; activities: number; averages: Avg }[];
   byStudent: { id: string; name: string; courseName: string; responses: number; lastDay: string; averages: Avg; status: Status }[];
   byActivity: { id: string; name: string; code: string; courseName: string; date: string; responses: number; averages: Avg }[];
+  /** Evolución del alumno elegido, actividad por actividad. */
+  timeline: { id: string; name: string; day: string; diagnosticType: string | null; averages: Avg }[];
+  /** Diagnóstica de inicio contra la de cierre, con los filtros actuales. */
+  diagnostic: { inicio: { responses: number; averages: Avg } | null; cierre: { responses: number; averages: Avg } | null };
 }
+
+/** Fila de un gráfico por ejes: etiqueta corta del eje x y título completo para el tooltip. */
+type AxisRow = { label: string; title: string; averages: Avg };
 
 /** Ejes en orden fijo, con colores validados para fondo claro y oscuro (paleta categórica de referencia). */
 const AXES = [
@@ -159,6 +166,24 @@ export function DashboardScreen() {
   const set = (patch: Partial<typeof filters>) => setFilters((f) => ({ ...f, ...patch }));
   const activePreset = PRESETS.find((p) => p.from() === filters.from && !filters.to)?.label;
   const k = data?.kpis;
+  const selectedStudent = data?.students.find((s) => s.id === filters.studentId) ?? null;
+  const selectedCourse = data?.courses.find((c) => c.id === filters.courseId) ?? null;
+
+  /** Informe en PDF: se imprime la vista actual en claro, sin menú, con todas las filas. */
+  function printReport() {
+    const root = document.documentElement;
+    const wasDark = root.classList.contains('dark');
+    const theme = root.dataset.theme;
+    root.classList.remove('dark');
+    if (theme) root.dataset.theme = 'light';
+    const restore = () => {
+      if (wasDark) root.classList.add('dark');
+      if (theme) root.dataset.theme = theme;
+      window.removeEventListener('afterprint', restore);
+    };
+    window.addEventListener('afterprint', restore);
+    window.setTimeout(() => window.print(), 150);
+  }
   const color = (i: number) => (dark ? AXES[i].dark : AXES[i].light);
 
   function exportCurrent() {
@@ -178,11 +203,35 @@ export function DashboardScreen() {
 
   return (
     <div>
-      <div className="text-lg font-semibold text-text-pri mb-[3px] tracking-tight">Tablero</div>
-      <div className="text-[12.5px] text-text-sec mb-4">Comprensión lectora por eje. Filtrá por aula, alumno o días; los filtros quedan en la dirección para compartir la vista.</div>
+      <div className="flex flex-wrap items-start justify-between gap-2 print-hide">
+        <div className="text-lg font-semibold text-text-pri mb-[3px] tracking-tight">Tablero</div>
+        {k && k.responses > 0 && (
+          <button
+            type="button"
+            onClick={printReport}
+            className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold border border-gray-border rounded-[6px] px-2.5 py-[6px] text-text-pri hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer"
+          >
+            <Icon name="printer" size={12} />
+            Informe PDF
+          </button>
+        )}
+      </div>
+      {/* Encabezado del informe impreso */}
+      <div className="print-only mb-4">
+        <div className="text-xl font-bold">Informe de comprensión lectora</div>
+        <div className="text-[12px] mt-1">
+          {selectedStudent ? `Alumno: ${selectedStudent.name} · ` : ''}
+          {selectedCourse ? `Aula: ${selectedCourse.name} · ` : selectedStudent ? '' : 'Todas las aulas · '}
+          Período: {filters.from ? dayLabel(filters.from) : 'desde el inicio'} a {filters.to ? dayLabel(filters.to) : 'hoy'}
+        </div>
+        <div className="text-[11px] text-neutral-500 mt-0.5">
+          Generado el {new Date().toLocaleString('es-AR', { dateStyle: 'long', timeStyle: 'short', timeZone: 'America/Argentina/Buenos_Aires' })} · Habitar
+        </div>
+      </div>
+      <div className="text-[12.5px] text-text-sec mb-4 print-hide">Comprensión lectora por eje. Filtrá por aula, alumno o días; los filtros quedan en la dirección para compartir la vista.</div>
 
       {/* Filtros, en una fila */}
-      <div className="flex flex-wrap items-end gap-2 mb-4 bg-card-bg border border-gray-border rounded-xl p-3">
+      <div className="flex flex-wrap items-end gap-2 mb-4 bg-card-bg border border-gray-border rounded-xl p-3 print-hide">
         <label className="text-[11px] text-text-sec font-medium flex flex-col gap-1">
           Aula
           <select value={filters.courseId} onChange={(e) => set({ courseId: e.target.value, studentId: '' })} className={select}>
@@ -266,12 +315,43 @@ export function DashboardScreen() {
               <ResponsesChart rows={data.byDay} color={color(0)} />
             </ChartCard>
             <ChartCard title="Promedio por eje, por día">
-              <AxesChart rows={data.byDay} colors={AXES.map((_, i) => color(i))} />
+              <AxesChart rows={data.byDay.map((d) => ({ label: dayLabel(d.day), title: dayLabel(d.day), averages: d.averages }))} colors={AXES.map((_, i) => color(i))} />
             </ChartCard>
           </div>
 
+          {/* Evolución del alumno y diagnóstica */}
+          {(selectedStudent && data.timeline.length > 0) || data.diagnostic.inicio || data.diagnostic.cierre ? (
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4 print-avoid-break">
+              {selectedStudent && data.timeline.length > 0 && (
+                <ChartCard title={`Evolución de ${selectedStudent.name}, actividad por actividad`}>
+                  <AxesChart
+                    rows={data.timeline.map((t, i) => ({
+                      label: `${i + 1}`,
+                      title: `${i + 1}. ${t.name} · ${dayLabel(t.day)}${t.diagnosticType ? ` (diagnóstica de ${t.diagnosticType === 'INICIO' ? 'inicio' : 'cierre'})` : ''}`,
+                      averages: t.averages,
+                    }))}
+                    colors={AXES.map((_, i) => color(i))}
+                  />
+                  <ol className="mt-2 text-[11px] text-text-sec space-y-0.5 list-decimal pl-5">
+                    {data.timeline.map((t) => (
+                      <li key={t.id}>
+                        {t.name} · {dayLabel(t.day)}
+                        {t.diagnosticType && <span className="text-text-ter"> · diagnóstica de {t.diagnosticType === 'INICIO' ? 'inicio' : 'cierre'}</span>}
+                      </li>
+                    ))}
+                  </ol>
+                </ChartCard>
+              )}
+              {(data.diagnostic.inicio || data.diagnostic.cierre) && (
+                <ChartCard title="Diagnóstica: inicio contra cierre">
+                  <DiagnosticTable diagnostic={data.diagnostic} colors={AXES.map((_, i) => color(i))} />
+                </ChartCard>
+              )}
+            </div>
+          ) : null}
+
           {/* Detalle */}
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-2 print-hide">
             <div className="flex gap-1 border-b border-gray-border" role="tablist">
               {(['alumnos', 'aulas', 'actividades'] as const).map((t) => (
                 <button
@@ -301,7 +381,7 @@ export function DashboardScreen() {
           </div>
 
           {tab === 'alumnos' && (
-            <>
+            <div className="print-hide">
               <TableWrap>
                 <thead>
                   <tr>
@@ -340,10 +420,11 @@ export function DashboardScreen() {
                 </tbody>
               </TableWrap>
               <Pagination page={pagedStudents.page} totalPages={pagedStudents.totalPages} total={pagedStudents.total} pageSize={pagedStudents.pageSize} onChange={pagedStudents.setPage} label="alumnos" />
-            </>
+            </div>
           )}
 
           {tab === 'aulas' && (
+            <div className="print-hide">
             <TableWrap>
               <thead>
                 <tr>
@@ -374,10 +455,11 @@ export function DashboardScreen() {
                 ))}
               </tbody>
             </TableWrap>
+            </div>
           )}
 
           {tab === 'actividades' && (
-            <>
+            <div className="print-hide">
               <TableWrap>
                 <thead>
                   <tr>
@@ -408,8 +490,9 @@ export function DashboardScreen() {
                 </tbody>
               </TableWrap>
               <Pagination page={pagedActivities.page} totalPages={pagedActivities.totalPages} total={pagedActivities.total} pageSize={pagedActivities.pageSize} onChange={pagedActivities.setPage} label="actividades" />
-            </>
+            </div>
           )}
+          <PrintTables data={data} />
           <p className="text-[11px] text-text-ter mt-3">
             El eje crítico promedia sólo las respuestas ya revisadas por el docente. Estado: «Bajo» si algún eje está debajo de 40 %, «Regular»
             debajo de 60 %.
@@ -518,7 +601,7 @@ function ResponsesChart({ rows, color }: { rows: Dashboard['byDay']; color: stri
   );
 }
 
-function AxesChart({ rows, colors }: { rows: Dashboard['byDay']; colors: string[] }) {
+function AxesChart({ rows, colors }: { rows: AxisRow[]; colors: string[] }) {
   const [ref, width] = useWidth<HTMLDivElement>();
   const [hover, setHover] = useState<number | null>(null);
   const innerW = Math.max(0, width - PAD.l - PAD.r);
@@ -580,7 +663,7 @@ function AxesChart({ rows, colors }: { rows: Dashboard['byDay']; colors: string[
           ))}
           {xTicks(rows.length).map((i) => (
             <text key={i} x={x(i)} y={H - 6} textAnchor="middle" className="fill-current text-text-ter" fontSize={10}>
-              {dayLabel(rows[i].day)}
+              {rows[i].label}
             </text>
           ))}
           {hover !== null && <line x1={x(hover)} x2={x(hover)} y1={PAD.t} y2={PAD.t + innerH} className="stroke-gray-300 dark:stroke-white/20" strokeWidth={1} />}
@@ -618,7 +701,7 @@ function AxesChart({ rows, colors }: { rows: Dashboard['byDay']; colors: string[
       )}
       {hover !== null && rows[hover] && (
         <Tooltip x={x(hover)} width={width}>
-          <div className="font-semibold mb-0.5">{dayLabel(rows[hover].day)}</div>
+          <div className="font-semibold mb-0.5">{rows[hover].title}</div>
           {AXES.map((a, i) => (
             <div key={a.key} className="flex items-center justify-between gap-2 tabular-nums">
               <span className="inline-flex items-center gap-1.5">
@@ -630,6 +713,153 @@ function AxesChart({ rows, colors }: { rows: Dashboard['byDay']; colors: string[
           ))}
         </Tooltip>
       )}
+    </div>
+  );
+}
+
+/** Diagnóstica de inicio contra cierre: promedio por eje y el cambio, con flecha y signo (no sólo color). */
+function DiagnosticTable({ diagnostic, colors }: { diagnostic: Dashboard['diagnostic']; colors: string[] }) {
+  const th = 'text-left text-[11px] text-text-sec font-medium px-2 py-1.5 border-b border-gray-border';
+  const td = 'px-2 py-2 border-b border-gray-border tabular-nums text-[12.5px]';
+  return (
+    <div>
+      <table className="w-full">
+        <thead>
+          <tr>
+            <th className={th}>Eje</th>
+            <th className={th}>Inicio</th>
+            <th className={th}>Cierre</th>
+            <th className={th}>Cambio</th>
+          </tr>
+        </thead>
+        <tbody>
+          {AXES.map((a, i) => {
+            const ini = diagnostic.inicio?.averages[a.key] ?? null;
+            const fin = diagnostic.cierre?.averages[a.key] ?? null;
+            const delta = ini !== null && fin !== null ? fin - ini : null;
+            return (
+              <tr key={a.key}>
+                <td className={td}>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full" style={{ background: colors[i] }} />
+                    {a.label}
+                  </span>
+                </td>
+                <td className={td}>{pct(ini)}</td>
+                <td className={td}>{pct(fin)}</td>
+                <td className={td}>
+                  {delta === null ? (
+                    <span className="text-text-ter">—</span>
+                  ) : (
+                    <span
+                      className={`inline-flex items-center gap-1 font-semibold ${
+                        delta > 0 ? 'text-emerald-700 dark:text-emerald-300' : delta < 0 ? 'text-red-700 dark:text-red-300' : 'text-text-sec'
+                      }`}
+                    >
+                      <Icon name={delta > 0 ? 'trendingUp' : delta < 0 ? 'trendingDown' : 'minus'} size={12} />
+                      {delta > 0 ? '+' : ''}
+                      {delta} pts
+                    </span>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      <p className="text-[11px] text-text-ter mt-2">
+        {diagnostic.inicio ? `${diagnostic.inicio.responses} respuestas de inicio` : 'Sin diagnóstica de inicio en el período'} ·{' '}
+        {diagnostic.cierre ? `${diagnostic.cierre.responses} de cierre` : 'sin diagnóstica de cierre todavía'}
+      </p>
+    </div>
+  );
+}
+
+/** Tablas completas para el informe impreso (en pantalla se ven paginadas). */
+function PrintTables({ data }: { data: Dashboard }) {
+  const th = 'text-left text-[10px] font-semibold px-1.5 py-1 border-b border-neutral-300';
+  const td = 'px-1.5 py-1 border-b border-neutral-200 text-[10.5px]';
+  return (
+    <div className="print-only">
+      <div className="text-[13px] font-bold mt-4 mb-1">Por aula</div>
+      <table className="w-full">
+        <thead>
+          <tr>
+            <th className={th}>Aula</th>
+            <th className={th}>Alumnos</th>
+            <th className={th}>Actividades</th>
+            {AXES.map((a) => (
+              <th key={a.key} className={th}>{a.label}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {data.byCourse.map((c) => (
+            <tr key={c.id}>
+              <td className={td}>{c.name}</td>
+              <td className={td}>{c.students}</td>
+              <td className={td}>{c.activities}</td>
+              {AXES.map((a) => (
+                <td key={a.key} className={td}>{pct(c.averages[a.key])}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="text-[13px] font-bold mt-4 mb-1">Por alumno</div>
+      <table className="w-full">
+        <thead>
+          <tr>
+            <th className={th}>Alumno</th>
+            <th className={th}>Aula</th>
+            <th className={th}>Act.</th>
+            {AXES.map((a) => (
+              <th key={a.key} className={th}>{a.label}</th>
+            ))}
+            <th className={th}>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.byStudent.map((s) => (
+            <tr key={s.id}>
+              <td className={td}>{s.name}</td>
+              <td className={td}>{s.courseName}</td>
+              <td className={td}>{s.responses}</td>
+              {AXES.map((a) => (
+                <td key={a.key} className={td}>{pct(s.averages[a.key])}</td>
+              ))}
+              <td className={td}>{STATUS[s.status].label}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="text-[13px] font-bold mt-4 mb-1">Por actividad</div>
+      <table className="w-full">
+        <thead>
+          <tr>
+            <th className={th}>Actividad</th>
+            <th className={th}>Aula</th>
+            <th className={th}>Fecha</th>
+            <th className={th}>Resp.</th>
+            {AXES.map((a) => (
+              <th key={a.key} className={th}>{a.label}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {data.byActivity.map((a) => (
+            <tr key={a.id}>
+              <td className={td}>{a.name}</td>
+              <td className={td}>{a.courseName}</td>
+              <td className={td}>{dayLabel(a.date)}</td>
+              <td className={td}>{a.responses}</td>
+              {AXES.map((ax) => (
+                <td key={ax.key} className={td}>{pct(a.averages[ax.key])}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

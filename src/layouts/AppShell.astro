@@ -13,11 +13,11 @@ interface Props {
 const { title, sectionLabel, sidebarItems } = Astro.props;
 ---
 <SiteLayout title={title}>
-  <ImpersonationBanner client:load />
+  <div data-print-hide class="contents"><ImpersonationBanner client:load /></div>
   <div class="min-h-screen flex">
-    <AppSidebar items={sidebarItems} sectionLabel={sectionLabel} />
+    <div data-print-hide class="contents"><AppSidebar items={sidebarItems} sectionLabel={sectionLabel} /></div>
     <div class="flex-1 min-w-0 flex flex-col">
-      <AppHeader sectionLabel={sectionLabel} />
+      <div data-print-hide class="contents"><AppHeader sectionLabel={sectionLabel} /></div>
       <main class="flex-1 min-w-0 p-4 sm:p-6 bg-surface" transition:animate="fade">
         <div class="max-w-5xl mx-auto">
           <slot />

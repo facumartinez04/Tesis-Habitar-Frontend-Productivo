@@ -200,3 +200,31 @@ html.dark .skeleton-shimmer,
   );
   background-size: 200% 100%;
 }
+
+/* Impresión e informes en PDF: sólo el contenido, sin menú ni encabezado, en fondo blanco. */
+.print-only {
+  display: none;
+}
+@media print {
+  [data-print-hide],
+  .print-hide {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  html,
+  body,
+  main {
+    background: #ffffff !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  .print-avoid-break {
+    break-inside: avoid;
+  }
+  @page {
+    margin: 14mm;
+  }
+}

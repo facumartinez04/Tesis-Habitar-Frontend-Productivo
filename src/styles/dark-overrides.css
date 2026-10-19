@@ -314,6 +314,11 @@ html.dark .border-neutral-200:not([class*="dark:border-"]):not([data-keep-white]
   border-color: #2D3342 !important;
 }
 
+html.dark .border-neutral-300:not([class*="dark:border-"]):not([data-keep-white]):not([data-keep-white] *),
+:root[data-theme="dark"] .border-neutral-300:not([class*="dark:border-"]):not([data-keep-white]):not([data-keep-white] *) {
+  border-color: #2D3342 !important;
+}
+
 html.dark .border-purple-200:not([class*="dark:border-"]):not([data-keep-white]):not([data-keep-white] *),
 :root[data-theme="dark"] .border-purple-200:not([class*="dark:border-"]):not([data-keep-white]):not([data-keep-white] *) {
   border-color: rgba(168, 85, 247, 0.35) !important;

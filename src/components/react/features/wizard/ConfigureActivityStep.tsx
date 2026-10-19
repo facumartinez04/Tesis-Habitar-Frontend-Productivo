@@ -5,7 +5,7 @@ import { Icon } from '../../ui/Icon';
 import { RadioGroup } from '../../ui/RadioGroup';
 import { ToggleSwitch } from '../../ui/ToggleSwitch';
 import { Stepper } from '../../ui/Stepper';
-import { createActivity, uploadActivityDocument, type ReadingMode } from '../../../../services/activityService';
+import { createActivity, saveActivityAsTemplate, uploadActivityDocument, type ReadingMode } from '../../../../services/activityService';
 import { clearWizardDocument, loadWizardDocument } from '../../../../lib/wizardDocument';
 import { listMyCourses } from '../../../../services/courseService';
 import { activityWizardStore, updateWizard, currentTimeInArgentina, defaultActivityWindow, todayInArgentina } from '../../../../store/activityWizardStore';
@@ -69,6 +69,8 @@ export function ConfigureActivityStep() {
         attemptPolicy: wizard.attemptPolicy,
         readingMode: wizard.readingMode ?? 'LECTURA_PRIMERO',
         readingHelp: wizard.readingHelp ?? true,
+        showFeedback: wizard.showFeedback ?? true,
+        templateId: wizard.templateId ?? null,
         questions: wizard.questions,
         diagnosticType: wizard.diagnosticType,
       });
@@ -87,7 +89,13 @@ export function ConfigureActivityStep() {
           }
         }
       }
-      updateWizard({ name, generatedCode: activity.code, generatedActivityId: activity.id, documentName: null });
+      // Si lo pidió, queda en el banco de la institución (texto, preguntas y documento) para reutilizarla.
+      if (wizard.saveToBank) {
+        await saveActivityAsTemplate(activity.id).catch((err: Error) =>
+          showError('La actividad se creó, pero no se pudo guardar en el banco', err.message),
+        );
+      }
+      updateWizard({ name, generatedCode: activity.code, generatedActivityId: activity.id, documentName: null, templateId: null });
       window.location.href = '/docente/actividades/nueva/qr';
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'No se pudo crear la actividad. Intentá de nuevo.');
@@ -203,6 +211,26 @@ export function ConfigureActivityStep() {
         <div className="text-[11px] text-text-ter mt-1">
           En cualquier modo podés pasar a todos a las preguntas desde el panel en vivo.
         </div>
+      </div>
+
+      <div className="form-group mb-3.5">
+        <ToggleSwitch
+          checked={wizard.showFeedback ?? true}
+          onChange={(value) => updateWizard({ showFeedback: value })}
+          label="Mostrar resultados al alumno al cerrar"
+          description="Cuando cierres la actividad, cada alumno ve desde su celular qué respondió, cuáles acertó y la respuesta correcta. Las respuestas escritas muestran tu puntaje cuando las revises."
+          size="sm"
+        />
+      </div>
+
+      <div className="form-group mb-3.5">
+        <ToggleSwitch
+          checked={wizard.saveToBank ?? false}
+          onChange={(value) => updateWizard({ saveToBank: value })}
+          label="Guardar en el banco de la institución"
+          description="Guarda el texto, las preguntas y el documento para que vos u otros docentes la reutilicen. No se borra al cerrar la actividad."
+          size="sm"
+        />
       </div>
 
       <div className="form-group mb-3.5">

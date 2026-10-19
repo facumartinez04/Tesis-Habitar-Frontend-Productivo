@@ -5,6 +5,8 @@ import { HabitarLoader } from '../ui/HabitarLoader';
 import { StudentQrScannerModal } from './StudentQrScannerModal';
 import { ReadingHelpChat } from './ReadingHelpChat';
 import { StudentNameFields, fullStudentName, splitStudentName, studentNameError } from '../ui/StudentNameFields';
+import { ReadAloud } from '../ui/ReadAloud';
+import { StudentFeedbackView } from './StudentFeedbackView';
 import { useQueryParam } from '../../../hooks/useQueryParam';
 import {
   getActivityByCode,
@@ -12,7 +14,9 @@ import {
   saveProgress,
   submitResponse,
   type AnswerPayload,
+  getStudentFeedback,
   type ActivityDocumentMeta,
+  type StudentFeedback,
   type DraftAnswers,
   type ReadingMode,
 } from '../../../services/activityService';
@@ -39,7 +43,10 @@ interface ActivityScreenProps {
   defaultCode?: string;
 }
 
-type Stage = 'loading' | 'not-found' | 'unavailable' | 'join' | 'reading' | 'answering' | 'submitted';
+type Stage = 'loading' | 'not-found' | 'unavailable' | 'join' | 'reading' | 'answering' | 'submitted' | 'feedback';
+
+/** Tamaños de letra para leer (se recuerda en el dispositivo). */
+const FONT_SCALES = [1, 1.15, 1.3, 1.5];
 
 interface ActivityDraft {
   name: string;
@@ -131,6 +138,43 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   const [unavailableMessage, setUnavailableMessage] = useState('');
   const [joinError, setJoinError] = useState<string | null>(null);
   const [submittedNote, setSubmittedNote] = useState<string | null>(null);
+  /** Devolución: las respuestas corregidas, cuando la actividad ya cerró. */
+  const [feedback, setFeedback] = useState<StudentFeedback | null>(null);
+  const [fontStep, setFontStep] = useState(0);
+  useEffect(() => {
+    try {
+      const saved = Number(localStorage.getItem('habitar_font_step'));
+      if (saved > 0 && saved < FONT_SCALES.length) setFontStep(saved);
+    } catch {
+      // sin almacenamiento local: tamaño normal
+    }
+  }, []);
+  function changeFont(delta: number) {
+    setFontStep((f) => {
+      const next = Math.max(0, Math.min(FONT_SCALES.length - 1, f + delta));
+      try {
+        localStorage.setItem('habitar_font_step', String(next));
+      } catch {
+        // no se recuerda, pero funciona igual
+      }
+      return next;
+    });
+  }
+  const fontScale = FONT_SCALES[fontStep];
+
+  /** Trae la devolución del alumno; si todavía no está disponible, devuelve false. */
+  async function loadFeedback(code: string, studentName: string): Promise<boolean> {
+    if (!studentName.trim()) return false;
+    try {
+      const fb = await getStudentFeedback(code, studentName, getOrCreateDeviceId());
+      setFeedback(fb);
+      setName(studentName);
+      setStage('feedback');
+      return true;
+    } catch {
+      return false;
+    }
+  }
   const [meta, setMeta] = useState<ActivityMeta>({
     readingMode: 'LECTURA_PRIMERO',
     questionsReleased: true,
@@ -232,10 +276,20 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
       if (!result.ok) {
         if (result.notFound) {
           setStage('not-found');
-        } else {
+          return;
+        }
+        // Actividad cerrada: si este celular ya respondió, se muestran sus resultados.
+        let saved = '';
+        try {
+          saved = localStorage.getItem('habitar_student_name') ?? '';
+        } catch {
+          // sin almacenamiento local
+        }
+        void loadFeedback(cleanCode, saved).then((shown) => {
+          if (shown) return;
           setUnavailableMessage(result.message);
           setStage('unavailable');
-        }
+        });
         return;
       }
       setActivity(result.activity);
@@ -586,10 +640,13 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
 
   // Avisos en vivo de la actividad: el docente la abre, la cierra, habilita o corrige preguntas, y la pantalla
   // reacciona sin recargar.
-  useLiveUpdates(currentCode && stage !== 'not-found' && stage !== 'submitted' ? { kind: 'activity', code: currentCode } : null, (payload) => {
+  useLiveUpdates(currentCode && stage !== 'not-found' && stage !== 'feedback' ? { kind: 'activity', code: currentCode } : null, (payload) => {
     const status = payload?.status;
     const inside = stage === 'reading' || stage === 'answering';
-    if (status !== 'CERRADA' && inside && payload?.event === 'questions-released') {
+    if (status === 'CERRADA' && stage === 'submitted') {
+      // Ya envió y el docente cerró: aparece su devolución sin recargar.
+      void loadFeedback(currentCode, name);
+    } else if (status !== 'CERRADA' && inside && payload?.event === 'questions-released') {
       void refreshQuestions('released');
     } else if (status !== 'CERRADA' && inside && payload?.event === 'questions-updated') {
       void refreshQuestions('updated');
@@ -648,6 +705,16 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
       <div className="min-h-screen flex flex-col justify-center items-center px-4 pt-12 bg-[#FAF9F6] dark:bg-[#0D0F14]">
         {studentBar}
         <HabitarLoader size="lg" message="Cargando tu actividad de lectura..." />
+      </div>
+    );
+  }
+
+  if (stage === 'feedback' && feedback) {
+    return (
+      <div className="min-h-screen flex flex-col items-center px-4 pt-16 pb-10 bg-[#FAF9F6] dark:bg-[#0D0F14]">
+        {studentBar}
+        <StudentFeedbackView feedback={feedback} studentName={name} />
+        <StudentQrScannerModal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} onCodeScanned={handleCodeScanned} />
       </div>
     );
   }
@@ -811,7 +878,8 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
           </div>
           <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-1">¡Actividad enviada!</h2>
           <p className="text-xs text-stone-500 dark:text-stone-400 mb-5">
-            {submittedNote ?? 'Tus respuestas quedaron registradas. Tu docente es quien ve los resultados.'}
+            {submittedNote ?? 'Tus respuestas quedaron registradas.'} Cuando tu docente cierre la actividad, vas a ver acá tus
+            resultados.
           </p>
           <div className="bg-stone-50 dark:bg-stone-800/50 rounded-xl p-3.5 border border-stone-200/80 dark:border-stone-700">
             {answeredCount > 0 && (
@@ -907,9 +975,13 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
             <div className="text-xs text-stone-500 font-semibold bg-stone-100 dark:bg-stone-800 px-2.5 py-1 rounded-full shrink-0">{name}</div>
           </div>
           {banners}
-          <p className="text-xs text-stone-500 dark:text-stone-400 mb-3">
+          <p className="text-xs text-stone-500 dark:text-stone-400 mb-2">
             Leé el texto con atención. {waitingTeacher ? 'Las preguntas aparecen cuando tu docente las habilite.' : `Después vas a responder ${meta.questionCount} preguntas.`}
           </p>
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <ReadAloud text={activity.sourceText ?? ''} label="Escuchar el texto" />
+            <TextSizeControls onChange={changeFont} step={fontStep} max={FONT_SCALES.length - 1} />
+          </div>
           {meta.document && !asText ? (
             <div className="max-h-[70vh] overflow-y-auto p-2 sm:p-3 bg-stone-100 dark:bg-stone-800/40 border border-stone-200/80 dark:border-stone-700 rounded-xl">
               <DocumentViewer code={currentCode} document={meta.document} onError={() => setAsText(true)} />
@@ -920,6 +992,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
                 onMouseUp={captureSelection}
                 onTouchEnd={captureSelection}
                 className="text-[14px] sm:text-[15px] text-slate-800 dark:text-stone-200 leading-[1.75] whitespace-pre-line"
+                style={fontStep ? { fontSize: `${15 * fontScale}px` } : undefined}
               >
                 {activity.sourceText}
               </div>
@@ -1097,7 +1170,21 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
           </span>
         </div>
 
-        <div className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-4 leading-snug">{currentQuestion.prompt}</div>
+        <div
+          className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-2 leading-snug"
+          style={fontStep ? { fontSize: `${16 * fontScale}px` } : undefined}
+        >
+          {currentQuestion.prompt}
+        </div>
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <ReadAloud
+            text={`${currentQuestion.prompt} ${
+              currentQuestion.options?.length ? `Opciones: ${currentQuestion.options.map((o, i) => `${i + 1}, ${o}`).join('. ')}.` : ''
+            }`}
+            label="Escuchar la pregunta"
+          />
+          <TextSizeControls onChange={changeFont} step={fontStep} max={FONT_SCALES.length - 1} />
+        </div>
 
         {isOpen(currentQuestion) && (
           <div className="mb-6">
@@ -1134,7 +1221,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
                   onChange={() => selectOption(option)}
                   className="accent-emerald-700 w-4 h-4 cursor-pointer"
                 />
-                <span>{option}</span>
+                <span style={fontStep ? { fontSize: `${14 * fontScale}px` } : undefined}>{option}</span>
               </label>
             );
           })}
@@ -1187,6 +1274,22 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
       </div>
       {helpChat}
       {scanner}
+    </div>
+  );
+}
+
+/** Achicar o agrandar la letra del texto y de las preguntas. */
+function TextSizeControls({ onChange, step, max }: { onChange: (delta: number) => void; step: number; max: number }) {
+  const btn =
+    'w-8 h-8 rounded-lg border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 font-bold disabled:opacity-40 cursor-pointer hover:bg-stone-50 dark:hover:bg-stone-800';
+  return (
+    <div className="inline-flex items-center gap-1" role="group" aria-label="Tamaño de letra">
+      <button type="button" onClick={() => onChange(-1)} disabled={step === 0} className={`${btn} text-[11px]`} aria-label="Achicar la letra">
+        A−
+      </button>
+      <button type="button" onClick={() => onChange(1)} disabled={step === max} className={`${btn} text-[14px]`} aria-label="Agrandar la letra">
+        A+
+      </button>
     </div>
   );
 }
