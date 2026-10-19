@@ -7,11 +7,12 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro check && astro build && node scripts/generate-sw.mjs",
+    "build": "node scripts/generate-dark-overrides.mjs && astro check && astro build && node scripts/generate-sw.mjs",
     "icons:generate": "node scripts/generate-pwa-icons.mjs",
     "preview": "astro preview",
     "start": "serve dist -l tcp://0.0.0.0:${PORT:-4321}",
-    "astro": "astro"
+    "astro": "astro",
+    "dark:generate": "node scripts/generate-dark-overrides.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^6.0.0",

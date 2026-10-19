@@ -76,8 +76,12 @@ export function LoginScreen() {
         </p>
 
         {error && (
-          <div className="w-full text-xs font-bold text-rose-900 bg-rose-50 border border-rose-200 rounded-2xl px-4 py-3 mb-5 text-center leading-snug shadow-2xs">
-            {error}
+          <div
+            role="alert"
+            className="w-full flex items-start gap-2 text-xs font-semibold text-rose-900 bg-rose-50 border border-rose-200 dark:text-rose-200 dark:bg-rose-500/15 dark:border-rose-400/40 rounded-2xl px-4 py-3 mb-5 text-left leading-snug shadow-2xs"
+          >
+            <Icon name="alert-circle" size={15} className="shrink-0 mt-px text-rose-600 dark:text-rose-300" />
+            <span>{error}</span>
           </div>
         )}
 

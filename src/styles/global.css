@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./dark-overrides.css";
 
 @variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
 
@@ -143,105 +144,7 @@ html.dark .form-select,
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
 }
 
-html.dark .bg-emerald-50,
-:root[data-theme="dark"] .bg-emerald-50 {
-  background-color: rgba(16, 185, 129, 0.12) !important;
-}
-
-html.dark .bg-blue-50,
-:root[data-theme="dark"] .bg-blue-50 {
-  background-color: rgba(59, 130, 246, 0.12) !important;
-}
-
-html.dark .bg-amber-50,
-:root[data-theme="dark"] .bg-amber-50 {
-  background-color: rgba(245, 158, 11, 0.12) !important;
-}
-
-html.dark .bg-rose-50,
-html.dark .bg-red-50,
-:root[data-theme="dark"] .bg-rose-50,
-:root[data-theme="dark"] .bg-red-50 {
-  background-color: rgba(239, 68, 68, 0.12) !important;
-}
-
-html.dark .bg-emerald-100,
-:root[data-theme="dark"] .bg-emerald-100 {
-  background-color: rgba(16, 185, 129, 0.22) !important;
-}
-
-html.dark .bg-blue-100,
-:root[data-theme="dark"] .bg-blue-100 {
-  background-color: rgba(59, 130, 246, 0.22) !important;
-}
-
-html.dark .bg-amber-100,
-:root[data-theme="dark"] .bg-amber-100 {
-  background-color: rgba(245, 158, 11, 0.22) !important;
-}
-
-html.dark .bg-gray-50,
-html.dark [class*="bg-gray-50/"],
-:root[data-theme="dark"] .bg-gray-50,
-:root[data-theme="dark"] [class*="bg-gray-50/"] {
-  background-color: rgba(255, 255, 255, 0.04) !important;
-}
-
-html.dark .bg-gray-100,
-html.dark [class*="bg-gray-100/"],
-:root[data-theme="dark"] .bg-gray-100,
-:root[data-theme="dark"] [class*="bg-gray-100/"] {
-  background-color: rgba(255, 255, 255, 0.08) !important;
-}
-
-html.dark .text-emerald-700,
-html.dark .text-emerald-800,
-html.dark .text-emerald-900,
-html.dark .text-emerald-950,
-:root[data-theme="dark"] .text-emerald-700,
-:root[data-theme="dark"] .text-emerald-800,
-:root[data-theme="dark"] .text-emerald-900,
-:root[data-theme="dark"] .text-emerald-950 {
-  color: #34D399 !important;
-}
-
-html.dark .text-blue-700,
-html.dark .text-blue-800,
-:root[data-theme="dark"] .text-blue-700,
-:root[data-theme="dark"] .text-blue-800 {
-  color: #60A5FA !important;
-}
-
-html.dark .text-amber-700,
-html.dark .text-amber-800,
-html.dark .text-amber-950,
-:root[data-theme="dark"] .text-amber-700,
-:root[data-theme="dark"] .text-amber-800,
-:root[data-theme="dark"] .text-amber-950 {
-  color: #FBBF24 !important;
-}
-
-html.dark .text-rose-700,
-html.dark .text-rose-800,
-html.dark .text-red-700,
-html.dark .text-red-800,
-html.dark .text-red-950,
-:root[data-theme="dark"] .text-rose-700,
-:root[data-theme="dark"] .text-rose-800,
-:root[data-theme="dark"] .text-red-700,
-:root[data-theme="dark"] .text-red-800,
-:root[data-theme="dark"] .text-red-950 {
-  color: #F87171 !important;
-}
-
-html.dark .border-gray-100,
-html.dark .border-gray-200,
-html.dark .border-gray-300,
-:root[data-theme="dark"] .border-gray-100,
-:root[data-theme="dark"] .border-gray-200,
-:root[data-theme="dark"] .border-gray-300 {
-  border-color: #2D3342 !important;
-}
+/* Los tonos de color claros (fondos, textos, bordes) se adaptan en dark-overrides.css, generado a partir del código. */
 
 html.dark .shadow-sm,
 html.dark .shadow-md,
