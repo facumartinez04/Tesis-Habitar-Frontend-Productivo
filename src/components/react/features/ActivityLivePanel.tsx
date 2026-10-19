@@ -22,6 +22,9 @@ const STATUS = {
   BORRADOR: { label: 'Borrador', dot: 'bg-stone-400', text: 'text-stone-600 dark:text-stone-300', bg: 'bg-stone-100 dark:bg-white/5' },
 } as const;
 
+/** Tolerancia del servidor para los envíos finales después de la hora de cierre. */
+const GRACE_MS = 10 * 60 * 1000;
+
 function joinUrl(code: string): string {
   return `${window.location.origin}/actividad?code=${encodeURIComponent(code)}`;
 }
@@ -96,6 +99,8 @@ export function ActivityLivePanel({ activityId, footer }: ActivityLivePanelProps
   const opensIn = live.opensAt ? Date.parse(live.opensAt) - now : 0;
   const closesIn = live.closesAt ? Date.parse(live.closesAt) - now : 0;
   const answered = live.responses.length;
+  // Pasada la hora de cierre, durante unos minutos todavía entran los envíos automáticos de quienes respondían.
+  const finishing = live.status === 'PUBLICADA' && Boolean(live.closesAt) && closesIn <= 0;
   const expected = Math.max(live.devicesInClassroom, answered);
 
   async function handlePublish() {
@@ -213,11 +218,22 @@ export function ActivityLivePanel({ activityId, footer }: ActivityLivePanelProps
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
                 <div className="text-[11px] font-semibold text-text-ter uppercase tracking-wider">
-                  {live.status === 'PROGRAMADA' ? 'Empieza en' : live.status === 'PUBLICADA' ? 'Cierra en' : 'Estado'}
+                  {live.status === 'PROGRAMADA' ? 'Empieza en' : live.status === 'PUBLICADA' ? (finishing ? 'Cerrando' : 'Cierra en') : 'Estado'}
                 </div>
-                <div className="text-3xl font-bold text-text-pri tabular-nums mt-1">
-                  {live.status === 'PROGRAMADA' ? formatCountdown(opensIn) : live.status === 'PUBLICADA' ? (live.closesAt ? formatCountdown(closesIn) : '—') : 'Cerrada'}
+                <div className={`font-bold text-text-pri tabular-nums mt-1 ${finishing ? 'text-lg' : 'text-3xl'}`}>
+                  {live.status === 'PROGRAMADA'
+                    ? formatCountdown(opensIn)
+                    : live.status === 'PUBLICADA'
+                      ? finishing
+                        ? 'Recibiendo los últimos envíos'
+                        : live.closesAt
+                          ? formatCountdown(closesIn)
+                          : '—'
+                      : 'Cerrada'}
                 </div>
+                {finishing && live.closesAt && (
+                  <div className="text-xs text-text-sec mt-0.5">Se cierra sola a las {timeOf(new Date(Date.parse(live.closesAt) + GRACE_MS).toISOString())} h</div>
+                )}
                 <div className="text-xs text-text-sec mt-1">
                   {live.availableFrom.split('-').reverse().join('/')} · {live.startTime} a {live.endTime} h
                 </div>
