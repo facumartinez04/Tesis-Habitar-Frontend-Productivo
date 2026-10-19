@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { HabitarLoader } from '../ui/HabitarLoader';
+import { DocxPages } from '../ui/DocxPages';
 import { fetchActivityDocument, type ActivityDocumentMeta } from '../../../services/activityService';
 import { openPdf, type PdfHandle } from '../../../lib/pdfDocument';
 
@@ -98,13 +99,7 @@ export function DocumentViewer({ code, document: meta, onError }: DocumentViewer
           ))}
         </div>
       )}
-      {html !== null && (
-        <div
-          data-keep-white="true"
-          className="bg-white text-neutral-900 rounded-lg shadow-sm border border-stone-200 px-5 py-6 sm:px-8 text-[14px] sm:text-[15px] leading-relaxed break-words [&_p]:mb-3 [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mb-3 [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mb-2 [&_h3]:font-bold [&_h3]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3 [&_img]:max-w-full [&_img]:h-auto [&_img]:my-3 [&_table]:w-full [&_table]:my-3 [&_td]:border [&_td]:border-stone-300 [&_td]:p-1.5 [&_a]:text-emerald-800 [&_a]:underline"
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
-      )}
+      {html !== null && <DocxPages html={html} />}
     </div>
   );
 }

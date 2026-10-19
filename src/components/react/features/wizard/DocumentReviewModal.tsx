@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from '../../ui/Icon';
 import { HabitarLoader } from '../../ui/HabitarLoader';
+import { DocxPages } from '../../ui/DocxPages';
 import { MIN_TEXT_CHARS, openPdf, type PdfHandle } from '../../../../lib/pdfDocument';
 import { extractDocumentWithPreview } from '../../../../lib/documentText';
 import { validateWordCount } from '../../../../services/aiService';
@@ -197,7 +198,7 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
             )}
 
             {/* Vista previa */}
-            <div className="flex-1 min-w-0 min-h-[220px] overflow-auto bg-gray-bg p-4 flex justify-center">
+            <div className="flex-1 min-w-0 min-h-[220px] overflow-auto bg-gray-bg p-4 flex justify-center items-start">
               {pdf ? (
                 <div className="flex flex-col items-center gap-2">
                   <div className="shadow-lg rounded bg-white" data-keep-white="true">
@@ -220,11 +221,9 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
                   </div>
                 </div>
               ) : docxHtml ? (
-                <div
-                  data-keep-white="true"
-                  className="bg-white text-neutral-900 shadow-lg rounded w-full max-w-[640px] p-8 text-[13px] leading-relaxed [&_p]:mb-3 [&_h1]:text-lg [&_h1]:font-bold [&_h1]:mb-3 [&_h2]:font-bold [&_h2]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
-                  dangerouslySetInnerHTML={{ __html: docxHtml }}
-                />
+                <div className="w-full max-w-[640px]">
+                  <DocxPages html={docxHtml} />
+                </div>
               ) : (
                 <pre className="bg-white text-neutral-900 shadow-lg rounded w-full max-w-[640px] p-8 text-[13px] whitespace-pre-wrap font-sans" data-keep-white="true">
                   {text}

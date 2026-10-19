@@ -19,7 +19,8 @@ const DEFAULT_TEXT =
 
 export function NewActivityStep1() {
   const wizard = useStore(activityWizardStore);
-  const [text, setText] = useState(wizard.sourceText || DEFAULT_TEXT);
+  // Cada actividad nueva arranca con el texto vacío (no se arrastra el de la anterior).
+  const [text, setText] = useState('');
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [boundCourse, setBoundCourse] = useState<Course | null>(null);
@@ -33,6 +34,11 @@ export function NewActivityStep1() {
   const [reviewDoc, setReviewDoc] = useState<ImportedDocument | null>(null);
   const [lastDoc, setLastDoc] = useState<ImportedDocument | null>(null);
 
+
+  useEffect(() => {
+    updateWizard({ sourceText: '', wordCount: 0, questions: [], documentName: null, generatedCode: null, generatedActivityId: null });
+    void clearWizardDocument();
+  }, []);
 
   useEffect(() => {
     getIntegrationsConfig().then(setIntegrations).catch(() => setIntegrations({ googleDrive: null, oneDrive: null }));
@@ -296,6 +302,7 @@ export function NewActivityStep1() {
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
+          placeholder="Pegá acá el texto que van a leer los alumnos, o subí un archivo (Word, PDF o texto)."
           rows={6}
           className="w-full px-2.5 py-2 border border-gray-border rounded-[6px] text-xs bg-white leading-relaxed resize-none"
         />
@@ -307,9 +314,15 @@ export function NewActivityStep1() {
 
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2.5">
         <div className="text-[11.5px] text-text-sec">
-          <span className={`font-semibold ${isValid ? 'text-green-mid' : 'text-red'}`}>{wordCount} palabras</span>
-          {' · '}
-          {isValid ? 'Rango válido para nivel seleccionado (40–600)' : 'El texto debe tener entre 40 y 600 palabras'}
+          {wordCount === 0 ? (
+            'Cargá un texto de entre 40 y 600 palabras'
+          ) : (
+            <>
+              <span className={`font-semibold ${isValid ? 'text-green-mid' : 'text-red'}`}>{wordCount} palabras</span>
+              {' · '}
+              {isValid ? 'Rango válido para nivel seleccionado (40–600)' : 'El texto debe tener entre 40 y 600 palabras'}
+            </>
+          )}
         </div>
         <button
           onClick={handleGenerate}
