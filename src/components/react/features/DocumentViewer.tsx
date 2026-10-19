@@ -75,6 +75,8 @@ export function DocumentViewer({ code, document: meta, onError }: DocumentViewer
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
+    // Se mide de entrada (no hace falta esperar al primer aviso del observador) y después en cada cambio.
+    setWidth(Math.floor(el.getBoundingClientRect().width));
     const observer = new ResizeObserver(([entry]) => setWidth(Math.floor(entry.contentRect.width)));
     observer.observe(el);
     return () => observer.disconnect();
