@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
+import { usePagination } from '../../../hooks/usePagination';
+import { Pagination } from '../ui/Pagination';
 import QRCode from 'qrcode';
 import { Icon } from '../ui/Icon';
 import { QrBox } from '../ui/QrBox';
@@ -120,6 +122,7 @@ export function ActivityLivePanel({ activityId, footer }: ActivityLivePanelProps
   const [reviewOpen, setReviewOpen] = useState(false);
   const [questionsOpen, setQuestionsOpen] = useState(false);
   const [highlight, setHighlight] = useState<string | null>(null);
+  const pagedHelp = usePagination(live?.helpQuestions ?? [], 10, null);
 
   const load = useCallback(() => {
     getActivityLive(activityId)
@@ -543,8 +546,9 @@ export function ActivityLivePanel({ activityId, footer }: ActivityLivePanelProps
                   Cuando un alumno pregunte qué significa algo del texto, lo vas a ver acá.
                 </div>
               ) : (
-                <ul className="divide-y divide-gray-border max-h-[360px] overflow-y-auto">
-                  {live.helpQuestions.map((h) => (
+                <>
+                <ul className="divide-y divide-gray-border">
+                  {pagedHelp.pageItems.map((h) => (
                     <li key={h.id} className="px-5 py-2.5">
                       <details className="group">
                         <summary className="flex items-start gap-3 cursor-pointer list-none">
@@ -567,6 +571,8 @@ export function ActivityLivePanel({ activityId, footer }: ActivityLivePanelProps
                     </li>
                   ))}
                 </ul>
+                <Pagination className="px-4" page={pagedHelp.page} totalPages={pagedHelp.totalPages} total={pagedHelp.total} pageSize={pagedHelp.pageSize} onChange={pagedHelp.setPage} label="consultas" />
+                </>
               )}
             </div>
           )}

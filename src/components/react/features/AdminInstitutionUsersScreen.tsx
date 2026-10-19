@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { usePagination } from '../../../hooks/usePagination';
+import { Pagination } from '../ui/Pagination';
 import { Badge } from '../ui/Badge';
 import { Card } from '../ui/Card';
 import { Icon } from '../ui/Icon';
@@ -28,6 +30,7 @@ export function AdminInstitutionUsersScreen() {
   const { message, showToast } = useToast();
   const [institution, setInstitution] = useState<Institution | null>(null);
   const [users, setUsers] = useState<InstitutionUser[]>([]);
+  const pagedUsers = usePagination(users, 15, null);
   const [notFound, setNotFound] = useState(false);
 
   const [inviteForm, setInviteForm] = useState({ name: '', email: '', role: 'docente' as Role });
@@ -153,7 +156,7 @@ export function AdminInstitutionUsersScreen() {
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
+            {pagedUsers.pageItems.map((user) => (
               <tr key={user.id}>
                 <td className="px-2.5 py-2.5 border-b border-gray-border">{user.name}</td>
                 <td className="px-2.5 py-2.5 border-b border-gray-border text-text-sec">{user.email}</td>
@@ -188,6 +191,7 @@ export function AdminInstitutionUsersScreen() {
             )}
           </tbody>
         </TableWrap>
+        <Pagination page={pagedUsers.page} totalPages={pagedUsers.totalPages} total={pagedUsers.total} pageSize={pagedUsers.pageSize} onChange={pagedUsers.setPage} label="usuarios" />
       </Card>
     </div>
   );

@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { usePagination } from '../../../hooks/usePagination';
+import { Pagination } from '../ui/Pagination';
 import { AlertItem } from '../ui/AlertItem';
 import { Badge } from '../ui/Badge';
 import { Icon } from '../ui/Icon';
@@ -17,6 +19,7 @@ const severityIcon: Record<PerformanceAlert['severity'], { icon: IconName; varia
 export function AlertsScreen() {
   const session = useAuthGuard(['coordinador', 'admin']);
   const [alerts, setAlerts] = useState<PerformanceAlert[]>([]);
+  const pagedAlerts = usePagination(alerts, 10, null);
 
   useEffect(() => {
     if (session) getPerformanceAlerts(session.user.institutionId).then(setAlerts);
@@ -56,7 +59,7 @@ export function AlertsScreen() {
       </div>
 
       <div className="space-y-3">
-        {alerts.map((alert) => {
+        {pagedAlerts.pageItems.map((alert) => {
           const meta = severityIcon[alert.severity];
           return (
             <AlertItem
@@ -92,6 +95,7 @@ export function AlertsScreen() {
           );
         })}
       </div>
+        <Pagination page={pagedAlerts.page} totalPages={pagedAlerts.totalPages} total={pagedAlerts.total} pageSize={pagedAlerts.pageSize} onChange={pagedAlerts.setPage} label="alertas" />
 
       <div className="mt-8 pt-4 border-t border-stone-200 dark:border-stone-800 flex items-center justify-between text-xs text-stone-500">
         <span>Las alertas se actualizan de forma continua tras cada cierre de actividad docente.</span>

@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { usePagination } from '../../../hooks/usePagination';
+import { Pagination } from '../ui/Pagination';
 import { Badge } from '../ui/Badge';
 import { Icon } from '../ui/Icon';
 import { Toast } from '../ui/Toast';
@@ -45,6 +47,7 @@ export function RenewalScreen() {
   const [activeTab, setActiveTab] = useState<'instituciones' | 'planes' | 'comparativa'>('instituciones');
 
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const pagedSubscriptions = usePagination(subscriptions, 10, null);
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -333,7 +336,7 @@ export function RenewalScreen() {
           </div>
 
           <div className="space-y-3">
-            {subscriptions.map((sub) => {
+            {pagedSubscriptions.pageItems.map((sub) => {
               const basePlan = plans.find((p) => p.id === sub.planId);
               const isUrgent = sub.daysUntilExpiration <= 15;
               const hasCustomOverrides =
@@ -450,6 +453,7 @@ export function RenewalScreen() {
               );
             })}
           </div>
+            <Pagination page={pagedSubscriptions.page} totalPages={pagedSubscriptions.totalPages} total={pagedSubscriptions.total} pageSize={pagedSubscriptions.pageSize} onChange={pagedSubscriptions.setPage} label="suscripciones" />
         </div>
       )}
 

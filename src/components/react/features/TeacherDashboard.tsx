@@ -1,4 +1,6 @@
 import { pct, deltaPts } from '../../../lib/scores';
+import { usePagination } from '../../../hooks/usePagination';
+import { Pagination } from '../ui/Pagination';
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Badge } from '../ui/Badge';
@@ -60,6 +62,7 @@ export function TeacherDashboard() {
   // Grilla de tarjetas de aulas, o detalle de un aula. El aula abierta queda en la URL (?curso=…).
   const [view, setView] = useState<'grid' | 'detail'>('grid');
   const [summary, setSummary] = useState<CourseResultSummary | null>(null);
+  const pagedRows = usePagination(summary?.rows ?? [], 15, selectedCourseId);
   const [aiUsage, setAiUsage] = useState<AiUsageSnapshot | null>(null);
   const { message, showToast } = useToast();
   const [exporting, setExporting] = useState(false);
@@ -68,6 +71,7 @@ export function TeacherDashboard() {
   const [comparison, setComparison] = useState<PeriodComparison | null>(null);
   const [comparing, setComparing] = useState(false);
   const [activities, setActivities] = useState<ActivitySummary[]>([]);
+  const pagedActivities = usePagination(activities, 10, selectedCourseId);
   const [busyActivityId, setBusyActivityId] = useState<string | null>(null);
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [isDevicesModalOpen, setIsDevicesModalOpen] = useState(false);
@@ -559,7 +563,7 @@ export function TeacherDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-200/80 dark:divide-stone-800">
-                {summary.rows.map((row) => (
+                {pagedRows.pageItems.map((row) => (
                   <tr
                     key={row.studentId}
                     onClick={() => (window.location.href = `/docente/alumnos?id=${row.studentId}`)}
@@ -576,6 +580,7 @@ export function TeacherDashboard() {
                 ))}
               </tbody>
             </TableWrap>
+            <Pagination page={pagedRows.page} totalPages={pagedRows.totalPages} total={pagedRows.total} pageSize={pagedRows.pageSize} onChange={pagedRows.setPage} label="alumnos" />
           </div>
         </>
       )}
@@ -602,7 +607,7 @@ export function TeacherDashboard() {
                 </td>
               </tr>
             )}
-            {activities.map((act) => (
+            {pagedActivities.pageItems.map((act) => (
               <tr key={act.id} className="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors">
                 <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">{act.name}</td>
                 <td className="px-4 py-3 font-mono text-xs font-bold text-emerald-800 dark:text-emerald-300">{act.code}</td>
@@ -667,6 +672,7 @@ export function TeacherDashboard() {
             ))}
           </tbody>
         </TableWrap>
+        <Pagination page={pagedActivities.page} totalPages={pagedActivities.totalPages} total={pagedActivities.total} pageSize={pagedActivities.pageSize} onChange={pagedActivities.setPage} label="actividades" />
       </div>
 
       {}

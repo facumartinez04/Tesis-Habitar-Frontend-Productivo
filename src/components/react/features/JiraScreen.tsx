@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
+import { usePagination } from '../../../hooks/usePagination';
+import { Pagination } from '../ui/Pagination';
 import { useAuthGuard } from '../../../hooks/useAuthGuard';
 import type {
   JiraFiltersState,
@@ -82,6 +84,7 @@ export function JiraScreen() {
       return true;
     });
   }, [issues, filters]);
+  const pagedFilteredIssues = usePagination(filteredIssues, 20, filters);
 
   const handleMove = async (id: string, newStatus: JiraStatus) => {
     setIssues((prev) => prev.map((i) => (i.id === id ? { ...i, status: newStatus } : i)));
@@ -270,7 +273,7 @@ export function JiraScreen() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filteredIssues.map((issue) => (
+              {pagedFilteredIssues.pageItems.map((issue) => (
                 <tr
                   key={issue.id}
                   onClick={() => setSelectedIssue(issue)}
@@ -285,6 +288,7 @@ export function JiraScreen() {
               ))}
             </tbody>
           </table>
+          <Pagination page={pagedFilteredIssues.page} totalPages={pagedFilteredIssues.totalPages} total={pagedFilteredIssues.total} pageSize={pagedFilteredIssues.pageSize} onChange={pagedFilteredIssues.setPage} label="tarjetas" />
         </div>
       )}
 

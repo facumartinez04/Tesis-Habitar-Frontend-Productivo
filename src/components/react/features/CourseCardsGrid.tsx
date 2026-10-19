@@ -1,4 +1,6 @@
 import { Icon } from '../ui/Icon';
+import { usePagination } from '../../../hooks/usePagination';
+import { Pagination } from '../ui/Pagination';
 import type { Course } from '../../../types/activity';
 
 interface CourseCardsGridProps {
@@ -15,9 +17,11 @@ function studentsLabel(count: number | undefined): string {
 
 /** Una tarjeta por aula, con la cantidad de alumnos registrados; al entrar se ve el detalle del aula. */
 export function CourseCardsGrid({ courses, onOpen, onShowQr }: CourseCardsGridProps) {
+  const pagedCourses = usePagination(courses, 12, courses.length);
   return (
+    <>
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-      {courses.map((course) => {
+      {pagedCourses.pageItems.map((course) => {
         const details = [
           course.subject,
           [course.grade, course.division ? `"${course.division}"` : ''].filter(Boolean).join(' '),
@@ -89,5 +93,7 @@ export function CourseCardsGrid({ courses, onOpen, onShowQr }: CourseCardsGridPr
         );
       })}
     </div>
+      <Pagination page={pagedCourses.page} totalPages={pagedCourses.totalPages} total={pagedCourses.total} pageSize={pagedCourses.pageSize} onChange={pagedCourses.setPage} label="aulas" />
+    </>
   );
 }

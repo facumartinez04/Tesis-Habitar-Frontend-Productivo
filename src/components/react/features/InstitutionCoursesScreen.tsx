@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { usePagination } from '../../../hooks/usePagination';
+import { Pagination } from '../ui/Pagination';
 import { Icon } from '../ui/Icon';
 import { Badge } from '../ui/Badge';
 import { TableWrap } from '../ui/TableWrap';
@@ -15,6 +17,7 @@ import type { Course } from '../../../types/activity';
 export function InstitutionCoursesScreen() {
   const session = useAuthGuard(['coordinador', 'admin']);
   const [courses, setCourses] = useState<Course[]>([]);
+  const pagedCourses = usePagination(courses, 15, null);
   const [teachers, setTeachers] = useState<InstitutionUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [reassigningCourse, setReassigningCourse] = useState<Course | null>(null);
@@ -88,6 +91,7 @@ export function InstitutionCoursesScreen() {
           </a>
         </div>
       ) : (
+        <>
         <TableWrap>
           <thead>
             <tr className="bg-stone-50 dark:bg-[#161A24] border-b border-stone-200 dark:border-stone-800">
@@ -100,7 +104,7 @@ export function InstitutionCoursesScreen() {
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-200/80 dark:divide-stone-800">
-            {courses.map((course) => (
+            {pagedCourses.pageItems.map((course) => (
               <tr key={course.id} className="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors">
                 <td className="px-4 py-3">
                   <div className="font-semibold text-slate-900 dark:text-white text-xs">{course.name}</div>
@@ -155,6 +159,8 @@ export function InstitutionCoursesScreen() {
             ))}
           </tbody>
         </TableWrap>
+        <Pagination page={pagedCourses.page} totalPages={pagedCourses.totalPages} total={pagedCourses.total} pageSize={pagedCourses.pageSize} onChange={pagedCourses.setPage} label="aulas" />
+        </>
       )}
 
       {reassigningCourse && (

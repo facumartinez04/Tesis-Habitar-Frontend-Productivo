@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { usePagination } from '../../../hooks/usePagination';
+import { Pagination } from '../ui/Pagination';
 import { Icon } from '../ui/Icon';
 import { Skeleton } from '../ui/Skeleton';
 import { HabitarLoader } from '../ui/HabitarLoader';
@@ -28,7 +30,9 @@ export function AdminFinanceScreen() {
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<PlatformFinanceSummary | null>(null);
   const [expenses, setExpenses] = useState<PlatformExpense[]>([]);
+  const pagedExpenses = usePagination(expenses, 15, null);
   const [transactions, setTransactions] = useState<PaymentTransaction[]>([]);
+  const pagedTransactions = usePagination(transactions, 15, null);
   const [config, setConfig] = useState<FinanceConfig | null>(null);
 
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
@@ -442,7 +446,7 @@ export function AdminFinanceScreen() {
                       </td>
                     </tr>
                   ) : (
-                    expenses.map((exp) => (
+                    pagedExpenses.pageItems.map((exp) => (
                       <tr key={exp.id} className="hover:bg-surface/50 transition-colors">
                         <td className="py-3 px-4 text-text-sec whitespace-nowrap">
                           {new Date(exp.date).toLocaleDateString('es-AR')}
@@ -481,6 +485,7 @@ export function AdminFinanceScreen() {
                   )}
                 </tbody>
               </table>
+              <Pagination page={pagedExpenses.page} totalPages={pagedExpenses.totalPages} total={pagedExpenses.total} pageSize={pagedExpenses.pageSize} onChange={pagedExpenses.setPage} label="gastos" />
             </div>
           </div>
         </div>
@@ -524,7 +529,7 @@ export function AdminFinanceScreen() {
                       </td>
                     </tr>
                   ) : (
-                    transactions.map((tx) => (
+                    pagedTransactions.pageItems.map((tx) => (
                       <tr key={tx.id} className="hover:bg-surface/50 transition-colors">
                         <td className="py-3 px-4 text-text-sec whitespace-nowrap">
                           {new Date(tx.createdAt).toLocaleDateString('es-AR')}
@@ -573,6 +578,7 @@ export function AdminFinanceScreen() {
                   )}
                 </tbody>
               </table>
+              <Pagination page={pagedTransactions.page} totalPages={pagedTransactions.totalPages} total={pagedTransactions.total} pageSize={pagedTransactions.pageSize} onChange={pagedTransactions.setPage} label="cobros" />
             </div>
           </div>
         </div>

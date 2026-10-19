@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Badge } from '../ui/Badge';
 import { Icon } from '../ui/Icon';
 import { TableWrap } from '../ui/TableWrap';
+import { Pagination } from '../ui/Pagination';
+import { usePagination } from '../../../hooks/usePagination';
 import { Skeleton, SkeletonTable } from '../ui/Skeleton';
 import { HabitarLoader } from '../ui/HabitarLoader';
 import { ensureAdminSession } from '../../../services/authService';
@@ -52,6 +54,12 @@ export function InstitutionsListScreen() {
     }
   };
 
+  const term = search.trim().toLowerCase();
+  const filtered = (institutions ?? []).filter(
+    (inst) => !term || inst.name.toLowerCase().includes(term) || inst.domain.toLowerCase().includes(term),
+  );
+  const paged = usePagination(filtered, 15, term);
+
   useEffect(() => {
     ensureAdminSession()
       .then(() => listInstitutions())
@@ -62,11 +70,6 @@ export function InstitutionsListScreen() {
     return <HabitarLoader size="lg" message="Cargando instituciones educativas..." />;
   }
 
-  const filtered = institutions.filter((inst) => {
-    const term = search.trim().toLowerCase();
-    if (!term) return true;
-    return inst.name.toLowerCase().includes(term) || inst.domain.toLowerCase().includes(term);
-  });
 
   return (
     <div>
@@ -94,7 +97,7 @@ export function InstitutionsListScreen() {
           </tr>
         </thead>
         <tbody>
-          {filtered.map((inst) => (
+          {paged.pageItems.map((inst) => (
             <tr key={inst.id}>
               <td className="px-2.5 py-2.5 border-b border-gray-border font-medium">{inst.name}</td>
               <td className="px-2.5 py-2.5 border-b border-gray-border text-text-sec font-mono text-[11.5px]">{inst.domain}</td>
@@ -168,6 +171,13 @@ export function InstitutionsListScreen() {
                     <Icon name="school" size={10} />
                     Usuarios
                   </a>
+                  <a
+                    href={`/admin/instituciones/datos?slug=${inst.slug}`}
+                    className="flex items-center gap-1 whitespace-nowrap bg-white hover:bg-gray-50 dark:hover:bg-white/5 text-text-pri border border-gray-border rounded-[6px] px-2 py-1 text-[10.5px]"
+                  >
+                    <Icon name="layers" size={10} />
+                    Datos
+                  </a>
                 </div>
               </td>
             </tr>
@@ -181,6 +191,7 @@ export function InstitutionsListScreen() {
           )}
         </tbody>
       </TableWrap>
+      <Pagination {...paged} onChange={paged.setPage} label="instituciones" />
     </div>
   );
 }

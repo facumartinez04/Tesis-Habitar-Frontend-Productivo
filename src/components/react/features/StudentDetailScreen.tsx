@@ -1,4 +1,6 @@
 import { pct } from '../../../lib/scores';
+import { usePagination } from '../../../hooks/usePagination';
+import { Pagination } from '../ui/Pagination';
 import { useEffect, useState } from 'react';
 import { Avatar } from '../ui/Avatar';
 import { Badge } from '../ui/Badge';
@@ -48,6 +50,7 @@ export function StudentDetailScreen() {
   const session = useAuthGuard(['docente', 'coordinador', 'admin']);
   const studentId = useQueryParam('id');
   const [student, setStudent] = useState<StudentDetail | null>(null);
+  const pagedHistory = usePagination(student?.history ?? [], 15, null);
   const [feedback, setFeedback] = useState<Feedback[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
@@ -153,7 +156,7 @@ export function StudentDetailScreen() {
           </tr>
         </thead>
         <tbody>
-          {student.history.map((row) => (
+          {pagedHistory.pageItems.map((row) => (
             <tr key={row.activityName + row.date}>
               <td className="px-2.5 py-2.5 border-b border-gray-border">{row.activityName}</td>
               <td className="px-2.5 py-2.5 border-b border-gray-border">{row.date}</td>
@@ -164,6 +167,7 @@ export function StudentDetailScreen() {
           ))}
         </tbody>
       </TableWrap>
+      <Pagination page={pagedHistory.page} totalPages={pagedHistory.totalPages} total={pagedHistory.total} pageSize={pagedHistory.pageSize} onChange={pagedHistory.setPage} label="actividades" />
 
       <div className="mt-5">
         <div className="text-xs font-medium text-text-sec mb-2">CU-03-06 · Retroalimentación</div>

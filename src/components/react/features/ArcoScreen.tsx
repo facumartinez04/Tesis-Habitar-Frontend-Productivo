@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { usePagination } from '../../../hooks/usePagination';
+import { Pagination } from '../ui/Pagination';
 import { Avatar } from '../ui/Avatar';
 import { Badge } from '../ui/Badge';
 import { Card } from '../ui/Card';
@@ -25,6 +27,7 @@ export function ArcoScreen() {
   const [students, setStudents] = useState<ArcoStudentRecord[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [auditLog, setAuditLog] = useState<AuditLogEntry[]>([]);
+  const pagedAuditLog = usePagination(auditLog, 15, null);
   const [busy, setBusy] = useState(false);
 
   async function refresh() {
@@ -167,7 +170,7 @@ export function ArcoScreen() {
           </tr>
         </thead>
         <tbody>
-          {auditLog.map((entry) => (
+          {pagedAuditLog.pageItems.map((entry) => (
             <tr key={entry.id}>
               <td className="px-2.5 py-2.5 border-b border-gray-border">{entry.date}</td>
               <td className="px-2.5 py-2.5 border-b border-gray-border">{entry.studentName}</td>
@@ -179,6 +182,7 @@ export function ArcoScreen() {
           ))}
         </tbody>
       </TableWrap>
+      <Pagination page={pagedAuditLog.page} totalPages={pagedAuditLog.totalPages} total={pagedAuditLog.total} pageSize={pagedAuditLog.pageSize} onChange={pagedAuditLog.setPage} label="registros" />
     </div>
   );
 }
