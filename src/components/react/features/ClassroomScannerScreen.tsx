@@ -186,7 +186,9 @@ export function ClassroomScannerScreen() {
     window.location.href = '/login?switch=1';
   }
 
-  const debugPanel = (
+  // El panel de diagnóstico sólo aparece con ?debug=1: en uso normal tapaba el botón de vincular en celulares.
+  const showDebug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
+  const debugPanel = !showDebug ? null : (
     <div className="fixed bottom-0 inset-x-0 z-50 bg-black/90 text-green-400 text-[10px] font-mono p-2 max-h-32 overflow-y-auto">
       <div className="font-bold text-yellow-300 mb-0.5">DEBUG AULA v2</div>
       {debugLog.map((line, i) => (
