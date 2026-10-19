@@ -17,6 +17,7 @@ import {
 } from '../../../services/activityService';
 import { DocumentViewer } from './DocumentViewer';
 import { ApiError } from '../../../lib/apiClient';
+import { confirmAction } from '../../../lib/alerts';
 import { getOrCreateDeviceId, studentIdLabel, type StudentIdMode } from '../../../lib/studentDevice';
 import { useLiveUpdates } from '../../../lib/realtime';
 import { arInstant, whenLabel } from '../../../lib/activityDates';
@@ -145,7 +146,6 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   stageRef.current = stage;
   const [canRetry, setCanRetry] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
-  const [confirmSubmit, setConfirmSubmit] = useState(false);
   const [showText, setShowText] = useState(false);
   /** La actividad cerró mientras el alumno estaba adentro: ya no puede avanzar. */
   const [closedReason, setClosedReason] = useState<'docente' | 'tiempo' | null>(null);
@@ -353,6 +353,12 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
 
   /** Con reintentos habilitados, quien ya envió puede volver a hacerla desde cero. */
   async function handleRetry() {
+    const ok = await confirmAction({
+      title: '¿Volver a hacer la actividad?',
+      text: 'Empezás de cero. Tu docente va a ver los dos intentos.',
+      confirmButtonText: 'Sí, empezar de nuevo',
+    });
+    if (!ok) return;
     try {
       await saveProgress(currentCode, {
         studentDisplayName: name,
@@ -389,12 +395,10 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
 
   function selectOption(option: string) {
     setAnswers((prev) => ({ ...prev, [currentQuestion.id]: option }));
-    setConfirmSubmit(false);
   }
 
   function goTo(nextIndex: number) {
     setIndex(Math.max(0, Math.min(nextIndex, questions.length - 1)));
-    setConfirmSubmit(false);
   }
 
   function toDraft(): DraftAnswers {
@@ -512,8 +516,8 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   function handleClosed(reason: 'docente' | 'tiempo') {
     if (closedRef.current) return;
     closedRef.current = reason;
+    void import('sweetalert2').then((m) => m.default.close());
     setClosedReason(reason);
-    setConfirmSubmit(false);
     if (stageRef.current === 'answering' && answeredCount > 0) {
       void submitRef.current(true);
     } else if (stageRef.current === 'reading' || stageRef.current === 'answering' || stageRef.current === 'join') {
@@ -540,13 +544,31 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
       <ReadingHelpChat code={currentCode} studentName={name} selection={selection} onSelectionUsed={() => setSelection(null)} />
     ) : null;
 
+  /** Enviar no tiene vuelta atrás: siempre se confirma, y se avisa si quedan preguntas sin responder. */
   async function handleSend() {
-    if (answeredCount < questions.length && !confirmSubmit) {
-      setConfirmSubmit(true);
-      return;
-    }
-    setConfirmSubmit(false);
+    const left = questions.length - answeredCount;
+    const ok = await confirmAction({
+      title: '¿Enviar tus respuestas?',
+      text:
+        left > 0
+          ? `Te ${left === 1 ? 'falta 1 pregunta' : `faltan ${left} preguntas`} sin responder: si enviás ahora, cuentan como no respondidas. Después de enviar no vas a poder cambiar nada.`
+          : 'Respondiste todas las preguntas. Después de enviar no vas a poder cambiar las respuestas.',
+      confirmButtonText: left > 0 ? 'Enviar igual' : 'Sí, enviar',
+    });
+    if (!ok || closedRef.current) return;
     await submitAll(false);
+  }
+
+  /** Pasar a las preguntas tampoco tiene vuelta atrás: el texto se puede volver a ver, pero no se vuelve a la lectura. */
+  async function handleFinishReading() {
+    const ok = await confirmAction({
+      title: '¿Terminaste de leer?',
+      text: `Vas a pasar a las ${meta.questionCount} preguntas. El texto lo vas a poder volver a mirar, pero no vas a volver a esta pantalla.`,
+      confirmButtonText: 'Sí, ir a las preguntas',
+    });
+    if (!ok || stageRef.current !== 'reading') return;
+    setIndex(0);
+    setStage('answering');
   }
 
   // Avisos en vivo de la actividad: el docente la abre, la cierra, habilita o corrige preguntas, y la pantalla
@@ -896,10 +918,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
             ) : (
               <button
                 type="button"
-                onClick={() => {
-                  setIndex(0);
-                  setStage('answering');
-                }}
+                onClick={handleFinishReading}
                 className="w-full flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold py-3 rounded-xl shadow-2xs transition-all cursor-pointer"
               >
                 Terminé de leer · Ir a las preguntas
@@ -1059,7 +1078,6 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
               onChange={(e) => {
                 const value = e.target.value.slice(0, 2000);
                 setAnswers((prev) => ({ ...prev, [currentQuestion.id]: value }));
-                setConfirmSubmit(false);
               }}
               rows={6}
               placeholder="Escribí tu respuesta. Fundamentala con lo que dice el texto."
@@ -1094,13 +1112,6 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
           })}
         </div>
 
-        {confirmSubmit && (
-          <div className="text-xs text-amber-900 dark:text-amber-200 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl px-3 py-2.5 mb-3">
-            Te {missing === 1 ? 'falta 1 pregunta' : `faltan ${missing} preguntas`} sin responder. Tocá «Enviar igual» para
-            enviar así, o volvé a las que están en blanco.
-          </div>
-        )}
-
         <div className="flex justify-between items-center gap-2 pt-3 border-t border-stone-200 dark:border-stone-800">
           <button
             type="button"
@@ -1121,7 +1132,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
               disabled={submitting}
               className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-2xs transition-all disabled:opacity-50 cursor-pointer"
             >
-              {submitting ? 'Enviando…' : confirmSubmit ? 'Enviar igual' : 'Enviar respuestas'}
+              {submitting ? 'Enviando…' : 'Enviar respuestas'}
               <Icon name="check" size={13} />
             </button>
           ) : (

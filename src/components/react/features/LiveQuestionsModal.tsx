@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Icon } from '../ui/Icon';
 import { editLiveQuestion, type LiveQuestion } from '../../../services/activityService';
-import { showError } from '../../../lib/alerts';
+import { confirmAction, showError } from '../../../lib/alerts';
 
 interface LiveQuestionsModalProps {
   activityId: string;
@@ -133,6 +133,12 @@ function QuestionEditor({
     (!closed || (trimmed.every(Boolean) && new Set(trimmed).size === trimmed.length && trimmed.length >= 2));
 
   async function save() {
+    const ok = await confirmAction({
+      title: '¿Guardar la pregunta corregida?',
+      text: 'Los alumnos la ven cambiada al instante. Si ya hay respuestas enviadas, se vuelven a corregir con esta versión.',
+      confirmButtonText: 'Guardar y enviar',
+    });
+    if (!ok) return;
     setSaving(true);
     try {
       await onSave(
