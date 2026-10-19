@@ -57,6 +57,25 @@ export async function createSubscriptionCheckout(data: {
   });
 }
 
+/** Pago de prueba: crea un cobro chico para probar el circuito completo de Mercado Pago. */
+export async function createTestPayment(amountArs: number): Promise<{ preferenceUrl: string; sandbox: boolean }> {
+  return apiFetch('/finances/platform/mercadopago/test-payment', { method: 'POST', body: { amountArs } });
+}
+
+export interface PaymentStatusView {
+  reference: string;
+  status: 'APROBADO' | 'PENDIENTE' | 'RECHAZADO' | 'REEMBOLSADO';
+  description: string;
+  amountArs: number;
+  mpStatusDetail: string | null;
+}
+
+/** Al volver de Mercado Pago: el servidor consulta el pago a Mercado Pago y devuelve el estado real. */
+export async function syncPaymentReturn(paymentId: string, reference: string): Promise<PaymentStatusView> {
+  const params = new URLSearchParams({ payment_id: paymentId, external_reference: reference });
+  return apiFetch(`/finances/payments/return?${params.toString()}`, { auth: false });
+}
+
 export async function getPlatformFinanceConfig(): Promise<FinanceConfig> {
   return apiFetch<FinanceConfig>('/finances/platform/config');
 }

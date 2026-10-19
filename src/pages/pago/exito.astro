@@ -1,0 +1,7 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import { PaymentResultScreen } from '../../components/react/features/PaymentResultScreen';
+---
+<SiteLayout title="Pago aprobado">
+  <PaymentResultScreen client:load outcome="exito" />
+</SiteLayout>

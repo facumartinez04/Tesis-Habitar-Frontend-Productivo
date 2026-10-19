@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
+import { apiUrl } from '../../../lib/apiClient';
 import { usePagination } from '../../../hooks/usePagination';
 import { Pagination } from '../ui/Pagination';
 import { Icon } from '../ui/Icon';
 import { Skeleton } from '../ui/Skeleton';
 import { HabitarLoader } from '../ui/HabitarLoader';
-import { showSuccess, showError } from '../../../lib/alerts';
+import { confirmAction, showSuccess, showError } from '../../../lib/alerts';
 import {
   getPlatformFinanceSummary,
   listPlatformExpenses,
@@ -15,6 +16,7 @@ import {
   getPlatformFinanceConfig,
   savePlatformFinanceConfig,
   testMercadoPagoConnection,
+  createTestPayment,
 } from '../../../services/financeService';
 import type {
   FinanceConfig,
@@ -176,6 +178,30 @@ export function AdminFinanceScreen() {
       showError('Error', err.message || 'No se pudo guardar la configuración.');
     } finally {
       setSavingConfig(false);
+    }
+  };
+
+  const [testAmount, setTestAmount] = useState(100);
+  const [creatingTestPayment, setCreatingTestPayment] = useState(false);
+
+  const handleTestPayment = async () => {
+    const ok = await confirmAction({
+      title: `¿Crear un pago de prueba de $ ${testAmount}?`,
+      text: mpForm.mpIsSandbox
+        ? 'Se abre Mercado Pago en modo de prueba. Pagá con un usuario comprador de prueba: no se mueve dinero real.'
+        : 'Atención: el modo de prueba está desactivado, así que el pago sería real.',
+      confirmButtonText: 'Crear y abrir Mercado Pago',
+    });
+    if (!ok) return;
+    setCreatingTestPayment(true);
+    try {
+      const res = await createTestPayment(testAmount);
+      window.open(res.preferenceUrl, '_blank', 'noopener');
+      void loadData();
+    } catch (err) {
+      showError('No se pudo crear el pago de prueba', err instanceof Error ? err.message : '');
+    } finally {
+      setCreatingTestPayment(false);
     }
   };
 
@@ -685,21 +711,54 @@ export function AdminFinanceScreen() {
               <input
                 type="text"
                 readOnly
-                value={`${typeof window !== 'undefined' ? window.location.origin : 'https://habitar.lat'}/api/finances/webhook/mercadopago`}
+                value={apiUrl('/finances/webhook/mercadopago')}
                 className="flex-1 px-3 py-2 bg-white border border-gray-border rounded-lg text-xs font-mono text-text-pri"
               />
               <button
                 type="button"
                 onClick={() => {
-                  navigator.clipboard.writeText(
-                    `${window.location.origin}/api/finances/webhook/mercadopago`
-                  );
+                  navigator.clipboard.writeText(apiUrl('/finances/webhook/mercadopago'));
                   showSuccess('Copiado', 'URL del Webhook copiada al portapapeles.');
                 }}
                 className="px-3 py-2 bg-white border border-gray-border hover:bg-surface text-xs font-semibold rounded-lg text-text-pri flex items-center gap-1.5"
               >
                 <Icon name="copy" size={13} />
                 <span>Copiar</span>
+              </button>
+            </div>
+            <p className="text-[11px] text-text-ter leading-relaxed">
+              En el panel de Mercado Pago, elegí el evento «Pagos» y copiá la «clave secreta» de la firma en el campo de arriba: con
+              ella Habitar verifica que cada aviso venga de Mercado Pago. Igual, el estado de cada pago se consulta siempre a la API de
+              Mercado Pago.
+            </p>
+          </div>
+
+          {/* Pago de prueba */}
+          <div className="bg-surface border border-gray-border rounded-xl p-5 space-y-3">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-text-pri">Probar un pago</h4>
+            <p className="text-xs text-text-sec leading-relaxed">
+              Crea un cobro chico y abre Mercado Pago para pagarlo. Con credenciales de prueba, pagá con un usuario comprador de
+              prueba y una tarjeta de prueba de Mercado Pago: al volver, el pago aparece en «Ganancias» con su estado real.
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="text-xs text-text-sec">
+                Monto $
+                <input
+                  type="number"
+                  min={1}
+                  value={testAmount}
+                  onChange={(e) => setTestAmount(Number(e.target.value))}
+                  className="ml-1.5 w-24 px-2 py-1.5 bg-white border border-gray-border rounded-lg text-xs tabular-nums"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={handleTestPayment}
+                disabled={creatingTestPayment}
+                className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold disabled:opacity-50 flex items-center gap-1.5"
+              >
+                <Icon name="creditCard" size={13} />
+                <span>{creatingTestPayment ? 'Creando…' : 'Hacer un pago de prueba'}</span>
               </button>
             </div>
           </div>

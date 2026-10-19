@@ -563,7 +563,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   async function handleFinishReading() {
     const ok = await confirmAction({
       title: '¿Terminaste de leer?',
-      text: `Vas a pasar a las ${meta.questionCount} preguntas. El texto lo vas a poder volver a mirar, pero no vas a volver a esta pantalla.`,
+      text: `Vas a pasar ${meta.questionCount === 1 ? 'a la pregunta' : `a las ${meta.questionCount} preguntas`}. El texto lo vas a poder volver a mirar, pero no vas a volver a esta pantalla.`,
       confirmButtonText: 'Sí, ir a las preguntas',
     });
     if (!ok || stageRef.current !== 'reading') return;
