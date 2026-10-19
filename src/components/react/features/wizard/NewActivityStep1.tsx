@@ -6,6 +6,12 @@ import { generateQuestions, validateWordCount } from '../../../../services/aiSer
 import { getCourseById } from '../../../../services/courseService';
 import { activityWizardStore, resetWizard, updateWizard } from '../../../../store/activityWizardStore';
 import type { ComprehensionAxis, Course } from '../../../../types/activity';
+import { useSession } from '../../../../hooks/useSession';
+import { extractText } from '../../../../lib/documentText';
+import { pickTextFromGoogleDrive } from '../../../../lib/googleDrive';
+import { getOneDriveToken } from '../../../../lib/oneDrive';
+import { getIntegrationsConfig, type IntegrationsConfig } from '../../../../services/integrationsService';
+import { OneDrivePickerModal } from './OneDrivePickerModal';
 
 const DEFAULT_TEXT =
   'La biodiversidad es el conjunto de formas de vida que habitan nuestro planeta. Cada ecosistema alberga especies que dependen entre sí para sobrevivir. Cuando una especie desaparece, las consecuencias se propagan en cadena hacia el resto del sistema. Proteger la biodiversidad no es solo una cuestión ambiental, sino también cultural y económica.';
@@ -16,6 +22,54 @@ export function NewActivityStep1() {
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [boundCourse, setBoundCourse] = useState<Course | null>(null);
+  const session = useSession();
+  const [integrations, setIntegrations] = useState<IntegrationsConfig | null>(null);
+  const [importing, setImporting] = useState<'archivo' | 'drive' | 'onedrive' | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importedFrom, setImportedFrom] = useState<string | null>(null);
+  const [oneDriveToken, setOneDriveToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    getIntegrationsConfig().then(setIntegrations).catch(() => setIntegrations({ googleDrive: null, oneDrive: null }));
+  }, []);
+
+  // El repositorio que corresponde a la cuenta con que entró el docente se muestra primero.
+  const provider = session?.provider;
+  const email = session?.user.email;
+
+  function applyImported(name: string, content: string, origin: string) {
+    setText(content);
+    updateWizard({ sourceText: content });
+    setImportedFrom(`${origin}: ${name}`);
+    setImportError(null);
+  }
+
+  async function handleGoogleDrive() {
+    if (!integrations?.googleDrive) return;
+    setImporting('drive');
+    setImportError(null);
+    try {
+      const picked = await pickTextFromGoogleDrive(integrations.googleDrive, provider === 'google' ? email : undefined);
+      if (picked) applyImported(picked.name, picked.text, 'Google Drive');
+    } catch (err) {
+      setImportError(err instanceof Error ? err.message : 'No se pudo traer el archivo de Google Drive.');
+    } finally {
+      setImporting(null);
+    }
+  }
+
+  async function handleOneDrive() {
+    if (!integrations?.oneDrive) return;
+    setImporting('onedrive');
+    setImportError(null);
+    try {
+      setOneDriveToken(await getOneDriveToken(integrations.oneDrive, provider === 'microsoft' ? email : undefined));
+    } catch (err) {
+      setImportError(err instanceof Error ? err.message : 'No se pudo conectar con OneDrive.');
+    } finally {
+      setImporting(null);
+    }
+  }
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -47,18 +101,19 @@ export function NewActivityStep1() {
   const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
   const isValid = validateWordCount(wordCount);
 
-  function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const content = event.target?.result as string;
-      if (content) {
-        setText(content);
-        updateWizard({ sourceText: content });
-      }
-    };
-    reader.readAsText(file);
+    setImporting('archivo');
+    setImportError(null);
+    try {
+      applyImported(file.name, await extractText(file, file.name), 'Archivo');
+    } catch (err) {
+      setImportError(err instanceof Error ? err.message : 'No se pudo leer el archivo.');
+    } finally {
+      setImporting(null);
+    }
   }
 
   async function handleGenerate() {
@@ -160,10 +215,10 @@ export function NewActivityStep1() {
         <div className="flex flex-wrap items-center gap-2 mb-2">
           <label className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-300 hover:bg-emerald-100 text-emerald-900 rounded-[6px] px-2.5 py-1.5 text-xs cursor-pointer font-medium transition-colors">
             <Icon name="fileText" size={13} />
-            Subir archivo (.txt / .md)
+            {importing === 'archivo' ? 'Leyendo archivo…' : 'Subir archivo (Word, PDF, texto)'}
             <input
               type="file"
-              accept=".txt,.md,.text"
+              accept=".txt,.md,.docx,.pdf"
               className="hidden"
               onChange={handleFileUpload}
             />
@@ -176,15 +231,44 @@ export function NewActivityStep1() {
             <Icon name="refresh" size={12} />
             Texto de ejemplo
           </button>
-          <button type="button" className="flex items-center gap-1.5 bg-white border border-gray-border rounded-[6px] px-2.5 py-1.5 text-xs text-text-sec">
-            <Icon name="folder" size={13} />
-            Google Drive
-          </button>
-          <button type="button" className="flex items-center gap-1.5 bg-white border border-gray-border rounded-[6px] px-2.5 py-1.5 text-xs text-text-sec">
-            <Icon name="cloud" size={13} />
-            OneDrive
-          </button>
+          {(provider === 'microsoft' ? ['onedrive', 'drive'] : ['drive', 'onedrive']).map((source) => {
+            const isDrive = source === 'drive';
+            const configured = isDrive ? Boolean(integrations?.googleDrive) : Boolean(integrations?.oneDrive);
+            const isOwn = isDrive ? provider === 'google' : provider === 'microsoft';
+            return (
+              <button
+                key={source}
+                type="button"
+                onClick={isDrive ? handleGoogleDrive : handleOneDrive}
+                disabled={!configured || importing !== null}
+                title={
+                  !configured
+                    ? `${isDrive ? 'Google Drive' : 'OneDrive'} todavía no está habilitado en el servidor`
+                    : isOwn
+                      ? `Abrir ${isDrive ? 'tu Google Drive' : 'tu OneDrive'} (${email})`
+                      : `Abrir ${isDrive ? 'Google Drive' : 'OneDrive'} con otra cuenta`
+                }
+                className={`flex items-center gap-1.5 border rounded-[6px] px-2.5 py-1.5 text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
+                  isOwn && configured
+                    ? 'bg-white border-green-mid text-text-pri font-medium hover:bg-gray-50'
+                    : 'bg-white border-gray-border text-text-sec hover:bg-gray-50'
+                }`}
+              >
+                <Icon name={isDrive ? 'folder' : 'cloud'} size={13} />
+                {importing === source ? 'Abriendo…' : isDrive ? 'Google Drive' : 'OneDrive'}
+              </button>
+            );
+          })}
         </div>
+        {importError && (
+          <div role="alert" className="text-xs text-red bg-red-50 border border-red-200 rounded-[6px] px-3 py-2 mb-2">{importError}</div>
+        )}
+        {importedFrom && !importError && (
+          <div className="text-[11.5px] text-text-sec mb-2 flex items-center gap-1.5">
+            <Icon name="check" size={12} className="text-green-mid" />
+            Texto cargado desde {importedFrom}. Revisalo y editalo si hace falta: el archivo no se guarda en Habitar.
+          </div>
+        )}
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -216,6 +300,15 @@ export function NewActivityStep1() {
           )}
         </button>
       </div>
+      <OneDrivePickerModal
+        token={oneDriveToken}
+        isOpen={Boolean(oneDriveToken)}
+        onClose={() => setOneDriveToken(null)}
+        onPicked={(file) => {
+          applyImported(file.name, file.text, 'OneDrive');
+          setOneDriveToken(null);
+        }}
+      />
     </div>
   );
 }
