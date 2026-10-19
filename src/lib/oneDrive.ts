@@ -3,7 +3,7 @@
  * descarga y se lee en el navegador: no pasa por el servidor ni se guarda.
  */
 import type { IPublicClientApplication } from '@azure/msal-browser';
-import { extractText, SUPPORTED_EXTENSIONS } from './documentText';
+import { SUPPORTED_EXTENSIONS } from './documentText';
 
 const SCOPES = ['Files.Read'];
 const GRAPH = 'https://graph.microsoft.com/v1.0';
@@ -105,10 +105,10 @@ export async function searchDrive(token: string, query: string): Promise<DriveIt
   return data.value.map(toItem).filter((i) => !i.isFolder);
 }
 
-export async function readDriveFile(token: string, item: DriveItem): Promise<string> {
+export async function downloadDriveFile(token: string, item: DriveItem): Promise<Blob> {
   const res = await fetch(`${GRAPH}/me/drive/items/${encodeURIComponent(item.id)}/content`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error(`OneDrive no entregó el archivo (error ${res.status}).`);
-  return extractText(await res.blob(), item.name);
+  return res.blob();
 }

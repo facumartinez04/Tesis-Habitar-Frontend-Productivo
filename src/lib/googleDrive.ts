@@ -3,7 +3,7 @@
  * Usa el permiso drive.file: Habitar sólo puede leer el archivo que el docente elige, nada más de su Drive,
  * y el archivo se lee en el navegador (no pasa por el servidor).
  */
-import { extractText, SUPPORTED_MIME_TYPES } from './documentText';
+import { SUPPORTED_MIME_TYPES } from './documentText';
 
 const GOOGLE_DOC = 'application/vnd.google-apps.document';
 const SCOPE = 'https://www.googleapis.com/auth/drive.file';
@@ -95,21 +95,27 @@ function openPicker(accessToken: string, apiKey: string, appId: string): Promise
   });
 }
 
-async function download(file: PickedFile, accessToken: string): Promise<string> {
+async function download(file: PickedFile, accessToken: string): Promise<Blob> {
   const base = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(file.id)}`;
   const url =
     file.mimeType === GOOGLE_DOC ? `${base}/export?mimeType=text/plain` : `${base}?alt=media&supportsAllDrives=true`;
   const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
   if (!res.ok) throw new Error(`Google Drive no entregó el archivo (error ${res.status}).`);
-  return extractText(await res.blob(), file.name, file.mimeType === GOOGLE_DOC ? 'text/plain' : file.mimeType);
+  return res.blob();
 }
 
-export async function pickTextFromGoogleDrive(
+/** Abre el selector de Google Drive y devuelve el archivo elegido (los Google Docs, exportados como texto). */
+export async function pickFileFromGoogleDrive(
   config: { clientId: string; apiKey: string; appId: string },
   loginHint?: string,
-): Promise<{ name: string; text: string } | null> {
+): Promise<{ name: string; file: Blob; mimeType: string } | null> {
   const [accessToken] = await Promise.all([getAccessToken(config.clientId, loginHint), loadPicker()]);
-  const file = await openPicker(accessToken, config.apiKey, config.appId);
-  if (!file) return null;
-  return { name: file.name, text: await download(file, accessToken) };
+  const picked = await openPicker(accessToken, config.apiKey, config.appId);
+  if (!picked) return null;
+  const isDoc = picked.mimeType === GOOGLE_DOC;
+  return {
+    name: isDoc ? `${picked.name}.txt` : picked.name,
+    file: await download(picked, accessToken),
+    mimeType: isDoc ? 'text/plain' : picked.mimeType,
+  };
 }

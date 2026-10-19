@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Icon } from '../../ui/Icon';
 import { HabitarLoader } from '../../ui/HabitarLoader';
-import { listFolder, readDriveFile, searchDrive, type DriveItem } from '../../../../lib/oneDrive';
+import { downloadDriveFile, listFolder, searchDrive, type DriveItem } from '../../../../lib/oneDrive';
 
 interface OneDrivePickerModalProps {
   token: string | null;
   isOpen: boolean;
   onClose: () => void;
-  onPicked: (file: { name: string; text: string }) => void;
+  onPicked: (file: { name: string; file: Blob; mimeType: string }) => void;
 }
 
 function formatSize(bytes: number): string {
@@ -77,7 +77,8 @@ export function OneDrivePickerModal({ token, isOpen, onClose, onPicked }: OneDri
     setReading(item.id);
     setError(null);
     try {
-      onPicked({ name: item.name, text: await readDriveFile(token, item) });
+      const file = await downloadDriveFile(token, item);
+      onPicked({ name: item.name, file, mimeType: file.type });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo leer el archivo.');
     } finally {
