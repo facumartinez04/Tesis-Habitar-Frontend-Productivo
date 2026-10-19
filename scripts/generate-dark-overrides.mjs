@@ -69,7 +69,8 @@ for (const [cls, t] of [...tokens].sort(([a], [b]) => a.localeCompare(b))) {
   const value = darkValue(t);
   if (!value) continue;
   const darkPrefix = `dark:${t.variant}${t.prop === 'divide' ? 'divide' : t.prop}-`;
-  const notOwnDark = `:not([class*="${darkPrefix}"])`;
+  // Lo marcado con data-keep-white (la hoja del documento, el QR para proyectar) conserva sus colores claros.
+  const notOwnDark = `:not([class*="${darkPrefix}"]):not([data-keep-white]):not([data-keep-white] *)`;
   const state = t.variant === 'hover:' ? ':hover' : t.variant === 'focus:' ? ':focus' : '';
   let selectors;
   if (t.prop === 'divide') {
