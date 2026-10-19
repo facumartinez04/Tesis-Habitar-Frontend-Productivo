@@ -8,6 +8,7 @@ import { Skeleton, SkeletonCard } from '../ui/Skeleton';
 import { useAuthGuard } from '../../../hooks/useAuthGuard';
 import { useToast } from '../../../hooks/useToast';
 import { getInstitutionById, updateInstitutionConfig, testAiConfig } from '../../../services/institutionService';
+import { getAiUsage, type AiUsageSnapshot } from '../../../services/aiUsageService';
 import {
   inviteInstitutionUser,
   listInstitutionUsers,
@@ -33,6 +34,7 @@ export function InstitutionSettingsScreen() {
   const { message, showToast } = useToast();
 
   const [institution, setInstitution] = useState<Institution | null>(null);
+  const [aiUsage, setAiUsage] = useState<AiUsageSnapshot | null>(null);
   const [users, setUsers] = useState<InstitutionUser[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [assigningTeacher, setAssigningTeacher] = useState<InstitutionUser | null>(null);
@@ -63,6 +65,7 @@ export function InstitutionSettingsScreen() {
   async function refresh() {
     if (!session) return;
     const institutionId = session.user.institutionId;
+    void getAiUsage(institutionId).then(setAiUsage).catch(() => null);
     const [inst, userList, retentionPolicy, courseList] = await Promise.all([
       getInstitutionById(institutionId),
       listInstitutionUsers(institutionId),
@@ -346,6 +349,27 @@ export function InstitutionSettingsScreen() {
             {aiProvider === 'openai' ? 'OpenAI (ChatGPT)' : 'DeepSeek'} · {aiKeySource === 'custom' ? 'Clave Propia (BYOK)' : 'Clave Habitar'}
           </Badge>
         </div>
+
+        {aiUsage && (
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11.5px] text-text-sec bg-surface border border-gray-border rounded-lg px-3 py-2 mt-1">
+            <span>
+              Gasto de IA este mes:{' '}
+              <strong className="text-text-pri tabular-nums">
+                US$ {(aiUsage.spentUsd ?? 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
+              </strong>
+            </span>
+            <span>
+              Tope mensual:{' '}
+              <strong className="text-text-pri tabular-nums">
+                {aiUsage.budgetUsd === null || aiUsage.budgetUsd === undefined ? 'sin tope' : `US$ ${aiUsage.budgetUsd.toLocaleString('es-AR')}`}
+              </strong>
+            </span>
+            <span>
+              Generaciones: <strong className="text-text-pri tabular-nums">{aiUsage.used}</strong> de {aiUsage.quota}
+            </span>
+            {aiUsage.overBudget && <span className="text-red-700 dark:text-red-300 font-semibold">Tope alcanzado: la IA queda pausada hasta el mes que viene</span>}
+          </div>
+        )}
 
         <div className="space-y-4 pt-1">
           {}

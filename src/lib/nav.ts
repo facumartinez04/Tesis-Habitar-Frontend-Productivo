@@ -3,10 +3,12 @@ import type { AppSidebarItem } from '../components/app/AppSidebar.astro';
 export const docenteNavItems: AppSidebarItem[] = [
   { icon: 'chart', label: 'Mis cursos', href: '/docente/cursos' },
   { icon: 'plus', label: 'Nueva actividad', href: '/docente/actividades/nueva' },
+  { icon: 'trendingUp', label: 'Tablero', href: '/docente/dashboard' },
 ];
 
 export const institucionalNavItems: AppSidebarItem[] = [
   { icon: 'school', label: 'Institucional', href: '/institucional' },
+  { icon: 'trendingUp', label: 'Tablero', href: '/institucional/dashboard' },
   { icon: 'chart', label: 'Aulas', href: '/institucional/aulas' },
   { icon: 'dollarSign', label: 'Finanzas Escolares', href: '/institucional/finanzas' },
   { icon: 'bell', label: 'Alertas', href: '/institucional/alertas' },

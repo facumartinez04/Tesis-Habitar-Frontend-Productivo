@@ -1,0 +1,8 @@
+---
+import AppShell from '../../layouts/AppShell.astro';
+import { DashboardScreen } from '../../components/react/features/DashboardScreen';
+import { institucionalNavItems } from '../../lib/nav';
+---
+<AppShell title="Tablero" sectionLabel="Panel institucional" sidebarItems={institucionalNavItems}>
+  <DashboardScreen client:load />
+</AppShell>
