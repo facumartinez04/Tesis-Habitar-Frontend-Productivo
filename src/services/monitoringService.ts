@@ -4,8 +4,8 @@ import { toLower } from '../lib/caseAdapters';
 
 interface BackendMonitoringSnapshot {
   updatedAt: string;
-  monthlyUptimePercent: number;
-  latencyP95Seconds: number;
+  monthlyUptimePercent: number | null;
+  latencyP95Seconds: number | null;
   incidentsThisMonth: number;
   components: { id: string; name: string; health: string; uptimePercent: number }[];
   incidents: { id: string; date: string; component: string; duration: string; status: string }[];

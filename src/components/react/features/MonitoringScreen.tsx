@@ -42,19 +42,24 @@ export function MonitoringScreen() {
   }, []);
 
   if (!snapshot) {
-    return <HabitarLoader size="lg" message="Verificando disponibilidad de servidores y base de datos..." />;
+    return <HabitarLoader size="lg" message="Cargando el estado registrado de la plataforma..." />;
   }
 
-  const allOperational = snapshot.components.every((c) => c.health === 'operativo');
+  const hasComponents = snapshot.components.length > 0;
+  const allOperational = hasComponents && snapshot.components.every((c) => c.health === 'operativo');
 
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
         <div className="text-lg font-semibold text-text-pri">Monitoreo de disponibilidad</div>
-        <span className={`text-xs font-medium flex items-center gap-1.5 ${allOperational ? 'text-green-mid' : 'text-amber-text'}`}>
-          <Dot color={allOperational ? 'green' : 'amber'} />
-          {allOperational ? 'Todos los sistemas operativos' : 'Degradación parcial detectada'}
-        </span>
+        {hasComponents ? (
+          <span className={`text-xs font-medium flex items-center gap-1.5 ${allOperational ? 'text-green-mid' : 'text-amber-text'}`}>
+            <Dot color={allOperational ? 'green' : 'amber'} />
+            {allOperational ? 'Todos los sistemas operativos' : 'Degradación parcial detectada'}
+          </span>
+        ) : (
+          <span className="text-xs font-medium flex items-center gap-1.5 text-text-sec">Sin componentes registrados</span>
+        )}
       </div>
       <div className="text-[12.5px] text-text-sec mb-[18px] flex flex-col sm:flex-row sm:items-center justify-between gap-1">
         <span>Última verificación: {new Date(snapshot.updatedAt).toLocaleString('es-AR')}</span>
@@ -64,13 +69,14 @@ export function MonitoringScreen() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-[18px]">
-        <MetricCard value={`${snapshot.monthlyUptimePercent}%`} label="Disponibilidad mensual" color="var(--color-green-mid)" />
-        <MetricCard value={`${snapshot.latencyP95Seconds}s`} label="Latencia p95" />
+        <MetricCard value={snapshot.monthlyUptimePercent === null ? 'Sin datos' : `${snapshot.monthlyUptimePercent}%`} label="Disponibilidad mensual" color="var(--color-green-mid)" />
+        <MetricCard value={snapshot.latencyP95Seconds === null ? 'Sin datos' : `${snapshot.latencyP95Seconds}s`} label="Latencia p95" />
         <MetricCard value={String(snapshot.incidentsThisMonth)} label="Incidentes este mes" color="var(--color-amber)" />
       </div>
 
       <div className="text-xs font-medium text-text-sec mb-2.5">Estado de componentes</div>
       <Card className="mb-4">
+        {!hasComponents && <div className="text-[12.5px] text-text-sec py-2">No hay componentes registrados. Las fallas reales de la API se ven en Bitácoras, pestaña Errores.</div>}
         {snapshot.components.map((component, i) => {
           const meta = healthBadge[component.health];
           return (
@@ -97,6 +103,11 @@ export function MonitoringScreen() {
           </tr>
         </thead>
         <tbody>
+          {snapshot.incidents.length === 0 && (
+            <tr>
+              <td colSpan={4} className="px-2.5 py-3 text-[12.5px] text-text-sec">No hay incidentes registrados.</td>
+            </tr>
+          )}
           {snapshot.incidents.map((incident) => (
             <tr key={incident.id}>
               <td className="px-2.5 py-2.5 border-b border-gray-border">{incident.date}</td>
