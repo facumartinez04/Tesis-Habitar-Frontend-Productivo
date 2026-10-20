@@ -11,6 +11,7 @@ export const institucionalNavItems: AppSidebarItem[] = [
   { icon: 'trendingUp', label: 'Tablero', href: '/institucional/dashboard' },
   { icon: 'chart', label: 'Aulas', href: '/institucional/aulas' },
   { icon: 'dollarSign', label: 'Finanzas Escolares', href: '/institucional/finanzas' },
+  { icon: 'sparkles', label: 'Costos de IA', href: '/institucional/ia' },
   { icon: 'bell', label: 'Alertas', href: '/institucional/alertas' },
   { icon: 'shield', label: 'Datos personales', href: '/institucional/datos-personales' },
   { icon: 'fileText', label: 'Bitácoras', href: '/institucional/bitacoras' },

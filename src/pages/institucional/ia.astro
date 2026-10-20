@@ -1,0 +1,8 @@
+---
+import AppShell from '../../layouts/AppShell.astro';
+import { InstitutionAiCostScreen } from '../../components/react/features/InstitutionAiCostScreen';
+import { institucionalNavItems } from '../../lib/nav';
+---
+<AppShell title="Costos de IA" sectionLabel="Panel institucional" sidebarItems={institucionalNavItems}>
+  <InstitutionAiCostScreen client:load />
+</AppShell>

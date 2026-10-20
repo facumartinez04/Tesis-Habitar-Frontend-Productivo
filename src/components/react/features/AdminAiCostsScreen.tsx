@@ -280,7 +280,9 @@ export function AdminAiCostsScreen() {
           {paged.pageItems.map((i) => (
             <tr key={i.institutionId}>
               <td className={td}>
-                <div className="font-medium">{i.name}</div>
+                <a href={`/admin/ia/institucion?id=${i.institutionId}&month=${report.month}`} className="font-medium text-text-pri hover:text-emerald-700 dark:hover:text-emerald-300 underline-offset-2 hover:underline">
+                  {i.name}
+                </a>
                 <div className="flex gap-1 mt-0.5">
                   <Badge color={i.keySource === 'CUSTOM' ? 'blue' : 'gray'}>{i.keySource === 'CUSTOM' ? 'Clave propia' : 'Clave de la plataforma'}</Badge>
                 </div>
