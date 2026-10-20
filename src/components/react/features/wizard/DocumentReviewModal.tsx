@@ -16,7 +16,6 @@ export interface ImportedDocument {
 interface DocumentReviewModalProps {
   document: ImportedDocument | null;
   onClose: () => void;
-  /** `pages`: páginas elegidas del PDF (null en Word o si eligió todas). */
   onUse: (text: string, label: string, pages: number[] | null) => void;
 }
 
@@ -33,10 +32,6 @@ function countWords(text: string): number {
   return text.trim().split(/\s+/).filter(Boolean).length;
 }
 
-/**
- * Revisión del documento antes de usarlo: el PDF se ve página por página para elegir cuáles usar, con OCR en
- * español para las páginas escaneadas; Word y texto se ven al lado del texto que se va a usar, que es editable.
- */
 export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentReviewModalProps) {
   const [pdf, setPdf] = useState<PdfHandle | null>(null);
   const [pages, setPages] = useState<PageState[]>([]);
@@ -48,7 +43,6 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Abrir el documento
   useEffect(() => {
     if (!doc) return;
     let cancelled = false;
@@ -72,7 +66,6 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
           if (cancelled) return handle.destroy();
           setPdf(handle);
           setPages(initial);
-          // Documento corto: todas las páginas. Largo (un libro, un cuadernillo): el docente elige.
           setSelected(handle.numPages <= 5 ? initial.map((_, i) => i + 1) : [1]);
           setActive(1);
         } else {
@@ -93,7 +86,6 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
     };
   }, [doc]);
 
-  // OCR automático de las páginas elegidas que son imágenes (escaneadas)
   useEffect(() => {
     if (!pdf) return;
     const next = selected.find((n) => pages[n - 1]?.needsOcr && pages[n - 1]?.ocr === 'idle');
@@ -113,7 +105,6 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
     }
   }
 
-  // Texto armado con las páginas elegidas (mientras el docente no lo edite a mano)
   const pdfText = useMemo(
     () =>
       selected
@@ -149,7 +140,6 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-2 sm:p-4" role="dialog" aria-modal="true" aria-label="Revisar documento">
       <div className="bg-card-bg border border-gray-border rounded-2xl shadow-2xl w-full max-w-6xl h-[94vh] flex flex-col overflow-hidden">
-        {/* Encabezado */}
         <div className="px-5 py-3 border-b border-gray-border flex items-center justify-between gap-3">
           <div className="min-w-0">
             <div className="text-sm font-bold text-text-pri truncate">{doc.name}</div>
@@ -171,7 +161,6 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
           </div>
         ) : (
           <div className="flex-1 min-h-0 flex flex-col lg:flex-row">
-            {/* Páginas */}
             {pdf && (
               <div className="lg:w-[150px] shrink-0 border-b lg:border-b-0 lg:border-r border-gray-border overflow-x-auto lg:overflow-y-auto flex lg:flex-col gap-2 p-3">
                 {pages.map((p, i) => {
@@ -197,7 +186,6 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
               </div>
             )}
 
-            {/* Vista previa */}
             <div className="flex-1 min-w-0 min-h-[220px] overflow-auto bg-gray-bg p-4 flex justify-center items-start">
               {pdf ? (
                 <div className="flex flex-col items-center gap-2">
@@ -231,7 +219,6 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
               )}
             </div>
 
-            {/* Texto que se va a usar */}
             <div className="lg:w-[380px] shrink-0 border-t lg:border-t-0 lg:border-l border-gray-border flex flex-col min-h-[200px]">
               <div className="px-4 pt-3 pb-1.5 text-[12px] font-bold text-text-pri flex items-center justify-between">
                 Texto que se va a usar
@@ -289,7 +276,6 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
   );
 }
 
-/** Dibuja una página del PDF en un canvas (miniatura o vista grande). */
 function PageCanvas({ pdf, page, width }: { pdf: PdfHandle; page: number; width: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {

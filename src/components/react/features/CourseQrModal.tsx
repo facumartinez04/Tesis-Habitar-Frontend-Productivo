@@ -46,7 +46,6 @@ export function CourseQrModal({ course, isOpen, onClose, onUploadForCourse }: Co
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in duration-150">
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-border flex flex-col">
-        {}
         <div className="px-5 py-3.5 bg-gray-50 border-b border-gray-border flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="p-1.5 bg-emerald-100 text-emerald-800 rounded-lg">
@@ -62,7 +61,6 @@ export function CourseQrModal({ course, isOpen, onClose, onUploadForCourse }: Co
           </button>
         </div>
 
-        {}
         <div className="p-6 flex flex-col items-center justify-center bg-surface/50 text-center">
           <div data-keep-white="true" className="bg-white border-2 border-emerald-700/60 rounded-2xl p-6 shadow-md max-w-sm w-full space-y-3">
             <div className="flex items-center justify-center gap-2">
@@ -79,7 +77,6 @@ export function CourseQrModal({ course, isOpen, onClose, onUploadForCourse }: Co
               </p>
             </div>
 
-            {}
             <div data-keep-white="true" className="p-3 bg-white border border-gray-border rounded-xl shadow-xs inline-block mx-auto">
               {qrDataUrl ? (
                 <img src={qrDataUrl} alt={`QR Fijo ${course.name}`} className="w-48 h-48 mx-auto" />
@@ -88,7 +85,6 @@ export function CourseQrModal({ course, isOpen, onClose, onUploadForCourse }: Co
               )}
             </div>
 
-            {}
             <div className="space-y-0.5">
               <span className="text-[10px] text-text-ter uppercase tracking-wider font-semibold block">
                 Identificador Fijo de Aula
@@ -104,7 +100,6 @@ export function CourseQrModal({ course, isOpen, onClose, onUploadForCourse }: Co
           </div>
         </div>
 
-        {}
         <div className="p-4 bg-gray-50 border-t border-gray-border flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <button

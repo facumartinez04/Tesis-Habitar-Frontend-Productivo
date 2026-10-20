@@ -7,11 +7,9 @@ import { openPdf, type PdfHandle } from '../../../lib/pdfDocument';
 interface DocumentViewerProps {
   code: string;
   document: ActivityDocumentMeta;
-  /** Si el documento no se puede abrir, la pantalla vuelve a mostrar el texto. */
   onError: () => void;
 }
 
-/** El HTML del Word se limpia antes de mostrarlo: sin scripts, sin eventos y con enlaces que abren aparte. */
 function sanitizeHtml(html: string): string {
   const doc = new DOMParser().parseFromString(html, 'text/html');
   doc.querySelectorAll('script, style, iframe, object, embed, form, link, meta').forEach((n) => n.remove());
@@ -31,10 +29,6 @@ function sanitizeHtml(html: string): string {
   return doc.body.innerHTML;
 }
 
-/**
- * El documento original de la actividad, tal como lo subió el docente: el PDF página por página (sólo las que
- * eligió) y el Word con su formato e imágenes. Las páginas se dibujan a medida que el alumno llega a ellas.
- */
 export function DocumentViewer({ code, document: meta, onError }: DocumentViewerProps) {
   const [pdf, setPdf] = useState<PdfHandle | null>(null);
   const [html, setHtml] = useState<string | null>(null);
@@ -72,11 +66,9 @@ export function DocumentViewer({ code, document: meta, onError }: DocumentViewer
     };
   }, [code, meta.mimeType]);
 
-  // Ancho disponible: las páginas se adaptan a la pantalla (celular o computadora).
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    // Se mide de entrada (no hace falta esperar al primer aviso del observador) y después en cada cambio.
     setWidth(Math.floor(el.getBoundingClientRect().width));
     const observer = new ResizeObserver(([entry]) => setWidth(Math.floor(entry.contentRect.width)));
     observer.observe(el);
@@ -104,7 +96,6 @@ export function DocumentViewer({ code, document: meta, onError }: DocumentViewer
   );
 }
 
-/** Una página del PDF; se dibuja recién cuando está por aparecer en pantalla. */
 function PdfPage({ pdf, page, width, label }: { pdf: PdfHandle; page: number; width: number; label: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);

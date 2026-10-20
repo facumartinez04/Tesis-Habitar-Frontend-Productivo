@@ -4,7 +4,6 @@ export type AttemptPolicy = 'unico' | 'reintentos';
 
 export type ActivityStatus = 'borrador' | 'programada' | 'publicada' | 'cerrada';
 
-/** Actividad diagnóstica de inicio o de cierre del ciclo lectivo. */
 export type DiagnosticType = 'inicio' | 'cierre';
 
 export interface Activity {
@@ -14,11 +13,9 @@ export interface Activity {
   courseId: string;
   educationLevel: string;
   axis: ComprehensionAxis;
-  /** null cuando la actividad se cerró: el texto se borra al cerrarse. */
   sourceText: string | null;
   availableFrom: string;
   startTime: string;
-  /** Fecha de cierre; puede ser otro día que la apertura. */
   endDate: string;
   endTime: string;
   attemptPolicy: AttemptPolicy;
@@ -77,9 +74,7 @@ export interface PublicCourseInfo {
     endTime: string;
     endDate?: string;
   } | null;
-  /** Próxima actividad programada, si no hay ninguna abierta. */
   upcomingActivity?: { code: string; name: string; availableFrom: string; startTime: string } | null;
-  /** Cómo se identifica el alumno en la institución: número de lista (por defecto) o nombre y apellido. */
   studentIdMode?: 'LISTA' | 'NOMBRE';
 }
 

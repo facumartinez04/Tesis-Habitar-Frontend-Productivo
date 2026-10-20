@@ -27,16 +27,12 @@ interface Dashboard {
   byCourse: { id: string; name: string; responses: number; students: number; activities: number; averages: Avg }[];
   byStudent: { id: string; name: string; courseName: string; responses: number; lastDay: string; averages: Avg; status: Status }[];
   byActivity: { id: string; name: string; code: string; courseName: string; date: string; responses: number; averages: Avg }[];
-  /** Evolución del alumno elegido, actividad por actividad. */
   timeline: { id: string; name: string; day: string; diagnosticType: string | null; averages: Avg }[];
-  /** Diagnóstica de inicio contra la de cierre, con los filtros actuales. */
   diagnostic: { inicio: { responses: number; averages: Avg } | null; cierre: { responses: number; averages: Avg } | null };
 }
 
-/** Fila de un gráfico por ejes: etiqueta corta del eje x y título completo para el tooltip. */
 type AxisRow = { label: string; title: string; averages: Avg };
 
-/** Ejes en orden fijo, con colores validados para fondo claro y oscuro (paleta categórica de referencia). */
 const AXES = [
   { key: 'literal', label: 'Literal', light: '#2a78d6', dark: '#3987e5' },
   { key: 'inferencial', label: 'Inferencial', light: '#eb6834', dark: '#d95926' },
@@ -110,12 +106,7 @@ function download(name: string, csv: string) {
   URL.revokeObjectURL(a.href);
 }
 
-/**
- * Tablero de resultados: comprensión lectora por eje, con filtros por aula, alumno y días. Sirve al docente (sus
- * aulas) y a la coordinación (toda la institución). Los filtros quedan en la dirección para compartir la vista.
- */
 export function DashboardScreen() {
-  // Los filtros de la dirección se leen recién en el navegador (el servidor no los conoce).
   const [filters, setFilters] = useState({ courseId: '', studentId: '', from: '', to: '' });
   const [ready, setReady] = useState(false);
   useEffect(() => {
@@ -169,7 +160,6 @@ export function DashboardScreen() {
   const selectedStudent = data?.students.find((s) => s.id === filters.studentId) ?? null;
   const selectedCourse = data?.courses.find((c) => c.id === filters.courseId) ?? null;
 
-  /** Informe en PDF: se imprime la vista actual en claro, sin menú, con todas las filas. */
   function printReport() {
     const root = document.documentElement;
     const wasDark = root.classList.contains('dark');
@@ -216,7 +206,6 @@ export function DashboardScreen() {
           </button>
         )}
       </div>
-      {/* Encabezado del informe impreso */}
       <div className="print-only mb-4">
         <div className="text-xl font-bold">Informe de comprensión lectora</div>
         <div className="text-[12px] mt-1">
@@ -230,7 +219,6 @@ export function DashboardScreen() {
       </div>
       <div className="text-[12.5px] text-text-sec mb-4 print-hide">Comprensión lectora por eje. Filtrá por aula, alumno o días; los filtros quedan en la dirección para compartir la vista.</div>
 
-      {/* Filtros, en una fila */}
       <div className="flex flex-wrap items-end gap-2 mb-4 bg-card-bg border border-gray-border rounded-xl p-3 print-hide">
         <label className="text-[11px] text-text-sec font-medium flex flex-col gap-1">
           Aula
@@ -295,7 +283,6 @@ export function DashboardScreen() {
         </div>
       ) : (
         <>
-          {/* Resumen */}
           <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3 mb-4">
             <Tile label="Respuestas" value={k.responses.toLocaleString('es-AR')} />
             <Tile label="Alumnos" value={k.students.toLocaleString('es-AR')} />
@@ -319,7 +306,6 @@ export function DashboardScreen() {
             </ChartCard>
           </div>
 
-          {/* Evolución del alumno y diagnóstica */}
           {(selectedStudent && data.timeline.length > 0) || data.diagnostic.inicio || data.diagnostic.cierre ? (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4 print-avoid-break">
               {selectedStudent && data.timeline.length > 0 && (
@@ -350,7 +336,6 @@ export function DashboardScreen() {
             </div>
           ) : null}
 
-          {/* Detalle */}
           <div className="flex flex-wrap items-center justify-between gap-2 mb-2 print-hide">
             <div className="flex gap-1 border-b border-gray-border" role="tablist">
               {(['alumnos', 'aulas', 'actividades'] as const).map((t) => (
@@ -528,7 +513,6 @@ function ChartCard({ title, children }: { title: string; children: React.ReactNo
 const H = 190;
 const PAD = { l: 34, r: 100, t: 10, b: 24 };
 
-/** Marcas del eje x: como mucho 6 días, repartidos. */
 function xTicks(n: number): number[] {
   if (n <= 6) return Array.from({ length: n }, (_, i) => i);
   const step = (n - 1) / 5;
@@ -613,7 +597,6 @@ function AxesChart({ rows, colors }: { rows: AxisRow[]; colors: string[] }) {
     const pts = rows.map((r, i) => ({ i, v: r.averages[a.key] })).filter((p): p is { i: number; v: number } => p.v !== null);
     return { ...a, pts };
   });
-  // Etiquetas al final de cada línea, separadas para que no se pisen.
   const ends = lines
     .map((l, idx): { idx: number; v: number | null } => ({ idx, v: l.pts.length ? l.pts[l.pts.length - 1].v : null }))
     .filter((e): e is { idx: number; v: number } => e.v !== null)
@@ -717,7 +700,6 @@ function AxesChart({ rows, colors }: { rows: AxisRow[]; colors: string[] }) {
   );
 }
 
-/** Diagnóstica de inicio contra cierre: promedio por eje y el cambio, con flecha y signo (no sólo color). */
 function DiagnosticTable({ diagnostic, colors }: { diagnostic: Dashboard['diagnostic']; colors: string[] }) {
   const th = 'text-left text-[11px] text-text-sec font-medium px-2 py-1.5 border-b border-gray-border';
   const td = 'px-2 py-2 border-b border-gray-border tabular-nums text-[12.5px]';
@@ -775,7 +757,6 @@ function DiagnosticTable({ diagnostic, colors }: { diagnostic: Dashboard['diagno
   );
 }
 
-/** Tablas completas para el informe impreso (en pantalla se ven paginadas). */
 function PrintTables({ data }: { data: Dashboard }) {
   const th = 'text-left text-[10px] font-semibold px-1.5 py-1 border-b border-neutral-300';
   const td = 'px-1.5 py-1 border-b border-neutral-200 text-[10.5px]';

@@ -21,7 +21,6 @@ import { whenLabel } from '../../../lib/activityDates';
 
 interface ActivityLivePanelProps {
   activityId: string;
-  /** Acción extra al pie (por ejemplo, «Crear otra actividad» al terminar el asistente). */
   footer?: React.ReactNode;
 }
 
@@ -32,7 +31,6 @@ const STATUS = {
   BORRADOR: { label: 'Borrador', dot: 'bg-stone-400', text: 'text-stone-600 dark:text-stone-300', bg: 'bg-stone-100 dark:bg-white/5' },
 } as const;
 
-/** Tolerancia del servidor para los envíos finales después de la hora de cierre. */
 const GRACE_MS = 10 * 60 * 1000;
 
 function joinUrl(code: string): string {
@@ -52,14 +50,12 @@ function timeOf(iso: string): string {
   return new Date(iso).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Argentina/Buenos_Aires' });
 }
 
-/** Lo que va en el círculo del alumno: su número de lista o las iniciales de su nombre. */
 function avatarOf(name: string): string {
   if (name.startsWith('N.º ')) return name.slice(4);
   const words = name.split(/\s+/).filter(Boolean);
   return ((words[0]?.[0] ?? '') + (words.length > 1 ? words[words.length - 1][0] : '')).toUpperCase();
 }
 
-/** Sin moverse durante este tiempo, el alumno figura como inactivo (puede haberse ido de la página). */
 const IDLE_MS = 3 * 60 * 1000;
 
 interface StudentRow {
@@ -73,7 +69,6 @@ interface StudentRow {
   flags: LiveActivity['integrityEvents'];
 }
 
-/** Une el avance en vivo de cada alumno con su envío y sus avisos de integridad. */
 function studentRows(live: LiveActivity): StudentRow[] {
   const byName = new Map<string, StudentRow>();
   for (const st of live.students) {
@@ -88,7 +83,6 @@ function studentRows(live: LiveActivity): StudentRow[] {
       flags: [],
     });
   }
-  // Las respuestas vienen de la más nueva a la más vieja: queda el último intento de cada alumno.
   for (const r of live.responses) {
     const row = byName.get(r.studentDisplayName);
     if (row && !row.response) {
@@ -116,10 +110,6 @@ function studentRows(live: LiveActivity): StudentRow[] {
   );
 }
 
-/**
- * Panel en vivo de una actividad: QR para proyectar, estado con cuenta regresiva y las respuestas que van llegando,
- * sin recargar (WebSocket, con un refresco lento de respaldo).
- */
 export function ActivityLivePanel({ activityId, footer }: ActivityLivePanelProps) {
   const [live, setLive] = useState<LiveActivity | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -135,7 +125,6 @@ export function ActivityLivePanel({ activityId, footer }: ActivityLivePanelProps
     getActivityLive(activityId)
       .then((data) => {
         setLive((prev) => {
-          // Resalta por un momento la respuesta que acaba de llegar.
           if (prev && data.responses.length > prev.responses.length) setHighlight(data.responses[0]?.studentDisplayName ?? null);
           return data;
         });
@@ -179,7 +168,6 @@ export function ActivityLivePanel({ activityId, footer }: ActivityLivePanelProps
   const reading = rows.filter((r) => r.phase === 'LEYENDO').length;
   const answering = rows.filter((r) => r.phase === 'RESPONDIENDO').length;
   const canRelease = live.status === 'PUBLICADA' && live.readingMode !== 'LIBRE' && !live.questionsReleasedAt;
-  // Pasada la hora de cierre, durante unos minutos todavía entran los envíos automáticos de quienes respondían.
   const finishing = live.status === 'PUBLICADA' && Boolean(live.closesAt) && closesIn <= 0;
   const expected = Math.max(live.devicesInClassroom, rows.length);
 
@@ -266,7 +254,6 @@ export function ActivityLivePanel({ activityId, footer }: ActivityLivePanelProps
 
   return (
     <div className="space-y-5">
-      {/* Encabezado */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-text-pri tracking-tight">{live.name}</h1>
@@ -291,7 +278,6 @@ export function ActivityLivePanel({ activityId, footer }: ActivityLivePanelProps
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-5 items-start">
-        {/* QR */}
         <div className="bg-card-bg border border-gray-border rounded-2xl p-5 flex flex-col items-center gap-3">
           <QrBox code={live.code} size="lg" />
           <p className="text-[11.5px] text-text-sec text-center max-w-[240px]">
@@ -315,7 +301,6 @@ export function ActivityLivePanel({ activityId, footer }: ActivityLivePanelProps
         </div>
 
         <div className="space-y-5 min-w-0">
-          {/* Estado */}
           <div className="bg-card-bg border border-gray-border rounded-2xl p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
@@ -422,7 +407,6 @@ export function ActivityLivePanel({ activityId, footer }: ActivityLivePanelProps
             </div>
           </div>
 
-          {/* Avisos de integridad */}
           {live.integrityEvents.length > 0 && (
             <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-2xl px-5 py-4">
               <div className="flex items-center gap-2 text-sm font-bold text-amber-900 dark:text-amber-200">
@@ -450,7 +434,6 @@ export function ActivityLivePanel({ activityId, footer }: ActivityLivePanelProps
             </div>
           )}
 
-          {/* Alumnos en vivo */}
           <div className="bg-card-bg border border-gray-border rounded-2xl">
             <div className="px-5 py-3 border-b border-gray-border flex items-center justify-between gap-3">
               <span className="text-sm font-bold text-text-pri">Alumnos</span>
@@ -537,7 +520,6 @@ export function ActivityLivePanel({ activityId, footer }: ActivityLivePanelProps
               </ul>
             )}
           </div>
-          {/* Dudas sobre el texto */}
           {live.readingHelp && (
             <div className="bg-card-bg border border-gray-border rounded-2xl">
               <div className="px-5 py-3 border-b border-gray-border flex items-center justify-between gap-3">
@@ -587,7 +569,6 @@ export function ActivityLivePanel({ activityId, footer }: ActivityLivePanelProps
         </div>
       </div>
 
-      {/* Modo proyector */}
       {projecting && (
         <div className="fixed inset-0 z-[60] bg-white flex flex-col items-center justify-center gap-6 p-6" data-keep-white="true" role="dialog" aria-label="QR proyectado">
           <button type="button" onClick={() => setProjecting(false)} className="absolute top-4 right-4 text-neutral-500 hover:text-neutral-900 text-sm font-semibold cursor-pointer">

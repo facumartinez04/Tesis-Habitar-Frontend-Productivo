@@ -58,7 +58,6 @@ interface CostReport {
   models: { provider: string; model: string; calls: number; hasPrice: boolean }[];
 }
 
-/** Montos chicos (centavos de dólar) con más decimales, para que no figuren en cero. */
 function usd(n: number): string {
   const digits = n !== 0 && Math.abs(n) < 0.01 ? 4 : 2;
   return `US$ ${n.toLocaleString('es-AR', { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
@@ -76,10 +75,6 @@ function monthLabel(month: string): string {
 const th = 'text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white';
 const td = 'px-2.5 py-2.5 border-b border-gray-border';
 
-/**
- * Costo y gasto de IA de cada institución: cuánto le cuesta a la plataforma por mes (tokens × precio del modelo),
- * con un tope mensual por institución y la tabla de precios por modelo.
- */
 export function AdminAiCostsScreen() {
   const { message, showToast } = useToast();
   const [month, setMonth] = useState('');
@@ -188,7 +183,6 @@ export function AdminAiCostsScreen() {
         </label>
       </div>
 
-      {/* Resumen del mes */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <div className="bg-card-bg border border-gray-border rounded-xl p-4">
           <div className="text-[11px] text-text-ter uppercase tracking-wider font-semibold">Gasto de la plataforma</div>
@@ -216,7 +210,6 @@ export function AdminAiCostsScreen() {
         </div>
       </div>
 
-      {/* Últimos meses */}
       <div className="bg-card-bg border border-gray-border rounded-xl p-4 mb-4">
         <div className="text-xs font-bold text-text-pri mb-3">Gasto de la plataforma, últimos 6 meses</div>
         <div className="grid grid-cols-6 gap-2 items-end">
@@ -261,7 +254,6 @@ export function AdminAiCostsScreen() {
         </div>
       )}
 
-      {/* Por institución */}
       <div className="flex items-center justify-between gap-3 mb-2">
         <div className="text-sm font-bold text-text-pri">Por institución</div>
         <div className="relative max-w-[260px] w-full">
@@ -347,7 +339,6 @@ export function AdminAiCostsScreen() {
       </TableWrap>
       <Pagination page={paged.page} totalPages={paged.totalPages} total={paged.total} pageSize={paged.pageSize} onChange={paged.setPage} label="instituciones" />
 
-      {/* Precios */}
       <div className="mt-6 text-sm font-bold text-text-pri mb-1">Precios por modelo</div>
       <div className="text-[11.5px] text-text-sec mb-2">
         En dólares por millón de tokens, según la lista de cada proveedor. Verificalos en su página: un cambio se aplica a las

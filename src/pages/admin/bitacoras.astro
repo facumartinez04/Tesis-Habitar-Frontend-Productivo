@@ -1,0 +1,8 @@
+---
+import AppShell from '../../layouts/AppShell.astro';
+import { LogsScreen } from '../../components/react/features/LogsScreen';
+import { adminNavItems } from '../../lib/nav';
+---
+<AppShell title="Bitácoras" sectionLabel="Administración de plataforma" sidebarItems={adminNavItems}>
+  <LogsScreen client:load scope="global" />
+</AppShell>

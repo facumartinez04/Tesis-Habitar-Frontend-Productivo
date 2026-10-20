@@ -8,8 +8,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
+<style>*{box-sizing:border-box;margin:0;padding:0}
 :root{
   --green-dark:#0F6E56;
   --green-mid:#1D9E75;
@@ -37,10 +36,8 @@
 }
 html,body{height:100%;font-family:'Inter',sans-serif;background:#EDECEA;color:var(--text-pri);font-size:14px;line-height:1.5;}
 
-/* ── SHELL ── */
 .shell{display:flex;height:100vh;}
 
-/* ── NAV ── */
 .nav{width:220px;background:var(--white);border-right:1px solid var(--gray-border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;}
 .nav-logo{padding:16px 18px 14px;border-bottom:1px solid var(--gray-border);}
 .nav-logo span{font-size:18px;font-weight:600;color:var(--green-dark);letter-spacing:-.02em;}
@@ -52,10 +49,8 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:#EDECEA;color:va
 .nav-item .cu{font-size:9.5px;color:var(--text-ter);margin-left:auto;font-family:'DM Mono',monospace;}
 .nav-item.active .cu{color:var(--green-mid);}
 
-/* ── MAIN ── */
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
 
-/* ── TOOLBAR ── */
 .toolbar{background:var(--white);border-bottom:1px solid var(--gray-border);padding:10px 20px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
 .toolbar-title{font-size:13px;font-weight:500;color:var(--text-pri);flex:1;}
 .toolbar-sub{font-size:11px;color:var(--text-ter);}
@@ -65,17 +60,12 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:#EDECEA;color:va
 .btn-all{display:flex;align-items:center;gap:6px;padding:7px 14px;background:var(--white);color:var(--text-pri);border:1px solid var(--gray-border);border-radius:var(--radius-md);font-size:12px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:background .12s;}
 .btn-all:hover{background:var(--surface);}
 
-/* ── CANVAS ── */
 .canvas{flex:1;overflow-y:auto;padding:28px;display:flex;justify-content:center;align-items:flex-start;}
 .screen-wrap{width:960px;min-height:600px;}
 
-/* ── TOAST ── */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1A1918;color:white;padding:10px 20px;border-radius:var(--radius-lg);font-size:12px;opacity:0;transition:all .3s;pointer-events:none;z-index:999;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-/* ══════════════════════════════════════════════
-   PWA FRAME COMPONENTS
-══════════════════════════════════════════════ */
 .browser-chrome{background:#f0efed;border:1px solid var(--gray-border);border-radius:10px 10px 0 0;padding:8px 12px;display:flex;align-items:center;gap:8px;}
 .browser-dots{display:flex;gap:5px;}
 .browser-dots i{width:11px;height:11px;border-radius:50%;}
@@ -97,11 +87,9 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:#EDECEA;color:va
 .sidebar-item .badge-count{margin-left:auto;background:var(--red-bg);color:var(--red-text);font-size:10px;padding:1px 6px;border-radius:10px;font-weight:600;}
 .content{flex:1;padding:22px 24px;background:var(--surface);}
 
-/* PAGE HEAD */
 .page-title{font-size:18px;font-weight:600;color:var(--text-pri);margin-bottom:3px;letter-spacing:-.01em;}
 .page-sub{font-size:12.5px;color:var(--text-sec);margin-bottom:18px;}
 
-/* STEPPER */
 .stepper{display:flex;align-items:center;margin-bottom:18px;}
 .step-item{display:flex;flex-direction:column;align-items:center;gap:4px;}
 .step-circle{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;}
@@ -113,13 +101,11 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:#EDECEA;color:va
 .step-line.pending{background:var(--gray-border);}
 .step-label{font-size:10px;color:var(--text-ter);white-space:nowrap;}
 
-/* METRIC CARDS */
 .metrics-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:18px;}
 .metric-card{background:var(--white);border:1px solid var(--gray-border);border-radius:var(--radius-md);padding:12px 14px;text-align:center;}
 .metric-val{font-size:22px;font-weight:600;color:var(--text-pri);}
 .metric-lbl{font-size:10.5px;color:var(--text-sec);margin-top:2px;}
 
-/* FORM */
 .form-row{display:grid;gap:12px;margin-bottom:14px;}
 .form-row.cols-2{grid-template-columns:1fr 1fr;}
 .form-row.cols-3{grid-template-columns:1fr 1fr 1fr;}
@@ -128,14 +114,12 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:#EDECEA;color:va
 .form-select{width:100%;padding:7px 10px;border:1px solid var(--gray-border);border-radius:var(--radius-sm);font-size:12.5px;background:var(--white);color:var(--text-pri);font-family:'Inter',sans-serif;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238C8A85' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;}
 .form-textarea{width:100%;padding:8px 10px;border:1px solid var(--gray-border);border-radius:var(--radius-sm);font-size:12px;background:var(--white);color:var(--text-pri);font-family:'Inter',sans-serif;resize:none;line-height:1.6;}
 
-/* BUTTONS */
 .btn-primary{background:var(--green-dark);color:white;border:none;padding:8px 16px;border-radius:var(--radius-sm);font-size:12.5px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;}
 .btn-secondary{background:var(--white);color:var(--text-pri);border:1px solid var(--gray-border);padding:7px 14px;border-radius:var(--radius-sm);font-size:12.5px;cursor:pointer;font-family:'Inter',sans-serif;}
 .btn-danger{background:var(--red-bg);color:var(--red-text);border:1px solid #F09595;padding:7px 14px;border-radius:var(--radius-sm);font-size:12.5px;cursor:pointer;font-family:'Inter',sans-serif;}
 .btn-row{display:flex;gap:8px;margin-top:16px;}
 .btn-row.end{justify-content:flex-end;}
 
-/* BADGES */
 .badge{display:inline-block;font-size:10.5px;font-weight:500;padding:2px 8px;border-radius:10px;white-space:nowrap;}
 .badge-green{background:var(--green-bg);color:var(--green-text);}
 .badge-blue{background:var(--blue-bg);color:var(--blue);}
@@ -144,7 +128,6 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:#EDECEA;color:va
 .badge-gray{background:var(--gray-bg);color:var(--text-sec);}
 .badge-teal{background:var(--green-light);color:var(--green-dark);}
 
-/* TABLE */
 .data-table{width:100%;border-collapse:collapse;font-size:12.5px;}
 .data-table th{text-align:left;font-size:11px;color:var(--text-sec);font-weight:500;padding:8px 10px;border-bottom:1px solid var(--gray-border);background:var(--white);}
 .data-table td{padding:9px 10px;border-bottom:1px solid var(--gray-border);color:var(--text-pri);}
@@ -152,33 +135,27 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:#EDECEA;color:va
 .data-table tr.row-warn td{background:#FCEBEB18;}
 .table-wrap{background:var(--white);border:1px solid var(--gray-border);border-radius:var(--radius-md);overflow:hidden;}
 
-/* CARD */
 .card{background:var(--white);border:1px solid var(--gray-border);border-radius:var(--radius-md);padding:16px;}
 .card-surface{background:var(--surface);border-radius:var(--radius-md);padding:12px 14px;}
 .card-grid{display:grid;gap:10px;}
 .card-grid.cols-2{grid-template-columns:1fr 1fr;}
 
-/* PROGRESS */
 .progress-wrap{background:var(--gray-border);border-radius:3px;height:5px;overflow:hidden;margin:4px 0;}
 .progress-fill{height:100%;border-radius:3px;}
 .progress-fill.green{background:var(--green-mid);}
 .progress-fill.amber{background:var(--amber);}
 .progress-fill.red{background:var(--red);}
 
-/* STATUS DOT */
 .dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px;flex-shrink:0;}
 .dot-green{background:var(--green-mid);}
 .dot-amber{background:var(--amber);}
 .dot-red{background:var(--red);}
 
-/* DIVIDER */
 hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
 
-/* TAG CHIPS */
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
 .chip{background:var(--white);border:1px solid var(--gray-border);border-radius:10px;font-size:11px;color:var(--text-sec);padding:3px 10px;}
 
-/* ALERT ITEMS */
 .alert-item{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:var(--radius-md);border:1px solid var(--gray-border);margin-bottom:8px;}
 .alert-icon{width:34px;height:34px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:17px;}
 .alert-icon.red{background:var(--red-bg);}
@@ -189,7 +166,6 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
 .alert-desc{font-size:11.5px;color:var(--text-sec);}
 .alert-date{font-size:10.5px;color:var(--text-ter);margin-top:2px;}
 
-/* TIMELINE */
 .timeline{position:relative;padding-left:20px;}
 .timeline::before{content:'';position:absolute;left:7px;top:6px;bottom:6px;width:1.5px;background:var(--gray-border);}
 .tl-item{position:relative;margin-bottom:14px;}
@@ -200,17 +176,14 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
 .tl-text{font-size:12.5px;color:var(--text-pri);}
 .tl-sub{font-size:11px;color:var(--amber-text);margin-top:2px;}
 
-/* AVATAR */
 .avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;}
 
-/* RADIO TOGGLE */
 .radio-group{display:flex;gap:14px;}
 .radio-opt{display:flex;align-items:center;gap:7px;font-size:12.5px;cursor:pointer;}
 .radio-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--gray-border);display:flex;align-items:center;justify-content:center;}
 .radio-dot.selected{border-color:var(--green-dark);background:var(--green-dark);}
 .radio-dot.selected::after{content:'';width:5px;height:5px;border-radius:50%;background:white;}
 
-/* QR BOX */
 .qr-box{background:var(--white);border:2px solid var(--gray-border);border-radius:var(--radius-md);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;}
 .qr-pattern{width:100px;height:100px;display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(7,1fr);gap:1.5px;}
 .qr-cell{border-radius:1px;}
@@ -218,23 +191,19 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
 .qr-cell.off{background:transparent;}
 .qr-code{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;letter-spacing:.14em;margin-top:10px;}
 
-/* SUCCESS CIRCLE */
 .success-circle{width:52px;height:52px;border-radius:50%;background:var(--green-bg);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 12px;}
 
-/* MOBILE FRAME */
 .mobile-frame-outer{width:260px;background:var(--white);border:2px solid var(--gray-border);border-radius:24px;overflow:hidden;flex-shrink:0;}
 .mobile-notch{height:22px;background:var(--white);display:flex;align-items:center;justify-content:center;}
 .mobile-notch-pill{width:52px;height:4px;background:var(--gray-border);border-radius:2px;}
 .mobile-header{background:var(--green-dark);padding:10px 14px;}
 .mobile-body{padding:12px;}
 
-/* CHART SVG */
 .chart-area{background:var(--surface);border-radius:var(--radius-md);padding:14px;}
 .chart-legend{display:flex;gap:14px;margin-top:8px;}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-sec);}
 .legend-dot{width:20px;height:2px;border-radius:1px;}
 
-/* LOGIN SCREEN */
 .login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;min-height:500px;background:var(--surface);}
 .login-logo{font-size:36px;font-weight:700;color:var(--text-pri);letter-spacing:-.03em;margin-bottom:4px;}
 .login-logo span{color:var(--green-dark);}
@@ -244,19 +213,16 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
 .oauth-icon{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;flex-shrink:0;}
 .login-note{font-size:11px;color:var(--text-ter);text-align:center;max-width:240px;margin-top:24px;line-height:1.6;}
 
-/* CONSENT */
 .consent-scroll{max-height:120px;overflow-y:auto;background:var(--surface);border-radius:var(--radius-sm);padding:12px 14px;border:1px solid var(--gray-border);font-size:12px;line-height:1.7;color:var(--text-sec);}
 .check-row{display:flex;align-items:flex-start;gap:10px;margin:14px 0;}
 .check-box{width:16px;height:16px;border:2px solid var(--green-dark);border-radius:3px;background:var(--green-dark);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
 .check-box svg{color:white;}
 
-/* MONITORING COMPONENT */
 .comp-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--gray-border);}
 .comp-row:last-child{border-bottom:none;}
 .comp-name{flex:1;font-size:12.5px;}
 .comp-bar-wrap{width:140px;}
 
-/* RENEWAL CARD */
 .renewal-card{background:var(--white);border:1px solid;border-radius:var(--radius-md);padding:16px;margin-bottom:12px;}
 .renewal-card.urgent{border-color:#FAC775;}
 .renewal-actions{display:flex;gap:8px;margin-top:12px;}
@@ -267,7 +233,6 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
 <div class="toast" id="toast"></div>
 
 <div class="shell">
-  <!-- NAV -->
   <nav class="nav">
     <div class="nav-logo">
       <span>Habitar</span>
@@ -303,7 +268,6 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
   </nav>
 
   <div class="main">
-    <!-- TOOLBAR -->
     <div class="toolbar">
       <div>
         <div class="toolbar-title" id="toolbar-title">CU-01-01 — Inicio de sesión institucional (Login)</div>
@@ -319,13 +283,9 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
       </button>
     </div>
 
-    <!-- CANVAS -->
     <div class="canvas">
       <div class="screen-wrap" id="screen-container">
 
-<!-- ════════════════════════════════════════
-     CU-01-01  LOGIN
-════════════════════════════════════════ -->
 <div class="screen" id="s-login">
   <div class="browser-chrome">
     <div class="browser-dots"><i></i><i></i><i></i></div>
@@ -348,9 +308,6 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
-     CU-01-02  ACCESO QR ALUMNO
-════════════════════════════════════════ -->
 <div class="screen" id="s-qr-access" style="display:none;">
   <div class="browser-chrome">
     <div class="browser-dots"><i></i><i></i><i></i></div>
@@ -358,7 +315,6 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
   </div>
   <div class="pwa-frame">
     <div style="background:var(--surface);padding:32px;display:flex;gap:32px;align-items:flex-start;justify-content:center;min-height:500px;">
-      <!-- mobile -->
       <div>
         <div style="font-size:11px;color:var(--text-ter);text-align:center;margin-bottom:8px;">Vista en smartphone del alumno</div>
         <div class="mobile-frame-outer">
@@ -381,18 +337,17 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
           </div>
         </div>
       </div>
-      <!-- QR card -->
       <div class="card" style="width:220px;margin-top:32px;">
         <div style="font-size:13px;font-weight:500;margin-bottom:12px;">Escanear código QR</div>
         <div class="qr-box" style="margin-bottom:14px;">
           <div class="qr-pattern">
-            <!-- row 1 --> <div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div>
-            <!-- row 2 --> <div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell on"></div>
-            <!-- row 3 --> <div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div>
-            <!-- row 4 --> <div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div>
-            <!-- row 5 --> <div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div>
-            <!-- row 6 --> <div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell on"></div>
-            <!-- row 7 --> <div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div>
+ <div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div>
+ <div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell on"></div>
+ <div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div>
+ <div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div>
+ <div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div>
+ <div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell on"></div>
+ <div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div>
           </div>
           <div class="qr-code">HAB-4B29</div>
         </div>
@@ -402,9 +357,6 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
-     CU-02-01  CARGAR TEXTO
-════════════════════════════════════════ -->
 <div class="screen" id="s-new-activity" style="display:none;">
   <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">app.habitar.com.ar/nueva-actividad</div></div>
   <div class="pwa-frame">
@@ -450,9 +402,6 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
-     CU-02-03  REVISAR PREGUNTAS
-════════════════════════════════════════ -->
 <div class="screen" id="s-review-q" style="display:none;">
   <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">app.habitar.com.ar/nueva-actividad/revision</div></div>
   <div class="pwa-frame">
@@ -482,17 +431,14 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
           <span class="chip">Crítico <strong style="color:var(--amber-text);">1</strong></span>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
-          <!-- Q1 -->
           <div class="card" style="display:flex;gap:12px;align-items:flex-start;">
             <div style="flex:1;"><span class="badge badge-blue" style="margin-bottom:5px;display:inline-block;">Literal</span><div style="font-size:13px;font-weight:500;margin-bottom:4px;">¿Qué es la biodiversidad según el texto?</div><div style="font-size:11.5px;color:var(--text-sec);">Resp. esperada: El conjunto de formas de vida que habitan el planeta</div></div>
             <div style="display:flex;gap:6px;"><button class="btn-secondary" style="padding:5px 10px;font-size:12px;">Editar</button><button class="btn-secondary" style="padding:5px 10px;font-size:12px;color:var(--red-text);">Eliminar</button></div>
           </div>
-          <!-- Q2 edited -->
           <div class="card" style="display:flex;gap:12px;align-items:flex-start;border-color:var(--green-mid);">
             <div style="flex:1;"><span class="badge badge-teal" style="margin-bottom:5px;display:inline-block;">Inferencial</span> <span style="font-size:10.5px;color:var(--green-mid);">✎ editada</span><div style="font-size:13px;font-weight:500;margin-bottom:4px;">¿Por qué la desaparición de una especie afecta a otras del mismo ecosistema?</div><div style="font-size:11.5px;color:var(--text-sec);">Resp. esperada: Porque las especies dependen entre sí, generando efectos en cadena</div></div>
             <div style="display:flex;gap:6px;"><button class="btn-secondary" style="padding:5px 10px;font-size:12px;">Editar</button><button class="btn-secondary" style="padding:5px 10px;font-size:12px;color:var(--red-text);">Eliminar</button></div>
           </div>
-          <!-- Q3 -->
           <div class="card" style="display:flex;gap:12px;align-items:flex-start;">
             <div style="flex:1;"><span class="badge badge-amber" style="margin-bottom:5px;display:inline-block;">Crítico</span><div style="font-size:13px;font-weight:500;margin-bottom:4px;">¿Estás de acuerdo con que proteger la biodiversidad es responsabilidad de todos? Justificá.</div><div style="font-size:11.5px;color:var(--text-sec);">Resp. esperada: (respuesta abierta — justificación con argumentos del texto)</div></div>
             <div style="display:flex;gap:6px;"><button class="btn-secondary" style="padding:5px 10px;font-size:12px;">Editar</button><button class="btn-secondary" style="padding:5px 10px;font-size:12px;color:var(--red-text);">Eliminar</button></div>
@@ -507,9 +453,6 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
-     CU-02-04  CONFIGURAR ACTIVIDAD
-════════════════════════════════════════ -->
 <div class="screen" id="s-config-act" style="display:none;">
   <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">app.habitar.com.ar/nueva-actividad/configurar</div></div>
   <div class="pwa-frame">
@@ -554,9 +497,6 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
-     CU-02-05  QR GENERADO
-════════════════════════════════════════ -->
 <div class="screen" id="s-qr-gen" style="display:none;">
   <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">app.habitar.com.ar/nueva-actividad/qr</div></div>
   <div class="pwa-frame">
@@ -602,14 +542,10 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
-     CU-02-06  VISTA ALUMNO
-════════════════════════════════════════ -->
 <div class="screen" id="s-student-act" style="display:none;">
   <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">app.habitar.com.ar/actividad/HAB-4B29</div></div>
   <div class="pwa-frame">
     <div style="background:var(--surface);padding:28px;display:flex;gap:28px;justify-content:center;align-items:flex-start;min-height:500px;">
-      <!-- Responding -->
       <div>
         <div style="font-size:11px;color:var(--text-ter);text-align:center;margin-bottom:8px;">Vista alumno — respondiendo</div>
         <div class="mobile-frame-outer" style="width:280px;">
@@ -637,7 +573,6 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
           </div>
         </div>
       </div>
-      <!-- Confirmation -->
       <div>
         <div style="font-size:11px;color:var(--text-ter);text-align:center;margin-bottom:8px;">Confirmación de envío</div>
         <div class="mobile-frame-outer" style="width:220px;">
@@ -657,9 +592,6 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
-     CU-03-01  DASHBOARD DOCENTE
-════════════════════════════════════════ -->
 <div class="screen" id="s-dash-doc" style="display:none;">
   <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">app.habitar.com.ar/mis-cursos</div></div>
   <div class="pwa-frame">
@@ -697,9 +629,6 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
-     CU-03-02  DASHBOARD INSTITUCIONAL
-════════════════════════════════════════ -->
 <div class="screen" id="s-dash-coord" style="display:none;">
   <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">app.habitar.com.ar/institucional</div></div>
   <div class="pwa-frame">
@@ -740,9 +669,6 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
-     CU-03-03  ALERTAS
-════════════════════════════════════════ -->
 <div class="screen" id="s-alerts" style="display:none;">
   <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">app.habitar.com.ar/alertas</div></div>
   <div class="pwa-frame">
@@ -779,9 +705,6 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
-     CU-03-04  DETALLE ALUMNO
-════════════════════════════════════════ -->
 <div class="screen" id="s-student-det" style="display:none;">
   <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">app.habitar.com.ar/mis-cursos/4b/alumno/torres-emiliano</div></div>
   <div class="pwa-frame">
@@ -809,11 +732,8 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
             <text x="2" y="14" font-size="9" fill="#8C8A85">100%</text>
             <text x="8" y="58" font-size="9" fill="#8C8A85">50%</text>
             <text x="8" y="103" font-size="9" fill="#8C8A85">0%</text>
-            <!-- Literal -->
             <polyline points="60,82 152,76 244,70 336,64 428,58 490,52" fill="none" stroke="#1D9E75" stroke-width="2" stroke-linejoin="round"/>
-            <!-- Inferencial -->
             <polyline points="60,88 152,85 244,83 336,80 428,77 490,74" fill="none" stroke="#EF9F27" stroke-width="2" stroke-linejoin="round"/>
-            <!-- Critico -->
             <polyline points="60,94 152,93 244,92 336,90 428,89 490,88" fill="none" stroke="#E24B4A" stroke-width="2" stroke-linejoin="round"/>
             <text x="60" y="113" font-size="8" fill="#8C8A85" text-anchor="middle">Abr</text>
             <text x="244" y="113" font-size="8" fill="#8C8A85" text-anchor="middle">May</text>
@@ -840,9 +760,6 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
-     CU-04-01  ARCO
-════════════════════════════════════════ -->
 <div class="screen" id="s-arco" style="display:none;">
   <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">app.habitar.com.ar/datos-personales</div></div>
   <div class="pwa-frame">
@@ -887,9 +804,6 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
-     CU-04-02  CONSENTIMIENTO
-════════════════════════════════════════ -->
 <div class="screen" id="s-consent" style="display:none;">
   <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">app.habitar.com.ar/consentimiento</div></div>
   <div class="pwa-frame">
@@ -925,9 +839,6 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
-     CU-05-01  ALTA INSTITUCIÓN
-════════════════════════════════════════ -->
 <div class="screen" id="s-new-tenant" style="display:none;">
   <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">admin.habitar.com.ar/nueva-institucion</div></div>
   <div class="pwa-frame">
@@ -965,9 +876,6 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
-     CU-05-02  CONFIG OAUTH
-════════════════════════════════════════ -->
 <div class="screen" id="s-oauth" style="display:none;">
   <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">admin.habitar.com.ar/instituciones/belgrano-norte/oauth</div></div>
   <div class="pwa-frame">
@@ -1001,9 +909,6 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
-     CU-05-03  MONITOREO
-════════════════════════════════════════ -->
 <div class="screen" id="s-monitoring" style="display:none;">
   <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">admin.habitar.com.ar/monitoreo</div></div>
   <div class="pwa-frame">
@@ -1048,9 +953,6 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
-     CU-05-04  RENOVACIÓN
-════════════════════════════════════════ -->
 <div class="screen" id="s-renewal" style="display:none;">
   <div class="browser-chrome"><div class="browser-dots"><i></i><i></i><i></i></div><div class="browser-url">admin.habitar.com.ar/suscripciones</div></div>
   <div class="pwa-frame">
@@ -1088,13 +990,12 @@ hr{border:none;border-top:1px solid var(--gray-border);margin:14px 0;}
   </div>
 </div>
 
-      </div><!-- screen-wrap -->
-    </div><!-- canvas -->
-  </div><!-- main -->
-</div><!-- shell -->
+      </div>
+    </div>
+  </div>
+</div>
 
-<script>
-const screenMeta = {
+<script>const screenMeta = {
   's-login':       {title:'CU-01-01 — Inicio de sesión institucional (Login)',          sub:'Paquete 1 · Sesión y acceso'},
   's-qr-access':   {title:'CU-01-02 — Acceso por QR (vista alumno, sin login)',         sub:'Paquete 1 · Sesión y acceso'},
   's-new-activity':{title:'CU-02-01 — Nueva actividad — Carga de texto',                sub:'Paquete 2 · Gestión de actividades'},
@@ -1159,7 +1060,6 @@ async function captureAll() {
   let first = true;
 
   for (const id of ids) {
-    // show temporarily
     const prev = document.getElementById(currentId);
     prev.style.display = 'none';
     const el = document.getElementById(id);
@@ -1177,7 +1077,6 @@ async function captureAll() {
     if (!first) pdf.addPage();
     first = false;
 
-    // header band
     pdf.setFillColor(15, 110, 86);
     pdf.rect(0, 0, pw, 30, 'F');
     pdf.setTextColor(225, 245, 238);
@@ -1191,19 +1090,16 @@ async function captureAll() {
 
     pdf.addImage(img, 'PNG', ix, iy, iw, ih);
 
-    // footer
     pdf.setFillColor(247, 246, 243);
     pdf.rect(0, ph - 22, pw, 22, 'F');
     pdf.setTextColor(140, 138, 133);
     pdf.setFontSize(8);
     pdf.text(meta.sub + '  ·  Tesis Facundo Julian Martínez · UAI 2026', pw/2, ph - 8, {align:'center'});
 
-    // restore
     el.style.display = 'none';
     prev.style.display = '';
   }
 
-  // restore current
   document.getElementById(currentId).style.display = '';
   pdf.save('Habitar_Mockups_Pantallas.pdf');
   toast('✓ PDF descargado con ' + ids.length + ' pantallas');

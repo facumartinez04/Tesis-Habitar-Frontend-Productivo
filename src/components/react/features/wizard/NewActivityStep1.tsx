@@ -21,7 +21,6 @@ const DEFAULT_TEXT =
 
 export function NewActivityStep1() {
   const wizard = useStore(activityWizardStore);
-  // Cada actividad nueva arranca con el texto vacío (no se arrastra el de la anterior).
   const [text, setText] = useState('');
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
@@ -32,13 +31,11 @@ export function NewActivityStep1() {
   const [importError, setImportError] = useState<string | null>(null);
   const [importedFrom, setImportedFrom] = useState<string | null>(null);
   const [oneDriveToken, setOneDriveToken] = useState<string | null>(null);
-  // Documento abierto en «Revisar documento», y el último usado (para volver a verlo).
   const [reviewDoc, setReviewDoc] = useState<ImportedDocument | null>(null);
   const [lastDoc, setLastDoc] = useState<ImportedDocument | null>(null);
   const [bankOpen, setBankOpen] = useState(false);
   const [loadingTemplate, setLoadingTemplate] = useState(false);
 
-  /** Actividad del banco: carga su texto y sus preguntas y pasa directo a revisarlas (sin volver a generar). */
   async function handlePickTemplate(t: ActivityTemplateSummary) {
     setLoadingTemplate(true);
     try {
@@ -60,7 +57,6 @@ export function NewActivityStep1() {
     }
   }
 
-
   useEffect(() => {
     updateWizard({ sourceText: '', wordCount: 0, questions: [], documentName: null, templateId: null, generatedCode: null, generatedActivityId: null });
     void clearWizardDocument();
@@ -70,7 +66,6 @@ export function NewActivityStep1() {
     getIntegrationsConfig().then(setIntegrations).catch(() => setIntegrations({ googleDrive: null, oneDrive: null }));
   }, []);
 
-  // El repositorio que corresponde a la cuenta con que entró el docente se muestra primero.
   const provider = session?.provider;
   const email = session?.user.email;
 
@@ -111,7 +106,6 @@ export function NewActivityStep1() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const courseIdParam = params.get('courseId');
-    // La recomendación del tablero abre el asistente con el eje foco ya elegido.
     const focusParam = params.get('focus');
     if (focusParam === 'literal' || focusParam === 'inferencial' || focusParam === 'critico') {
       updateWizard({ focusAxis: focusParam, axis: focusParam });
@@ -178,7 +172,6 @@ export function NewActivityStep1() {
         ]}
       />
 
-      {}
       {(boundCourse || wizard.courseName) && (
         <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -389,7 +382,6 @@ export function NewActivityStep1() {
           if (reviewDoc) {
             applyImported(label, content, reviewDoc.origin);
             setLastDoc(reviewDoc);
-            // El PDF o Word original se guarda para que los alumnos lo lean tal cual (el .txt ya es su texto).
             if (documentKind(reviewDoc.name, reviewDoc.mimeType)) {
               void saveWizardDocument({ name: reviewDoc.name, mimeType: reviewDoc.mimeType, file: reviewDoc.file, pages });
               updateWizard({ documentName: label });

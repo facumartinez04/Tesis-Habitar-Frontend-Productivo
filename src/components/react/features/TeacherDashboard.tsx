@@ -60,7 +60,6 @@ export function TeacherDashboard() {
   const session = useAuthGuard(['docente']);
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState<string>('');
-  // Grilla de tarjetas de aulas, o detalle de un aula. El aula abierta queda en la URL (?curso=…).
   const [view, setView] = useState<'grid' | 'detail'>('grid');
   const [summary, setSummary] = useState<CourseResultSummary | null>(null);
   const pagedRows = usePagination(summary?.rows ?? [], 15, selectedCourseId);
@@ -137,11 +136,9 @@ export function TeacherDashboard() {
   function backToGrid() {
     setView('grid');
     setCourseInUrl(null);
-    // Vuelve a pedir la lista para que la cantidad de alumnos de cada tarjeta esté al día.
     listMyCourses().then(setCourses).catch(() => undefined);
   }
 
-  // Botones Atrás y Adelante del navegador.
   useEffect(() => {
     const onPop = () => {
       const id = new URLSearchParams(window.location.search).get('curso');
@@ -171,7 +168,6 @@ export function TeacherDashboard() {
     showToast(`Conectado al aula: ${course.name}`);
   }
 
-
   async function handleDuplicate(activityId: string) {
     setBusyActivityId(activityId);
     try {
@@ -185,7 +181,6 @@ export function TeacherDashboard() {
     }
   }
 
-  /** Guarda la actividad en el banco de la institución (antes de cerrarla, mientras todavía tiene el texto). */
   async function handleSaveToBank(activityId: string, activityName: string) {
     setBusyActivityId(activityId);
     try {
@@ -373,7 +368,6 @@ export function TeacherDashboard() {
         Todas mis aulas
       </button>
 
-      {}
       {scannedCourse && (
         <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3.5 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -421,7 +415,6 @@ export function TeacherDashboard() {
         </div>
       )}
 
-      {}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-5">
         <div className="flex flex-wrap items-center gap-3">
           <div>
@@ -488,7 +481,6 @@ export function TeacherDashboard() {
         </div>
       </div>
 
-      {}
       <div className="bg-stone-100 dark:bg-stone-800/40 border border-stone-200/80 dark:border-stone-800 rounded-xl px-3.5 py-2 text-xs text-stone-600 dark:text-stone-300 mb-5 flex items-center justify-between flex-wrap gap-2">
         <div>
           {currentCourse ? (
@@ -700,7 +692,6 @@ export function TeacherDashboard() {
         <Pagination page={pagedActivities.page} totalPages={pagedActivities.totalPages} total={pagedActivities.total} pageSize={pagedActivities.pageSize} onChange={pagedActivities.setPage} label="actividades" />
       </div>
 
-      {}
       <QrScannerModal
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}

@@ -13,6 +13,7 @@ export const institucionalNavItems: AppSidebarItem[] = [
   { icon: 'dollarSign', label: 'Finanzas Escolares', href: '/institucional/finanzas' },
   { icon: 'bell', label: 'Alertas', href: '/institucional/alertas' },
   { icon: 'shield', label: 'Datos personales', href: '/institucional/datos-personales' },
+  { icon: 'fileText', label: 'Bitácoras', href: '/institucional/bitacoras' },
   { icon: 'building', label: 'Configuración', href: '/institucional/configuracion' },
 ];
 
@@ -24,6 +25,7 @@ export const adminNavItems: AppSidebarItem[] = [
   { icon: 'sparkles', label: 'Costos de IA', href: '/admin/ia' },
   { icon: 'refresh', label: 'Suscripciones', href: '/admin/suscripciones' },
   { icon: 'activity', label: 'Monitoreo', href: '/admin/monitoreo' },
+  { icon: 'fileText', label: 'Bitácoras', href: '/admin/bitacoras' },
   { icon: 'kanban', label: 'Jira / Tareas', href: '/admin/jira' },
   { icon: 'code', label: 'API', href: '/admin/api' },
 ];

@@ -355,7 +355,6 @@ export function RolesManagementScreen() {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-16">
-      {}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
@@ -382,7 +381,6 @@ export function RolesManagementScreen() {
         </button>
       </div>
 
-      {}
       <div className="space-y-3.5">
         <div className="flex items-center justify-between text-xs text-text-sec px-1 font-medium">
           <span>Roles Activos ({roles?.length || 0})</span>
@@ -404,7 +402,6 @@ export function RolesManagementScreen() {
                 className="bg-white dark:bg-[#1A1E29] border border-gray-border dark:border-[#2D3342] rounded-xl p-5 shadow-xs hover:border-emerald-600/50 dark:hover:border-emerald-500/50 hover:shadow-md transition-all duration-150"
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  {}
                   <div className="space-y-2 flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-base font-bold text-text-pri tracking-tight">
@@ -428,7 +425,6 @@ export function RolesManagementScreen() {
                       {role.description || 'Sin descripción asignada.'}
                     </p>
 
-                    {}
                     <div className="flex items-center gap-2 pt-1 flex-wrap text-xs">
                       {isFullAdmin ? (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 font-semibold border border-emerald-200 dark:border-emerald-800/50">
@@ -442,7 +438,6 @@ export function RolesManagementScreen() {
                         </span>
                       )}
 
-                      {}
                       {role.permissions.some((p) => p.module === 'finanzas' && p.canRead) && (
                         <span className="text-[11px] px-2 py-0.5 rounded bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800/40">
                           <Icon name="creditCard" size={11} className="inline-block align-[-2px] mr-1" />Finanzas / MP
@@ -461,7 +456,6 @@ export function RolesManagementScreen() {
                     </div>
                   </div>
 
-                  {}
                   <div className="flex items-center gap-2.5 shrink-0 pt-2 md:pt-0">
                     <button
                       type="button"
@@ -494,13 +488,9 @@ export function RolesManagementScreen() {
         )}
       </div>
 
-      {
-
-}
       {editingRole && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
           <div className="bg-white dark:bg-[#1A1E29] border border-gray-border dark:border-[#2D3342] rounded-2xl max-w-3xl w-full p-6 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
-            {}
             <div className="flex items-start justify-between pb-4 border-b border-gray-border dark:border-gray-800 shrink-0">
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
@@ -526,7 +516,6 @@ export function RolesManagementScreen() {
               </button>
             </div>
 
-            {}
             <div className="py-3 shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-border dark:border-gray-800">
               <div className="relative flex-1 max-w-sm">
                 <Icon name="search" size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-ter" />
@@ -579,7 +568,6 @@ export function RolesManagementScreen() {
               </div>
             </div>
 
-            {}
             <div className="flex-1 overflow-y-auto py-3 space-y-2.5 pr-1">
               {filteredModules.map((mod) => {
                 const info = MODULE_INFO[mod];
@@ -613,7 +601,6 @@ export function RolesManagementScreen() {
                         : 'border-gray-border dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
                     } bg-surface/50 dark:bg-[#151822]`}
                   >
-                    {}
                     <div
                       onClick={() => toggleModuleAccordion(mod)}
                       className="p-3.5 cursor-pointer flex items-center justify-between gap-3 hover:bg-gray-100/50 dark:hover:bg-[#1E2230] transition-colors"
@@ -642,7 +629,6 @@ export function RolesManagementScreen() {
                         </div>
                       </div>
 
-                      {}
                       <div className="flex items-center gap-3 shrink-0">
                         {isAllActive ? (
                           <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300">
@@ -679,11 +665,9 @@ export function RolesManagementScreen() {
                       </div>
                     </div>
 
-                    {}
                     {isExpanded && (
                       <div className="px-4 pb-4 pt-2 border-t border-gray-border/60 dark:border-gray-800/80 bg-white dark:bg-[#1A1E29] space-y-2.5">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-                          {}
                           <div className="p-3 rounded-xl border border-gray-border dark:border-gray-800 bg-surface dark:bg-[#131620] hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
                             <ToggleSwitch
                               checked={perm.canRead}
@@ -695,7 +679,6 @@ export function RolesManagementScreen() {
                             />
                           </div>
 
-                          {}
                           <div className="p-3 rounded-xl border border-gray-border dark:border-gray-800 bg-surface dark:bg-[#131620] hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
                             <ToggleSwitch
                               checked={perm.canCreate}
@@ -707,7 +690,6 @@ export function RolesManagementScreen() {
                             />
                           </div>
 
-                          {}
                           <div className="p-3 rounded-xl border border-gray-border dark:border-gray-800 bg-surface dark:bg-[#131620] hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
                             <ToggleSwitch
                               checked={perm.canUpdate}
@@ -719,7 +701,6 @@ export function RolesManagementScreen() {
                             />
                           </div>
 
-                          {}
                           <div className="p-3 rounded-xl border border-gray-border dark:border-gray-800 bg-surface dark:bg-[#131620] hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
                             <ToggleSwitch
                               checked={perm.canDelete}
@@ -731,7 +712,6 @@ export function RolesManagementScreen() {
                             />
                           </div>
 
-                          {}
                           <div className="p-3 rounded-xl border border-gray-border dark:border-gray-800 bg-surface dark:bg-[#131620] hover:border-gray-300 dark:hover:border-gray-700 transition-colors md:col-span-2">
                             <ToggleSwitch
                               checked={perm.canExport}
@@ -750,7 +730,6 @@ export function RolesManagementScreen() {
               })}
             </div>
 
-            {}
             <div className="pt-4 border-t border-gray-border dark:border-gray-800 flex items-center justify-between shrink-0">
               <div className="text-xs text-text-sec">
                 {hasChanges ? (
@@ -795,9 +774,6 @@ export function RolesManagementScreen() {
         </div>
       )}
 
-      {
-
-}
       {isCreateOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
           <div className="bg-white dark:bg-[#1A1E29] rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-gray-border dark:border-[#2D3342]">

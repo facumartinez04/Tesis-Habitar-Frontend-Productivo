@@ -1,11 +1,6 @@
-/**
- * PDF en el navegador: dibujar páginas para la vista previa, leer su texto y, si la página es una imagen
- * (escaneada), reconocerlo con OCR en español (Tesseract). Nada se sube al servidor.
- */
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { normalizeText } from './documentText';
 
-/** Menos caracteres que esto en la capa de texto: la página es una imagen y necesita OCR. */
 export const MIN_TEXT_CHARS = 40;
 
 export interface PdfHandle {
@@ -23,7 +18,6 @@ async function loadPdfjs() {
   return pdfjs;
 }
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 let ocrWorker: Promise<any> | null = null;
 let ocrProgress: ((p: number) => void) | undefined;
 
@@ -45,7 +39,6 @@ function getOcrWorker(): Promise<any> {
   return ocrWorker;
 }
 
-/** Texto de la página respetando los saltos de línea de la capa de texto del PDF. */
 async function extractPageText(doc: PDFDocumentProxy, pageNumber: number): Promise<string> {
   const page = await doc.getPage(pageNumber);
   const content = await page.getTextContent();
@@ -90,14 +83,12 @@ export async function openPdf(file: Blob): Promise<PdfHandle> {
       return textCache.get(n)!;
     },
     async ocrPage(n, onProgress) {
-      // Se dibuja a buena resolución (≈ 2000 px de ancho) para que el OCR lea bien letras chicas.
       const canvas = document.createElement('canvas');
       await render(n, canvas, 2000, 1);
       const worker = await getOcrWorker();
       ocrProgress = onProgress;
       try {
         const { data } = await worker.recognize(canvas);
-        // Une las palabras cortadas con guion y las líneas cortadas a mitad de oración, como en el original.
         const raw = String(data.text ?? '')
           .replace(/-\n(?=[a-záéíóúñ])/g, '')
           .replace(/([^.!?:;\n])\n+(?=[a-záéíóúñ0-9])/g, '$1 ');

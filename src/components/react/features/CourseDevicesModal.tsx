@@ -70,7 +70,6 @@ export function CourseDevicesModal({ course, isOpen, onClose }: CourseDevicesMod
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
       <div className="bg-white dark:bg-[#161A23] rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden border border-gray-border dark:border-[#2D3342] flex flex-col max-h-[90vh]">
-        {}
         <div className="px-6 py-4 bg-gray-50/80 dark:bg-[#1A1E29] border-b border-gray-border dark:border-[#2D3342] flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="p-2 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 rounded-xl">
@@ -94,7 +93,6 @@ export function CourseDevicesModal({ course, isOpen, onClose }: CourseDevicesMod
           </button>
         </div>
 
-        {}
         <div className="bg-emerald-50/70 dark:bg-emerald-950/30 border-b border-emerald-200/60 dark:border-emerald-800/40 px-6 py-3 flex items-start gap-2.5 text-xs text-emerald-900 dark:text-emerald-200">
           <Icon name="lock" size={14} className="mt-0.5 shrink-0" />
           <div className="leading-relaxed">
@@ -102,7 +100,6 @@ export function CourseDevicesModal({ course, isOpen, onClose }: CourseDevicesMod
           </div>
         </div>
 
-        {}
         <div className="p-4 border-b border-gray-border/60 dark:border-[#2D3342]">
           <div className="relative">
             <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-ter">
@@ -117,7 +114,6 @@ export function CourseDevicesModal({ course, isOpen, onClose }: CourseDevicesMod
           </div>
         </div>
 
-        {}
         <div className="p-6 overflow-y-auto flex-1 space-y-3">
           {loading ? (
             <div className="py-12 flex justify-center">
@@ -182,7 +178,6 @@ export function CourseDevicesModal({ course, isOpen, onClose }: CourseDevicesMod
           )}
         </div>
 
-        {}
         <div className="px-6 py-3.5 bg-gray-50 dark:bg-[#1A1E29] border-t border-gray-border dark:border-[#2D3342] flex items-center justify-between text-xs">
           <span className="text-text-ter">
             Total: {devices.length} {devices.length === 1 ? 'dispositivo' : 'dispositivos'}

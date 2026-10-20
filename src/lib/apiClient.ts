@@ -22,12 +22,10 @@ interface ApiFetchOptions {
   auth?: boolean;
 }
 
-/** URL completa de un recurso de la API (para pedidos que no son JSON, como archivos). */
 export function apiUrl(path: string): string {
   return `${API_URL}${path}`;
 }
 
-/** Encabezados de la sesión: token y, si el administrador está viendo como otra institución, a cuál. */
 export function authHeaders(): Record<string, string> {
   const headers: Record<string, string> = {};
   const session = sessionStore.get();

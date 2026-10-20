@@ -1,9 +1,3 @@
-/**
- * Extrae el texto de un documento en el navegador del docente: el archivo no se sube al servidor ni se guarda;
- * sólo el texto viaja al generar las preguntas (modelo BYOC, §8.3 de la tesis).
- * Formatos: .txt, .md, .docx y .pdf. Los Google Docs se exportan como texto antes de llegar acá.
- */
-
 export const SUPPORTED_EXTENSIONS = ['.txt', '.md', '.docx', '.pdf'] as const;
 
 export const SUPPORTED_MIME_TYPES = [
@@ -13,7 +7,6 @@ export const SUPPORTED_MIME_TYPES = [
   'application/pdf',
 ];
 
-/** Límite de tamaño para no colgar celulares con PDFs enormes: un texto de lectura no pasa de unos pocos MB. */
 const MAX_BYTES = 15 * 1024 * 1024;
 
 function extensionOf(name: string): string {
@@ -21,7 +14,6 @@ function extensionOf(name: string): string {
   return match ? match[0] : '';
 }
 
-/** Une líneas cortadas por el formato del documento y deja los párrafos separados por una línea en blanco. */
 export function normalizeText(raw: string): string {
   return raw
     .replace(/\r\n?/g, '\n')
@@ -83,7 +75,6 @@ export async function extractText(file: Blob, name: string, mimeType = file.type
   }
   return normalized;
 }
-
 
 export interface DocumentPreviewData {
   text: string;

@@ -7,9 +7,7 @@ export interface AiUsageSnapshot {
   quota: number;
   remaining: number;
   overQuota: boolean;
-  /** Gasto del mes con la clave de la plataforma, en dólares. */
   spentUsd?: number;
-  /** Tope de gasto mensual en dólares (lo define el administrador de la plataforma); null = sin tope. */
   budgetUsd?: number | null;
   overBudget?: boolean;
 }

@@ -5,7 +5,6 @@ import { syncPaymentReturn, type PaymentStatusView } from '../../../services/fin
 import type { IconName } from '../../../lib/iconPaths';
 
 interface PaymentResultScreenProps {
-  /** Hacia dónde volvió Mercado Pago; el estado definitivo lo confirma el servidor. */
   outcome: 'exito' | 'pendiente' | 'error';
 }
 
@@ -36,10 +35,6 @@ const VIEW: Record<PaymentStatusView['status'], { icon: IconName; title: string;
   },
 };
 
-/**
- * Resultado al volver de Mercado Pago. La URL trae el número de pago; el servidor lo consulta a Mercado Pago y
- * actualiza el registro (sirve aunque el aviso automático no llegue), así que lo que se muestra es el estado real.
- */
 export function PaymentResultScreen({ outcome }: PaymentResultScreenProps) {
   const [result, setResult] = useState<PaymentStatusView | null>(null);
   const [error, setError] = useState<string | null>(null);

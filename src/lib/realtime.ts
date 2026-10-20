@@ -1,7 +1,3 @@
-/**
- * Cliente de tiempo real (Socket.IO). El servidor sólo avisa que algo cambió; la pantalla vuelve a pedir los datos
- * por la API. Si el WebSocket no conecta, las pantallas siguen funcionando: cada una tiene además un refresco lento.
- */
 import { useEffect, useRef, useState } from 'react';
 import type { Socket } from 'socket.io-client';
 import { sessionStore } from '../store/sessionStore';
@@ -30,10 +26,6 @@ type Subscription =
 
 const EVENTS = { course: 'course:changed', activity: 'activity:changed', live: 'live:changed' } as const;
 
-/**
- * Se suscribe a una sala y llama a `onChange` cada vez que el servidor avisa un cambio. Devuelve si el canal en
- * vivo está conectado, para mostrarlo en pantalla. Al reconectar, vuelve a unirse a la sala y refresca una vez.
- */
 export function useLiveUpdates(
   subscription: Subscription | null,
   onChange: (payload?: { status?: string; event?: string }) => void,
@@ -88,7 +80,6 @@ export function useLiveUpdates(
   return connected;
 }
 
-/** Refresco lento de respaldo por si el WebSocket no conecta (redes escolares con proxies restrictivos). */
 export function usePolling(callback: () => void, intervalMs: number, enabled = true): void {
   const saved = useRef(callback);
   saved.current = callback;

@@ -5,8 +5,6 @@ export function AuthCallbackScreen() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // El token llega en el fragmento (#), que el navegador no envía a ningún servidor. Se borra de la barra
-    // de direcciones apenas se lee, para que no quede en el historial.
     const params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
     const token = params.get('token');
     const requested = params.get('dashboardPath') ?? '/docente/cursos';

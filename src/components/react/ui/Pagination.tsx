@@ -6,12 +6,10 @@ interface PaginationProps {
   total: number;
   pageSize: number;
   onChange: (page: number) => void;
-  /** Cómo se llaman los elementos («actividades», «alumnos»…). */
   label?: string;
   className?: string;
 }
 
-/** Números de página a mostrar: primera, última y vecinas de la actual, con «…» en los saltos. */
 function pageList(page: number, totalPages: number): (number | '…')[] {
   const pages = new Set([1, totalPages, page - 1, page, page + 1].filter((p) => p >= 1 && p <= totalPages));
   const sorted = [...pages].sort((a, b) => a - b);
@@ -23,7 +21,6 @@ function pageList(page: number, totalPages: number): (number | '…')[] {
   return out;
 }
 
-/** Paginación de listados. No se muestra si todo entra en una página. */
 export function Pagination({ page, totalPages, total, pageSize, onChange, label = 'resultados', className = '' }: PaginationProps) {
   if (total <= pageSize) return null;
   const from = (page - 1) * pageSize + 1;

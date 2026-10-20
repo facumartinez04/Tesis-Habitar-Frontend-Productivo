@@ -38,7 +38,6 @@ export function ConfigureActivityStep() {
     updateWizard({ courseId, courseName: course?.name ?? '' });
   }
 
-  // Ventana: la fecha de cierre puede ser otro día (por ejemplo, de las 22:00 a las 10:00 del día siguiente).
   const endDate = wizard.endDate || wizard.availableFrom;
   const opensAt = arInstant(wizard.availableFrom, wizard.startTime);
   const closesAt = arInstant(endDate, wizard.endTime);
@@ -74,7 +73,6 @@ export function ConfigureActivityStep() {
         questions: wizard.questions,
         diagnosticType: wizard.diagnosticType,
       });
-      // El PDF o Word original se sube aparte; si falla, la actividad queda igual y los alumnos leen el texto.
       if (wizard.documentName) {
         const doc = await loadWizardDocument();
         if (doc) {
@@ -89,7 +87,6 @@ export function ConfigureActivityStep() {
           }
         }
       }
-      // Si lo pidió, queda en el banco de la institución (texto, preguntas y documento) para reutilizarla.
       if (wizard.saveToBank) {
         await saveActivityAsTemplate(activity.id).catch((err: Error) =>
           showError('La actividad se creó, pero no se pudo guardar en el banco', err.message),
@@ -142,7 +139,6 @@ export function ConfigureActivityStep() {
               value={wizard.availableFrom}
               onChange={(e) => {
                 const value = e.target.value;
-                // Si el cierre quedaba antes de la nueva fecha de apertura, se corre al mismo día.
                 updateWizard({ availableFrom: value, ...(endDate < value ? { endDate: value } : {}) });
               }}
               className="flex-1 min-w-0 px-2.5 py-[7px] border border-gray-border rounded-[6px] text-[12.5px] bg-white"

@@ -16,7 +16,6 @@ function formatSize(bytes: number): string {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
-/** Navegador de sólo lectura del OneDrive del docente: carpetas, búsqueda y elección de un archivo de texto. */
 export function OneDrivePickerModal({ token, isOpen, onClose, onPicked }: OneDrivePickerModalProps) {
   const [path, setPath] = useState<{ id?: string; name: string }[]>([{ name: 'Mi OneDrive' }]);
   const [items, setItems] = useState<DriveItem[]>([]);

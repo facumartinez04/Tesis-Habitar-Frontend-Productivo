@@ -93,7 +93,6 @@ export function StatusScreen() {
           </button>
         </div>
 
-        {}
         <div className="bg-white border border-gray-border rounded-xl p-4 mb-4">
           <div className="text-[12px] font-semibold text-text-sec uppercase tracking-wide mb-2">Frontend</div>
           <Row label="Sitio cargado" ok={true} />
@@ -101,7 +100,6 @@ export function StatusScreen() {
           <Row label="Conexión a internet" ok={navigator.onLine} detail={navigator.onLine ? 'Online' : 'Offline'} />
         </div>
 
-        {}
         <div className="bg-white border border-gray-border rounded-xl p-4 mb-4">
           <div className="flex items-center justify-between mb-2">
             <div className="text-[12px] font-semibold text-text-sec uppercase tracking-wide">Backend</div>

@@ -13,7 +13,6 @@ if (!fs.existsSync(iconsDir)) {
   fs.mkdirSync(iconsDir, { recursive: true });
 }
 
-// SVG template with solid brand background #0F6E56 and crisp white Habitar symbol
 function createHabitarIconSvg(size, symbolScale = 0.65) {
   const symbolPixelSize = size * symbolScale;
   const scale = symbolPixelSize / 256;
@@ -49,27 +48,22 @@ function createHabitarIconSvg(size, symbolScale = 0.65) {
 async function generateIcons() {
   console.log('Generando iconos PWA de Habitar...');
 
-  // 1. icon-192.png
   const svg192 = Buffer.from(createHabitarIconSvg(192, 0.68));
   await sharp(svg192).png().toFile(path.join(iconsDir, 'icon-192.png'));
   console.log('✓ icon-192.png generado');
 
-  // 2. icon-512.png
   const svg512 = Buffer.from(createHabitarIconSvg(512, 0.68));
   await sharp(svg512).png().toFile(path.join(iconsDir, 'icon-512.png'));
   console.log('✓ icon-512.png generado');
 
-  // 3. icon-maskable-512.png (safe area is 80%, so symbol scale around 0.55)
   const svgMaskable512 = Buffer.from(createHabitarIconSvg(512, 0.55));
   await sharp(svgMaskable512).png().toFile(path.join(iconsDir, 'icon-maskable-512.png'));
   console.log('✓ icon-maskable-512.png generado');
 
-  // 4. apple-touch-icon.png (180x180)
   const svgApple = Buffer.from(createHabitarIconSvg(180, 0.65));
   await sharp(svgApple).png().toFile(path.join(iconsDir, 'apple-touch-icon.png'));
   console.log('✓ apple-touch-icon.png generado');
 
-  // 5. favicon.ico (32x32 from 64x64 buffer)
   const svgFavicon = Buffer.from(createHabitarIconSvg(64, 0.72));
   await sharp(svgFavicon).resize(32, 32).png().toFile(path.join(publicDir, 'favicon.ico'));
   console.log('✓ favicon.ico generado');

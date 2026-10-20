@@ -18,10 +18,6 @@ const AXIS_LABEL: Record<LiveQuestion['axis'], string> = {
   CRITICO: 'Crítico',
 };
 
-/**
- * Corrección de preguntas con la actividad en curso. Los alumnos reciben la versión nueva al instante, sin la
- * respuesta correcta, y los envíos que ya llegaron se vuelven a corregir con la versión corregida.
- */
 export function LiveQuestionsModal({ activityId, activityName, questions, isOpen, onClose, onSaved }: LiveQuestionsModalProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
 

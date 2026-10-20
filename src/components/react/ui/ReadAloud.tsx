@@ -2,13 +2,11 @@ import { useEffect, useState } from 'react';
 import { Icon } from './Icon';
 
 interface ReadAloudProps {
-  /** Texto a leer en voz alta. */
   text: string;
   label?: string;
   className?: string;
 }
 
-/** Voz en español del navegador, preferentemente rioplatense. */
 function spanishVoice(): SpeechSynthesisVoice | null {
   const voices = window.speechSynthesis.getVoices();
   return (
@@ -19,7 +17,6 @@ function spanishVoice(): SpeechSynthesisVoice | null {
   );
 }
 
-/** Lee el texto en voz alta con la voz del navegador (sin servicios externos ni costo). */
 export function ReadAloud({ text, label = 'Escuchar', className = '' }: ReadAloudProps) {
   const [supported, setSupported] = useState(false);
   const [speaking, setSpeaking] = useState(false);
@@ -31,13 +28,11 @@ export function ReadAloud({ text, label = 'Escuchar', className = '' }: ReadAlou
     };
   }, []);
 
-  // Si cambia el texto (otra pregunta), se corta lo que se estaba leyendo.
   useEffect(() => {
     if (supported && speaking) {
       window.speechSynthesis.cancel();
       setSpeaking(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [text]);
 
   if (!supported || !text.trim()) return null;

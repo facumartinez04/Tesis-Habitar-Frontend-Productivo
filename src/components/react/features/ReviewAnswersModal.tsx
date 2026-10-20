@@ -9,11 +9,9 @@ interface ReviewAnswersModalProps {
   activity: { id: string; name: string } | null;
   isOpen: boolean;
   onClose: () => void;
-  /** Se llama al cerrar si hubo cambios, para refrescar los resultados del curso. */
   onReviewed?: () => void;
 }
 
-/** Rúbrica del eje crítico, la misma que usa la IA para proponer el puntaje. */
 const RUBRIC: { score: number; label: string }[] = [
   { score: 0, label: 'No responde o no se relaciona' },
   { score: 1, label: 'Opina sin fundamentar' },

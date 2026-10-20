@@ -1,14 +1,9 @@
-// Genera src/styles/dark-overrides.css: el equivalente en modo oscuro de cada clase de color clara que usa el
-// código (fondos 50–300, textos 600–950, bordes 100–400, anillos y divisores), incluidas sus variantes hover/focus.
-// Un elemento que ya declara su propia clase `dark:` para esa propiedad no se toca.
-// Uso: node scripts/generate-dark-overrides.mjs   (se corre también antes del build)
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 const SRC = new URL('../src/', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
 const OUT = join(SRC, 'styles', 'dark-overrides.css');
 
-/** Color base (≈500) para tintes translúcidos y tono claro (≈300) para textos, por familia. */
 const FAMILIES = {
   emerald: ['16, 185, 129', '#6EE7B7'], green: ['34, 197, 94', '#86EFAC'], teal: ['20, 184, 166', '#5EEAD4'],
   amber: ['245, 158, 11', '#FCD34D'], yellow: ['234, 179, 8', '#FDE047'], orange: ['249, 115, 22', '#FDBA74'],
@@ -45,13 +40,13 @@ function darkValue({ prop, family, shade, opacity }) {
   const fam = FAMILIES[family];
   if (!neutral && !fam) return null;
   if (prop === 'bg') {
-    if (shade > 300) return null; // fondos saturados (botones) ya funcionan sobre oscuro
+    if (shade > 300) return null;
     if (neutral) return `rgba(255, 255, 255, ${({ 50: 0.04, 100: 0.07, 200: 0.1, 300: 0.14 }[shade] ?? 0.07) * opacity})`;
     const alpha = ({ 50: 0.1, 100: 0.16, 200: 0.22, 300: 0.3 }[shade] ?? 0.16) * opacity;
     return `rgba(${fam[0]}, ${Math.max(alpha, 0.06).toFixed(3)})`;
   }
   if (prop === 'text') {
-    if (shade < 500) return null; // textos claros pensados para fondos oscuros
+    if (shade < 500) return null;
     if (neutral) return shade >= 800 ? '#F3F4F6' : shade >= 700 ? '#E5E7EB' : shade >= 600 ? '#D1D5DB' : '#9CA3AF';
     return fam[1];
   }
@@ -69,7 +64,6 @@ for (const [cls, t] of [...tokens].sort(([a], [b]) => a.localeCompare(b))) {
   const value = darkValue(t);
   if (!value) continue;
   const darkPrefix = `dark:${t.variant}${t.prop === 'divide' ? 'divide' : t.prop}-`;
-  // Lo marcado con data-keep-white (la hoja del documento, el QR para proyectar) conserva sus colores claros.
   const notOwnDark = `:not([class*="${darkPrefix}"]):not([data-keep-white]):not([data-keep-white] *)`;
   const state = t.variant === 'hover:' ? ':hover' : t.variant === 'focus:' ? ':focus' : '';
   let selectors;
@@ -88,7 +82,5 @@ for (const [cls, t] of [...tokens].sort(([a], [b]) => a.localeCompare(b))) {
   rules.push(`${selectors.join(',\n')} {\n  ${decl}\n}`);
 }
 
-const header =
-  '/* Generado por scripts/generate-dark-overrides.mjs a partir de las clases que usa el código. No editar a mano. */\n';
-writeFileSync(OUT, header + rules.join('\n\n') + '\n');
+writeFileSync(OUT, rules.join('\n\n') + '\n');
 console.log(`[dark] ${rules.length} reglas de modo oscuro para ${tokens.size} clases de color → src/styles/dark-overrides.css`);

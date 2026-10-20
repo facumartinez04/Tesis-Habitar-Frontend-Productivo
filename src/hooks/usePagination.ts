@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { apiFetch } from '../lib/apiClient';
 
-/** Página que devuelve la API cuando se le pasa `?page=`. */
 export interface Page<T> {
   items: T[];
   total: number;
@@ -10,10 +9,6 @@ export interface Page<T> {
   totalPages: number;
 }
 
-/**
- * Paginación en pantalla de un listado ya cargado. Vuelve a la primera página cuando cambia `resetKey`
- * (por ejemplo, el texto de búsqueda) y nunca queda en una página que ya no existe.
- */
 export function usePagination<T>(items: T[], pageSize = 10, resetKey: unknown = null) {
   const [page, setPage] = useState(1);
   const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
@@ -28,10 +23,6 @@ export function usePagination<T>(items: T[], pageSize = 10, resetKey: unknown = 
   return { page: current, setPage, totalPages, total: items.length, pageSize, pageItems };
 }
 
-/**
- * Paginación en el servidor: pide `path?page=&pageSize=&q=` y mantiene la página, la búsqueda y la carga.
- * La búsqueda espera un momento a que se termine de escribir antes de pedir.
- */
 export function useServerPage<T>(path: string | null, pageSize = 20) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -58,7 +49,6 @@ export function useServerPage<T>(path: string | null, pageSize = 20) {
     apiFetch<Page<T>>(`${path}${path.includes('?') ? '&' : '?'}${params.toString()}`)
       .then((res) => {
         if (id !== requestId.current) return;
-        // Si se borró lo último de la página, se vuelve a la anterior.
         if (res.items.length === 0 && res.page > 1) {
           setPage(res.page - 1);
           return;

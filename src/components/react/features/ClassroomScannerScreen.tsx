@@ -131,7 +131,6 @@ export function ClassroomScannerScreen() {
       });
   }, []);
 
-  // El aula se actualiza sola: cuando el docente abre, crea o cierra una actividad, aparece sin recargar.
   const refreshInfo = () => {
     if (!qrCode) return;
     getPublicCourseInfo(qrCode).then(setInfo).catch(() => undefined);
@@ -139,7 +138,6 @@ export function ClassroomScannerScreen() {
   const liveConnected = useLiveUpdates(qrCode && info ? { kind: 'course', qrCode } : null, refreshInfo);
   usePolling(refreshInfo, 20_000, Boolean(qrCode && info) && !liveConnected);
 
-  // Por defecto el alumno se identifica con nombre y apellido; con número de lista si la institución lo eligió.
   const byList = (info?.studentIdMode ?? 'NOMBRE') === 'LISTA';
 
   async function handleBindDevice(e: React.FormEvent) {
@@ -199,7 +197,6 @@ export function ClassroomScannerScreen() {
     window.location.href = '/login?switch=1';
   }
 
-  // El panel de diagnóstico sólo aparece con ?debug=1: en uso normal tapaba el botón de vincular en celulares.
   const showDebug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
   const debugPanel = !showDebug ? null : (
     <div className="fixed bottom-0 inset-x-0 z-50 bg-black/90 text-green-400 text-[10px] font-mono p-2 max-h-32 overflow-y-auto">
@@ -260,7 +257,6 @@ export function ClassroomScannerScreen() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
-      {}
       <div className="fixed top-0 inset-x-0 z-40 bg-surface/85 backdrop-blur-md border-b border-gray-border/70 px-4 py-2 flex items-center justify-between text-xs">
         <div className="flex items-center gap-1.5 text-text-sec">
           <Icon name="backpack" size={14} />
@@ -277,7 +273,6 @@ export function ClassroomScannerScreen() {
       </div>
 
       <Card className="w-full max-w-md p-6 space-y-5">
-        {}
         <div className="text-center pb-3 border-b border-gray-border/60">
           <Badge color="green" className="mb-2">
             Aula Física Conectada
@@ -292,7 +287,6 @@ export function ClassroomScannerScreen() {
           )}
         </div>
 
-        {}
         {boundInfo ? (
 
           <div className="space-y-4">
@@ -313,7 +307,6 @@ export function ClassroomScannerScreen() {
               </div>
             </div>
 
-            {}
             {activeActivity ? (
               <div className="bg-surface border border-emerald-600/30 rounded-2xl p-4 space-y-3 text-center shadow-xs">
                 <div className="space-y-0.5">

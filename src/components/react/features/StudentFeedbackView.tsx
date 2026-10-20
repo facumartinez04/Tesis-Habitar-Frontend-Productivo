@@ -7,10 +7,6 @@ function pct(v: number | null): string {
   return v === null ? '—' : `${v}%`;
 }
 
-/**
- * Devolución al alumno, cuando la actividad ya cerró: qué respondió, si acertó, cuál era la correcta y, en la
- * pregunta abierta, el puntaje de su docente con la rúbrica.
- */
 export function StudentFeedbackView({ feedback, studentName }: { feedback: StudentFeedback; studentName: string }) {
   const s = feedback.scores;
   const closed = feedback.questions.filter((q) => q.correct !== null);

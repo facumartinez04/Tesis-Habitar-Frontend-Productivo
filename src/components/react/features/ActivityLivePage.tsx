@@ -3,7 +3,6 @@ import { ActivityLivePanel } from './ActivityLivePanel';
 import { useAuthGuard } from '../../../hooks/useAuthGuard';
 import { useQueryParam } from '../../../hooks/useQueryParam';
 
-/** Página /docente/actividades/vivo?id=…: el panel en vivo de cualquier actividad del docente. */
 export function ActivityLivePage() {
   const session = useAuthGuard(['docente', 'coordinador']);
   const activityId = useQueryParam('id', '');

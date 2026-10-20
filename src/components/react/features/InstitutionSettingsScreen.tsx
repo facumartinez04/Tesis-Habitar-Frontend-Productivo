@@ -333,7 +333,6 @@ export function InstitutionSettingsScreen() {
         </button>
       </Card>
 
-      {}
       <Card>
         <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-gray-100">
           <div>
@@ -372,7 +371,6 @@ export function InstitutionSettingsScreen() {
         )}
 
         <div className="space-y-4 pt-1">
-          {}
           <div>
             <div className="text-[11px] font-semibold text-text-sec uppercase tracking-wider mb-2">
               1. Proveedor de Inteligencia Artificial
@@ -428,7 +426,6 @@ export function InstitutionSettingsScreen() {
             </div>
           </div>
 
-          {}
           <div>
             <div className="text-[11px] font-semibold text-text-sec uppercase tracking-wider mb-2">
               2. Origen de la Clave de API (Key Source)
@@ -486,7 +483,6 @@ export function InstitutionSettingsScreen() {
             </div>
           </div>
 
-          {}
           {aiKeySource === 'custom' && (
             <div className="bg-surface p-3.5 rounded-lg border border-gray-border space-y-3">
               <div>
@@ -528,7 +524,6 @@ export function InstitutionSettingsScreen() {
                 </p>
               </div>
 
-              {}
               <div>
                 <label className="text-[11.5px] font-medium text-text-pri block mb-1">
                   Modelo Pedagógico Asignado
@@ -558,7 +553,6 @@ export function InstitutionSettingsScreen() {
             </div>
           )}
 
-          {}
           {testResult && (
             <div
               className={`p-3 rounded-lg border text-[12px] flex items-start gap-2 ${
@@ -581,7 +575,6 @@ export function InstitutionSettingsScreen() {
             </div>
           )}
 
-          {}
           <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-100">
             <button
               type="button"
@@ -760,7 +753,6 @@ export function InstitutionSettingsScreen() {
         </button>
       </Card>
 
-      {}
       {assigningTeacher && (
         <AssignTeacherCoursesModal
           teacher={assigningTeacher}

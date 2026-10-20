@@ -161,7 +161,6 @@ export function BrandScreen() {
 
   return (
     <div className="min-h-screen bg-[#F8FBF9] text-[#1F2937] font-sans selection:bg-[#E0EFEA] selection:text-[#0F6E56]">
-      {}
       {copiedItem && (
         <div className="fixed bottom-6 right-6 z-50 bg-[#064E3B] text-white px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 text-xs font-semibold animate-fade-in border border-emerald-500/30">
           <Icon name="check" size={14} className="text-emerald-300" />
@@ -169,7 +168,6 @@ export function BrandScreen() {
         </div>
       )}
 
-      {}
       <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <a href="/" className="flex items-center gap-2.5 group">
@@ -203,7 +201,6 @@ export function BrandScreen() {
         </div>
       </header>
 
-      {}
       <section className="bg-gradient-to-b from-white to-[#F8FBF9] border-b border-gray-200 py-14 sm:py-20 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto text-center space-y-4">
           <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#0F6E56] bg-[#E0EFEA] px-3.5 py-1 rounded-full">
@@ -220,7 +217,6 @@ export function BrandScreen() {
             disponibles para educadores, directivos, prensa y colaboradores escolares.
           </p>
 
-          {}
           <div className="pt-4 flex flex-wrap items-center justify-center gap-3">
             <button
               type="button"
@@ -243,9 +239,7 @@ export function BrandScreen() {
         </div>
       </section>
 
-      {}
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-12 space-y-16">
-        {}
         <section className="space-y-6">
           <div className="border-b border-gray-200 pb-3">
             <h2 className="text-2xl font-bold text-[#111827] tracking-tight">1. El Símbolo y Propósito</h2>
@@ -282,7 +276,6 @@ export function BrandScreen() {
           </div>
         </section>
 
-        {}
         <section className="space-y-6">
           <div className="border-b border-gray-200 pb-3 flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -295,7 +288,6 @@ export function BrandScreen() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {}
             <div className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -337,7 +329,6 @@ export function BrandScreen() {
               </div>
             </div>
 
-            {}
             <div className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -379,7 +370,6 @@ export function BrandScreen() {
               </div>
             </div>
 
-            {}
             <div className="bg-[#0F6E56] rounded-2xl border border-emerald-800 p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow text-white">
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -421,7 +411,6 @@ export function BrandScreen() {
               </div>
             </div>
 
-            {}
             <div className="bg-[#064E3B] rounded-2xl border border-emerald-900 p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow text-white">
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -465,7 +454,6 @@ export function BrandScreen() {
           </div>
         </section>
 
-        {}
         <section className="space-y-6">
           <div className="border-b border-gray-200 pb-3">
             <h2 className="text-2xl font-bold text-[#111827] tracking-tight">3. Paleta Cromática Oficial</h2>
@@ -504,7 +492,6 @@ export function BrandScreen() {
           </div>
         </section>
 
-        {}
         <section className="space-y-6">
           <div className="border-b border-gray-200 pb-3">
             <h2 className="text-2xl font-bold text-[#111827] tracking-tight">4. Tipografía y Estilo de Texto</h2>
@@ -560,7 +547,6 @@ export function BrandScreen() {
           </div>
         </section>
 
-        {}
         <section className="space-y-6">
           <div className="border-b border-gray-200 pb-3">
             <h2 className="text-2xl font-bold text-[#111827] tracking-tight">5. Tono de Voz y Estilo Editorial</h2>
@@ -603,7 +589,6 @@ export function BrandScreen() {
           </div>
         </section>
 
-        {}
         <section className="space-y-6">
           <div className="border-b border-gray-200 pb-3">
             <h2 className="text-2xl font-bold text-[#111827] tracking-tight">6. Uso Correcto de la Marca</h2>
@@ -639,7 +624,6 @@ export function BrandScreen() {
           </div>
         </section>
 
-        {/* 7. Textos Oficiales para Prensa y Medios (Boilerplates) */}
         <section className="space-y-6">
           <div className="border-b border-gray-200 pb-3">
             <h2 className="text-2xl font-bold text-[#111827] tracking-tight">7. Textos Institucionales para Medios</h2>
@@ -695,7 +679,6 @@ export function BrandScreen() {
         </section>
       </main>
 
-      {/* Footer */}
       <footer className="bg-white border-t border-gray-200 py-10 px-4 sm:px-6 mt-16 text-center text-xs text-gray-500">
         <div className="max-w-4xl mx-auto space-y-3">
           <div className="flex items-center justify-center gap-2 text-sm font-bold text-[#111827]">

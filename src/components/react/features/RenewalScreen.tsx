@@ -258,7 +258,6 @@ export function RenewalScreen() {
     <div>
       <Toast message={message} />
 
-      {}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <div className="text-lg font-semibold text-text-pri tracking-tight flex items-center gap-2">
@@ -280,7 +279,6 @@ export function RenewalScreen() {
         )}
       </div>
 
-      {}
       <div className="flex items-center gap-2 border-b border-gray-border mb-6">
         <button
           onClick={() => setActiveTab('instituciones')}
@@ -325,7 +323,6 @@ export function RenewalScreen() {
         </button>
       </div>
 
-      {}
       {activeTab === 'instituciones' && (
         <div className="space-y-4">
           <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 text-xs text-emerald-900 flex items-start gap-3">
@@ -396,7 +393,6 @@ export function RenewalScreen() {
                         </span>
                       </div>
 
-                      {}
                       <div className="pt-2 flex flex-wrap items-center gap-3 text-[11px] text-text-sec font-mono">
                         <span className="bg-gray-50 border border-gray-border px-2 py-1 rounded">
                           <Icon name="users" size={12} className="inline-block align-[-2px] mr-1" />Docentes: <strong>{sub.effectiveMaxUsers ?? 50}</strong>
@@ -457,7 +453,6 @@ export function RenewalScreen() {
         </div>
       )}
 
-      {}
       {activeTab === 'planes' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -496,7 +491,6 @@ export function RenewalScreen() {
                     )}
                   </div>
 
-                  {}
                   <div className="py-3 space-y-1.5 text-xs text-text-sec border-b border-gray-100">
                     <div className="flex items-center justify-between">
                       <span>Personal docente:</span>
@@ -516,7 +510,6 @@ export function RenewalScreen() {
                     </div>
                   </div>
 
-                  {}
                   <ul className="py-3 space-y-2 text-xs text-text-sec">
                     {plan.features.bullets && plan.features.bullets.length > 0 ? (
                       plan.features.bullets.map((b, i) => (
@@ -561,7 +554,6 @@ export function RenewalScreen() {
         </div>
       )}
 
-      {}
       {activeTab === 'comparativa' && (
         <div className="bg-white border border-gray-border rounded-xl shadow-2xs overflow-hidden">
           <div className="p-4 border-b border-gray-border bg-gray-50/50 flex items-center justify-between">
@@ -712,7 +704,6 @@ export function RenewalScreen() {
         </div>
       )}
 
-      {}
       {customizingSub && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white dark:bg-[#1A1E29] rounded-xl shadow-xl max-w-2xl w-full p-6 space-y-4 border border-gray-border dark:border-gray-800 max-h-[90vh] overflow-y-auto">
@@ -785,7 +776,6 @@ export function RenewalScreen() {
                 </div>
               </div>
 
-              {}
               <div className="bg-gray-50/80 dark:bg-[#131620] p-3.5 rounded-xl border border-gray-border/70 dark:border-gray-800 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-text-pri">
@@ -841,7 +831,6 @@ export function RenewalScreen() {
                 </div>
               </div>
 
-              {}
               <div className="space-y-2">
                 <label className="block text-xs font-semibold text-text-pri">
                   Módulos y Capacidades Habilitadas para esta Escuela:
@@ -909,7 +898,6 @@ export function RenewalScreen() {
                 </div>
               </div>
 
-              {}
               <div>
                 <label className="block text-xs font-semibold text-text-pri mb-1">Notas Comerciales del Acuerdo</label>
                 <textarea
@@ -942,7 +930,6 @@ export function RenewalScreen() {
         </div>
       )}
 
-      {}
       {isPlanModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white dark:bg-[#1A1E29] rounded-xl shadow-xl max-w-xl w-full p-6 space-y-4 border border-gray-border dark:border-gray-800 max-h-[90vh] overflow-y-auto">
@@ -998,7 +985,6 @@ export function RenewalScreen() {
                 />
               </div>
 
-              {}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-text-pri mb-1">
@@ -1024,7 +1010,6 @@ export function RenewalScreen() {
                 </div>
               </div>
 
-              {}
               <div className="bg-gray-50/80 dark:bg-[#131620] p-3.5 rounded-xl border border-gray-border/70 dark:border-gray-800 space-y-3">
                 <span className="text-xs font-bold text-text-pri block">Límites y Recursos Incluidos en el Plan</span>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -1070,7 +1055,6 @@ export function RenewalScreen() {
                 </div>
               </div>
 
-              {}
               <div className="space-y-2">
                 <label className="block text-xs font-semibold text-text-pri">Características y Módulos Incluidos:</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
@@ -1166,7 +1150,6 @@ export function RenewalScreen() {
                 </div>
               </div>
 
-              {}
               <div>
                 <label className="block text-xs font-semibold text-text-pri mb-1">
                   Viñetas de Marketing (Bullets comerciales)

@@ -1,7 +1,3 @@
-/**
- * Acceso de sólo lectura al OneDrive del docente (permiso Files.Read de Microsoft Graph). El archivo elegido se
- * descarga y se lee en el navegador: no pasa por el servidor ni se guarda.
- */
 import type { IPublicClientApplication } from '@azure/msal-browser';
 import { SUPPORTED_EXTENSIONS } from './documentText';
 
@@ -27,7 +23,6 @@ function getApp(clientId: string, tenantId: string): Promise<IPublicClientApplic
         auth: {
           clientId,
           authority: `https://login.microsoftonline.com/${tenantId || 'common'}`,
-          // Página mínima que devuelve la respuesta del login a esta ventana (src/pages/auth/microsoft.astro).
           redirectUri: `${window.location.origin}/auth/microsoft`,
         },
         cache: { cacheLocation: 'sessionStorage' },
@@ -51,7 +46,6 @@ export async function getOneDriveToken(config: { clientId: string; tenantId: str
     try {
       return (await msal.acquireTokenSilent({ scopes: SCOPES, account })).accessToken;
     } catch {
-      // Sin token en caché o vencido: se pide con la ventana de Microsoft.
     }
   }
   try {
@@ -92,7 +86,6 @@ function toItem(item: GraphItem): DriveItem {
   };
 }
 
-/** Contenido de una carpeta (o de la raíz): carpetas primero y luego archivos, por nombre. */
 export async function listFolder(token: string, folderId?: string): Promise<DriveItem[]> {
   const path = folderId ? `/me/drive/items/${encodeURIComponent(folderId)}/children` : '/me/drive/root/children';
   const data = await graph<{ value: GraphItem[] }>(token, `${path}?$top=200&$select=id,name,size,lastModifiedDateTime,folder,file`);

@@ -64,7 +64,7 @@ const jsonLd = {
     <link rel="canonical" href={canonicalUrl} />
     <meta name="google-site-verification" content="10dGo2uH13Ldi39RaQ8KRADqEHXvR-gwYKaJpOvb9Gg" />
 
-    {/* Open Graph / Facebook */}
+    
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:title" content={pageTitle} />
@@ -73,14 +73,14 @@ const jsonLd = {
     <meta property="og:site_name" content="Habitar" />
     <meta property="og:locale" content="es_AR" />
 
-    {/* Twitter Card */}
+    
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content={canonicalUrl} />
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={fullImageUrl} />
 
-    {/* PWA & Icons */}
+    
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="theme-color" content="#0F6E56" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -88,20 +88,18 @@ const jsonLd = {
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    {/* Client-Side Routing & View Transitions (Navegación SPA sin recarga) */}
+    
     <ClientRouter />
 
-    {/* Google Fonts */}
+    
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap"
     />
 
-    {/* Structured Data (Schema.org) */}
-    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
-
-    {/* Inline Theme Detection (Prevents FOUC across Claro / Oscuro / Sistema y navegación SPA) */}
+    
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />    {}
     <script is:inline define:vars={{ isLanding }}>
       function applyTheme() {
         try {
@@ -109,7 +107,6 @@ const jsonLd = {
           const currentPath = window.location.pathname;
           const onLanding = isLanding || currentPath === '/' || currentPath === '';
           if (onLanding) {
-            // El landing page siempre queda en modo claro
             root.classList.remove('dark');
             root.setAttribute('data-theme', 'light');
             root.setAttribute('data-theme-preference', 'light');
@@ -127,7 +124,6 @@ const jsonLd = {
             root.setAttribute('data-theme-preference', stored);
           }
 
-          // PWA and Theme initialization
         } catch (e) {}
       }
 
@@ -143,8 +139,7 @@ const jsonLd = {
   </head>
   <body class="min-h-screen bg-surface text-text-pri transition-colors duration-200">
     <slot />
-    <script>
-      if ('serviceWorker' in navigator) {
+    <script>      if ('serviceWorker' in navigator) {
         import('virtual:pwa-register').then(({ registerSW }) =>
           registerSW({
             immediate: true,

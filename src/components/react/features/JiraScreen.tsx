@@ -23,7 +23,6 @@ const COLUMNS: { id: JiraStatus; title: string; accent: string }[] = [
 ];
 
 export function JiraScreen() {
-  // Página interna: sólo para la administración de la plataforma.
   useAuthGuard(['admin']);
   const [issues, setIssues] = useState<JiraIssue[]>([]);
   const [loading, setLoading] = useState(true);
@@ -132,7 +131,6 @@ export function JiraScreen() {
         </div>
       )}
 
-      {}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Jira de Administración</h1>
@@ -162,7 +160,6 @@ export function JiraScreen() {
         </div>
       </div>
 
-      {}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-gray-200">
         <div className="flex items-center gap-2 flex-1 max-w-sm">
           <input
@@ -196,7 +193,6 @@ export function JiraScreen() {
         </div>
       </div>
 
-      {}
       {loading ? (
         <SkeletonKanban />
       ) : viewMode === 'board' ? (
@@ -293,7 +289,6 @@ export function JiraScreen() {
         </div>
       )}
 
-      {}
       {isCreateOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-xl">
@@ -370,7 +365,6 @@ export function JiraScreen() {
         </div>
       )}
 
-      {}
       {selectedIssue && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-xl w-full p-6 space-y-4 shadow-xl">
@@ -405,7 +399,6 @@ export function JiraScreen() {
         </div>
       )}
 
-      {}
       {isTokenModalOpen && (
         <TokenModal onClose={() => setIsTokenModalOpen(false)} />
       )}

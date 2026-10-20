@@ -4,7 +4,6 @@ import { getInstitutionMetrics, getPlatformMetrics } from '../../../services/res
 import type { UsageMetrics } from '../../../types/result';
 
 interface UsageMetricsPanelProps {
-  /** Institución a medir; sin institución, toda la plataforma (sólo administración). */
   institutionId?: string;
 }
 
@@ -16,7 +15,6 @@ function number(value: number | null): string {
   return value === null ? '—' : value.toLocaleString('es-AR');
 }
 
-/** Indicadores de uso del producto: alimentan el embudo, la renovación y la evidencia de calidad de la IA. */
 export function UsageMetricsPanel({ institutionId }: UsageMetricsPanelProps) {
   const [metrics, setMetrics] = useState<UsageMetrics | null>(null);
   const [error, setError] = useState<string | null>(null);

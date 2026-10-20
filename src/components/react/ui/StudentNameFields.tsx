@@ -2,14 +2,12 @@ interface StudentNameFieldsProps {
   firstName: string;
   lastName: string;
   onChange: (value: { firstName: string; lastName: string }) => void;
-  /** Estilo de los campos, para que coincidan con la pantalla donde se usan. */
   inputClassName: string;
   autoFocus?: boolean;
 }
 
 const LETTERS = /^[\p{L}][\p{L}'’\- ]*$/u;
 
-/** Valida nombre y apellido: los dos, sólo letras (con tildes, ñ, apóstrofo o guion). Devuelve el error o null. */
 export function studentNameError(firstName: string, lastName: string): string | null {
   const first = firstName.trim();
   const last = lastName.trim();
@@ -19,7 +17,6 @@ export function studentNameError(firstName: string, lastName: string): string | 
   return null;
 }
 
-/** Nombre completo con mayúscula inicial: «juan pérez» → «Juan Pérez» (igual que lo guarda el servidor). */
 export function fullStudentName(firstName: string, lastName: string): string {
   return `${firstName} ${lastName}`
     .trim()
@@ -28,14 +25,12 @@ export function fullStudentName(firstName: string, lastName: string): string {
     .replace(/(^|[\s\-'’])(\p{L})/gu, (_, sep: string, ch: string) => sep + ch.toLocaleUpperCase('es-AR'));
 }
 
-/** Separa un nombre guardado en nombre y apellido (la última palabra es el apellido). */
 export function splitStudentName(full: string): { firstName: string; lastName: string } {
   const words = full.trim().split(/\s+/).filter(Boolean);
   if (words.length < 2) return { firstName: words[0] ?? '', lastName: '' };
   return { firstName: words.slice(0, -1).join(' '), lastName: words[words.length - 1] };
 }
 
-/** Dos campos, nombre y apellido, para que el alumno se identifique en el aula. */
 export function StudentNameFields({ firstName, lastName, onChange, inputClassName, autoFocus }: StudentNameFieldsProps) {
   return (
     <div className="grid grid-cols-2 gap-2">

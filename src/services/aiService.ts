@@ -23,7 +23,6 @@ interface BackendGenerateQuestionsResponse {
   questions: BackendGeneratedQuestion[];
 }
 
-/** Con eje foco, la mezcla de preguntas se carga hacia ese eje: 3 del foco y 1 de cada uno de los otros. */
 export async function generateQuestions(sourceText: string, focusAxis?: ComprehensionAxis): Promise<GenerateQuestionsResult> {
   const result = await apiFetch<BackendGenerateQuestionsResponse>('/activities/generate-questions', {
     method: 'POST',

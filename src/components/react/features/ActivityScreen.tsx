@@ -29,12 +29,10 @@ import { arInstant, whenLabel } from '../../../lib/activityDates';
 import type { Activity } from '../../../types/activity';
 import type { Question } from '../../../types/question';
 
-/** Pregunta abierta (eje crítico): se responde con texto, no con opciones. */
 function isOpen(question: Question): boolean {
   return !question.options || question.options.length === 0;
 }
 
-/** Cierre de la ventana horaria en hora argentina (UTC−3), o null si no es válido. */
 function closesAt(activity: Activity): number | null {
   return arInstant(activity.endDate || activity.availableFrom, activity.endTime);
 }
@@ -45,7 +43,6 @@ interface ActivityScreenProps {
 
 type Stage = 'loading' | 'not-found' | 'unavailable' | 'join' | 'reading' | 'answering' | 'submitted' | 'feedback';
 
-/** Tamaños de letra para leer (se recuerda en el dispositivo). */
 const FONT_SCALES = [1, 1.15, 1.3, 1.5];
 
 interface ActivityDraft {
@@ -56,14 +53,12 @@ interface ActivityDraft {
   savedAt: string;
 }
 
-/** Cómo llegó la actividad: modo de lectura y si el docente ya habilitó las preguntas. */
 interface ActivityMeta {
   readingMode: ReadingMode;
   questionsReleased: boolean;
   questionsReleasedAt: string | null;
   questionCount: number;
   readingHelp: boolean;
-  /** PDF o Word original que subió el docente; null si cargó texto. */
   document: ActivityDocumentMeta | null;
 }
 
@@ -76,7 +71,6 @@ function fromServerDraft(draft: DraftAnswers): Record<string, string> {
   return result;
 }
 
-/** Deja sólo las respuestas que siguen siendo válidas (el docente pudo haber corregido una opción). */
 function keepValidAnswers(questions: Question[], answers: Record<string, string>): Record<string, string> {
   const result: Record<string, string> = {};
   for (const q of questions) {
@@ -133,12 +127,10 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   const [isOnline, setIsOnline] = useState(true);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [studentIdMode, setStudentIdMode] = useState<StudentIdMode>('nombre');
-  /** Con nombre y apellido, cada uno en su campo. */
   const [nameParts, setNameParts] = useState({ firstName: '', lastName: '' });
   const [unavailableMessage, setUnavailableMessage] = useState('');
   const [joinError, setJoinError] = useState<string | null>(null);
   const [submittedNote, setSubmittedNote] = useState<string | null>(null);
-  /** Devolución: las respuestas corregidas, cuando la actividad ya cerró. */
   const [feedback, setFeedback] = useState<StudentFeedback | null>(null);
   const [fontStep, setFontStep] = useState(0);
   useEffect(() => {
@@ -146,7 +138,6 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
       const saved = Number(localStorage.getItem('habitar_font_step'));
       if (saved > 0 && saved < FONT_SCALES.length) setFontStep(saved);
     } catch {
-      // sin almacenamiento local: tamaño normal
     }
   }, []);
   function changeFont(delta: number) {
@@ -155,14 +146,12 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
       try {
         localStorage.setItem('habitar_font_step', String(next));
       } catch {
-        // no se recuerda, pero funciona igual
       }
       return next;
     });
   }
   const fontScale = FONT_SCALES[fontStep];
 
-  /** Trae la devolución del alumno; si todavía no está disponible, devuelve false. */
   async function loadFeedback(code: string, studentName: string): Promise<boolean> {
     if (!studentName.trim()) return false;
     try {
@@ -183,9 +172,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     readingHelp: false,
     document: null,
   });
-  /** El alumno eligió leer el texto en lugar del documento (o el documento no se pudo abrir). */
   const [asText, setAsText] = useState(false);
-  /** Palabra o frase que el alumno seleccionó en el texto, para preguntar qué significa. */
   const [selection, setSelection] = useState<string | null>(null);
   const metaRef = useRef(meta);
   metaRef.current = meta;
@@ -194,7 +181,6 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   const [canRetry, setCanRetry] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [showText, setShowText] = useState(false);
-  /** La actividad cerró mientras el alumno estaba adentro: ya no puede avanzar. */
   const [closedReason, setClosedReason] = useState<'docente' | 'tiempo' | null>(null);
   const closedRef = useRef<'docente' | 'tiempo' | null>(null);
 
@@ -278,12 +264,10 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
           setStage('not-found');
           return;
         }
-        // Actividad cerrada: si este celular ya respondió, se muestran sus resultados.
         let saved = '';
         try {
           saved = localStorage.getItem('habitar_student_name') ?? '';
         } catch {
-          // sin almacenamiento local
         }
         void loadFeedback(cleanCode, saved).then((shown) => {
           if (shown) return;
@@ -331,10 +315,6 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     });
   }, [currentCode, stage, name, index, answers]);
 
-  /**
-   * Entra a la actividad: el servidor dice si el alumno ya la envió (y entonces no puede volver a empezar), si tenía
-   * un borrador para retomar, o si arranca de cero. El borrador local, si existe, es el más reciente.
-   */
   async function enterActivity(
     code: string,
     studentName: string,
@@ -376,7 +356,6 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
         setStage(err.status === 409 && err.message.includes('no está disponible') ? 'unavailable' : 'join');
         if (err.status === 409 && err.message.includes('no está disponible')) setUnavailableMessage(err.message);
       } else {
-        // Sin conexión: sigue con lo guardado en el dispositivo y se sincroniza cuando vuelva la red.
         if (localDraft) {
           setAnswers(localDraft.answers);
           setIndex(localDraft.index);
@@ -418,7 +397,6 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     await enterActivity(currentCode, trimmedName, metaRef.current, questions, null);
   }
 
-  /** Con reintentos habilitados, quien ya envió puede volver a hacerla desde cero. */
   async function handleRetry() {
     const ok = await confirmAction({
       title: '¿Volver a hacer la actividad?',
@@ -478,7 +456,6 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     return draft;
   }
 
-  // El avance viaja al servidor con una pausa corta: el docente lo ve en vivo y el alumno puede retomarlo.
   useEffect(() => {
     if ((stage !== 'reading' && stage !== 'answering') || !name || !currentCode) return;
     const timer = window.setTimeout(() => {
@@ -501,10 +478,6 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     return () => window.clearTimeout(timer);
   }, [stage, safeIndex, answers, name, currentCode, questions]);
 
-  /**
-   * Vuelve a pedir las preguntas (sin las respuestas correctas). Si el docente pasó a todos a las preguntas, el
-   * alumno que estaba leyendo avanza solo; si corrigió una, se conservan las respuestas que siguen siendo válidas.
-   */
   async function refreshQuestions(reason: 'released' | 'updated' | 'reconnect') {
     const result = await getActivityByCode(currentCode);
     if (!result.ok) {
@@ -572,14 +545,9 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     }
   }
 
-  // El temporizador de cierre llama siempre a la versión más reciente, con las respuestas actuales.
   const submitRef = useRef(submitAll);
   submitRef.current = submitAll;
 
-  /**
-   * La actividad cerró (la cerró el docente o venció el horario) con el alumno adentro: se bloquean las preguntas,
-   * se le avisa y se envía lo que tenía respondido. Si no había respondido nada, sólo se le avisa.
-   */
   function handleClosed(reason: 'docente' | 'tiempo') {
     if (closedRef.current) return;
     closedRef.current = reason;
@@ -596,7 +564,6 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   const handleClosedRef = useRef(handleClosed);
   handleClosedRef.current = handleClosed;
 
-  /** Selección corta en el texto (una palabra o una expresión): se ofrece preguntar qué significa. */
   function captureSelection() {
     if (!meta.readingHelp) return;
     window.setTimeout(() => {
@@ -611,7 +578,6 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
       <ReadingHelpChat code={currentCode} studentName={name} selection={selection} onSelectionUsed={() => setSelection(null)} />
     ) : null;
 
-  /** Enviar no tiene vuelta atrás: siempre se confirma, y se avisa si quedan preguntas sin responder. */
   async function handleSend() {
     const left = questions.length - answeredCount;
     const ok = await confirmAction({
@@ -626,7 +592,6 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     await submitAll(false);
   }
 
-  /** Pasar a las preguntas tampoco tiene vuelta atrás: el texto se puede volver a ver, pero no se vuelve a la lectura. */
   async function handleFinishReading() {
     const ok = await confirmAction({
       title: '¿Terminaste de leer?',
@@ -638,20 +603,16 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     setStage('answering');
   }
 
-  // Avisos en vivo de la actividad: el docente la abre, la cierra, habilita o corrige preguntas, y la pantalla
-  // reacciona sin recargar.
   useLiveUpdates(currentCode && stage !== 'not-found' && stage !== 'feedback' ? { kind: 'activity', code: currentCode } : null, (payload) => {
     const status = payload?.status;
     const inside = stage === 'reading' || stage === 'answering';
     if (status === 'CERRADA' && stage === 'submitted') {
-      // Ya envió y el docente cerró: aparece su devolución sin recargar.
       void loadFeedback(currentCode, name);
     } else if (status !== 'CERRADA' && inside && payload?.event === 'questions-released') {
       void refreshQuestions('released');
     } else if (status !== 'CERRADA' && inside && payload?.event === 'questions-updated') {
       void refreshQuestions('updated');
     } else if (!payload && inside) {
-      // Al reconectar, por si mientras tanto el docente habilitó o corrigió preguntas.
       void refreshQuestions('reconnect');
     } else if (status === 'CERRADA' && (inside || stage === 'join')) {
       handleClosed('docente');
@@ -660,7 +621,6 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     }
   });
 
-  // Si la ventana horaria vence mientras el alumno responde, se envían sus respuestas parciales (CU-02-06, 2.1).
   useEffect(() => {
     if (stage !== 'answering' || !activity) return;
     const end = closesAt(activity);
@@ -960,7 +920,6 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     </>
   );
 
-  // Paso 1: lectura. Las preguntas aparecen cuando el alumno termina de leer, o cuando el docente las habilita.
   if (stage === 'reading') {
     const waitingTeacher = !meta.questionsReleased;
     return (
@@ -1034,7 +993,6 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     );
   }
 
-  // Cerró con el alumno respondiendo: no puede seguir; se le avisa mientras se envía lo que tenía.
   if (closedReason) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-4 py-16 bg-[#FAF9F6] dark:bg-[#0D0F14]">
@@ -1135,7 +1093,6 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
 
         {banners}
 
-        {/* Navegación: cada punto es una pregunta; se puede volver a cualquiera y cambiar la respuesta antes de enviar. */}
         <div className="flex flex-wrap gap-1.5 mb-4" role="navigation" aria-label="Preguntas">
           {questions.map((q, i) => {
             const done = Boolean((answers[q.id] ?? '').trim());
@@ -1278,7 +1235,6 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   );
 }
 
-/** Achicar o agrandar la letra del texto y de las preguntas. */
 function TextSizeControls({ onChange, step, max }: { onChange: (delta: number) => void; step: number; max: number }) {
   const btn =
     'w-8 h-8 rounded-lg border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 font-bold disabled:opacity-40 cursor-pointer hover:bg-stone-50 dark:hover:bg-stone-800';

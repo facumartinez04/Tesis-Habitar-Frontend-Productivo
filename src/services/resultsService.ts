@@ -118,12 +118,10 @@ export async function compareCoursePeriods(
   return apiFetch<PeriodComparison>(`/results/courses/${courseId}/compare?${params.toString()}`);
 }
 
-/** Evolución entre la diagnóstica de inicio y la de cierre del ciclo. */
 export async function getCourseDiagnostic(courseId: string): Promise<DiagnosticComparison> {
   return apiFetch<DiagnosticComparison>(`/results/courses/${courseId}/diagnostic`);
 }
 
-/** Eje que conviene reforzar con la próxima actividad. */
 export async function getCourseRecommendation(courseId: string): Promise<AxisRecommendation> {
   return apiFetch<AxisRecommendation>(`/results/courses/${courseId}/recommendation`);
 }

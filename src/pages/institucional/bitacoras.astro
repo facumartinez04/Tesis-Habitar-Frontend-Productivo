@@ -1,0 +1,8 @@
+---
+import AppShell from '../../layouts/AppShell.astro';
+import { LogsScreen } from '../../components/react/features/LogsScreen';
+import { institucionalNavItems } from '../../lib/nav';
+---
+<AppShell title="Bitácoras" sectionLabel="Panel institucional" sidebarItems={institucionalNavItems}>
+  <LogsScreen client:load scope="institucion" />
+</AppShell>

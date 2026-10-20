@@ -14,7 +14,6 @@ interface ActivityBankModalProps {
 
 const AXIS: Record<string, string> = { LITERAL: 'Literal', INFERENCIAL: 'Inferencial', CRITICO: 'Crítico' };
 
-/** Banco de actividades de la institución: elegir una para reutilizar su texto, sus preguntas y su documento. */
 export function ActivityBankModal({ isOpen, onClose, onPick }: ActivityBankModalProps) {
   const [items, setItems] = useState<ActivityTemplateSummary[] | null>(null);
   const [search, setSearch] = useState('');

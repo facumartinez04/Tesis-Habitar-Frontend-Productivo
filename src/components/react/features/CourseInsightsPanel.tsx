@@ -6,7 +6,6 @@ import type { AxisRecommendation, DiagnosticComparison } from '../../../types/re
 
 interface CourseInsightsPanelProps {
   courseId: string;
-  /** Cambia cuando hay resultados nuevos (por ejemplo, después de revisar respuestas). */
   refreshKey?: number;
 }
 
@@ -16,10 +15,6 @@ const AXES = [
   { key: 'critico', label: 'Crítico' },
 ] as const;
 
-/**
- * Recomendación de eje foco (mejora 2) y evolución entre la diagnóstica de inicio y la de cierre (mejora 1).
- * Es lo que le dice al docente qué hacer después y le muestra al colegio si los chicos mejoraron.
- */
 export function CourseInsightsPanel({ courseId, refreshKey = 0 }: CourseInsightsPanelProps) {
   const [recommendation, setRecommendation] = useState<AxisRecommendation | null>(null);
   const [diagnostic, setDiagnostic] = useState<DiagnosticComparison | null>(null);

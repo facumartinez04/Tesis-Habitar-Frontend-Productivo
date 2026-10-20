@@ -19,15 +19,11 @@ export interface CreateActivityInput {
   questions: Question[];
   diagnosticType?: DiagnosticType | null;
   readingMode?: ReadingMode;
-  /** Ayuda de la IA con el texto para los alumnos (por defecto, sí). */
   readingHelp?: boolean;
-  /** Al cerrarse, el alumno ve sus respuestas corregidas (por defecto, sí). */
   showFeedback?: boolean;
-  /** Actividad del banco de la que sale (el servidor copia su documento). */
   templateId?: string | null;
 }
 
-/** Cómo empieza el alumno: lee primero (por defecto), espera que el docente habilite las preguntas, o todo junto. */
 export type ReadingMode = 'LECTURA_PRIMERO' | 'DOCENTE_HABILITA' | 'LIBRE';
 
 interface BackendActivity {
@@ -55,7 +51,6 @@ interface BackendQuestion {
   id: string;
   axis: string;
   prompt: string;
-  /** La vista pública del alumno no trae la respuesta esperada ni la opción correcta. */
   expectedAnswer?: string;
   options: string[] | null;
   correctOption?: string | null;
@@ -72,7 +67,6 @@ interface GetActivityResponse {
   studentIdMode: 'LISTA' | 'NOMBRE';
 }
 
-/** El alumno sólo recibe la confirmación del envío: los puntajes los ve el docente. */
 export interface SubmitResponseResult {
   responseId: string;
   submittedAt: string;
@@ -153,19 +147,14 @@ export type PublicActivityResult =
       questions: Question[];
       studentIdMode: StudentIdMode;
       readingMode: ReadingMode;
-      /** false mientras el docente no habilite las preguntas: todavía no llegan al celular. */
       questionsReleased: boolean;
-      /** Cuándo el docente pasó a todos a las preguntas (null si todavía no lo hizo). */
       questionsReleasedAt: string | null;
       questionCount: number;
-      /** Si el alumno puede preguntarle a la IA qué significa algo del texto. */
       readingHelp: boolean;
-      /** PDF o Word original para leer tal cual; null si el docente cargó texto. */
       document: ActivityDocumentMeta | null;
     }
   | { ok: false; notFound: boolean; message: string };
 
-/** Vista del alumno: el backend no envía las opciones correctas ni las respuestas esperadas. */
 export async function getActivityByCode(code: string): Promise<PublicActivityResult> {
   try {
     const result = await apiFetch<GetActivityResponse>(`/activities/${code}`, { auth: false });
@@ -238,7 +227,6 @@ export async function submitResponse(
 export type DraftAnswers = Record<string, { selectedOption?: string; textAnswer?: string }>;
 
 export interface StudentState {
-  /** NUEVO: no empezó. EN_CURSO: tiene un borrador. ENVIADO: ya completó la actividad. */
   status: 'NUEVO' | 'EN_CURSO' | 'ENVIADO';
   phase: 'LEYENDO' | 'RESPONDIENDO' | 'ENVIADO' | null;
   currentIndex: number;
@@ -246,7 +234,6 @@ export interface StudentState {
   canRetry: boolean;
 }
 
-/** Estado del alumno al entrar: si ya envió no puede volver a empezar; si tenía un borrador, lo retoma. */
 export async function getStudentState(code: string, studentDisplayName: string, deviceId: string): Promise<StudentState> {
   return apiFetch<StudentState>(`/activities/${code}/me`, {
     method: 'POST',
@@ -255,7 +242,6 @@ export async function getStudentState(code: string, studentDisplayName: string, 
   });
 }
 
-/** Avance del alumno: lo ve el docente en vivo y permite retomar desde otro momento (no desde otro celular). */
 export async function saveProgress(
   code: string,
   input: {
@@ -270,12 +256,10 @@ export async function saveProgress(
   await apiFetch(`/activities/${code}/progress`, { method: 'POST', auth: false, body: input });
 }
 
-/** El docente pasa a todos los alumnos a las preguntas. */
 export async function releaseQuestions(activityId: string): Promise<void> {
   await apiFetch(`/activities/${activityId}/release`, { method: 'POST' });
 }
 
-/** El docente corrige una pregunta durante la actividad; los alumnos la reciben al instante, sin la respuesta correcta. */
 export async function editLiveQuestion(
   activityId: string,
   questionId: string,
@@ -288,12 +272,10 @@ export interface HelpMessage {
   id: string;
   question: string;
   answer: string;
-  /** La IA no respondió porque buscaba la respuesta de la actividad o no era sobre el texto. */
   declined: boolean;
   createdAt: string;
 }
 
-/** Conversación del alumno con la ayuda de lectura en esta actividad. */
 export async function getHelpConversation(
   code: string,
   studentDisplayName: string,
@@ -302,7 +284,6 @@ export async function getHelpConversation(
   return apiFetch(`/activities/${code}/help/history`, { method: 'POST', auth: false, body: { studentDisplayName, deviceId } });
 }
 
-/** Duda sobre el texto: la IA explica qué significa sin responder las preguntas de la actividad. */
 export async function askReadingHelp(
   code: string,
   studentDisplayName: string,
@@ -312,16 +293,13 @@ export async function askReadingHelp(
   return apiFetch(`/activities/${code}/help`, { method: 'POST', auth: false, body: { studentDisplayName, deviceId, question } });
 }
 
-/** Documento original de la actividad (PDF o Word), tal como lo subió el docente. */
 export interface ActivityDocumentMeta {
   fileName: string;
   mimeType: string;
   sizeBytes: number;
-  /** Páginas del PDF a mostrar; null = todas. */
   pages: number[] | null;
 }
 
-/** Sube el PDF o Word original para que los alumnos lo lean tal cual. */
 export async function uploadActivityDocument(
   activityId: string,
   doc: { name: string; mimeType: string; file: Blob; pages: number[] | null },
@@ -341,7 +319,6 @@ export async function uploadActivityDocument(
   return data as ActivityDocumentMeta;
 }
 
-/** El documento para leer en la actividad (sólo mientras está abierta). */
 export async function fetchActivityDocument(code: string): Promise<Blob> {
   const res = await fetch(apiUrl(`/activities/${code}/document`));
   if (!res.ok) {
@@ -351,7 +328,6 @@ export async function fetchActivityDocument(code: string): Promise<Blob> {
   return res.blob();
 }
 
-/** Devolución al alumno: sus respuestas corregidas, cuando la actividad ya cerró. */
 export interface StudentFeedback {
   activityName: string;
   submittedAt: string;
@@ -374,7 +350,6 @@ export async function getStudentFeedback(code: string, studentDisplayName: strin
   return apiFetch(`/activities/${code}/feedback`, { method: 'POST', auth: false, body: { studentDisplayName, deviceId } });
 }
 
-/** Banco de actividades de la institución. */
 export interface ActivityTemplateSummary {
   id: string;
   name: string;
@@ -394,7 +369,6 @@ export async function listActivityTemplates(q = ''): Promise<ActivityTemplateSum
   return apiFetch(`/activities/templates${q ? `?q=${encodeURIComponent(q)}` : ''}`);
 }
 
-/** Trae texto y preguntas de una actividad del banco, listos para el asistente. */
 export async function fetchActivityTemplate(id: string): Promise<{ template: ActivityTemplateSummary; sourceText: string; questions: Question[] }> {
   const data = await apiFetch<ActivityTemplateSummary & { sourceText: string; questions: BackendQuestion[] }>(`/activities/templates/${id}/use`, {
     method: 'POST',
@@ -411,7 +385,6 @@ export async function deleteActivityTemplate(id: string): Promise<void> {
   await apiFetch(`/activities/templates/${id}`, { method: 'DELETE' });
 }
 
-/** Guarda una actividad (todavía abierta) en el banco de la institución. */
 export async function saveActivityAsTemplate(activityId: string): Promise<ActivityTemplateSummary> {
   return apiFetch(`/activities/${activityId}/save-template`, { method: 'POST' });
 }
@@ -439,7 +412,6 @@ export interface ReviewQueue {
   items: ReviewItem[];
 }
 
-/** Bandeja de revisión de respuestas abiertas: propuesta de la IA y confirmación del docente. */
 export async function getReviewQueue(activityId: string): Promise<ReviewQueue> {
   return apiFetch<ReviewQueue>(`/activities/${activityId}/reviews`);
 }
@@ -506,7 +478,6 @@ export interface LiveStudent {
   answeredCount: number;
   startedAt: string;
   updatedAt: string;
-  /** Últimos caracteres del dispositivo, para distinguir celulares. */
   deviceTag: string;
 }
 
@@ -519,7 +490,6 @@ export interface LiveQuestion {
   expectedAnswer: string;
 }
 
-/** Estado en vivo de la actividad para el panel del docente. */
 export async function getActivityLive(activityId: string): Promise<LiveActivity> {
   return apiFetch<LiveActivity>(`/activities/${activityId}/live`);
 }

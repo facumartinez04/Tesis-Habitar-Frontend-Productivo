@@ -53,7 +53,6 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
     onScan: resolveCourse,
   });
 
-  // Si la cámara no arranca, la carga manual es la única salida.
   useEffect(() => {
     if (cameraError) setActiveTab('manual');
   }, [cameraError]);
@@ -160,7 +159,6 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
                 value={manualCode}
                 onChange={(e) => {
                   const value = e.target.value;
-                  // Una URL pegada se deja tal cual: mayusculizarla rompe el `?code=`.
                   setManualCode(looksLikeUrl(value) ? value : value.toUpperCase());
                 }}
                 className="w-full border-2 border-emerald-600 rounded-xl px-4 py-3 text-center font-mono text-lg font-bold tracking-widest text-text-pri bg-emerald-50/30 dark:bg-emerald-950/30 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-shadow"

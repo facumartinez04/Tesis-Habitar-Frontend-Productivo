@@ -2,8 +2,7 @@
 import SiteLayout from '../layouts/SiteLayout.astro';
 ---
 <SiteLayout title="Página no encontrada">
-  <script is:inline>
-    (function() {
+  <script is:inline>    (function() {
       try {
         const path = window.location.pathname;
         if (path.startsWith('/aula/')) {

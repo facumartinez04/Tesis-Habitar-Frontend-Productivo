@@ -15,7 +15,6 @@ function studentsLabel(count: number | undefined): string {
   return (count ?? 0) === 1 ? 'alumno registrado' : 'alumnos registrados';
 }
 
-/** Una tarjeta por aula, con la cantidad de alumnos registrados; al entrar se ve el detalle del aula. */
 export function CourseCardsGrid({ courses, onOpen, onShowQr }: CourseCardsGridProps) {
   const pagedCourses = usePagination(courses, 12, courses.length);
   return (

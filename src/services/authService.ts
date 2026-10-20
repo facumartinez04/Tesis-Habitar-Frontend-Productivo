@@ -79,10 +79,6 @@ export async function refreshSession(): Promise<Session | null> {
   }
 }
 
-/**
- * Las pantallas de administración exigen una sesión de administrador obtenida por el login institucional.
- * Ya no existe un atajo que emita tokens sin credenciales: sin sesión de admin, se vuelve al login.
- */
 export async function ensureAdminSession(): Promise<Session> {
   const current = sessionStore.get();
   if (current?.user.role === 'admin') return current;
@@ -90,7 +86,6 @@ export async function ensureAdminSession(): Promise<Session> {
   throw new Error('Se necesita una sesión de administración');
 }
 
-/** Cierra la sesión también en el servidor, que revoca el token. */
 export async function logout(): Promise<void> {
   const current = sessionStore.get();
   if (current?.token) {

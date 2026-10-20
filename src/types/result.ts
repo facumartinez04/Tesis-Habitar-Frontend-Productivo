@@ -1,4 +1,3 @@
-/** Puntaje de 0 a 100 por eje; null si el eje no se midió o espera la revisión del docente. */
 export interface AxisScores {
   literal: number | null;
   inferencial: number | null;
@@ -12,7 +11,6 @@ export interface StudentResultRow {
   studentName: string;
   scores: AxisScores | null;
   status: PerformanceStatus;
-  /** El eje crítico del último intento espera la revisión del docente. */
   criticoPending: boolean;
 }
 
@@ -25,7 +23,6 @@ export interface CourseResultSummary {
   averages: AxisScores;
   status: PerformanceStatus;
   rows: StudentResultRow[];
-  /** Respuestas abiertas del curso sin revisar. */
   pendingReviews: number;
 }
 

@@ -20,7 +20,6 @@ const STATUS_LABEL: Record<Institution['status'], string> = {
 export function InstitutionsListScreen() {
   const [institutions, setInstitutions] = useState<Institution[] | null>(null);
   const [search, setSearch] = useState('');
-  // Menú «Ver como» abierto: se abre con clic (también en celulares y con teclado), no sólo pasando el mouse.
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -69,7 +68,6 @@ export function InstitutionsListScreen() {
   if (!institutions) {
     return <HabitarLoader size="lg" message="Cargando instituciones educativas..." />;
   }
-
 
   return (
     <div>

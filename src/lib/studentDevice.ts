@@ -1,7 +1,3 @@
-/**
- * Identificador anónimo del dispositivo del alumno. Vincula el número de lista (o el nombre) con un equipo
- * dentro del aula, para que nadie responda a nombre de otro desde otro dispositivo. No contiene datos personales.
- */
 let sessionDeviceId: string | null = null;
 
 export function getOrCreateDeviceId(): string {
@@ -18,7 +14,6 @@ export function getOrCreateDeviceId(): string {
   }
 }
 
-/** Cómo se identifica el alumno en la institución: nombre y apellido (por defecto) o número de lista. */
 export type StudentIdMode = 'lista' | 'nombre';
 
 export function studentIdLabel(mode: StudentIdMode): { title: string; placeholder: string; hint: string } {

@@ -5,7 +5,6 @@ import { QrBox } from '../../ui/QrBox';
 import { ActivityLivePanel } from '../ActivityLivePanel';
 import { activityWizardStore, resetWizard } from '../../../../store/activityWizardStore';
 
-/** Último paso del asistente: la actividad recién creada, en vivo (QR, estado y respuestas sin recargar). */
 export function GeneratedQrStep() {
   const wizard = useStore(activityWizardStore);
 
@@ -33,7 +32,6 @@ export function GeneratedQrStep() {
     </div>
   );
 
-  // Las actividades creadas antes de este cambio sólo guardaban el código: se muestra el QR sin el panel en vivo.
   if (!wizard.generatedActivityId) {
     return (
       <div className="flex flex-col items-center gap-4 py-6">

@@ -1,14 +1,8 @@
-/**
- * Elegir un texto desde Google Drive con el selector oficial de Google.
- * Usa el permiso drive.file: Habitar sólo puede leer el archivo que el docente elige, nada más de su Drive,
- * y el archivo se lee en el navegador (no pasa por el servidor).
- */
 import { SUPPORTED_MIME_TYPES } from './documentText';
 
 const GOOGLE_DOC = 'application/vnd.google-apps.document';
 const SCOPE = 'https://www.googleapis.com/auth/drive.file';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 declare global {
   interface Window {
     google?: any;
@@ -75,7 +69,6 @@ function openPicker(accessToken: string, apiKey: string, appId: string): Promise
       .setIncludeFolders(true)
       .setSelectFolderEnabled(false);
     const builder = new picker.PickerBuilder().setAppId(appId).setOAuthToken(accessToken);
-    // La clave de API es opcional cuando hay token OAuth; si el servidor la tiene configurada, se usa.
     if (apiKey) builder.setDeveloperKey(apiKey);
     builder
       .addView(view)
@@ -104,7 +97,6 @@ async function download(file: PickedFile, accessToken: string): Promise<Blob> {
   return res.blob();
 }
 
-/** Abre el selector de Google Drive y devuelve el archivo elegido (los Google Docs, exportados como texto). */
 export async function pickFileFromGoogleDrive(
   config: { clientId: string; apiKey: string; appId: string },
   loginHint?: string,

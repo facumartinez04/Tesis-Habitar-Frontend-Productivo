@@ -7,7 +7,6 @@ export interface IntegrationsConfig {
 
 let cached: Promise<IntegrationsConfig> | null = null;
 
-/** Identificadores públicos de Google Drive y OneDrive (sin secretos), configurados en el servidor. */
 export function getIntegrationsConfig(): Promise<IntegrationsConfig> {
   if (!cached) {
     cached = apiFetch<IntegrationsConfig>('/auth/integrations', { auth: false }).catch((err) => {

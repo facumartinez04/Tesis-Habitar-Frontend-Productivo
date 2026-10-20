@@ -235,7 +235,6 @@ export function AdminFinanceScreen() {
 
   return (
     <div className="space-y-6">
-      {}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-text-pri">
@@ -263,7 +262,6 @@ export function AdminFinanceScreen() {
         </div>
       </div>
 
-      {}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white border border-gray-border rounded-xl p-4 shadow-2xs">
           <div className="flex items-center justify-between">
@@ -320,7 +318,6 @@ export function AdminFinanceScreen() {
         </div>
       </div>
 
-      {}
       <div className="flex items-center gap-1 border-b border-gray-border overflow-x-auto">
         <button
           onClick={() => setActiveTab('resumen')}
@@ -379,11 +376,9 @@ export function AdminFinanceScreen() {
         </button>
       </div>
 
-      {}
       {activeTab === 'resumen' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {}
             <div className="bg-white border border-gray-border rounded-xl p-5 shadow-2xs space-y-4">
               <h3 className="text-sm font-bold text-text-pri flex items-center gap-2">
                 <Icon name="layers" size={16} className="text-emerald-700" />
@@ -408,7 +403,6 @@ export function AdminFinanceScreen() {
               </div>
             </div>
 
-            {}
             <div className="bg-white border border-gray-border rounded-xl p-5 shadow-2xs space-y-4">
               <h3 className="text-sm font-bold text-text-pri flex items-center gap-2">
                 <Icon name="shield" size={16} className="text-emerald-700" />
@@ -434,7 +428,6 @@ export function AdminFinanceScreen() {
         </div>
       )}
 
-      {}
       {activeTab === 'gastos' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -517,7 +510,6 @@ export function AdminFinanceScreen() {
         </div>
       )}
 
-      {}
       {activeTab === 'ganancias' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -610,7 +602,6 @@ export function AdminFinanceScreen() {
         </div>
       )}
 
-      {}
       {activeTab === 'mercadopago' && (
         <div className="max-w-3xl space-y-6">
           <div className="bg-white border border-gray-border rounded-xl p-6 shadow-2xs space-y-5">
@@ -699,7 +690,6 @@ export function AdminFinanceScreen() {
             </form>
           </div>
 
-          {}
           <div className="bg-surface border border-gray-border rounded-xl p-5 space-y-3">
             <h4 className="text-xs font-bold uppercase tracking-wider text-text-pri">
               URL del Webhook de Notificaciones
@@ -733,7 +723,6 @@ export function AdminFinanceScreen() {
             </p>
           </div>
 
-          {/* Pago de prueba */}
           <div className="bg-surface border border-gray-border rounded-xl p-5 space-y-3">
             <h4 className="text-xs font-bold uppercase tracking-wider text-text-pri">Probar un pago</h4>
             <p className="text-xs text-text-sec leading-relaxed">
@@ -765,7 +754,6 @@ export function AdminFinanceScreen() {
         </div>
       )}
 
-      {}
       {isExpenseModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white border border-gray-border rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
@@ -864,7 +852,6 @@ export function AdminFinanceScreen() {
         </div>
       )}
 
-      {}
       {isCheckoutModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white border border-gray-border rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">

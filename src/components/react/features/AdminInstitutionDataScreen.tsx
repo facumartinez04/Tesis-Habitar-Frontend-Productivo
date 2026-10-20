@@ -92,10 +92,6 @@ function detailsText(d: DeletionRow): string {
 const th = 'text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white';
 const td = 'px-2.5 py-2.5 border-b border-gray-border';
 
-/**
- * Datos de una institución para el administrador de la plataforma: actividades, aulas y alumnos paginados, con
- * borrado definitivo. Cada borrado queda en el historial con quién lo hizo y qué arrastró.
- */
 export function AdminInstitutionDataScreen() {
   const slug = useQueryParam('slug', '');
   const { message, showToast } = useToast();

@@ -7,17 +7,12 @@ import { askReadingHelp, getHelpConversation, type HelpMessage } from '../../../
 interface ReadingHelpChatProps {
   code: string;
   studentName: string;
-  /** Texto que el alumno seleccionó en la lectura: se ofrece preguntar qué significa. */
   selection: string | null;
   onSelectionUsed: () => void;
 }
 
 const SUGGESTIONS = ['¿Qué significa…?', '¿A quién se refiere «ellos»?', 'Explicame esta oración con palabras simples:'];
 
-/**
- * Ayuda de lectura: el alumno pregunta qué significa una palabra o una frase del texto. La IA explica, pero no
- * responde las preguntas de la actividad; el docente ve las dudas en el panel en vivo.
- */
 export function ReadingHelpChat({ code, studentName, selection, onSelectionUsed }: ReadingHelpChatProps) {
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
