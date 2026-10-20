@@ -182,7 +182,7 @@ const ENDPOINTS: EndpointDef[] = [
           tokens: [
             {
               id: 'tok-1',
-              name: 'Agente Antigravity / Claude',
+              name: 'Agente de IA externo',
               token: 'hab_jira_8f3d...9a2',
               createdAt: '2026-09-08T10:00:00.000Z',
               active: true,
