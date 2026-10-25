@@ -40,15 +40,75 @@ export function authHeaders(): Record<string, string> {
   return headers;
 }
 
+const REFRESH_MARGIN_MS = 60_000;
+let refreshing: Promise<string | null> | null = null;
+
+function tokenExpiresSoon(token: string): boolean {
+  try {
+    const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const { exp } = JSON.parse(atob(payload)) as { exp?: number };
+    return typeof exp === 'number' && exp * 1000 - Date.now() < REFRESH_MARGIN_MS;
+  } catch {
+    return false;
+  }
+}
+
+export function refreshAccessToken(): Promise<string | null> {
+  if (!refreshing) {
+    refreshing = (async () => {
+      try {
+        const response = await fetch(`${API_URL}/auth/refresh`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: languageHeaders(),
+        });
+        if (!response.ok) {
+          if (response.status === 401 || response.status === 403) sessionStore.set(null);
+          return null;
+        }
+        const { token } = (await response.json()) as { token: string };
+        const current = sessionStore.get();
+        if (current) sessionStore.set({ ...current, token });
+        return token;
+      } catch {
+        return null;
+      } finally {
+        setTimeout(() => {
+          refreshing = null;
+        }, 0);
+      }
+    })();
+  }
+  return refreshing;
+}
+
+export async function freshToken(): Promise<string | null> {
+  const token = sessionStore.get()?.token;
+  if (!token) return null;
+  if (!tokenExpiresSoon(token)) return token;
+  return (await refreshAccessToken()) ?? sessionStore.get()?.token ?? null;
+}
+
+export async function authorizedFetch(url: string, init: RequestInit = {}): Promise<Response> {
+  if (!sessionStore.get()?.token) {
+    return fetch(url, { ...init, headers: { ...languageHeaders(), ...(init.headers as Record<string, string>) } });
+  }
+  await freshToken();
+  const send = () => fetch(url, { ...init, headers: { ...authHeaders(), ...(init.headers as Record<string, string>) } });
+  const response = await send();
+  if (response.status !== 401 || !sessionStore.get()?.token) return response;
+  return (await refreshAccessToken()) ? send() : response;
+}
+
 export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): Promise<T> {
   const { method = 'GET', body, auth = true } = options;
-  const headers: Record<string, string> = { 'Content-Type': 'application/json', ...languageHeaders(), ...(auth ? authHeaders() : {}) };
-
-  const response = await fetch(`${API_URL}${path}`, {
+  const init: RequestInit = {
     method,
-    headers,
+    headers: { 'Content-Type': 'application/json', ...languageHeaders() },
     body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
+  };
+
+  const response = auth ? await authorizedFetch(`${API_URL}${path}`, init) : await fetch(`${API_URL}${path}`, init);
 
   if (response.status === 204) {
     return undefined as T;

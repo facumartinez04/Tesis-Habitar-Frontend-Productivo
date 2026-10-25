@@ -2,7 +2,7 @@ import type { OAuthProviderId, Role, Session, User } from '../types/auth';
 import { toLower, toUpper } from '../lib/caseAdapters';
 import { sessionStore } from '../store/sessionStore';
 import { isLocale, setChosenLocale, setContextLocale, t, type Locale } from '../i18n';
-import { apiFetch, languageHeaders } from '../lib/apiClient';
+import { apiFetch, authorizedFetch, languageHeaders } from '../lib/apiClient';
 
 const API_URL =
   import.meta.env.PUBLIC_API_URL ||
@@ -71,23 +71,22 @@ export async function refreshSession(): Promise<Session | null> {
   if (!current?.token) return null;
 
   try {
-    const response = await fetch(`${API_URL}/auth/me`, {
-      headers: { Authorization: `Bearer ${current.token}`, ...languageHeaders() },
-    });
+    const response = await authorizedFetch(`${API_URL}/auth/me`);
     if (!response.ok) {
       if (response.status === 401) {
         sessionStore.set(null);
         return null;
       }
-      return current;
+      return sessionStore.get();
     }
 
     const { user, institutionLanguage } = (await response.json()) as MeResponse;
+    const latest = sessionStore.get() ?? current;
     const session: Session = {
-      ...current,
+      ...latest,
       user: toUser(user),
       provider: toLower<OAuthProviderId>(user.provider),
-      institutionLanguage: isLocale(institutionLanguage) ? institutionLanguage : current.institutionLanguage,
+      institutionLanguage: isLocale(institutionLanguage) ? institutionLanguage : latest.institutionLanguage,
     };
     sessionStore.set(session);
     applySessionLocale(session.user, session.institutionLanguage);
@@ -106,12 +105,11 @@ export async function ensureAdminSession(): Promise<Session> {
 
 export async function logout(): Promise<void> {
   const current = sessionStore.get();
-  if (current?.token) {
-    await fetch(`${API_URL}/auth/logout`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${current.token}` },
-    }).catch(() => undefined);
-  }
+  await fetch(`${API_URL}/auth/logout`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: current?.token ? { Authorization: `Bearer ${current.token}` } : {},
+  }).catch(() => undefined);
   sessionStore.set(null);
 }
 

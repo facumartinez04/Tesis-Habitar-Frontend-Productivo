@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Socket } from 'socket.io-client';
-import { sessionStore } from '../store/sessionStore';
+import { freshToken } from './apiClient';
 
 const API_URL =
   import.meta.env.PUBLIC_API_URL ||
@@ -42,20 +42,21 @@ export function useLiveUpdates(
     const event = EVENTS[subscription.kind];
     const onEvent = (payload?: { status?: string; event?: string }) => handler.current(payload);
 
-    const join = () => {
+    const join = async () => {
       if (!socket) return;
       const payload =
         subscription.kind === 'course'
           ? ['watch:course', { qrCode: subscription.qrCode }]
           : subscription.kind === 'activity'
             ? ['watch:activity', { code: subscription.code }]
-            : ['watch:live', { activityId: subscription.activityId, token: sessionStore.get()?.token ?? '' }];
+            : ['watch:live', { activityId: subscription.activityId, token: (await freshToken()) ?? '' }];
+      if (cancelled || !socket) return;
       socket.emit(payload[0] as string, payload[1], (ack: { ok: boolean }) => {
         if (!cancelled) setConnected(Boolean(ack?.ok));
       });
     };
     const onConnect = () => {
-      join();
+      void join();
       handler.current();
     };
     const onDisconnect = () => !cancelled && setConnected(false);
@@ -66,7 +67,7 @@ export function useLiveUpdates(
       s.on(event, onEvent);
       s.on('connect', onConnect);
       s.on('disconnect', onDisconnect);
-      if (s.connected) join();
+      if (s.connected) void join();
     });
 
     return () => {

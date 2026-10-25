@@ -2,7 +2,7 @@ import type { Activity, AttemptPolicy, ComprehensionAxis, DiagnosticType } from 
 import type { StudentIdMode } from '../lib/studentDevice';
 import { ApiError } from '../lib/apiClient';
 import type { Question } from '../types/question';
-import { apiFetch, apiUrl, authHeaders } from '../lib/apiClient';
+import { apiFetch, apiUrl, authorizedFetch } from '../lib/apiClient';
 import { toLower, toUpper } from '../lib/caseAdapters';
 import { isLocale, t, type Locale } from '../i18n';
 
@@ -311,10 +311,9 @@ export async function uploadActivityDocument(
   activityId: string,
   doc: { name: string; mimeType: string; file: Blob; pages: number[] | null },
 ): Promise<ActivityDocumentMeta> {
-  const res = await fetch(apiUrl(`/activities/${activityId}/document`), {
+  const res = await authorizedFetch(apiUrl(`/activities/${activityId}/document`), {
     method: 'POST',
     headers: {
-      ...authHeaders(),
       'Content-Type': doc.mimeType || 'application/octet-stream',
       'X-File-Name': encodeURIComponent(doc.name),
       ...(doc.pages ? { 'X-Pages': doc.pages.join(',') } : {}),
