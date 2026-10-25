@@ -1,4 +1,5 @@
 import { SUPPORTED_MIME_TYPES } from './documentText';
+import { t } from '../i18n';
 
 const GOOGLE_DOC = 'application/vnd.google-apps.document';
 const SCOPE = 'https://www.googleapis.com/auth/drive.file';
@@ -20,7 +21,7 @@ function loadScript(src: string): Promise<void> {
     script.src = src;
     script.async = true;
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error('No se pudo cargar Google Drive. Revisá la conexión.'));
+    script.onerror = () => reject(new Error(t('No se pudo cargar Google Drive. Revisá la conexión.')));
     document.head.appendChild(script);
   });
 }
@@ -37,14 +38,14 @@ async function getAccessToken(clientId: string, loginHint?: string): Promise<str
       login_hint: loginHint,
       callback: (response: { access_token?: string; expires_in?: number; error?: string }) => {
         if (response.error || !response.access_token) {
-          reject(new Error('No se dio permiso para acceder a Google Drive.'));
+          reject(new Error(t('No se dio permiso para acceder a Google Drive.')));
           return;
         }
         token = { value: response.access_token, expiresAt: Date.now() + (response.expires_in ?? 3600) * 1000 };
         resolve(response.access_token);
       },
       error_callback: (err: { type?: string }) =>
-        reject(new Error(err?.type === 'popup_closed' ? 'Se cerró la ventana de Google sin dar permiso.' : 'No se pudo conectar con Google Drive.')),
+        reject(new Error(err?.type === 'popup_closed' ? t('Se cerró la ventana de Google sin dar permiso.') : t('No se pudo conectar con Google Drive.'))),
     });
     client.requestAccessToken({ prompt: '' });
   });
@@ -74,7 +75,7 @@ function openPicker(accessToken: string, apiKey: string, appId: string): Promise
       .addView(view)
       .addView(new picker.DocsView(picker.ViewId.DOCS).setMimeTypes(GOOGLE_DOC).setOwnedByMe(false))
       .setLocale('es-419')
-      .setTitle('Elegí el texto de la actividad')
+      .setTitle(t('Elegí el texto de la actividad'))
       .setCallback((data: any) => {
         if (data.action === picker.Action.PICKED && data.docs?.[0]) {
           const doc = data.docs[0];
@@ -93,7 +94,7 @@ async function download(file: PickedFile, accessToken: string): Promise<Blob> {
   const url =
     file.mimeType === GOOGLE_DOC ? `${base}/export?mimeType=text/plain` : `${base}?alt=media&supportsAllDrives=true`;
   const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
-  if (!res.ok) throw new Error(`Google Drive no entregó el archivo (error ${res.status}).`);
+  if (!res.ok) throw new Error(t('Google Drive no entregó el archivo (error {status}).', { status: res.status }));
   return res.blob();
 }
 

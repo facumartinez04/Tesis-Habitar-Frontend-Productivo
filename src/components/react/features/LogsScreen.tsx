@@ -22,6 +22,7 @@ import {
   type LogKind,
   type LogScope,
 } from '../../../types/log';
+import { t, useI18n, intlLocale } from '../../../i18n';
 
 type BadgeColor = 'green' | 'blue' | 'amber' | 'red' | 'gray' | 'teal';
 
@@ -56,7 +57,7 @@ const td = 'px-2.5 py-2.5 border-b border-gray-border align-top';
 const input = 'w-full px-2.5 py-[7px] border border-gray-border rounded-[6px] text-[12.5px] bg-white dark:bg-[#131620] text-text-pri';
 
 function dateOf(iso: string): string {
-  return new Date(iso).toLocaleString('es-AR', {
+  return new Date(iso).toLocaleString(intlLocale(), {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -68,14 +69,15 @@ function dateOf(iso: string): string {
 }
 
 function UserCell({ name, email, role, impersonated }: { name: string | null; email: string | null; role: string | null; impersonated?: boolean }) {
-  if (!name && !email) return <span className="text-text-ter">Sistema o alumno</span>;
+  useI18n();
+  if (!name && !email) return <span className="text-text-ter">{t('Sistema o alumno')}</span>;
   return (
     <div className="min-w-0">
       <div className="text-text-pri font-medium truncate">{name ?? email}</div>
       {name && email && <div className="text-[11px] text-text-ter truncate">{email}</div>}
       <div className="flex flex-wrap gap-1 mt-0.5">
-        {role && <span className="text-[10.5px] text-text-sec">{ROLE_LABEL[role] ?? role}</span>}
-        {impersonated && <Badge color="amber">Impersonando</Badge>}
+        {role && <span className="text-[10.5px] text-text-sec">{t(ROLE_LABEL[role] ?? role)}</span>}
+        {impersonated && <Badge color="amber">{t('Impersonando')}</Badge>}
       </div>
     </div>
   );
@@ -86,6 +88,7 @@ interface LogsScreenProps {
 }
 
 export function LogsScreen({ scope }: LogsScreenProps) {
+  useI18n();
   const global = scope === 'global';
   const session = useAuthGuard(global ? ['admin'] : ['coordinador', 'admin']);
   const [kind, setKind] = useState<LogKind>('eventos');
@@ -128,11 +131,11 @@ export function LogsScreen({ scope }: LogsScreenProps) {
 
   return (
     <div>
-      <div className="text-lg font-semibold text-text-pri mb-[3px] tracking-tight">{global ? 'Bitácoras de la plataforma' : 'Bitácoras de la institución'}</div>
+      <div className="text-lg font-semibold text-text-pri mb-[3px] tracking-tight">{global ? t('Bitácoras de la plataforma') : t('Bitácoras de la institución')}</div>
       <div className="text-[12.5px] text-text-sec mb-[18px]">
         {global
-          ? 'Registro de todas las instituciones. Filtrá por institución para ver la bitácora de una en particular.'
-          : 'Registro de lo que pasó en tu institución: quién hizo cada acción y cuándo.'}
+          ? t('Registro de todas las instituciones. Filtrá por institución para ver la bitácora de una en particular.')
+          : t('Registro de lo que pasó en tu institución: quién hizo cada acción y cuándo.')}
       </div>
 
       <div className="flex flex-wrap gap-1 mb-1 border-b border-gray-border" role="tablist">
@@ -148,29 +151,29 @@ export function LogsScreen({ scope }: LogsScreenProps) {
             }`}
           >
             <Icon name={KIND_ICON[k.id]} size={13} />
-            {k.label}
+            {t(k.label)}
             {kind === k.id && list.data && <span className="text-[10.5px] text-text-ter tabular-nums">{list.data.total}</span>}
           </button>
         ))}
       </div>
-      <div className="text-[11.5px] text-text-ter mb-3">{current.description}</div>
+      <div className="text-[11.5px] text-text-ter mb-3">{t(current.description)}</div>
 
       <div className="flex flex-wrap gap-2 mb-3">
         <div className="relative flex-[2_1_240px]">
           <Icon name="search" size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-ter" />
-          <input value={list.search} onChange={(e) => list.setSearch(e.target.value)} placeholder={SEARCH_PLACEHOLDER[kind]} aria-label="Buscar" className={`${input} pl-8`} />
+          <input value={list.search} onChange={(e) => list.setSearch(e.target.value)} placeholder={t(SEARCH_PLACEHOLDER[kind])} aria-label={t('Buscar')} className={`${input} pl-8`} />
         </div>
-        <select value={filters.type} onChange={(e) => update({ type: e.target.value })} aria-label="Tipo" className={`${input} flex-[1_1_190px] w-auto`}>
-          <option value="">{kind === 'eventos' ? 'Todas las categorías' : kind === 'auditoria' ? 'Todas las operaciones' : 'Todos los orígenes'}</option>
+        <select value={filters.type} onChange={(e) => update({ type: e.target.value })} aria-label={t('Tipo')} className={`${input} flex-[1_1_190px] w-auto`}>
+          <option value="">{kind === 'eventos' ? t('Todas las categorías') : kind === 'auditoria' ? t('Todas las operaciones') : t('Todos los orígenes')}</option>
           {LOG_TYPE_OPTIONS[kind].map((o) => (
             <option key={o.value} value={o.value}>
-              {o.label}
+              {t(o.label)}
             </option>
           ))}
         </select>
         {global && (
-          <select value={filters.institutionId} onChange={(e) => update({ institutionId: e.target.value })} aria-label="Institución" className={`${input} flex-[1_1_220px] w-auto`}>
-            <option value="">Todas las instituciones</option>
+          <select value={filters.institutionId} onChange={(e) => update({ institutionId: e.target.value })} aria-label={t('Institución')} className={`${input} flex-[1_1_220px] w-auto`}>
+            <option value="">{t('Todas las instituciones')}</option>
             {institutions.map((i) => (
               <option key={i.id} value={i.id}>
                 {i.name}
@@ -179,11 +182,11 @@ export function LogsScreen({ scope }: LogsScreenProps) {
           </select>
         )}
         <label className="flex flex-[1_1_180px] max-w-[260px] items-center gap-1.5 text-[11px] text-text-sec">
-          Desde
+          {t('Desde')}
           <input type="date" value={filters.from} max={filters.to || undefined} onChange={(e) => update({ from: e.target.value })} className={input} />
         </label>
         <label className="flex flex-[1_1_180px] max-w-[260px] items-center gap-1.5 text-[11px] text-text-sec">
-          Hasta
+          {t('Hasta')}
           <input type="date" value={filters.to} min={filters.from || undefined} onChange={(e) => update({ to: e.target.value })} className={input} />
         </label>
         <button
@@ -193,7 +196,7 @@ export function LogsScreen({ scope }: LogsScreenProps) {
           className="inline-flex flex-none items-center justify-center gap-1 text-[11.5px] font-semibold text-text-sec border border-gray-border rounded-[6px] px-3 py-[7px] hover:text-text-pri disabled:opacity-40 cursor-pointer"
         >
           <Icon name="close" size={12} />
-          Limpiar
+          {t('Limpiar')}
         </button>
       </div>
 
@@ -204,7 +207,7 @@ export function LogsScreen({ scope }: LogsScreenProps) {
         <SkeletonTable />
       ) : items.length === 0 ? (
         <div className="text-[12.5px] text-text-sec border border-dashed border-gray-border rounded-[8px] px-4 py-8 text-center">
-          {active ? 'No hay registros que coincidan con los filtros.' : 'Todavía no hay registros en esta bitácora.'}
+          {active ? t('No hay registros que coincidan con los filtros.') : t('Todavía no hay registros en esta bitácora.')}
         </div>
       ) : (
         <div className={list.loading ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
@@ -213,11 +216,11 @@ export function LogsScreen({ scope }: LogsScreenProps) {
               <>
                 <thead>
                   <tr>
-                    <th className={th}>Fecha</th>
-                    <th className={th}>Tipo</th>
-                    <th className={th}>Descripción</th>
-                    <th className={th}>Usuario</th>
-                    {showInstitution && <th className={th}>Institución</th>}
+                    <th className={th}>{t('Fecha')}</th>
+                    <th className={th}>{t('Tipo')}</th>
+                    <th className={th}>{t('Descripción')}</th>
+                    <th className={th}>{t('Usuario')}</th>
+                    {showInstitution && <th className={th}>{t('Institución')}</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -226,15 +229,15 @@ export function LogsScreen({ scope }: LogsScreenProps) {
                       <td className={`${td} whitespace-nowrap tabular-nums text-text-sec`}>{dateOf(e.createdAt)}</td>
                       <td className={td}>
                         <div className="flex flex-col items-start gap-1">
-                          <Badge color={ALERT_TYPES.has(e.type) ? 'red' : CATEGORY_COLOR[e.category]}>{EVENT_TYPE_LABEL[e.type] ?? e.type}</Badge>
-                          <span className="text-[10.5px] text-text-ter">{LOG_TYPE_OPTIONS.eventos.find((o) => o.value === e.category)?.label}</span>
+                          <Badge color={ALERT_TYPES.has(e.type) ? 'red' : CATEGORY_COLOR[e.category]}>{t(EVENT_TYPE_LABEL[e.type] ?? e.type)}</Badge>
+                          <span className="text-[10.5px] text-text-ter">{t(LOG_TYPE_OPTIONS.eventos.find((o) => o.value === e.category)?.label)}</span>
                         </div>
                       </td>
                       <td className={`${td} text-text-pri`}>{e.description}</td>
                       <td className={`${td} max-w-[220px]`}>
                         <UserCell name={e.userName} email={e.userEmail} role={e.role} impersonated={e.impersonated} />
                       </td>
-                      {showInstitution && <td className={`${td} text-text-sec`}>{e.institutionName ?? 'Plataforma'}</td>}
+                      {showInstitution && <td className={`${td} text-text-sec`}>{e.institutionName ?? t('Plataforma')}</td>}
                     </tr>
                   ))}
                 </tbody>
@@ -245,11 +248,11 @@ export function LogsScreen({ scope }: LogsScreenProps) {
               <>
                 <thead>
                   <tr>
-                    <th className={th}>Fecha</th>
-                    <th className={th}>Operación</th>
-                    <th className={th}>Alumno o dato</th>
-                    <th className={th}>Realizado por</th>
-                    {showInstitution && <th className={th}>Institución</th>}
+                    <th className={th}>{t('Fecha')}</th>
+                    <th className={th}>{t('Operación')}</th>
+                    <th className={th}>{t('Alumno o dato')}</th>
+                    <th className={th}>{t('Realizado por')}</th>
+                    {showInstitution && <th className={th}>{t('Institución')}</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -257,11 +260,11 @@ export function LogsScreen({ scope }: LogsScreenProps) {
                     <tr key={a.id} className="text-[12px]">
                       <td className={`${td} whitespace-nowrap tabular-nums text-text-sec`}>{dateOf(a.date)}</td>
                       <td className={td}>
-                        <Badge color={OPERATION[a.operation]?.color ?? 'gray'}>{OPERATION[a.operation]?.label ?? a.operation}</Badge>
+                        <Badge color={OPERATION[a.operation]?.color ?? 'gray'}>{t(OPERATION[a.operation]?.label) ?? a.operation}</Badge>
                       </td>
                       <td className={`${td} text-text-pri`}>{a.studentName}</td>
                       <td className={`${td} text-text-sec`}>{a.performedBy}</td>
-                      {showInstitution && <td className={`${td} text-text-sec`}>{a.institutionName ?? 'Sin institución'}</td>}
+                      {showInstitution && <td className={`${td} text-text-sec`}>{a.institutionName ?? t('Sin institución')}</td>}
                     </tr>
                   ))}
                 </tbody>
@@ -272,12 +275,12 @@ export function LogsScreen({ scope }: LogsScreenProps) {
               <>
                 <thead>
                   <tr>
-                    <th className={th}>Fecha</th>
-                    <th className={th}>Origen</th>
-                    <th className={th}>Operación</th>
-                    <th className={th}>Mensaje</th>
-                    <th className={th}>Usuario</th>
-                    {showInstitution && <th className={th}>Institución</th>}
+                    <th className={th}>{t('Fecha')}</th>
+                    <th className={th}>{t('Origen')}</th>
+                    <th className={th}>{t('Operación')}</th>
+                    <th className={th}>{t('Mensaje')}</th>
+                    <th className={th}>{t('Usuario')}</th>
+                    {showInstitution && <th className={th}>{t('Institución')}</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -287,10 +290,10 @@ export function LogsScreen({ scope }: LogsScreenProps) {
                       <td className={td}>
                         <div className="flex flex-col items-start gap-1">
                           <Badge color="red">{e.status}</Badge>
-                          <span className="text-[10.5px] text-text-ter">{e.source === 'API' ? 'API' : 'Proceso'}</span>
+                          <span className="text-[10.5px] text-text-ter">{e.source === 'API' ? 'API' : t('Proceso')}</span>
                         </div>
                       </td>
-                      <td className={`${td} font-mono text-[11px] text-text-sec break-all min-w-[170px]`}>{e.method ? `${e.method} ${e.path ?? ''}` : 'Proceso del servidor'}</td>
+                      <td className={`${td} font-mono text-[11px] text-text-sec break-all min-w-[170px]`}>{e.method ? `${e.method} ${e.path ?? ''}` : t('Proceso del servidor')}</td>
                       <td className={`${td} text-text-pri`}>
                         <div className="break-words">{e.message}</div>
                         {e.stack && (
@@ -300,7 +303,7 @@ export function LogsScreen({ scope }: LogsScreenProps) {
                             className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 cursor-pointer"
                           >
                             <Icon name="chevronDown" size={11} className={openError === e.id ? 'rotate-180' : ''} />
-                            {openError === e.id ? 'Ocultar detalle técnico' : 'Ver detalle técnico'}
+                            {openError === e.id ? t('Ocultar detalle técnico') : t('Ver detalle técnico')}
                           </button>
                         )}
                         {e.stack && openError === e.id && (
@@ -310,7 +313,7 @@ export function LogsScreen({ scope }: LogsScreenProps) {
                       <td className={`${td} max-w-[200px]`}>
                         <UserCell name={null} email={e.userEmail} role={e.role} />
                       </td>
-                      {showInstitution && <td className={`${td} text-text-sec`}>{e.institutionName ?? 'Sin institución'}</td>}
+                      {showInstitution && <td className={`${td} text-text-sec`}>{e.institutionName ?? t('Sin institución')}</td>}
                     </tr>
                   ))}
                 </tbody>
@@ -323,7 +326,7 @@ export function LogsScreen({ scope }: LogsScreenProps) {
             total={list.data.total}
             pageSize={list.data.pageSize}
             onChange={list.setPage}
-            label="registros"
+            label={t('registros')}
             className="mt-3"
           />
         </div>

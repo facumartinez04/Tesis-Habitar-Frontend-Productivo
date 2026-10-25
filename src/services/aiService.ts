@@ -2,6 +2,7 @@ import type { ComprehensionAxis } from '../types/activity';
 import type { Question } from '../types/question';
 import { apiFetch } from '../lib/apiClient';
 import { toLower, toUpper } from '../lib/caseAdapters';
+import type { Locale } from '../i18n';
 
 export interface GenerateQuestionsResult {
   questions: Question[];
@@ -23,10 +24,14 @@ interface BackendGenerateQuestionsResponse {
   questions: BackendGeneratedQuestion[];
 }
 
-export async function generateQuestions(sourceText: string, focusAxis?: ComprehensionAxis): Promise<GenerateQuestionsResult> {
+export async function generateQuestions(
+  sourceText: string,
+  focusAxis?: ComprehensionAxis,
+  language?: Locale,
+): Promise<GenerateQuestionsResult> {
   const result = await apiFetch<BackendGenerateQuestionsResponse>('/activities/generate-questions', {
     method: 'POST',
-    body: { sourceText, focusAxis: focusAxis ? toUpper(focusAxis) : undefined },
+    body: { sourceText, focusAxis: focusAxis ? toUpper(focusAxis) : undefined, language },
   });
 
   const questions: Question[] = result.questions.map((question, index) => ({

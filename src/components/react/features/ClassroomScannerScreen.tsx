@@ -10,6 +10,7 @@ import type { PublicCourseInfo } from '../../../types/activity';
 import { getOrCreateDeviceId } from '../../../lib/studentDevice';
 import { useLiveUpdates, usePolling } from '../../../lib/realtime';
 import { todayAR, whenLabel } from '../../../lib/activityDates';
+import { setContextLocale, t, useI18n } from '../../../i18n';
 
 interface BoundInfo {
   studentName: string;
@@ -18,8 +19,12 @@ interface BoundInfo {
 }
 
 export function ClassroomScannerScreen() {
+  useI18n();
   const [loading, setLoading] = useState(true);
   const [info, setInfo] = useState<PublicCourseInfo | null>(null);
+  useEffect(() => {
+    if (info?.language) setContextLocale(info.language);
+  }, [info?.language]);
   const [qrCode, setQrCode] = useState<string>('');
   const [redirecting, setRedirecting] = useState<string | null>(null);
   const [studentNameInput, setStudentNameInput] = useState('');
@@ -35,40 +40,40 @@ export function ClassroomScannerScreen() {
   }
 
   useEffect(() => {
-    dbg(`URL: ${window.location.href}`);
+    dbg(t('URL: {href}', { href: window.location.href }));
 
     const params = new URLSearchParams(window.location.search);
     let code = params.get('code');
-    dbg(`code param: ${code}`);
+    dbg(t('code param: {code}', { code }));
     if (!code) {
       const match = window.location.pathname.match(/\/aula\/?([^/?#]+)?/);
       if (match && match[1] && match[1] !== 'aula') {
         code = decodeURIComponent(match[1]);
       }
-      dbg(`code from path: ${code}`);
+      dbg(t('code from path: {code}', { code }));
     }
 
     if (!code) {
-      dbg('No code found, stopping');
+      dbg(t('No code found, stopping'));
       setLoading(false);
       return;
     }
 
     const cleanCode = code.trim().toUpperCase();
     setQrCode(cleanCode);
-    dbg(`cleanCode: ${cleanCode}`);
+    dbg(t('cleanCode: {cleanCode}', { cleanCode }));
 
     let session: any = null;
     try {
       session = sessionStore.get();
-      dbg(`session: ${session ? `user=${session.user?.email} role=${session.user?.role}` : 'null'}`);
+      dbg(t('session: {value}', { value: session ? t('user={email} role={role}', { email: session.user?.email, role: session.user?.role }) : t('null') }));
     } catch (e: any) {
-      dbg(`sessionStore.get() error: ${e.message}`);
+      dbg(t('sessionStore.get() error: {message}', { message: e.message }));
     }
     if (session && session.user) {
       const role = session.user.role?.toUpperCase();
       if (role === 'DOCENTE') {
-        setRedirecting('Reconocimos tu cuenta docente. Abriendo tu aula...');
+        setRedirecting(t('Reconocimos tu cuenta docente. Abriendo tu aula...'));
         getPublicCourseInfo(cleanCode)
           .then((res) => {
             window.location.replace(`/docente?courseId=${res.course.id}`);
@@ -79,7 +84,7 @@ export function ClassroomScannerScreen() {
         return;
       }
       if (role === 'COORDINADOR' || role === 'DIRECTOR') {
-        setRedirecting('Reconocimos tu cuenta institucional. Abriendo el aula...');
+        setRedirecting(t('Reconocimos tu cuenta institucional. Abriendo el aula...'));
         getPublicCourseInfo(cleanCode)
           .then((res) => {
             window.location.replace(`/institucional?courseId=${res.course.id}`);
@@ -90,16 +95,16 @@ export function ClassroomScannerScreen() {
         return;
       }
       if (role === 'ADMIN') {
-        setRedirecting('Reconocimos tu cuenta de administrador...');
+        setRedirecting(t('Reconocimos tu cuenta de administrador...'));
         window.location.replace('/admin/instituciones');
         return;
       }
     }
 
-    dbg(`Calling getPublicCourseInfo(${cleanCode})...`);
+    dbg(t('Calling getPublicCourseInfo({cleanCode})...', { cleanCode }));
     getPublicCourseInfo(cleanCode)
       .then((data) => {
-        dbg(`API OK: course=${data.course.name}, activity=${data.activeActivity?.code || 'none'}`);
+        dbg(t('API OK: course={name}, activity={value}', { name: data.course.name, value: data.activeActivity?.code || 'none' }));
         setInfo(data);
         try {
           localStorage.setItem('habitar_user_role', 'alumno');
@@ -122,11 +127,11 @@ export function ClassroomScannerScreen() {
         }
       })
       .catch((err: any) => {
-        dbg(`API ERROR: ${err.message || err}`);
-        setError(err.message || 'No se pudo cargar la información del aula.');
+        dbg(t('API ERROR: {value}', { value: err.message || err }));
+        setError(err.message || t('No se pudo cargar la información del aula.'));
       })
       .finally(() => {
-        dbg('Loading done');
+        dbg(t('Loading done'));
         setLoading(false);
       });
   }, []);
@@ -147,7 +152,7 @@ export function ClassroomScannerScreen() {
     const nameProblem = byList ? null : studentNameError(nameParts.firstName, nameParts.lastName);
     const trimmedName = byList ? studentNameInput.trim() : fullStudentName(nameParts.firstName, nameParts.lastName);
     if (byList && !/^\d{1,3}$/.test(trimmedName)) {
-      setError('Ingresá sólo tu número de lista, por ejemplo 12.');
+      setError(t('Ingresá sólo tu número de lista, por ejemplo 12.'));
       return;
     }
     if (nameProblem) {
@@ -179,7 +184,7 @@ export function ClassroomScannerScreen() {
         window.location.href = `/actividad?code=${encodeURIComponent(info.activeActivity.code)}`;
       }
     } catch (err: any) {
-      setError(err.message || 'No se pudo vincular este dispositivo.');
+      setError(err.message || t('No se pudo vincular este dispositivo.'));
     } finally {
       setBinding(false);
     }
@@ -200,11 +205,11 @@ export function ClassroomScannerScreen() {
   const showDebug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
   const debugPanel = !showDebug ? null : (
     <div className="fixed bottom-0 inset-x-0 z-50 bg-black/90 text-green-400 text-[10px] font-mono p-2 max-h-32 overflow-y-auto">
-      <div className="font-bold text-yellow-300 mb-0.5">DEBUG AULA v2</div>
+      <div className="font-bold text-yellow-300 mb-0.5">{t('DEBUG AULA v2')}</div>
       {debugLog.map((line, i) => (
         <div key={i}>{line}</div>
       ))}
-      {debugLog.length === 0 && <div className="text-stone-500">Esperando logs...</div>}
+      {debugLog.length === 0 && <div className="text-stone-500">{t('Esperando logs...')}</div>}
     </div>
   );
 
@@ -220,7 +225,7 @@ export function ClassroomScannerScreen() {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <HabitarLoader size="lg" message="Verificando código de aula..." />
+        <HabitarLoader size="lg" message={t('Verificando código de aula...')} />
         {debugPanel}
       </div>
     );
@@ -234,9 +239,9 @@ export function ClassroomScannerScreen() {
             <Icon name="alertTriangle" size={26} className="text-amber-700 dark:text-amber-400" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-text-pri">Código de Aula No Válido</h1>
+            <h1 className="text-lg font-bold text-text-pri">{t('Código de Aula No Válido')}</h1>
             <p className="text-xs text-text-sec mt-1">
-              {error || `El código "${qrCode || 'desconocido'}" no corresponde a un aula activa.`}
+              {error || t('El código "{value}" no corresponde a un aula activa.', { value: qrCode || t('desconocido') })}
             </p>
           </div>
           <div className="pt-2">
@@ -244,7 +249,7 @@ export function ClassroomScannerScreen() {
               href="/actividad"
               className="inline-block w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors shadow-sm"
             >
-              Ir al Portal con Código PIN
+              {t('Ir al Portal con Código PIN')}
             </a>
           </div>
         </Card>
@@ -260,7 +265,7 @@ export function ClassroomScannerScreen() {
       <div className="fixed top-0 inset-x-0 z-40 bg-surface/85 backdrop-blur-md border-b border-gray-border/70 px-4 py-2 flex items-center justify-between text-xs">
         <div className="flex items-center gap-1.5 text-text-sec">
           <Icon name="backpack" size={14} />
-          <span className="font-semibold text-text-pri">Aula Física</span>
+          <span className="font-semibold text-text-pri">{t('Aula Física')}</span>
           <span className="text-text-ter font-mono">{course.qrCode || qrCode}</span>
         </div>
         <button
@@ -268,19 +273,19 @@ export function ClassroomScannerScreen() {
           type="button"
           className="text-[11px] font-medium text-text-sec hover:text-emerald-700 dark:hover:text-emerald-400 hover:underline transition-colors cursor-pointer"
         >
-          ¿Sos docente? Iniciar sesión
+          {t('¿Sos docente? Iniciar sesión')}
         </button>
       </div>
 
       <Card className="w-full max-w-md p-6 space-y-5">
         <div className="text-center pb-3 border-b border-gray-border/60">
           <Badge color="green" className="mb-2">
-            Aula Física Conectada
+            {t('Aula Física Conectada')}
           </Badge>
           <h1 className="text-xl font-bold text-text-pri tracking-tight">{course.name}</h1>
           <p className="text-xs text-text-sec mt-0.5">
             {course.subject} {course.grade ? `• ${course.grade}` : ''} {course.division ? `"${course.division}"` : ''}
-            {course.room ? ` • Salón: ${course.room}` : ''}
+            {course.room ? t(' • Salón: {room}', { room: course.room }) : ''}
           </p>
           {course.institutionName && (
             <p className="text-[11px] text-text-ter mt-0.5 font-medium">{course.institutionName}</p>
@@ -293,16 +298,16 @@ export function ClassroomScannerScreen() {
             <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800/60 rounded-2xl p-4 text-center space-y-1.5">
               <div className="flex items-center justify-center gap-1.5 text-emerald-800 dark:text-emerald-300 font-bold text-sm">
                 <Icon name="check" size={16} className="text-emerald-600 dark:text-emerald-400" />
-                <span>Dispositivo Vinculado y Verificado</span>
+                <span>{t('Dispositivo Vinculado y Verificado')}</span>
               </div>
               <div className="text-lg font-extrabold text-text-pri">{boundInfo.studentName}</div>
               <p className="text-[11.5px] text-text-sec leading-relaxed">
-                Este celular/tablet está registrado como tu dispositivo oficial en esta aula.
+                {t('Este celular/tablet está registrado como tu dispositivo oficial en esta aula.')}
               </p>
               <div className="pt-1">
                 <span className="inline-flex items-center gap-1 text-[10.5px] font-mono text-emerald-700 dark:text-emerald-400 bg-white/70 dark:bg-[#1A1E29] px-2.5 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800/50">
                   <Icon name="lock" size={11} />
-                  Identidad bloqueada en este equipo
+                  {t('Identidad bloqueada en este equipo')}
                 </span>
               </div>
             </div>
@@ -311,12 +316,12 @@ export function ClassroomScannerScreen() {
               <div className="bg-surface border border-emerald-600/30 rounded-2xl p-4 space-y-3 text-center shadow-xs">
                 <div className="space-y-0.5">
                   <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
-                    Actividad de Lectura Activa
+                    {t('Actividad de Lectura Activa')}
                   </span>
                   <h2 className="text-base font-bold text-text-pri">{activeActivity.name}</h2>
                   <p className="text-xs text-text-sec">
-                    Código PIN: <span className="font-mono font-bold">{activeActivity.code}</span>
-                    {activeActivity.endTime && ` • Disponible hasta ${whenLabel(activeActivity.endDate || todayAR(), activeActivity.endTime)}`}
+                    {t('Código PIN:')}{' '}<span className="font-mono font-bold">{activeActivity.code}</span>
+                    {activeActivity.endTime && t(' • Disponible hasta {whenLabel}', { whenLabel: whenLabel(activeActivity.endDate || todayAR(), activeActivity.endTime) })}
                   </p>
                 </div>
 
@@ -324,7 +329,7 @@ export function ClassroomScannerScreen() {
                   onClick={handleGoToActivity}
                   className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <span>Comenzar Actividad Ahora</span>
+                  <span>{t('Comenzar Actividad Ahora')}</span>
                   <Icon name="arrowRight" size={14} />
                 </button>
               </div>
@@ -335,22 +340,20 @@ export function ClassroomScannerScreen() {
                   <>
                     <div className="text-sm font-semibold text-text-pri">{info.upcomingActivity.name}</div>
                     <p className="text-xs text-text-sec max-w-xs mx-auto leading-relaxed">
-                      Empieza a las <strong>{info.upcomingActivity.startTime} h</strong>. Dejá esta pantalla abierta: el botón
-                      para comenzar aparece solo.
+                      {t('Empieza a las')}{' '}<strong>{info.upcomingActivity.startTime} h</strong>{t('. Dejá esta pantalla abierta: el botón para comenzar aparece solo.')}
                     </p>
                   </>
                 ) : (
                   <>
-                    <div className="text-sm font-semibold text-text-pri">Sin actividades abiertas ahora</div>
+                    <div className="text-sm font-semibold text-text-pri">{t('Sin actividades abiertas ahora')}</div>
                     <p className="text-xs text-text-sec max-w-xs mx-auto leading-relaxed">
-                      Tu dispositivo ya está listo. Dejá esta pantalla abierta: cuando tu docente abra la actividad, aparece
-                      sola.
+                      {t('Tu dispositivo ya está listo. Dejá esta pantalla abierta: cuando tu docente abra la actividad, aparece sola.')}
                     </p>
                   </>
                 )}
                 <div className="inline-flex items-center gap-1.5 text-[10.5px] text-text-ter pt-1">
                   <span className={`w-1.5 h-1.5 rounded-full ${liveConnected ? 'bg-emerald-500 animate-pulse' : 'bg-stone-400'}`} />
-                  {liveConnected ? 'Conectado en vivo' : 'Buscando actualizaciones…'}
+                  {liveConnected ? t('Conectado en vivo') : t('Buscando actualizaciones…')}
                 </div>
               </div>
             )}
@@ -360,11 +363,10 @@ export function ClassroomScannerScreen() {
           <form onSubmit={handleBindDevice} className="space-y-4">
             <div className="text-center space-y-1">
               <h2 className="text-base font-bold text-text-pri">
-                {byList ? 'Ingresá tu número de lista' : 'Ingresá tu Nombre y Apellido'}
+                {byList ? t('Ingresá tu número de lista') : t('Ingresá tu Nombre y Apellido')}
               </h2>
               <p className="text-xs text-text-sec leading-relaxed">
-                Por seguridad del aula, este dispositivo quedará vinculado a tu {byList ? 'número de lista' : 'nombre'}.
-                No podrás cambiarlo después.
+                {t('Por seguridad del aula, este dispositivo quedará vinculado a tu')}{' '}{byList ? t('número de lista') : t('nombre')}{t('. No podrás cambiarlo después.')}
               </p>
             </div>
 
@@ -376,7 +378,7 @@ export function ClassroomScannerScreen() {
 
             {byList ? (
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-text-pri block">Número de lista</label>
+                <label className="text-xs font-semibold text-text-pri block">{t('Número de lista')}</label>
                 <input
                   type="text"
                   required
@@ -384,7 +386,7 @@ export function ClassroomScannerScreen() {
                   maxLength={3}
                   value={studentNameInput}
                   onChange={(e) => setStudentNameInput(e.target.value)}
-                  placeholder="Ej: 12"
+                  placeholder={t('Ej: 12')}
                   className="w-full px-3 py-2.5 border border-gray-border rounded-xl text-sm bg-white dark:bg-[#1A1E29] text-text-pri focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none"
                   autoFocus
                 />
@@ -408,10 +410,10 @@ export function ClassroomScannerScreen() {
               className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl text-sm transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
             >
               {binding ? (
-                <span>Vinculando dispositivo…</span>
+                <span>{t('Vinculando dispositivo…')}</span>
               ) : (
                 <>
-                  <span>Vincular y Entrar al Aula</span>
+                  <span>{t('Vincular y Entrar al Aula')}</span>
                   <Icon name="arrowRight" size={14} />
                 </>
               )}

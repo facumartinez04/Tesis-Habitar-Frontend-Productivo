@@ -4,6 +4,7 @@ import { Icon } from '../ui/Icon';
 import { sessionStore } from '../../../store/sessionStore';
 import { acceptConsent, getConsentDocument } from '../../../services/complianceService';
 import type { ConsentDocument } from '../../../types/compliance';
+import { t, useI18n } from '../../../i18n';
 
 const DEFAULT_CONSENT_DOC: ConsentDocument = {
   version: '2026.1-PBA',
@@ -27,6 +28,7 @@ Atentamente,
 Equipo Directivo y Docente`;
 
 export function ConsentScreen() {
+  useI18n();
   const [session, setSession] = useState(sessionStore.get());
   const [document_, setDocument] = useState<ConsentDocument>(DEFAULT_CONSENT_DOC);
   const [accepted, setAccepted] = useState(false);
@@ -62,7 +64,7 @@ export function ConsentScreen() {
   }
 
   function handleCopyModel() {
-    navigator.clipboard.writeText(PARENT_COMMUNICATION_MODEL);
+    navigator.clipboard.writeText(t(PARENT_COMMUNICATION_MODEL));
     setCopied(true);
     setTimeout(() => setCopied(false), 3000);
   }
@@ -85,28 +87,28 @@ export function ConsentScreen() {
               className="text-xs font-semibold text-text-sec hover:text-text-pri px-3 py-1.5 rounded-lg border border-gray-border hover:bg-surface transition-colors flex items-center gap-1.5"
             >
               <Icon name="arrowLeft" size={13} />
-              <span className="hidden sm:inline">Volver a la Landing</span>
-              <span className="sm:hidden">Inicio</span>
+              <span className="hidden sm:inline">{t('Volver a la Landing')}</span>
+              <span className="sm:hidden">{t('Inicio')}</span>
             </a>
             <a
               href="/privacidad"
               className="text-xs font-semibold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg transition-colors"
             >
-              Política de Privacidad PBA
+              {t('Política de Privacidad PBA')}
             </a>
             {session ? (
               <a
                 href={session.user.role === 'docente' ? '/docente/cursos' : '/institucional'}
                 className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
               >
-                Mi Panel
+                {t('Mi Panel')}
               </a>
             ) : (
               <a
                 href="/login"
                 className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
               >
-                Ingreso Escuelas
+                {t('Ingreso Escuelas')}
               </a>
             )}
           </div>
@@ -118,55 +120,55 @@ export function ConsentScreen() {
         <div className="text-center space-y-3">
           <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-3.5 py-1 rounded-full shadow-xs">
             <Icon name="shield" size={13} />
-            Documento de Acceso Público y Transparente
+            {t('Documento de Acceso Público y Transparente')}
           </div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-text-pri tracking-tight">
-            Términos de Tratamiento de Datos y Consentimiento Informado Escolar
+            {t('Términos de Tratamiento de Datos y Consentimiento Informado Escolar')}
           </h1>
           <p className="text-xs sm:text-sm text-text-sec max-w-2xl mx-auto leading-relaxed">
-            Pliego institucional bajo la <strong>Ley Nacional N° 25.326</strong>, <strong>Ley N° 26.061</strong> de Protección Integral de la Niñez y las pautas educativas de la <strong>Dirección General de Cultura y Educación (DGCyE)</strong> de la Provincia de Buenos Aires (Ley 13.688 / DIPREGEP).
+            {t('Pliego institucional bajo la')}{' '}<strong>{t('Ley Nacional N° 25.326')}</strong>, <strong>{t('Ley N° 26.061')}</strong>{' '}{t('de Protección Integral de la Niñez y las pautas educativas de la')}{' '}<strong>{t('Dirección General de Cultura y Educación (DGCyE)')}</strong>{' '}{t('de la Provincia de Buenos Aires (Ley 13.688 / DIPREGEP).')}
           </p>
           <div className="flex flex-wrap justify-center gap-2 text-[11px] text-text-sec pt-1">
             <span className="bg-white border border-gray-border px-2.5 py-1 rounded-md font-medium">
-              Versión: {document_.version}
+              {t('Versión: {version}', { version: document_.version })}
             </span>
             <span className="bg-white border border-gray-border px-2.5 py-1 rounded-md font-medium">
-              Publicación: {document_.publishedAt}
+              {t('Publicación: {publishedAt}', { publishedAt: document_.publishedAt })}
             </span>
             <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-md font-medium">
-              Sin requisito de inicio de sesión para consulta
+              {t('Sin requisito de inicio de sesión para consulta')}
             </span>
           </div>
         </div>
 
         <Card className="border-gray-border/80 shadow-xs">
           <div className="text-xs font-bold uppercase tracking-wider text-text-sec mb-3">
-            Roles Jurídicos de Tratamiento (Ley 25.326 & DGCyE PBA)
+            {t('Roles Jurídicos de Tratamiento (Ley 25.326 & DGCyE PBA)')}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
             <div className="bg-surface rounded-xl p-4 border border-gray-border">
               <div className="flex items-center gap-2 text-emerald-800 text-xs font-bold mb-1">
                 <Icon name="school" size={15} />
-                <span>Responsable del Tratamiento (Data Controller)</span>
+                <span>{t('Responsable del Tratamiento (Data Controller)')}</span>
               </div>
               <div className="text-sm font-semibold text-text-pri mb-1">
-                {document_.dataController}
+                {t(document_.dataController)}
               </div>
               <p className="text-[11.5px] text-text-sec leading-relaxed">
-                Conserva la propiedad, tutela y gobierno exclusivo sobre la matrícula escolar y las calificaciones de los estudiantes.
+                {t('Conserva la propiedad, tutela y gobierno exclusivo sobre la matrícula escolar y las calificaciones de los estudiantes.')}
               </p>
             </div>
 
             <div className="bg-surface rounded-xl p-4 border border-gray-border">
               <div className="flex items-center gap-2 text-emerald-800 text-xs font-bold mb-1">
                 <Icon name="lock" size={15} />
-                <span>Encargado del Tratamiento (Data Processor)</span>
+                <span>{t('Encargado del Tratamiento (Data Processor)')}</span>
               </div>
               <div className="text-sm font-semibold text-text-pri mb-1">
-                {document_.dataProcessor}
+                {t(document_.dataProcessor)}
               </div>
               <p className="text-[11.5px] text-text-sec leading-relaxed">
-                Provee la infraestructura técnica y los algoritmos auxiliares conforme a las instrucciones contractuales de la escuela.
+                {t('Provee la infraestructura técnica y los algoritmos auxiliares conforme a las instrucciones contractuales de la escuela.')}
               </p>
             </div>
           </div>
@@ -177,60 +179,60 @@ export function ConsentScreen() {
           <div className="space-y-2 border-b border-gray-border/60 pb-4">
             <h2 className="text-base font-bold text-text-pri flex items-center gap-2">
               <span className="w-6 h-6 rounded-md bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs font-bold">1</span>
-              Finalidad Exclusivamente Pedagógica
+              {t('Finalidad Exclusivamente Pedagógica')}
             </h2>
             <p>
-              El tratamiento de datos dentro de Habitar se circunscribe de manera taxativa a la evaluación, diagnóstico y potenciación de la comprensión lectora en los ejes Literal, Inferencial y Crítico. No se realiza ningún tratamiento secundario incompatible con el objeto pedagógico institucional contratado por la escuela.
+              {t('El tratamiento de datos dentro de Habitar se circunscribe de manera taxativa a la evaluación, diagnóstico y potenciación de la comprensión lectora en los ejes Literal, Inferencial y Crítico. No se realiza ningún tratamiento secundario incompatible con el objeto pedagógico institucional contratado por la escuela.')}
             </p>
           </div>
 
           <div className="space-y-2 border-b border-gray-border/60 pb-4">
             <h2 className="text-base font-bold text-text-pri flex items-center gap-2">
               <span className="w-6 h-6 rounded-md bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs font-bold">2</span>
-              Interés Superior del Niño e Intimidad (Ley 13.688 PBA & Ley 26.061)
+              {t('Interés Superior del Niño e Intimidad (Ley 13.688 PBA & Ley 26.061)')}
             </h2>
             <p>
-              En concordancia con el <strong>Artículo 16 de la Ley Provincial N° 13.688</strong> y la <strong>Ley Nacional N° 26.061</strong>, se resguarda de forma absoluta la intimidad, dignidad e integridad moral de los alumnos. El entorno no permite interacciones sociales no moderadas, mensajería abierta ni exposición pública de puntajes o desempeños individuales.
+              {t('En concordancia con el')}{' '}<strong>{t('Artículo 16 de la Ley Provincial N° 13.688')}</strong>{' '}{t('y la')}{' '}<strong>{t('Ley Nacional N° 26.061')}</strong>{t(', se resguarda de forma absoluta la intimidad, dignidad e integridad moral de los alumnos. El entorno no permite interacciones sociales no moderadas, mensajería abierta ni exposición pública de puntajes o desempeños individuales.')}
             </p>
           </div>
 
           <div className="space-y-2 border-b border-gray-border/60 pb-4">
             <h2 className="text-base font-bold text-text-pri flex items-center gap-2">
               <span className="w-6 h-6 rounded-md bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs font-bold">3</span>
-              Prohibición Estricta de Comercialización, Cesión y Publicidad
+              {t('Prohibición Estricta de Comercialización, Cesión y Publicidad')}
             </h2>
             <p>
-              Habitar no vende, no alquila, no cede ni monetiza bases de datos de estudiantes ni de personal docente. La plataforma carece totalmente de publicidad comercial, rastreadores de terceros (ad-trackers) o mecanismos de monetización de comportamiento digital.
+              {t('Habitar no vende, no alquila, no cede ni monetiza bases de datos de estudiantes ni de personal docente. La plataforma carece totalmente de publicidad comercial, rastreadores de terceros (ad-trackers) o mecanismos de monetización de comportamiento digital.')}
             </p>
           </div>
 
           <div className="space-y-2 border-b border-gray-border/60 pb-4">
             <h2 className="text-base font-bold text-text-pri flex items-center gap-2">
               <span className="w-6 h-6 rounded-md bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs font-bold">4</span>
-              Inteligencia Artificial Supervisada sin Re-entrenamiento
+              {t('Inteligencia Artificial Supervisada sin Re-entrenamiento')}
             </h2>
             <p>
-              El motor de Inteligencia Artificial actúa en carácter asistivo para la formulación de reactivos de lectura. <strong>Las producciones, textos o respuestas de los estudiantes nunca son utilizadas para reentrenar modelos fundacionales de IA</strong>. Asimismo, conforme a las directivas de la DGCyE de PBA, queda expresamente prohibida la delegación en sistemas automáticos de decisiones disciplinarias o de acreditación académica escolar: la supervisión humana del docente es continua e insustituible.
+              {t('El motor de Inteligencia Artificial actúa en carácter asistivo para la formulación de reactivos de lectura.')}{' '}<strong>{t('Las producciones, textos o respuestas de los estudiantes nunca son utilizadas para reentrenar modelos fundacionales de IA')}</strong>{t('. Asimismo, conforme a las directivas de la DGCyE de PBA, queda expresamente prohibida la delegación en sistemas automáticos de decisiones disciplinarias o de acreditación académica escolar: la supervisión humana del docente es continua e insustituible.')}
             </p>
           </div>
 
           <div className="space-y-2 border-b border-gray-border/60 pb-4">
             <h2 className="text-base font-bold text-text-pri flex items-center gap-2">
               <span className="w-6 h-6 rounded-md bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs font-bold">5</span>
-              Ejercicio Irrestricto de Derechos ARCO
+              {t('Ejercicio Irrestricto de Derechos ARCO')}
             </h2>
             <p>
-              Los tutores legales o estudiantes mayores de edad tienen el derecho permanente de solicitar el Acceso, Rectificación, Cancelación u Oposición de sus datos personales. Las solicitudes son atendidas por el Responsable del Tratamiento (la escuela) con la asistencia técnica inmediata de Habitar en un plazo que no excederá los 10 días hábiles legales.
+              {t('Los tutores legales o estudiantes mayores de edad tienen el derecho permanente de solicitar el Acceso, Rectificación, Cancelación u Oposición de sus datos personales. Las solicitudes son atendidas por el Responsable del Tratamiento (la escuela) con la asistencia técnica inmediata de Habitar en un plazo que no excederá los 10 días hábiles legales.')}
             </p>
           </div>
 
           <div className="space-y-2">
             <h2 className="text-base font-bold text-text-pri flex items-center gap-2">
               <span className="w-6 h-6 rounded-md bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs font-bold">6</span>
-              Cifrado, Aislamiento y Política de Purga
+              {t('Cifrado, Aislamiento y Política de Purga')}
             </h2>
             <p>
-              Todos los datos en tránsito son protegidos mediante TLS 1.3 con cifrado fuerte de 256 bits. Los registros de cada colegio residen en esquemas lógicos aislados (multi-tenant) y las instituciones cuentan con protocolos de purga y eliminación definitiva al cierre del ciclo escolar correspondiente.
+              {t('Todos los datos en tránsito son protegidos mediante TLS 1.3 con cifrado fuerte de 256 bits. Los registros de cada colegio residen en esquemas lógicos aislados (multi-tenant) y las instituciones cuentan con protocolos de purga y eliminación definitiva al cierre del ciclo escolar correspondiente.')}
             </p>
           </div>
         </div>
@@ -239,7 +241,7 @@ export function ConsentScreen() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-emerald-950 font-bold text-sm">
               <Icon name="fileText" size={17} />
-              <span>Modelo de Notificación para Familias y Tutores (PBA / Nacional)</span>
+              <span>{t('Modelo de Notificación para Familias y Tutores (PBA / Nacional)')}</span>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -247,22 +249,22 @@ export function ConsentScreen() {
                 className="bg-white border border-emerald-300 hover:border-emerald-600 text-emerald-900 font-semibold px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1.5 shadow-xs"
               >
                 <Icon name={copied ? 'check' : 'copy'} size={13} />
-                <span>{copied ? '¡Copiado al portapapeles!' : 'Copiar Texto para Cuaderno'}</span>
+                <span>{copied ? t('¡Copiado al portapapeles!') : t('Copiar Texto para Cuaderno')}</span>
               </button>
               <button
                 onClick={() => window.print()}
                 className="bg-white border border-emerald-300 hover:border-emerald-600 text-emerald-900 font-semibold px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1.5 shadow-xs"
               >
                 <Icon name="printer" size={13} />
-                <span className="hidden sm:inline">Imprimir</span>
+                <span className="hidden sm:inline">{t('Imprimir')}</span>
               </button>
             </div>
           </div>
           <p className="text-xs text-emerald-900/90 leading-relaxed">
-            Las instituciones educativas de la Provincia de Buenos Aires pueden emplear esta plantilla estándar para comunicar e informar formalmente a los padres, madres o tutores legales sobre el uso seguro del entorno Habitar al inicio del ciclo lectivo.
+            {t('Las instituciones educativas de la Provincia de Buenos Aires pueden emplear esta plantilla estándar para comunicar e informar formalmente a los padres, madres o tutores legales sobre el uso seguro del entorno Habitar al inicio del ciclo lectivo.')}
           </p>
           <div className="bg-white/80 rounded-xl p-4 border border-emerald-200 text-xs font-mono text-emerald-950 whitespace-pre-line leading-relaxed max-h-48 overflow-y-auto">
-            {PARENT_COMMUNICATION_MODEL}
+            {t(PARENT_COMMUNICATION_MODEL)}
           </div>
         </div>
 
@@ -272,10 +274,10 @@ export function ConsentScreen() {
               <Icon name="check" size={24} />
             </div>
             <h3 className="text-base font-bold text-text-pri">
-              Aceptación Institucional Registrada
+              {t('Aceptación Institucional Registrada')}
             </h3>
             <p className="text-xs text-text-sec max-w-md mx-auto">
-              La adhesión a los términos de tratamiento de datos escolares ha quedado debidamente asentada en la bitácora inmutable de auditoría para la institución.
+              {t('La adhesión a los términos de tratamiento de datos escolares ha quedado debidamente asentada en la bitácora inmutable de auditoría para la institución.')}
             </p>
           </div>
         ) : canSign ? (
@@ -286,10 +288,10 @@ export function ConsentScreen() {
               </div>
               <div>
                 <h3 className="text-sm font-bold text-text-pri">
-                  Firma Digital Institucional — {session.user.name}
+                  {t('Firma Digital Institucional — {name}', { name: session.user.name })}
                 </h3>
                 <p className="text-xs text-text-sec">
-                  Rol habilitado: {session.user.role === 'admin' ? 'Administrador Global' : 'Directivo / Coordinador'}
+                  {t('Rol habilitado:')}{' '}{session.user.role === 'admin' ? t('Administrador Global') : t('Directivo / Coordinador')}
                 </p>
               </div>
             </div>
@@ -302,7 +304,7 @@ export function ConsentScreen() {
                 className="mt-0.5 w-4 h-4 text-emerald-700 rounded border-gray-border focus:ring-emerald-500"
               />
               <span className="text-xs text-text-pri leading-relaxed">
-                He leído y acepto los términos de tratamiento de datos personales en representación formal de la institución educativa. Comprendo que este registro quedará auditado con sello de tiempo.
+                {t('He leído y acepto los términos de tratamiento de datos personales en representación formal de la institución educativa. Comprendo que este registro quedará auditado con sello de tiempo.')}
               </span>
             </label>
 
@@ -311,7 +313,7 @@ export function ConsentScreen() {
               disabled={!accepted || submitting}
               className="w-full bg-emerald-700 hover:bg-emerald-800 text-white py-3 rounded-xl text-xs font-bold shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              <span>{submitting ? 'Registrando firma institucional…' : 'Registrar Aceptación Institucional y Habilitar Plataforma'}</span>
+              <span>{submitting ? t('Registrando firma institucional…') : t('Registrar Aceptación Institucional y Habilitar Plataforma')}</span>
               <Icon name="arrowRight" size={13} />
             </button>
           </div>
@@ -320,10 +322,10 @@ export function ConsentScreen() {
           <div className="bg-white border border-gray-border rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-5 shadow-xs">
             <div className="space-y-1 text-center sm:text-left">
               <h4 className="text-sm font-bold text-text-pri">
-                ¿Sos directivo o coordinador de una escuela registrada?
+                {t('¿Sos directivo o coordinador de una escuela registrada?')}
               </h4>
               <p className="text-xs text-text-sec max-w-xl leading-relaxed">
-                Iniciá sesión con tu cuenta institucional para registrar la firma digital de tu establecimiento y habilitar el entorno de lectura para tus docentes y cursos.
+                {t('Iniciá sesión con tu cuenta institucional para registrar la firma digital de tu establecimiento y habilitar el entorno de lectura para tus docentes y cursos.')}
               </p>
             </div>
             <div className="flex items-center gap-3 shrink-0">
@@ -331,7 +333,7 @@ export function ConsentScreen() {
                 href="/login"
                 className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-sm transition-all flex items-center gap-1.5"
               >
-                <span>Ingresar con Cuenta Escolar</span>
+                <span>{t('Ingresar con Cuenta Escolar')}</span>
                 <Icon name="arrowRight" size={12} />
               </a>
             </div>
@@ -341,12 +343,12 @@ export function ConsentScreen() {
       </main>
 
       <footer className="max-w-4xl mx-auto px-4 sm:px-6 pt-12 text-center text-xs text-text-sec border-t border-gray-border/60 mt-12 space-y-2">
-        <p>© {new Date().getFullYear()} Habitar — Plataforma de Comprensión Lectora con IA. Proyecto de Tesis de Grado.</p>
+        <p>{t('© {getFullYear} Habitar — Plataforma de Comprensión Lectora con IA. Proyecto de Tesis de Grado.', { getFullYear: new Date().getFullYear() })}</p>
         <div className="flex justify-center gap-4 text-[11.5px]">
-          <a href="/" className="hover:text-emerald-700">Inicio</a>
-          <a href="/privacidad" className="hover:text-emerald-700 font-semibold text-emerald-850">Política de Privacidad PBA</a>
-          <a href="/privacidad#derechos-arco" className="hover:text-emerald-700">Derechos ARCO</a>
-          <a href="/status" className="hover:text-emerald-700">Estado del Servicio</a>
+          <a href="/" className="hover:text-emerald-700">{t('Inicio')}</a>
+          <a href="/privacidad" className="hover:text-emerald-700 font-semibold text-emerald-850">{t('Política de Privacidad PBA')}</a>
+          <a href="/privacidad#derechos-arco" className="hover:text-emerald-700">{t('Derechos ARCO')}</a>
+          <a href="/status" className="hover:text-emerald-700">{t('Estado del Servicio')}</a>
         </div>
       </footer>
     </div>

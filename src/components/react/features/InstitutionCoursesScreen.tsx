@@ -13,8 +13,10 @@ import { listInstitutionUsers, type InstitutionUser } from '../../../services/in
 import { ReassignCourseTeacherModal } from './ReassignCourseTeacherModal';
 import { CourseQrModal } from './CourseQrModal';
 import type { Course } from '../../../types/activity';
+import { t, useI18n } from '../../../i18n';
 
 export function InstitutionCoursesScreen() {
+  useI18n();
   const session = useAuthGuard(['coordinador', 'admin']);
   const [courses, setCourses] = useState<Course[]>([]);
   const pagedCourses = usePagination(courses, 15, null);
@@ -35,7 +37,7 @@ export function InstitutionCoursesScreen() {
       setCourses(courseList);
       setTeachers(userList.filter((u) => u.role === 'docente' && u.active));
     } catch {
-      showToast('Error al cargar las aulas');
+      showToast(t('Error al cargar las aulas'));
     } finally {
       setLoading(false);
     }
@@ -46,7 +48,7 @@ export function InstitutionCoursesScreen() {
   }, [session]);
 
   if (!session || loading) {
-    return <HabitarLoader size="lg" message="Cargando aulas de la institución..." />;
+    return <HabitarLoader size="lg" message={t('Cargando aulas de la institución...')} />;
   }
 
   return (
@@ -56,10 +58,10 @@ export function InstitutionCoursesScreen() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-            Gestión de Aulas
+            {t('Gestión de Aulas')}
           </h1>
           <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-            Creá, asigná docentes y gestioná las aulas de tu institución
+            {t('Creá, asigná docentes y gestioná las aulas de tu institución')}
           </p>
         </div>
         <a
@@ -67,7 +69,7 @@ export function InstitutionCoursesScreen() {
           className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl px-4 py-2.5 text-xs font-semibold shadow-2xs transition-all"
         >
           <Icon name="plus" size={14} />
-          <span>Crear Nueva Aula</span>
+          <span>{t('Crear Nueva Aula')}</span>
         </a>
       </div>
 
@@ -77,17 +79,17 @@ export function InstitutionCoursesScreen() {
             <Icon name="school" size={28} />
           </div>
           <h2 className="text-base font-semibold text-slate-900 dark:text-white mb-1">
-            Aún no hay aulas creadas
+            {t('Aún no hay aulas creadas')}
           </h2>
           <p className="text-xs text-stone-500 dark:text-stone-400 mb-5 leading-relaxed">
-            Creá la primera aula de tu institución para generar su código QR y asignar un docente.
+            {t('Creá la primera aula de tu institución para generar su código QR y asignar un docente.')}
           </p>
           <a
             href="/institucional/aulas/nueva"
             className="inline-flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl px-5 py-2.5 text-xs font-bold shadow-sm transition-all"
           >
             <Icon name="plus" size={13} />
-            Crear primera aula
+            {t('Crear primera aula')}
           </a>
         </div>
       ) : (
@@ -95,12 +97,12 @@ export function InstitutionCoursesScreen() {
         <TableWrap>
           <thead>
             <tr className="bg-stone-50 dark:bg-[#161A24] border-b border-stone-200 dark:border-stone-800">
-              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Aula</th>
-              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Materia</th>
-              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Salón / Turno</th>
-              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Docente</th>
-              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Alumnos</th>
-              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Acciones</th>
+              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">{t('Aula')}</th>
+              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">{t('Materia')}</th>
+              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">{t('Salón / Turno')}</th>
+              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">{t('Docente')}</th>
+              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">{t('Alumnos')}</th>
+              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">{t('Acciones')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-200/80 dark:divide-stone-800">
@@ -122,12 +124,12 @@ export function InstitutionCoursesScreen() {
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-medium text-stone-700 dark:text-stone-300">
-                      {course.teacherName || 'Sin asignar'}
+                      {course.teacherName || t('Sin asignar')}
                     </span>
                     <button
                       onClick={() => setReassigningCourse(course)}
                       className="p-1 text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-md transition-colors cursor-pointer"
-                      title="Reasignar docente"
+                      title={t('Reasignar docente')}
                     >
                       <Icon name="edit" size={12} />
                     </button>
@@ -141,17 +143,17 @@ export function InstitutionCoursesScreen() {
                     <button
                       onClick={() => setQrCourse(course)}
                       className="flex items-center gap-1 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 hover:bg-stone-50 rounded-lg px-2 py-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300 transition-colors cursor-pointer shadow-2xs"
-                      title="Ver y descargar QR"
+                      title={t('Ver y descargar QR')}
                     >
                       <Icon name="qrCode" size={11} />
-                      QR
+                      {t('QR')}
                     </button>
                     <a
                       href={`/docente/actividades/nueva?courseId=${course.id}`}
                       className="flex items-center gap-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg px-2 py-1 text-[11px] font-semibold shadow-2xs transition-colors"
                     >
                       <Icon name="fileText" size={11} />
-                      Subir Material
+                      {t('Subir Material')}
                     </a>
                   </div>
                 </td>
@@ -159,7 +161,7 @@ export function InstitutionCoursesScreen() {
             ))}
           </tbody>
         </TableWrap>
-        <Pagination page={pagedCourses.page} totalPages={pagedCourses.totalPages} total={pagedCourses.total} pageSize={pagedCourses.pageSize} onChange={pagedCourses.setPage} label="aulas" />
+        <Pagination page={pagedCourses.page} totalPages={pagedCourses.totalPages} total={pagedCourses.total} pageSize={pagedCourses.pageSize} onChange={pagedCourses.setPage} label={t('aulas')} />
         </>
       )}
 
@@ -171,7 +173,7 @@ export function InstitutionCoursesScreen() {
           onSaved={() => {
             setReassigningCourse(null);
             loadData();
-            showToast('Docente reasignado correctamente');
+            showToast(t('Docente reasignado correctamente'));
           }}
         />
       )}

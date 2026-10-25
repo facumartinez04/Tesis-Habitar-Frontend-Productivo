@@ -1,5 +1,6 @@
 import { apiFetch } from '../lib/apiClient';
 import type { InstitutionAiCostDetail } from '../types/aiCost';
+import { intlLocale } from '../i18n';
 
 export type AiCostScope = 'admin' | 'institucion';
 
@@ -10,16 +11,16 @@ export function getInstitutionAiCosts(institutionId: string, scope: AiCostScope,
 
 export function formatUsd(n: number): string {
   const digits = n !== 0 && Math.abs(n) < 0.01 ? 4 : 2;
-  return `US$ ${n.toLocaleString('es-AR', { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
+  return `US$ ${n.toLocaleString(intlLocale(), { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
 }
 
 export function formatTokens(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toLocaleString('es-AR', { maximumFractionDigits: 1 })} M`;
+  if (n >= 1_000_000) return `${(n / 1_000_000).toLocaleString(intlLocale(), { maximumFractionDigits: 1 })} M`;
   if (n >= 1000) return `${Math.round(n / 1000)} k`;
   return String(n);
 }
 
 export function monthLabel(month: string): string {
   const [y, m] = month.split('-').map(Number);
-  return new Date(Date.UTC(y, m - 1, 15)).toLocaleDateString('es-AR', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+  return new Date(Date.UTC(y, m - 1, 15)).toLocaleDateString(intlLocale(), { month: 'short', year: 'numeric', timeZone: 'UTC' });
 }

@@ -76,5 +76,6 @@ export interface PublicCourseInfo {
   } | null;
   upcomingActivity?: { code: string; name: string; availableFrom: string; startTime: string } | null;
   studentIdMode?: 'LISTA' | 'NOMBRE';
+  language?: 'es' | 'en';
 }
 

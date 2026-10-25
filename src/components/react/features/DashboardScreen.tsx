@@ -7,6 +7,8 @@ import { usePagination } from '../../../hooks/usePagination';
 import { apiFetch } from '../../../lib/apiClient';
 import { sessionStore } from '../../../store/sessionStore';
 import type { IconName } from '../../../lib/iconPaths';
+import { t, useI18n, intlLocale } from '../../../i18n';
+import { HelpTip } from '../ui/HelpTip';
 
 type Avg = { literal: number | null; inferencial: number | null; critico: number | null };
 type Status = 'BIEN' | 'REGULAR' | 'BAJO' | 'SIN_DATOS';
@@ -60,7 +62,7 @@ const PRESETS = [
 const pct = (v: number | null) => (v === null ? '—' : `${v}%`);
 const dayLabel = (d: string) => {
   const [y, m, day] = d.split('-').map(Number);
-  return new Date(Date.UTC(y, m - 1, day, 12)).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+  return new Date(Date.UTC(y, m - 1, day, 12)).toLocaleDateString(intlLocale(), { day: 'numeric', month: 'short', timeZone: 'UTC' });
 };
 
 function useDark(): boolean {
@@ -107,6 +109,7 @@ function download(name: string, csv: string) {
 }
 
 export function DashboardScreen() {
+  useI18n();
   const [filters, setFilters] = useState({ courseId: '', studentId: '', from: '', to: '' });
   const [ready, setReady] = useState(false);
   useEffect(() => {
@@ -143,7 +146,7 @@ export function DashboardScreen() {
         setData(d);
         setError(null);
       })
-      .catch((err: Error) => setError(err.message || 'No se pudo cargar el tablero'))
+      .catch((err: Error) => setError(err.message || t('No se pudo cargar el tablero')))
       .finally(() => setLoading(false));
   }, [filters, ready]);
 
@@ -155,7 +158,7 @@ export function DashboardScreen() {
   const pagedActivities = usePagination(activitiesRows, 15, `${term}|${JSON.stringify(filters)}`);
 
   const set = (patch: Partial<typeof filters>) => setFilters((f) => ({ ...f, ...patch }));
-  const activePreset = PRESETS.find((p) => p.from() === filters.from && !filters.to)?.label;
+  const activePreset = t(PRESETS.find((p) => p.from() === filters.from && !filters.to)?.label);
   const k = data?.kpis;
   const selectedStudent = data?.students.find((s) => s.id === filters.studentId) ?? null;
   const selectedCourse = data?.courses.find((c) => c.id === filters.courseId) ?? null;
@@ -178,13 +181,13 @@ export function DashboardScreen() {
 
   function exportCurrent() {
     if (!data) return;
-    const head = ['Literal', 'Inferencial', 'Crítico'];
+    const head = [t('Literal'), t('Inferencial'), t('Crítico')];
     if (tab === 'alumnos')
-      download('habitar_alumnos.csv', toCsv([['Alumno', 'Aula', 'Actividades', ...head, 'Estado', 'Última'], ...studentsRows.map((s) => [s.name, s.courseName, s.responses, s.averages.literal, s.averages.inferencial, s.averages.critico, STATUS[s.status].label, s.lastDay])]));
+      download('habitar_alumnos.csv', toCsv([[t('Alumno'), t('Aula'), t('Actividades'), ...head, t('Estado'), t('Última')], ...studentsRows.map((s) => [s.name, s.courseName, s.responses, s.averages.literal, s.averages.inferencial, s.averages.critico, t(STATUS[s.status].label), s.lastDay])]));
     else if (tab === 'aulas')
-      download('habitar_aulas.csv', toCsv([['Aula', 'Alumnos', 'Actividades', 'Respuestas', ...head], ...data.byCourse.map((c) => [c.name, c.students, c.activities, c.responses, c.averages.literal, c.averages.inferencial, c.averages.critico])]));
+      download('habitar_aulas.csv', toCsv([[t('Aula'), t('Alumnos'), t('Actividades'), t('Respuestas'), ...head], ...data.byCourse.map((c) => [c.name, c.students, c.activities, c.responses, c.averages.literal, c.averages.inferencial, c.averages.critico])]));
     else
-      download('habitar_actividades.csv', toCsv([['Actividad', 'Código', 'Aula', 'Fecha', 'Respuestas', ...head], ...activitiesRows.map((a) => [a.name, a.code, a.courseName, a.date, a.responses, a.averages.literal, a.averages.inferencial, a.averages.critico])]));
+      download('habitar_actividades.csv', toCsv([[t('Actividad'), t('Código'), t('Aula'), t('Fecha'), t('Respuestas'), ...head], ...activitiesRows.map((a) => [a.name, a.code, a.courseName, a.date, a.responses, a.averages.literal, a.averages.inferencial, a.averages.critico])]));
   }
 
   const select = 'px-2.5 py-[7px] border border-gray-border rounded-[6px] text-[12.5px] bg-white min-w-0';
@@ -194,7 +197,13 @@ export function DashboardScreen() {
   return (
     <div>
       <div className="flex flex-wrap items-start justify-between gap-2 print-hide">
-        <div className="text-lg font-semibold text-text-pri mb-[3px] tracking-tight">Tablero</div>
+        <div className="text-lg font-semibold text-text-pri mb-[3px] tracking-tight flex items-center gap-2">
+          {t('Tablero')}
+          <HelpTip
+            title={t('Tablero')}
+            text={t('Muestra la evolución de la comprensión lectora con gráficos. Filtrá por aula, alumno o período; el informe PDF imprime exactamente lo que estás viendo.')}
+          />
+        </div>
         {k && k.responses > 0 && (
           <button
             type="button"
@@ -202,28 +211,28 @@ export function DashboardScreen() {
             className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold border border-gray-border rounded-[6px] px-2.5 py-[6px] text-text-pri hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer"
           >
             <Icon name="printer" size={12} />
-            Informe PDF
+            {t('Informe PDF')}
           </button>
         )}
       </div>
       <div className="print-only mb-4">
-        <div className="text-xl font-bold">Informe de comprensión lectora</div>
+        <div className="text-xl font-bold">{t('Informe de comprensión lectora')}</div>
         <div className="text-[12px] mt-1">
-          {selectedStudent ? `Alumno: ${selectedStudent.name} · ` : ''}
-          {selectedCourse ? `Aula: ${selectedCourse.name} · ` : selectedStudent ? '' : 'Todas las aulas · '}
-          Período: {filters.from ? dayLabel(filters.from) : 'desde el inicio'} a {filters.to ? dayLabel(filters.to) : 'hoy'}
+          {selectedStudent ? t('Alumno: {name} · ', { name: selectedStudent.name }) : ''}
+          {selectedCourse ? t('Aula: {name} · ', { name: selectedCourse.name }) : selectedStudent ? '' : t('Todas las aulas · ')}
+          {t('Período:')}{' '}{filters.from ? dayLabel(filters.from) : t('desde el inicio')}{' '}{t('a')}{' '}{filters.to ? dayLabel(filters.to) : t('hoy')}
         </div>
         <div className="text-[11px] text-neutral-500 mt-0.5">
-          Generado el {new Date().toLocaleString('es-AR', { dateStyle: 'long', timeStyle: 'short', timeZone: 'America/Argentina/Buenos_Aires' })} · Habitar
+          {t('Generado el')}{' '}{new Date().toLocaleString(intlLocale(), { dateStyle: 'long', timeStyle: 'short', timeZone: 'America/Argentina/Buenos_Aires' })}{' '}{t('· Habitar')}
         </div>
       </div>
-      <div className="text-[12.5px] text-text-sec mb-4 print-hide">Comprensión lectora por eje. Filtrá por aula, alumno o días; los filtros quedan en la dirección para compartir la vista.</div>
+      <div className="text-[12.5px] text-text-sec mb-4 print-hide">{t('Comprensión lectora por eje. Filtrá por aula, alumno o días; los filtros quedan en la dirección para compartir la vista.')}</div>
 
       <div className="flex flex-wrap items-end gap-2 mb-4 bg-card-bg border border-gray-border rounded-xl p-3 print-hide">
         <label className="text-[11px] text-text-sec font-medium flex flex-col gap-1">
-          Aula
+          {t('Aula')}
           <select value={filters.courseId} onChange={(e) => set({ courseId: e.target.value, studentId: '' })} className={select}>
-            <option value="">Todas las aulas</option>
+            <option value="">{t('Todas las aulas')}</option>
             {data?.courses.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
@@ -232,9 +241,9 @@ export function DashboardScreen() {
           </select>
         </label>
         <label className="text-[11px] text-text-sec font-medium flex flex-col gap-1">
-          Alumno
+          {t('Alumno')}
           <select value={filters.studentId} onChange={(e) => set({ studentId: e.target.value })} className={`${select} max-w-[220px]`}>
-            <option value="">Todos los alumnos</option>
+            <option value="">{t('Todos los alumnos')}</option>
             {studentOptions.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
@@ -244,14 +253,14 @@ export function DashboardScreen() {
           </select>
         </label>
         <label className="text-[11px] text-text-sec font-medium flex flex-col gap-1">
-          Desde
+          {t('Desde')}
           <input type="date" value={filters.from} max={filters.to || todayAR()} onChange={(e) => set({ from: e.target.value })} className={select} />
         </label>
         <label className="text-[11px] text-text-sec font-medium flex flex-col gap-1">
-          Hasta
+          {t('Hasta')}
           <input type="date" value={filters.to} min={filters.from || undefined} max={todayAR()} onChange={(e) => set({ to: e.target.value })} className={select} />
         </label>
-        <div className="flex gap-1" role="group" aria-label="Períodos rápidos">
+        <div className="flex gap-1" role="group" aria-label={t('Períodos rápidos')}>
           {PRESETS.map((p) => (
             <button
               key={p.label}
@@ -262,16 +271,16 @@ export function DashboardScreen() {
                 activePreset === p.label ? 'bg-emerald-700 border-emerald-700 text-white' : 'border-gray-border text-text-sec hover:text-text-pri'
               }`}
             >
-              {p.label}
+              {t(p.label)}
             </button>
           ))}
         </div>
         {(filters.courseId || filters.studentId) && (
           <button type="button" onClick={() => set({ courseId: '', studentId: '' })} className="text-[11.5px] font-semibold text-text-sec hover:text-text-pri underline cursor-pointer px-1 py-[7px]">
-            Quitar filtros
+            {t('Quitar filtros')}
           </button>
         )}
-        {loading && data && <span className="text-[11px] text-text-ter py-[7px]">Actualizando…</span>}
+        {loading && data && <span className="text-[11px] text-text-ter py-[7px]">{t('Actualizando…')}</span>}
       </div>
 
       {error && <div className="text-sm text-red mb-3">{error}</div>}
@@ -279,29 +288,30 @@ export function DashboardScreen() {
         <SkeletonTable />
       ) : !k || k.responses === 0 ? (
         <div className="bg-card-bg border border-gray-border rounded-xl px-5 py-10 text-center text-sm text-text-sec">
-          {data.courses.length === 0 ? 'Todavía no hay aulas para mostrar.' : 'No hay respuestas con estos filtros. Probá con otro período o con todas las aulas.'}
+          {data.courses.length === 0 ? t('Todavía no hay aulas para mostrar.') : t('No hay respuestas con estos filtros. Probá con otro período o con todas las aulas.')}
         </div>
       ) : (
         <>
           <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3 mb-4">
-            <Tile label="Respuestas" value={k.responses.toLocaleString('es-AR')} />
-            <Tile label="Alumnos" value={k.students.toLocaleString('es-AR')} />
-            <Tile label="Actividades" value={k.activities.toLocaleString('es-AR')} />
+            <Tile label={t('Respuestas')} value={k.responses.toLocaleString(intlLocale())} help={t('Cantidad de actividades entregadas por los alumnos en el período y las aulas filtradas.')} />
+            <Tile label={t('Alumnos')} value={k.students.toLocaleString(intlLocale())} help={t('Alumnos distintos que respondieron al menos una actividad.')} />
+            <Tile label={t('Actividades')} value={k.activities.toLocaleString(intlLocale())} help={t('Actividades que recibieron respuestas en el período.')} />
             {AXES.map((a, i) => (
-              <Tile key={a.key} label={`Promedio ${a.label.toLowerCase()}`} value={pct(k.averages[a.key])} dot={color(i)} />
+              <Tile key={a.key} label={t('Promedio {toLowerCase}', { toLowerCase: a.label.toLowerCase() })} value={pct(k.averages[a.key])} dot={color(i)} />
             ))}
             <Tile
-              label="Por revisar"
-              value={k.pendingReviews.toLocaleString('es-AR')}
-              hint={`${k.helpQuestions} dudas sobre el texto`}
+              label={t('Por revisar')}
+              value={k.pendingReviews.toLocaleString(intlLocale())}
+              hint={t('{helpQuestions} dudas sobre el texto', { helpQuestions: k.helpQuestions })}
+              help={t('Respuestas escritas que todavía esperan que el docente confirme el puntaje. Abajo se cuentan las preguntas que los alumnos le hicieron al ayudante de lectura.')}
             />
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
-            <ChartCard title="Respuestas por día">
+            <ChartCard title={t('Respuestas por día')} help={t('Cuántas actividades se entregaron cada día. Pasá el mouse sobre una barra para ver el detalle.')}>
               <ResponsesChart rows={data.byDay} color={color(0)} />
             </ChartCard>
-            <ChartCard title="Promedio por eje, por día">
+            <ChartCard title={t('Promedio por eje, por día')} help={t('Una línea por eje: literal, inferencial y crítico. Sirve para ver si la comprensión sube o baja con el tiempo.')}>
               <AxesChart rows={data.byDay.map((d) => ({ label: dayLabel(d.day), title: dayLabel(d.day), averages: d.averages }))} colors={AXES.map((_, i) => color(i))} />
             </ChartCard>
           </div>
@@ -309,27 +319,27 @@ export function DashboardScreen() {
           {(selectedStudent && data.timeline.length > 0) || data.diagnostic.inicio || data.diagnostic.cierre ? (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4 print-avoid-break">
               {selectedStudent && data.timeline.length > 0 && (
-                <ChartCard title={`Evolución de ${selectedStudent.name}, actividad por actividad`}>
+                <ChartCard title={t('Evolución de {name}, actividad por actividad', { name: selectedStudent.name })}>
                   <AxesChart
-                    rows={data.timeline.map((t, i) => ({
+                    rows={data.timeline.map((point, i) => ({
                       label: `${i + 1}`,
-                      title: `${i + 1}. ${t.name} · ${dayLabel(t.day)}${t.diagnosticType ? ` (diagnóstica de ${t.diagnosticType === 'INICIO' ? 'inicio' : 'cierre'})` : ''}`,
-                      averages: t.averages,
+                      title: `${i + 1}. ${point.name} · ${dayLabel(point.day)}${point.diagnosticType ? t(' (diagnóstica de {value})', { value: point.diagnosticType === 'INICIO' ? t('inicio') : t('cierre') }) : ''}`,
+                      averages: point.averages,
                     }))}
                     colors={AXES.map((_, i) => color(i))}
                   />
                   <ol className="mt-2 text-[11px] text-text-sec space-y-0.5 list-decimal pl-5">
-                    {data.timeline.map((t) => (
-                      <li key={t.id}>
-                        {t.name} · {dayLabel(t.day)}
-                        {t.diagnosticType && <span className="text-text-ter"> · diagnóstica de {t.diagnosticType === 'INICIO' ? 'inicio' : 'cierre'}</span>}
+                    {data.timeline.map((point) => (
+                      <li key={point.id}>
+                        {point.name} · {dayLabel(point.day)}
+                        {point.diagnosticType && <span className="text-text-ter">{' '}{t('· diagnóstica de')}{' '}{point.diagnosticType === 'INICIO' ? t('inicio') : t('cierre')}</span>}
                       </li>
                     ))}
                   </ol>
                 </ChartCard>
               )}
               {(data.diagnostic.inicio || data.diagnostic.cierre) && (
-                <ChartCard title="Diagnóstica: inicio contra cierre">
+                <ChartCard title={t('Diagnóstica: inicio contra cierre')} help={t('Compara las actividades marcadas como diagnóstica de inicio y de cierre del ciclo.')}>
                   <DiagnosticTable diagnostic={data.diagnostic} colors={AXES.map((_, i) => color(i))} />
                 </ChartCard>
               )}
@@ -338,16 +348,16 @@ export function DashboardScreen() {
 
           <div className="flex flex-wrap items-center justify-between gap-2 mb-2 print-hide">
             <div className="flex gap-1 border-b border-gray-border" role="tablist">
-              {(['alumnos', 'aulas', 'actividades'] as const).map((t) => (
+              {(['alumnos', 'aulas', 'actividades'] as const).map((entry) => (
                 <button
-                  key={t}
+                  key={entry}
                   type="button"
                   role="tab"
-                  aria-selected={tab === t}
-                  onClick={() => setTab(t)}
-                  className={`px-3 py-2 text-xs font-semibold border-b-2 -mb-px capitalize cursor-pointer ${tab === t ? 'border-emerald-600 text-text-pri' : 'border-transparent text-text-sec hover:text-text-pri'}`}
+                  aria-selected={tab === entry}
+                  onClick={() => setTab(entry)}
+                  className={`px-3 py-2 text-xs font-semibold border-b-2 -mb-px capitalize cursor-pointer ${tab === entry ? 'border-emerald-600 text-text-pri' : 'border-transparent text-text-sec hover:text-text-pri'}`}
                 >
-                  Por {t === 'alumnos' ? 'alumno' : t === 'aulas' ? 'aula' : 'actividad'}
+                  {t('Por')}{' '}{entry === 'alumnos' ? t('alumno') : entry === 'aulas' ? t('aula') : t('actividad')}
                 </button>
               ))}
             </div>
@@ -355,12 +365,12 @@ export function DashboardScreen() {
               {tab !== 'aulas' && (
                 <div className="relative">
                   <Icon name="search" size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-ter" />
-                  <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar…" className="pl-8 pr-2.5 py-[6px] border border-gray-border rounded-[6px] text-[12.5px] w-44" />
+                  <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('Buscar…')} className="pl-8 pr-2.5 py-[6px] border border-gray-border rounded-[6px] text-[12.5px] w-44" />
                 </div>
               )}
               <button type="button" onClick={exportCurrent} className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold border border-gray-border rounded-[6px] px-2.5 py-[6px] text-text-pri hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer">
                 <Icon name="download" size={12} />
-                Descargar CSV
+                {t('Descargar CSV')}
               </button>
             </div>
           </div>
@@ -370,21 +380,21 @@ export function DashboardScreen() {
               <TableWrap>
                 <thead>
                   <tr>
-                    <th className={th}>Alumno</th>
-                    <th className={th}>Aula</th>
-                    <th className={th}>Actividades</th>
+                    <th className={th}>{t('Alumno')}</th>
+                    <th className={th}>{t('Aula')}</th>
+                    <th className={th}>{t('Actividades')}</th>
                     {AXES.map((a) => (
-                      <th key={a.key} className={th}>{a.label}</th>
+                      <th key={a.key} className={th}>{t(a.label)}</th>
                     ))}
-                    <th className={th}>Estado</th>
-                    <th className={th}>Última</th>
+                    <th className={th}>{t('Estado')}</th>
+                    <th className={th}>{t('Última')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {pagedStudents.pageItems.map((s) => (
                     <tr key={s.id}>
                       <td className={td}>
-                        <button type="button" onClick={() => set({ studentId: s.id })} className="font-medium text-text-pri hover:underline cursor-pointer text-left" title="Ver sólo este alumno">
+                        <button type="button" onClick={() => set({ studentId: s.id })} className="font-medium text-text-pri hover:underline cursor-pointer text-left" title={t('Ver sólo este alumno')}>
                           {s.name}
                         </button>
                       </td>
@@ -396,7 +406,7 @@ export function DashboardScreen() {
                       <td className={td}>
                         <span className={`inline-flex items-center gap-1 text-[10.5px] font-bold px-2 py-0.5 rounded-full ${STATUS[s.status].cls}`}>
                           <Icon name={STATUS[s.status].icon} size={11} />
-                          {STATUS[s.status].label}
+                          {t(STATUS[s.status].label)}
                         </span>
                       </td>
                       <td className={`${td} text-[11.5px] text-text-sec tabular-nums`}>{dayLabel(s.lastDay)}</td>
@@ -413,12 +423,12 @@ export function DashboardScreen() {
             <TableWrap>
               <thead>
                 <tr>
-                  <th className={th}>Aula</th>
-                  <th className={th}>Alumnos</th>
-                  <th className={th}>Actividades</th>
-                  <th className={th}>Respuestas</th>
+                  <th className={th}>{t('Aula')}</th>
+                  <th className={th}>{t('Alumnos')}</th>
+                  <th className={th}>{t('Actividades')}</th>
+                  <th className={th}>{t('Respuestas')}</th>
                   {AXES.map((a) => (
-                    <th key={a.key} className={th}>{a.label}</th>
+                    <th key={a.key} className={th}>{t(a.label)}</th>
                   ))}
                 </tr>
               </thead>
@@ -426,7 +436,7 @@ export function DashboardScreen() {
                 {data.byCourse.map((c) => (
                   <tr key={c.id}>
                     <td className={td}>
-                      <button type="button" onClick={() => set({ courseId: c.id, studentId: '' })} className="font-medium text-text-pri hover:underline cursor-pointer text-left" title="Ver sólo esta aula">
+                      <button type="button" onClick={() => set({ courseId: c.id, studentId: '' })} className="font-medium text-text-pri hover:underline cursor-pointer text-left" title={t('Ver sólo esta aula')}>
                         {c.name}
                       </button>
                     </td>
@@ -448,12 +458,12 @@ export function DashboardScreen() {
               <TableWrap>
                 <thead>
                   <tr>
-                    <th className={th}>Actividad</th>
-                    <th className={th}>Aula</th>
-                    <th className={th}>Fecha</th>
-                    <th className={th}>Respuestas</th>
+                    <th className={th}>{t('Actividad')}</th>
+                    <th className={th}>{t('Aula')}</th>
+                    <th className={th}>{t('Fecha')}</th>
+                    <th className={th}>{t('Respuestas')}</th>
                     {AXES.map((a) => (
-                      <th key={a.key} className={th}>{a.label}</th>
+                      <th key={a.key} className={th}>{t(a.label)}</th>
                     ))}
                   </tr>
                 </thead>
@@ -479,8 +489,7 @@ export function DashboardScreen() {
           )}
           <PrintTables data={data} />
           <p className="text-[11px] text-text-ter mt-3">
-            El eje crítico promedia sólo las respuestas ya revisadas por el docente. Estado: «Bajo» si algún eje está debajo de 40 %, «Regular»
-            debajo de 60 %.
+            {t('El eje crítico promedia sólo las respuestas ya revisadas por el docente. Estado: «Bajo» si algún eje está debajo de 40 %, «Regular» debajo de 60 %.')}
           </p>
         </>
       )}
@@ -488,12 +497,14 @@ export function DashboardScreen() {
   );
 }
 
-function Tile({ label, value, hint, dot }: { label: string; value: string; hint?: string; dot?: string }) {
+function Tile({ label, value, hint, dot, help }: { label: string; value: string; hint?: string; dot?: string; help?: string }) {
+  useI18n();
   return (
     <div className="bg-card-bg border border-gray-border rounded-xl px-3.5 py-3">
       <div className="text-[10.5px] text-text-ter uppercase tracking-wider font-semibold flex items-center gap-1.5">
         {dot && <span className="w-2 h-2 rounded-full shrink-0" style={{ background: dot }} />}
         {label}
+        {help && <HelpTip text={help} title={label} />}
       </div>
       <div className="text-xl font-bold text-text-pri tabular-nums mt-1">{value}</div>
       {hint && <div className="text-[10.5px] text-text-sec mt-0.5">{hint}</div>}
@@ -501,10 +512,14 @@ function Tile({ label, value, hint, dot }: { label: string; value: string; hint?
   );
 }
 
-function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
+function ChartCard({ title, children, help }: { title: string; children: React.ReactNode; help?: string }) {
+  useI18n();
   return (
     <div className="bg-card-bg border border-gray-border rounded-xl p-4">
-      <div className="text-xs font-bold text-text-pri mb-2">{title}</div>
+      <div className="text-xs font-bold text-text-pri mb-2 flex items-center gap-1.5">
+        {title}
+        {help && <HelpTip text={help} />}
+      </div>
       {children}
     </div>
   );
@@ -520,6 +535,7 @@ function xTicks(n: number): number[] {
 }
 
 function Tooltip({ x, width, children }: { x: number; width: number; children: React.ReactNode }) {
+  useI18n();
   const left = Math.min(Math.max(x + 10, 0), width - 170);
   return (
     <div className="absolute top-1 pointer-events-none bg-card-bg border border-gray-border shadow-lg rounded-lg px-2.5 py-1.5 text-[11px] text-text-pri w-[160px] z-10" style={{ left }}>
@@ -529,6 +545,7 @@ function Tooltip({ x, width, children }: { x: number; width: number; children: R
 }
 
 function ResponsesChart({ rows, color }: { rows: Dashboard['byDay']; color: string }) {
+  useI18n();
   const [ref, width] = useWidth<HTMLDivElement>();
   const [hover, setHover] = useState<number | null>(null);
   const max = Math.max(1, ...rows.map((r) => r.responses));
@@ -543,12 +560,12 @@ function ResponsesChart({ rows, color }: { rows: Dashboard['byDay']; color: stri
   return (
     <div ref={ref} className="relative" onMouseLeave={() => setHover(null)}>
       {width > 0 && (
-        <svg width={width} height={H} role="img" aria-label={`Respuestas por día: ${rows.map((r) => `${dayLabel(r.day)} ${r.responses}`).join(', ')}`}>
-          {ticks.map((t) => (
-            <g key={t}>
-              <line x1={PAD.l} x2={width - 16} y1={y(t)} y2={y(t)} className="stroke-gray-200 dark:stroke-white/10" strokeWidth={1} />
-              <text x={PAD.l - 6} y={y(t) + 3} textAnchor="end" className="fill-current text-text-ter" fontSize={10}>
-                {t}
+        <svg width={width} height={H} role="img" aria-label={t('Respuestas por día: {join}', { join: rows.map((r) => `${dayLabel(r.day)} ${r.responses}`).join(', ') })}>
+          {ticks.map((tick) => (
+            <g key={tick}>
+              <line x1={PAD.l} x2={width - 16} y1={y(tick)} y2={y(tick)} className="stroke-gray-200 dark:stroke-white/10" strokeWidth={1} />
+              <text x={PAD.l - 6} y={y(tick) + 3} textAnchor="end" className="fill-current text-text-ter" fontSize={10}>
+                {tick}
               </text>
             </g>
           ))}
@@ -577,7 +594,7 @@ function ResponsesChart({ rows, color }: { rows: Dashboard['byDay']; color: stri
         <Tooltip x={PAD.l + hover * band + band / 2} width={width}>
           <div className="font-semibold">{dayLabel(rows[hover].day)}</div>
           <div className="tabular-nums">
-            {rows[hover].responses} {rows[hover].responses === 1 ? 'respuesta' : 'respuestas'}
+            {rows[hover].responses} {rows[hover].responses === 1 ? t('respuesta') : t('respuestas')}
           </div>
         </Tooltip>
       )}
@@ -586,6 +603,7 @@ function ResponsesChart({ rows, color }: { rows: Dashboard['byDay']; color: stri
 }
 
 function AxesChart({ rows, colors }: { rows: AxisRow[]; colors: string[] }) {
+  useI18n();
   const [ref, width] = useWidth<HTMLDivElement>();
   const [hover, setHover] = useState<number | null>(null);
   const innerW = Math.max(0, width - PAD.l - PAD.r);
@@ -623,7 +641,7 @@ function AxesChart({ rows, colors }: { rows: AxisRow[]; colors: string[] }) {
         {AXES.map((a, i) => (
           <span key={a.key} className="inline-flex items-center gap-1.5">
             <span className="w-3 h-[2px] rounded" style={{ background: colors[i] }} />
-            {a.label}
+            {t(a.label)}
           </span>
         ))}
       </div>
@@ -634,19 +652,19 @@ function AxesChart({ rows, colors }: { rows: AxisRow[]; colors: string[] }) {
           onMouseMove={onMove}
           onMouseLeave={() => setHover(null)}
           role="img"
-          aria-label="Promedio por eje y por día, de 0 a 100 %"
+          aria-label={t('Promedio por eje y por día, de 0 a 100 %')}
         >
-          {[0, 25, 50, 75, 100].map((t) => (
-            <g key={t}>
-              <line x1={PAD.l} x2={PAD.l + innerW} y1={y(t)} y2={y(t)} className="stroke-gray-200 dark:stroke-white/10" strokeWidth={1} />
-              <text x={PAD.l - 6} y={y(t) + 3} textAnchor="end" className="fill-current text-text-ter" fontSize={10}>
-                {t}%
+          {[0, 25, 50, 75, 100].map((entry) => (
+            <g key={entry}>
+              <line x1={PAD.l} x2={PAD.l + innerW} y1={y(entry)} y2={y(entry)} className="stroke-gray-200 dark:stroke-white/10" strokeWidth={1} />
+              <text x={PAD.l - 6} y={y(entry) + 3} textAnchor="end" className="fill-current text-text-ter" fontSize={10}>
+                {entry}%
               </text>
             </g>
           ))}
           {xTicks(rows.length).map((i) => (
             <text key={i} x={x(i)} y={H - 6} textAnchor="middle" className="fill-current text-text-ter" fontSize={10}>
-              {rows[i].label}
+              {t(rows[i].label)}
             </text>
           ))}
           {hover !== null && <line x1={x(hover)} x2={x(hover)} y1={PAD.t} y2={PAD.t + innerH} className="stroke-gray-300 dark:stroke-white/20" strokeWidth={1} />}
@@ -675,7 +693,7 @@ function AxesChart({ rows, colors }: { rows: AxisRow[]; colors: string[] }) {
               ))}
               {endY.has(idx) && (
                 <text x={PAD.l + innerW + 8} y={endY.get(idx)} className="fill-current text-text-sec" fontSize={10.5}>
-                  {l.label} {l.pts[l.pts.length - 1].v}%
+                  {t(l.label)} {l.pts[l.pts.length - 1].v}%
                 </text>
               )}
             </g>
@@ -689,7 +707,7 @@ function AxesChart({ rows, colors }: { rows: AxisRow[]; colors: string[] }) {
             <div key={a.key} className="flex items-center justify-between gap-2 tabular-nums">
               <span className="inline-flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full" style={{ background: colors[i] }} />
-                {a.label}
+                {t(a.label)}
               </span>
               <span>{pct(rows[hover].averages[a.key])}</span>
             </div>
@@ -701,6 +719,7 @@ function AxesChart({ rows, colors }: { rows: AxisRow[]; colors: string[] }) {
 }
 
 function DiagnosticTable({ diagnostic, colors }: { diagnostic: Dashboard['diagnostic']; colors: string[] }) {
+  useI18n();
   const th = 'text-left text-[11px] text-text-sec font-medium px-2 py-1.5 border-b border-gray-border';
   const td = 'px-2 py-2 border-b border-gray-border tabular-nums text-[12.5px]';
   return (
@@ -708,10 +727,10 @@ function DiagnosticTable({ diagnostic, colors }: { diagnostic: Dashboard['diagno
       <table className="w-full">
         <thead>
           <tr>
-            <th className={th}>Eje</th>
-            <th className={th}>Inicio</th>
-            <th className={th}>Cierre</th>
-            <th className={th}>Cambio</th>
+            <th className={th}>{t('Eje')}</th>
+            <th className={th}>{t('Inicio')}</th>
+            <th className={th}>{t('Cierre')}</th>
+            <th className={th}>{t('Cambio')}</th>
           </tr>
         </thead>
         <tbody>
@@ -724,7 +743,7 @@ function DiagnosticTable({ diagnostic, colors }: { diagnostic: Dashboard['diagno
                 <td className={td}>
                   <span className="inline-flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full" style={{ background: colors[i] }} />
-                    {a.label}
+                    {t(a.label)}
                   </span>
                 </td>
                 <td className={td}>{pct(ini)}</td>
@@ -740,7 +759,7 @@ function DiagnosticTable({ diagnostic, colors }: { diagnostic: Dashboard['diagno
                     >
                       <Icon name={delta > 0 ? 'trendingUp' : delta < 0 ? 'trendingDown' : 'minus'} size={12} />
                       {delta > 0 ? '+' : ''}
-                      {delta} pts
+                      {t('{delta} pts', { delta })}
                     </span>
                   )}
                 </td>
@@ -750,27 +769,28 @@ function DiagnosticTable({ diagnostic, colors }: { diagnostic: Dashboard['diagno
         </tbody>
       </table>
       <p className="text-[11px] text-text-ter mt-2">
-        {diagnostic.inicio ? `${diagnostic.inicio.responses} respuestas de inicio` : 'Sin diagnóstica de inicio en el período'} ·{' '}
-        {diagnostic.cierre ? `${diagnostic.cierre.responses} de cierre` : 'sin diagnóstica de cierre todavía'}
+        {diagnostic.inicio ? t('{responses} respuestas de inicio', { responses: diagnostic.inicio.responses }) : t('Sin diagnóstica de inicio en el período')} ·{' '}
+        {diagnostic.cierre ? t('{responses} de cierre', { responses: diagnostic.cierre.responses }) : t('sin diagnóstica de cierre todavía')}
       </p>
     </div>
   );
 }
 
 function PrintTables({ data }: { data: Dashboard }) {
+  useI18n();
   const th = 'text-left text-[10px] font-semibold px-1.5 py-1 border-b border-neutral-300';
   const td = 'px-1.5 py-1 border-b border-neutral-200 text-[10.5px]';
   return (
     <div className="print-only">
-      <div className="text-[13px] font-bold mt-4 mb-1">Por aula</div>
+      <div className="text-[13px] font-bold mt-4 mb-1">{t('Por aula')}</div>
       <table className="w-full">
         <thead>
           <tr>
-            <th className={th}>Aula</th>
-            <th className={th}>Alumnos</th>
-            <th className={th}>Actividades</th>
+            <th className={th}>{t('Aula')}</th>
+            <th className={th}>{t('Alumnos')}</th>
+            <th className={th}>{t('Actividades')}</th>
             {AXES.map((a) => (
-              <th key={a.key} className={th}>{a.label}</th>
+              <th key={a.key} className={th}>{t(a.label)}</th>
             ))}
           </tr>
         </thead>
@@ -787,17 +807,17 @@ function PrintTables({ data }: { data: Dashboard }) {
           ))}
         </tbody>
       </table>
-      <div className="text-[13px] font-bold mt-4 mb-1">Por alumno</div>
+      <div className="text-[13px] font-bold mt-4 mb-1">{t('Por alumno')}</div>
       <table className="w-full">
         <thead>
           <tr>
-            <th className={th}>Alumno</th>
-            <th className={th}>Aula</th>
-            <th className={th}>Act.</th>
+            <th className={th}>{t('Alumno')}</th>
+            <th className={th}>{t('Aula')}</th>
+            <th className={th}>{t('Act.')}</th>
             {AXES.map((a) => (
-              <th key={a.key} className={th}>{a.label}</th>
+              <th key={a.key} className={th}>{t(a.label)}</th>
             ))}
-            <th className={th}>Estado</th>
+            <th className={th}>{t('Estado')}</th>
           </tr>
         </thead>
         <tbody>
@@ -809,21 +829,21 @@ function PrintTables({ data }: { data: Dashboard }) {
               {AXES.map((a) => (
                 <td key={a.key} className={td}>{pct(s.averages[a.key])}</td>
               ))}
-              <td className={td}>{STATUS[s.status].label}</td>
+              <td className={td}>{t(STATUS[s.status].label)}</td>
             </tr>
           ))}
         </tbody>
       </table>
-      <div className="text-[13px] font-bold mt-4 mb-1">Por actividad</div>
+      <div className="text-[13px] font-bold mt-4 mb-1">{t('Por actividad')}</div>
       <table className="w-full">
         <thead>
           <tr>
-            <th className={th}>Actividad</th>
-            <th className={th}>Aula</th>
-            <th className={th}>Fecha</th>
-            <th className={th}>Resp.</th>
+            <th className={th}>{t('Actividad')}</th>
+            <th className={th}>{t('Aula')}</th>
+            <th className={th}>{t('Fecha')}</th>
+            <th className={th}>{t('Resp.')}</th>
             {AXES.map((a) => (
-              <th key={a.key} className={th}>{a.label}</th>
+              <th key={a.key} className={th}>{t(a.label)}</th>
             ))}
           </tr>
         </thead>

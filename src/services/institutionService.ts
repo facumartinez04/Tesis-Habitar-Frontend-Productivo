@@ -34,6 +34,7 @@ interface BackendInstitution {
   studentIdMode?: 'LISTA' | 'NOMBRE';
   alertThreshold?: number;
   alertEmailsEnabled?: boolean;
+  defaultLanguage?: string;
   createdAt: string;
 }
 
@@ -55,6 +56,7 @@ function toInstitution(backend: BackendInstitution): Institution {
     studentIdMode: backend.studentIdMode === 'NOMBRE' ? 'nombre' : 'lista',
     alertThreshold: backend.alertThreshold ?? 60,
     alertEmailsEnabled: backend.alertEmailsEnabled ?? true,
+    defaultLanguage: backend.defaultLanguage === 'en' ? 'en' : 'es',
     createdAt: backend.createdAt,
   };
 }
@@ -98,6 +100,7 @@ export interface UpdateInstitutionConfigPayload {
   studentIdMode?: 'lista' | 'nombre';
   alertThreshold?: number;
   alertEmailsEnabled?: boolean;
+  defaultLanguage?: 'es' | 'en';
 }
 
 export async function updateInstitutionConfig(
@@ -116,6 +119,7 @@ export async function updateInstitutionConfig(
       studentIdMode: input.studentIdMode ? toUpper(input.studentIdMode) : undefined,
       alertThreshold: input.alertThreshold,
       alertEmailsEnabled: input.alertEmailsEnabled,
+      defaultLanguage: input.defaultLanguage,
     },
   });
   return toInstitution(backend);

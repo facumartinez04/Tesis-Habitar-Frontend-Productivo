@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useAuthGuard } from '../../../hooks/useAuthGuard';
+import { t, useI18n } from '../../../i18n';
 
 type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
 type ApiTag =
@@ -888,6 +889,7 @@ const METHOD_COLORS: Record<HttpMethod, { bg: string; border: string; text: stri
 };
 
 export function ApiDocsScreen() {
+  useI18n();
   useAuthGuard(['admin']);
   const [selectedTag, setSelectedTag] = useState<ApiTag>('Todos');
   const [searchQuery, setSearchQuery] = useState('');
@@ -906,9 +908,9 @@ export function ApiDocsScreen() {
       const matchesQuery =
         !query ||
         ep.path.toLowerCase().includes(query) ||
-        ep.summary.toLowerCase().includes(query) ||
-        ep.description.toLowerCase().includes(query) ||
-        ep.auth.toLowerCase().includes(query) ||
+        t(ep.summary).toLowerCase().includes(query) ||
+        t(ep.description).toLowerCase().includes(query) ||
+        t(ep.auth).toLowerCase().includes(query) ||
         ep.method.toLowerCase().includes(query);
 
       return matchesTag && matchesMethod && matchesQuery;
@@ -938,15 +940,15 @@ export function ApiDocsScreen() {
   }
 
   function copyCurl(ep: EndpointDef) {
-    let curl = `curl -X ${ep.method} "${baseUrl}${ep.path}"`;
+    let curl = t('curl -X {method} "{baseUrl}{path}"', { method: ep.method, baseUrl, path: ep.path });
     if (ep.auth.includes('Bearer')) {
-      curl += ` \\\n  -H "Authorization: Bearer <TU_TOKEN_IA>"`;
+      curl += t(' \\\n  -H "Authorization: Bearer <TU_TOKEN_IA>"');
     } else if (ep.auth.includes('Admin') || ep.auth.includes('JWT') || ep.auth.includes('Docente')) {
-      curl += ` \\\n  -H "Authorization: Bearer <TU_JWT_TOKEN>"`;
+      curl += t(' \\\n  -H "Authorization: Bearer <TU_JWT_TOKEN>"');
     }
 
     if (ep.requestBody?.example) {
-      curl += ` \\\n  -H "Content-Type: application/json" \\\n  -d '${JSON.stringify(ep.requestBody.example, null, 2)}'`;
+      curl += t(' \\\n  -H "Content-Type: application/json" \\\n  -d \'{stringify}\'', { stringify: JSON.stringify(ep.requestBody.example, null, 2) });
     }
 
     navigator.clipboard.writeText(curl);
@@ -960,16 +962,16 @@ export function ApiDocsScreen() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 dark:border-gray-800 pb-5">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-text-pri tracking-tight">Habitar API Documentation</h1>
+              <h1 className="text-2xl font-bold text-text-pri tracking-tight">{t('Habitar API Documentation')}</h1>
               <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/50">
-                v1.0.0 OAS 3.0
+                {t('v1.0.0 OAS 3.0')}
               </span>
               <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-700/50">
-                REST / JSON
+                {t('REST / JSON')}
               </span>
             </div>
             <p className="text-sm text-text-sec mt-1 max-w-2xl">
-              Catálogo completo de endpoints del backend de Habitar. Permite la integración del cliente web, sincronización de datos institucionales y automatización mediante agentes de Inteligencia Artificial.
+              {t('Catálogo completo de endpoints del backend de Habitar. Permite la integración del cliente web, sincronización de datos institucionales y automatización mediante agentes de Inteligencia Artificial.')}
             </p>
           </div>
 
@@ -977,14 +979,14 @@ export function ApiDocsScreen() {
             <button
               onClick={copyBaseUrl}
               className="inline-flex items-center gap-2 px-3 py-2 bg-surface hover:bg-gray-100 dark:hover:bg-zinc-800 border border-gray-border rounded-lg text-xs font-medium text-text-pri transition-colors"
-              title="Copiar Base URL"
+              title={t('Copiar Base URL')}
             >
               <code className="text-emerald-700 dark:text-emerald-400 font-mono font-semibold">{baseUrl}</code>
               <svg className="w-4 h-4 text-text-ter" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <rect x="9" y="9" width="13" height="13" rx="2" strokeWidth="2" />
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" strokeWidth="2" />
               </svg>
-              {copiedUrl && <span className="text-emerald-600 dark:text-emerald-400 text-[11px] font-bold">¡Copiado!</span>}
+              {copiedUrl && <span className="text-emerald-600 dark:text-emerald-400 text-[11px] font-bold">{t('¡Copiado!')}</span>}
             </button>
           </div>
         </div>
@@ -1002,7 +1004,7 @@ export function ApiDocsScreen() {
             </svg>
             <input
               type="text"
-              placeholder="Buscar por ruta (/api/jira, /auth...), resumen o método..."
+              placeholder={t('Buscar por ruta (/api/jira, /auth...), resumen o método...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 border border-gray-border rounded-lg text-xs bg-surface dark:bg-[#131620] text-text-pri placeholder-text-ter focus:outline-hidden focus:ring-2 focus:ring-green-mid"
@@ -1031,33 +1033,33 @@ export function ApiDocsScreen() {
                 onClick={expandAll}
                 className="px-2.5 py-1.5 text-xs text-text-sec hover:text-text-pri border border-gray-200 dark:border-gray-800 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-800 font-medium"
               >
-                Expandir todos
+                {t('Expandir todos')}
               </button>
               <button
                 onClick={collapseAll}
                 className="px-2.5 py-1.5 text-xs text-text-sec hover:text-text-pri border border-gray-200 dark:border-gray-800 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-800 font-medium"
               >
-                Colapsar todos
+                {t('Colapsar todos')}
               </button>
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-1.5 overflow-x-auto pt-3 pb-1 border-t border-gray-100 dark:border-gray-800 mt-4 text-xs">
-          {TAGS.map((t) => {
-            const count = t === 'Todos' ? ENDPOINTS.length : ENDPOINTS.filter((e) => e.tag === t).length;
-            const isSelected = selectedTag === t;
+          {TAGS.map((tagItem) => {
+            const count = tagItem === 'Todos' ? ENDPOINTS.length : ENDPOINTS.filter((e) => e.tag === tagItem).length;
+            const isSelected = selectedTag === tagItem;
             return (
               <button
-                key={t}
-                onClick={() => setSelectedTag(t)}
+                key={tagItem}
+                onClick={() => setSelectedTag(tagItem)}
                 className={`whitespace-nowrap px-3 py-1 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 ${
                   isSelected
                     ? 'bg-green-dark text-white shadow-xs'
                     : 'bg-surface hover:bg-gray-100 dark:hover:bg-zinc-800 text-text-sec hover:text-text-pri border border-gray-border'
                 }`}
               >
-                <span>{t}</span>
+                <span>{tagItem}</span>
                 <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${isSelected ? 'bg-white/20 text-white' : 'bg-gray-200 dark:bg-zinc-800 text-text-ter dark:text-text-sec'}`}>
                   {count}
                 </span>
@@ -1074,8 +1076,8 @@ export function ApiDocsScreen() {
               <circle cx="11" cy="11" r="8" strokeWidth="1.5" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" strokeWidth="1.5" />
             </svg>
-            <div className="text-base font-medium text-text-pri">No se encontraron endpoints</div>
-            <div className="text-xs text-text-ter mt-1">Prueba cambiando los filtros de búsqueda o categoría.</div>
+            <div className="text-base font-medium text-text-pri">{t('No se encontraron endpoints')}</div>
+            <div className="text-xs text-text-ter mt-1">{t('Prueba cambiando los filtros de búsqueda o categoría.')}</div>
           </div>
         ) : (
           filteredEndpoints.map((ep) => {
@@ -1103,13 +1105,13 @@ export function ApiDocsScreen() {
                     </code>
 
                     <span className="text-xs text-text-sec hidden sm:inline-block font-normal">
-                      — {ep.summary}
+                      — {t(ep.summary)}
                     </span>
                   </div>
 
                   <div className="flex items-center gap-3">
                     <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-white/80 dark:bg-zinc-800/80 border border-gray-border text-text-sec">
-                      {ep.auth}
+                      {t(ep.auth)}
                     </span>
 
                     <button
@@ -1119,10 +1121,10 @@ export function ApiDocsScreen() {
                         copyCurl(ep);
                       }}
                       className="p-1.5 hover:bg-white/80 dark:hover:bg-zinc-800/80 rounded border border-transparent hover:border-gray-border text-text-ter hover:text-text-pri transition-all"
-                      title="Copiar comando cURL"
+                      title={t('Copiar comando cURL')}
                     >
                       {copiedCurlId === ep.id ? (
-                        <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold">¡cURL copiado!</span>
+                        <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold">{t('¡cURL copiado!')}</span>
                       ) : (
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <polyline points="16 18 22 12 16 6" strokeWidth="2" />
@@ -1151,29 +1153,29 @@ export function ApiDocsScreen() {
                           <line x1="12" y1="16" x2="12" y2="12" strokeWidth="2" />
                           <line x1="12" y1="8" x2="12.01" y2="8" strokeWidth="2" />
                         </svg>
-                        ¿Para qué sirve este endpoint?
+                        {t('¿Para qué sirve este endpoint?')}
                       </div>
-                      <p className="text-text-sec leading-relaxed text-sm">{ep.description}</p>
+                      <p className="text-text-sec leading-relaxed text-sm">{t(ep.description)}</p>
                       <div className="mt-2 text-[11px] text-text-ter flex items-center gap-4">
-                        <span><strong>Categoría:</strong> {ep.tag}</span>
-                        <span><strong>Seguridad:</strong> {ep.auth}</span>
+                        <span><strong>{t('Categoría:')}</strong> {ep.tag}</span>
+                        <span><strong>{t('Seguridad:')}</strong> {t(ep.auth)}</span>
                       </div>
                     </div>
 
                     {((ep.pathParams && ep.pathParams.length > 0) || (ep.queryParams && ep.queryParams.length > 0)) && (
                       <div>
                         <div className="font-semibold text-text-pri mb-2 text-xs uppercase tracking-wider">
-                          Parámetros
+                          {t('Parámetros')}
                         </div>
                         <div className="border border-gray-border rounded-lg overflow-hidden">
                           <table className="w-full text-left border-collapse">
                             <thead>
                               <tr className="bg-gray-50 dark:bg-zinc-800/60 border-b border-gray-border text-[11px] text-text-sec">
-                                <th className="py-2 px-3">Parámetro</th>
-                                <th className="py-2 px-3">Tipo</th>
-                                <th className="py-2 px-3">Ubicación</th>
-                                <th className="py-2 px-3">Requerido</th>
-                                <th className="py-2 px-3">Descripción</th>
+                                <th className="py-2 px-3">{t('Parámetro')}</th>
+                                <th className="py-2 px-3">{t('Tipo')}</th>
+                                <th className="py-2 px-3">{t('Ubicación')}</th>
+                                <th className="py-2 px-3">{t('Requerido')}</th>
+                                <th className="py-2 px-3">{t('Descripción')}</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -1181,18 +1183,18 @@ export function ApiDocsScreen() {
                                 <tr key={p.name} className="hover:bg-gray-50/50 dark:hover:bg-zinc-800/30">
                                   <td className="py-2 px-3 font-mono font-semibold text-text-pri">{p.name}</td>
                                   <td className="py-2 px-3 font-mono text-text-ter">{p.type}</td>
-                                  <td className="py-2 px-3"><span className="px-1.5 py-0.5 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 rounded text-[10px]">path</span></td>
-                                  <td className="py-2 px-3 text-rose-600 dark:text-rose-400 font-medium">Requerido</td>
-                                  <td className="py-2 px-3 text-text-sec">{p.description}</td>
+                                  <td className="py-2 px-3"><span className="px-1.5 py-0.5 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 rounded text-[10px]">{t('path')}</span></td>
+                                  <td className="py-2 px-3 text-rose-600 dark:text-rose-400 font-medium">{t('Requerido')}</td>
+                                  <td className="py-2 px-3 text-text-sec">{t(p.description)}</td>
                                 </tr>
                               ))}
                               {ep.queryParams?.map((p) => (
                                 <tr key={p.name} className="hover:bg-gray-50/50 dark:hover:bg-zinc-800/30">
                                   <td className="py-2 px-3 font-mono font-semibold text-text-pri">{p.name}</td>
                                   <td className="py-2 px-3 font-mono text-text-ter">{p.type}</td>
-                                  <td className="py-2 px-3"><span className="px-1.5 py-0.5 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 rounded text-[10px]">query</span></td>
-                                  <td className="py-2 px-3 text-text-ter">{p.required ? 'Sí' : 'Opcional'}</td>
-                                  <td className="py-2 px-3 text-text-sec">{p.description}</td>
+                                  <td className="py-2 px-3"><span className="px-1.5 py-0.5 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 rounded text-[10px]">{t('query')}</span></td>
+                                  <td className="py-2 px-3 text-text-ter">{p.required ? t('Sí') : t('Opcional')}</td>
+                                  <td className="py-2 px-3 text-text-sec">{t(p.description)}</td>
                                 </tr>
                               ))}
                             </tbody>
@@ -1205,13 +1207,13 @@ export function ApiDocsScreen() {
                       <div>
                         <div className="flex items-center justify-between mb-2">
                           <span className="font-semibold text-text-pri text-xs uppercase tracking-wider">
-                            Cuerpo de la Petición (Request Body)
+                            {t('Cuerpo de la Petición (Request Body)')}
                           </span>
                           <span className="font-mono text-[11px] text-text-ter bg-gray-100 dark:bg-zinc-800 px-2 py-0.5 rounded">
                             {ep.requestBody.contentType}
                           </span>
                         </div>
-                        <div className="text-[11px] text-text-sec mb-2">{ep.requestBody.description}</div>
+                        <div className="text-[11px] text-text-sec mb-2">{t(ep.requestBody.description)}</div>
                         <div className="relative rounded-lg bg-gray-900 text-gray-100 p-3 font-mono text-xs overflow-x-auto border border-gray-800">
                           <pre>{JSON.stringify(ep.requestBody.example, null, 2)}</pre>
                         </div>
@@ -1220,7 +1222,7 @@ export function ApiDocsScreen() {
 
                     <div>
                       <div className="font-semibold text-text-pri mb-2 text-xs uppercase tracking-wider">
-                        Respuestas (Responses)
+                        {t('Respuestas (Responses)')}
                       </div>
                       <div className="space-y-2">
                         {ep.responses.map((resp) => {
@@ -1236,9 +1238,9 @@ export function ApiDocsScreen() {
                                         : 'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-700/50'
                                     }`}
                                   >
-                                    {resp.label}
+                                    {t(resp.label)}
                                   </span>
-                                  <span className="text-text-pri font-medium">{resp.description}</span>
+                                  <span className="text-text-pri font-medium">{t(resp.description)}</span>
                                 </div>
                               </div>
                               {resp.example && (
@@ -1254,7 +1256,7 @@ export function ApiDocsScreen() {
 
                     <div className="pt-2 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
                       <span className="text-[11px] text-text-ter">
-                        Usa este cURL para probar el endpoint en tu terminal o en un agente autónomo de IA.
+                        {t('Usa este cURL para probar el endpoint en tu terminal o en un agente autónomo de IA.')}
                       </span>
                       <button
                         type="button"
@@ -1265,7 +1267,7 @@ export function ApiDocsScreen() {
                           <polyline points="16 18 22 12 16 6" strokeWidth="2" />
                           <polyline points="8 6 2 12 8 18" strokeWidth="2" />
                         </svg>
-                        {copiedCurlId === ep.id ? '¡cURL copiado!' : 'Copiar comando cURL'}
+                        {copiedCurlId === ep.id ? t('¡cURL copiado!') : t('Copiar comando cURL')}
                       </button>
                     </div>
                   </div>

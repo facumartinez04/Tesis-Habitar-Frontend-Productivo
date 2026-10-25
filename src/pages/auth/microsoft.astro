@@ -11,10 +11,13 @@
     </style>
   </head>
   <body>
-    <p>Conectando con OneDrive…</p>
+    <p data-i18n="Conectando con OneDrive…">Conectando con OneDrive…</p>
     <script>      import { broadcastResponseToMainFrame } from '@azure/msal-browser/redirect-bridge';
+      import { t } from '../../i18n';
+      import { translateDocument } from '../../i18n/dom';
+      translateDocument();
       broadcastResponseToMainFrame().catch(() => {
-        document.body.textContent = 'No se pudo completar la conexión con OneDrive. Cerrá esta ventana e intentá de nuevo.';
+        document.body.textContent = t('No se pudo completar la conexión con OneDrive. Cerrá esta ventana e intentá de nuevo.');
       });
     </script>
   </body>

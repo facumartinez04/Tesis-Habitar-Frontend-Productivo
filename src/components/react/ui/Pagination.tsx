@@ -1,4 +1,5 @@
 import { Icon } from './Icon';
+import { t, useI18n } from '../../../i18n';
 
 interface PaginationProps {
   page: number;
@@ -22,6 +23,7 @@ function pageList(page: number, totalPages: number): (number | '…')[] {
 }
 
 export function Pagination({ page, totalPages, total, pageSize, onChange, label = 'resultados', className = '' }: PaginationProps) {
+  useI18n();
   if (total <= pageSize) return null;
   const from = (page - 1) * pageSize + 1;
   const to = Math.min(total, page * pageSize);
@@ -29,12 +31,12 @@ export function Pagination({ page, totalPages, total, pageSize, onChange, label 
     'min-w-8 h-8 px-2 rounded-lg text-xs font-semibold tabular-nums inline-flex items-center justify-center transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed';
 
   return (
-    <nav className={`flex flex-wrap items-center justify-between gap-2 px-1 py-2 ${className}`} aria-label="Paginación">
+    <nav className={`flex flex-wrap items-center justify-between gap-2 px-1 py-2 ${className}`} aria-label={t('Paginación')}>
       <span className="text-[11.5px] text-text-sec tabular-nums">
-        {from}–{to} de {total} {label}
+        {t('{from}–{to} de {total} {label}', { from, to, total, label })}
       </span>
       <div className="flex items-center gap-1">
-        <button type="button" className={`${btn} text-text-sec hover:bg-gray-100 dark:hover:bg-white/5`} onClick={() => onChange(page - 1)} disabled={page <= 1} aria-label="Página anterior">
+        <button type="button" className={`${btn} text-text-sec hover:bg-gray-100 dark:hover:bg-white/5`} onClick={() => onChange(page - 1)} disabled={page <= 1} aria-label={t('Página anterior')}>
           <Icon name="arrowLeft" size={13} />
         </button>
         {pageList(page, totalPages).map((p, i) =>
@@ -54,7 +56,7 @@ export function Pagination({ page, totalPages, total, pageSize, onChange, label 
             </button>
           ),
         )}
-        <button type="button" className={`${btn} text-text-sec hover:bg-gray-100 dark:hover:bg-white/5`} onClick={() => onChange(page + 1)} disabled={page >= totalPages} aria-label="Página siguiente">
+        <button type="button" className={`${btn} text-text-sec hover:bg-gray-100 dark:hover:bg-white/5`} onClick={() => onChange(page + 1)} disabled={page >= totalPages} aria-label={t('Página siguiente')}>
           <Icon name="arrowRight" size={13} />
         </button>
       </div>

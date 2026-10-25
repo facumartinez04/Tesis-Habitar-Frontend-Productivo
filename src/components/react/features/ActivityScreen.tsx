@@ -28,6 +28,7 @@ import { useLiveUpdates } from '../../../lib/realtime';
 import { arInstant, whenLabel } from '../../../lib/activityDates';
 import type { Activity } from '../../../types/activity';
 import type { Question } from '../../../types/question';
+import { setContextLocale, t, translate, useI18n, type Locale } from '../../../i18n';
 
 function isOpen(question: Question): boolean {
   return !question.options || question.options.length === 0;
@@ -111,6 +112,7 @@ function clearDraft(code: string): void {
 }
 
 export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
+  useI18n();
   const queryCode = useQueryParam('code', defaultCode);
   const [currentCode, setCurrentCode] = useState(queryCode || '');
   const [pinInput, setPinInput] = useState(queryCode || '');
@@ -127,6 +129,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   const [isOnline, setIsOnline] = useState(true);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [studentIdMode, setStudentIdMode] = useState<StudentIdMode>('nombre');
+  const [activityLanguage, setActivityLanguage] = useState<Locale>('es');
   const [nameParts, setNameParts] = useState({ firstName: '', lastName: '' });
   const [unavailableMessage, setUnavailableMessage] = useState('');
   const [joinError, setJoinError] = useState<string | null>(null);
@@ -277,6 +280,8 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
         return;
       }
       setActivity(result.activity);
+      setContextLocale(result.language);
+      setActivityLanguage(result.language);
       setStudentIdMode(result.studentIdMode);
       setQuestions(result.questions);
       const nextMeta: ActivityMeta = {
@@ -330,8 +335,8 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
         setCanRetry(state.canRetry);
         setSubmittedNote(
           state.canRetry
-            ? 'Ya enviaste esta actividad. Tu docente permite volver a hacerla.'
-            : 'Ya completaste esta actividad: tus respuestas quedaron registradas y no se puede volver a hacer.',
+            ? t('Ya enviaste esta actividad. Tu docente permite volver a hacerla.')
+            : t('Ya completaste esta actividad: tus respuestas quedaron registradas y no se puede volver a hacer.'),
         );
         setStage('submitted');
         return;
@@ -385,7 +390,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     }
     if (!trimmedName) return;
     if (studentIdMode === 'lista' && !/^\d{1,3}$/.test(trimmedName.replace(/^(n\.?\s*[º°o]?\.?\s*|#\s*)/i, ''))) {
-      setJoinError('Ingresá sólo tu número de lista, por ejemplo 12.');
+      setJoinError(t('Ingresá sólo tu número de lista, por ejemplo 12.'));
       return;
     }
     setJoinError(null);
@@ -399,9 +404,9 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
 
   async function handleRetry() {
     const ok = await confirmAction({
-      title: '¿Volver a hacer la actividad?',
-      text: 'Empezás de cero. Tu docente va a ver los dos intentos.',
-      confirmButtonText: 'Sí, empezar de nuevo',
+      title: t('¿Volver a hacer la actividad?'),
+      text: t('Empezás de cero. Tu docente va a ver los dos intentos.'),
+      confirmButtonText: t('Sí, empezar de nuevo'),
     });
     if (!ok) return;
     try {
@@ -420,7 +425,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
       setResumed(false);
       setStage(metaRef.current.readingMode === 'LIBRE' && metaRef.current.questionsReleased ? 'answering' : 'reading');
     } catch (err) {
-      setSubmittedNote(err instanceof ApiError ? err.message : 'No se pudo reiniciar. Revisá la conexión.');
+      setSubmittedNote(err instanceof ApiError ? err.message : t('No se pudo reiniciar. Revisá la conexión.'));
     }
   }
 
@@ -499,10 +504,10 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     const releasedNow = reason === 'released' || (!before.questionsReleasedAt && Boolean(result.questionsReleasedAt));
     if (releasedNow && result.questionsReleased && stageRef.current === 'reading') {
       setIndex(0);
-      setNotice('Tu docente habilitó las preguntas. ¡A responder!');
+      setNotice(t('Tu docente habilitó las preguntas. ¡A responder!'));
       setStage('answering');
     } else if (reason === 'updated') {
-      setNotice('Tu docente corrigió una pregunta. Revisá tu respuesta antes de enviar.');
+      setNotice(t('Tu docente corrigió una pregunta. Revisá tu respuesta antes de enviar.'));
     }
   }
 
@@ -522,8 +527,8 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
         !automatic
           ? null
           : closedRef.current === 'docente'
-            ? 'Tu docente cerró la actividad: enviamos las respuestas que tenías.'
-            : 'El tiempo de la actividad terminó: enviamos las respuestas que tenías.',
+            ? t('Tu docente cerró la actividad: enviamos las respuestas que tenías.')
+            : t('El tiempo de la actividad terminó: enviamos las respuestas que tenías.'),
       );
       setStage('submitted');
     } catch (err) {
@@ -533,12 +538,12 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
         setStage('submitted');
       } else if (err instanceof ApiError && err.status >= 400 && err.status < 500 && closedRef.current) {
         clearDraft(currentCode);
-        setUnavailableMessage('La actividad cerró y ya no se pudieron recibir tus respuestas. Avisale a tu docente.');
+        setUnavailableMessage(t('La actividad cerró y ya no se pudieron recibir tus respuestas. Avisale a tu docente.'));
         setStage('unavailable');
       } else if (err instanceof ApiError && err.status >= 400 && err.status < 500) {
         setSubmitError(err.message);
       } else {
-        setSubmitError('No se pudo enviar. Tus respuestas están guardadas: reintentá cuando tengas conexión.');
+        setSubmitError(t('No se pudo enviar. Tus respuestas están guardadas: reintentá cuando tengas conexión.'));
       }
     } finally {
       setSubmitting(false);
@@ -557,7 +562,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
       void submitRef.current(true);
     } else if (stageRef.current === 'reading' || stageRef.current === 'answering' || stageRef.current === 'join') {
       clearDraft(currentCode);
-      setUnavailableMessage(reason === 'docente' ? 'Tu docente cerró la actividad.' : 'El tiempo de la actividad terminó.');
+      setUnavailableMessage(reason === 'docente' ? t('Tu docente cerró la actividad.') : t('El tiempo de la actividad terminó.'));
       setStage('unavailable');
     }
   }
@@ -581,12 +586,12 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   async function handleSend() {
     const left = questions.length - answeredCount;
     const ok = await confirmAction({
-      title: '¿Enviar tus respuestas?',
+      title: t('¿Enviar tus respuestas?'),
       text:
         left > 0
-          ? `Te ${left === 1 ? 'falta 1 pregunta' : `faltan ${left} preguntas`} sin responder: si enviás ahora, cuentan como no respondidas. Después de enviar no vas a poder cambiar nada.`
-          : 'Respondiste todas las preguntas. Después de enviar no vas a poder cambiar las respuestas.',
-      confirmButtonText: left > 0 ? 'Enviar igual' : 'Sí, enviar',
+          ? t('Te {value} sin responder: si enviás ahora, cuentan como no respondidas. Después de enviar no vas a poder cambiar nada.', { value: left === 1 ? t('falta 1 pregunta') : t('faltan {left} preguntas', { left }) })
+          : t('Respondiste todas las preguntas. Después de enviar no vas a poder cambiar las respuestas.'),
+      confirmButtonText: left > 0 ? t('Enviar igual') : t('Sí, enviar'),
     });
     if (!ok || closedRef.current) return;
     await submitAll(false);
@@ -594,9 +599,9 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
 
   async function handleFinishReading() {
     const ok = await confirmAction({
-      title: '¿Terminaste de leer?',
-      text: `Vas a pasar ${meta.questionCount === 1 ? 'a la pregunta' : `a las ${meta.questionCount} preguntas`}. El texto lo vas a poder volver a mirar, pero no vas a volver a esta pantalla.`,
-      confirmButtonText: 'Sí, ir a las preguntas',
+      title: t('¿Terminaste de leer?'),
+      text: t('Vas a pasar {value}. El texto lo vas a poder volver a mirar, pero no vas a volver a esta pantalla.', { value: meta.questionCount === 1 ? t('a la pregunta') : t('a las {questionCount} preguntas', { questionCount: meta.questionCount }) }),
+      confirmButtonText: t('Sí, ir a las preguntas'),
     });
     if (!ok || stageRef.current !== 'reading') return;
     setIndex(0);
@@ -636,25 +641,25 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     <div className="fixed top-0 inset-x-0 z-40 bg-white/90 dark:bg-[#161A24]/90 backdrop-blur-md border-b border-stone-200/80 px-4 py-2 flex items-center justify-between text-xs">
       <div className="flex items-center gap-2 text-stone-600 dark:text-stone-300">
         <Icon name="backpack" size={16} className="text-emerald-700 dark:text-emerald-400" />
-        <span className="font-bold text-slate-900 dark:text-white">Modo Alumno</span>
-        <span className="hidden sm:inline text-stone-400">· Guardado automático local</span>
+        <span className="font-bold text-slate-900 dark:text-white">{t('Modo Alumno')}</span>
+        <span className="hidden sm:inline text-stone-400">{t('· Guardado automático local')}</span>
       </div>
       <div className="flex items-center gap-2">
         <button
           onClick={() => setIsScannerOpen(true)}
           type="button"
           className="flex items-center gap-1.5 text-xs font-semibold text-emerald-850 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-lg border border-emerald-300 dark:border-emerald-700/60 hover:bg-emerald-100 transition-colors cursor-pointer shadow-2xs"
-          title="Escanear código QR de clase"
+          title={t('Escanear código QR de clase')}
         >
           <Icon name="camera" size={13} />
-          <span>Escanear QR</span>
+          <span>{t('Escanear QR')}</span>
         </button>
         <button
           onClick={handleSwitchToTeacher}
           type="button"
           className="text-xs font-semibold text-stone-500 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors cursor-pointer px-2 py-1 rounded-lg"
         >
-          ¿Sos docente?
+          {t('¿Sos docente?')}
         </button>
       </div>
     </div>
@@ -664,7 +669,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     return (
       <div className="min-h-screen flex flex-col justify-center items-center px-4 pt-12 bg-[#FAF9F6] dark:bg-[#0D0F14]">
         {studentBar}
-        <HabitarLoader size="lg" message="Cargando tu actividad de lectura..." />
+        <HabitarLoader size="lg" message={t('Cargando tu actividad de lectura...')} />
       </div>
     );
   }
@@ -688,9 +693,9 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
             <Icon name="backpack" size={26} className="text-emerald-700 dark:text-emerald-300" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Portal del Alumno</h1>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">{t('Portal del Alumno')}</h1>
             <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 leading-relaxed">
-              Ingresá el código PIN que te dio tu docente o escaneá el QR del aula para resolver la actividad.
+              {t('Ingresá el código PIN que te dio tu docente o escaneá el QR del aula para resolver la actividad.')}
             </p>
           </div>
 
@@ -705,7 +710,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
               <input
                 value={pinInput}
                 onChange={(e) => setPinInput(e.target.value.toUpperCase())}
-                placeholder="Ej: HAB-4B29"
+                placeholder={t('Ej: HAB-4B29')}
                 className="w-full px-4 py-3 border border-stone-200 dark:border-stone-700 rounded-xl text-center font-mono font-bold tracking-widest text-lg uppercase bg-stone-50 dark:bg-[#202533] text-slate-900 dark:text-white focus:border-emerald-600 focus:bg-white outline-none shadow-inner"
               />
             </div>
@@ -714,13 +719,13 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
               disabled={!pinInput.trim()}
               className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl text-xs sm:text-sm transition-all shadow-2xs hover:shadow-xs disabled:opacity-50 cursor-pointer"
             >
-              Buscar Actividad
+              {t('Buscar Actividad')}
             </button>
           </form>
 
           <div className="flex items-center gap-2 my-2">
             <div className="flex-1 h-px bg-stone-200 dark:bg-stone-800" />
-            <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">O también</span>
+            <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">{t('O también')}</span>
             <div className="flex-1 h-px bg-stone-200 dark:bg-stone-800" />
           </div>
 
@@ -730,12 +735,12 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
             className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-dashed border-emerald-300 dark:border-emerald-700 hover:border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-850 dark:text-emerald-300 text-xs font-bold transition-all shadow-2xs cursor-pointer group"
           >
             <Icon name="camera" size={16} className="text-emerald-700 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
-            <span>Escanear Código QR con Cámara</span>
+            <span>{t('Escanear Código QR con Cámara')}</span>
           </button>
 
           {currentCode && (
             <div className="text-xs text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 rounded-xl p-3 text-center leading-snug">
-              No encontramos una actividad activa con el código <strong>{currentCode}</strong>. Verificá si está bien escrito o escaneá el QR del aula.
+              {t('No encontramos una actividad activa con el código')}{' '}<strong>{currentCode}</strong>{t('. Verificá si está bien escrito o escaneá el QR del aula.')}
             </div>
           )}
         </div>
@@ -755,7 +760,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
         <div className="w-full max-w-sm bg-white dark:bg-[#1A1E29] border border-stone-200/80 dark:border-stone-800 rounded-2xl p-6 sm:p-7 shadow-md text-center space-y-3">
           <Icon name="clock" size={28} className="mx-auto text-amber-700" />
           <div className="text-base font-bold text-slate-900 dark:text-white">{unavailableMessage}</div>
-          <p className="text-xs text-stone-500">Consultá a tu docente si la actividad sigue abierta.</p>
+          <p className="text-xs text-stone-500">{t('Consultá a tu docente si la actividad sigue abierta.')}</p>
           <button
             type="button"
             onClick={() => {
@@ -765,7 +770,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
             }}
             className="text-xs font-semibold text-emerald-800 hover:underline"
           >
-            Ingresar otro código
+            {t('Ingresar otro código')}
           </button>
         </div>
       </div>
@@ -814,13 +819,13 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
             disabled={(studentIdMode === 'nombre' ? !nameParts.firstName.trim() || !nameParts.lastName.trim() : !name.trim()) || joining}
             className="w-full bg-emerald-700 hover:bg-emerald-800 text-white py-3 rounded-xl text-xs sm:text-sm font-bold transition-all disabled:opacity-50 cursor-pointer shadow-2xs hover:shadow-xs"
           >
-            {joining ? 'Ingresando…' : 'Comenzar actividad de lectura'}
+            {joining ? t('Ingresando…') : t('Comenzar actividad de lectura')}
           </button>
           <div className="text-center text-[11px] text-stone-500 mt-4 pt-3 border-t border-stone-200 dark:border-stone-800">
             <span className="font-bold text-slate-800 dark:text-slate-200">{activity.name}</span>
             <br />
-            Código: <span className="font-mono text-emerald-800 dark:text-emerald-300 font-bold">{currentCode}</span>
-            {activity.endTime && <> · Disponible hasta {whenLabel(activity.endDate || activity.availableFrom, activity.endTime)}</>}
+            {t('Código:')}{' '}<span className="font-mono text-emerald-800 dark:text-emerald-300 font-bold">{currentCode}</span>
+            {activity.endTime && <>{' '}{t('· Disponible hasta {whenLabel}', { whenLabel: whenLabel(activity.endDate || activity.availableFrom, activity.endTime) })}</>}
           </div>
         </div>
       </div>
@@ -836,15 +841,14 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
           <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 flex items-center justify-center mx-auto mb-4 shadow-2xs">
             <Icon name="check" size={32} className="text-emerald-700 dark:text-emerald-300" />
           </div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-1">¡Actividad enviada!</h2>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-1">{t('¡Actividad enviada!')}</h2>
           <p className="text-xs text-stone-500 dark:text-stone-400 mb-5">
-            {submittedNote ?? 'Tus respuestas quedaron registradas.'} Cuando tu docente cierre la actividad, vas a ver acá tus
-            resultados.
+            {submittedNote ?? t('Tus respuestas quedaron registradas.')}{' '}{t('Cuando tu docente cierre la actividad, vas a ver acá tus resultados.')}
           </p>
           <div className="bg-stone-50 dark:bg-stone-800/50 rounded-xl p-3.5 border border-stone-200/80 dark:border-stone-700">
             {answeredCount > 0 && (
               <div className="text-xs text-stone-500">
-                {answeredCount} de {total} preguntas respondidas
+                {t('{answeredCount} de {total} preguntas respondidas', { answeredCount, total })}
               </div>
             )}
             <div className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-1">{activity.name}</div>
@@ -856,7 +860,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
                 type="button"
                 className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl text-xs transition-all cursor-pointer"
               >
-                Volver a hacerla
+                {t('Volver a hacerla')}
               </button>
             )}
             <button
@@ -865,7 +869,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
               className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-850 dark:text-emerald-300 text-xs font-bold hover:bg-emerald-100 transition-colors cursor-pointer shadow-2xs"
             >
               <Icon name="camera" size={14} />
-              <span>Escanear otro código QR</span>
+              <span>{t('Escanear otro código QR')}</span>
             </button>
             <button
               onClick={() => {
@@ -875,7 +879,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
               type="button"
               className="text-xs font-semibold text-stone-600 dark:text-stone-400 hover:text-slate-900 hover:underline cursor-pointer py-1.5"
             >
-              Ingresar otro código PIN
+              {t('Ingresar otro código PIN')}
             </button>
           </div>
         </div>
@@ -897,7 +901,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
       {notice && (
         <div className="flex items-start justify-between gap-2 text-xs font-semibold text-sky-900 dark:text-sky-200 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-xl px-3 py-2 mb-3">
           <span>{notice}</span>
-          <button type="button" onClick={() => setNotice(null)} className="text-sky-700 dark:text-sky-300 cursor-pointer" aria-label="Cerrar aviso">
+          <button type="button" onClick={() => setNotice(null)} className="text-sky-700 dark:text-sky-300 cursor-pointer" aria-label={t('Cerrar aviso')}>
             <Icon name="close" size={13} />
           </button>
         </div>
@@ -905,13 +909,13 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
       {resumed && (
         <div className="flex items-center gap-1.5 text-xs font-medium text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 rounded-xl px-3 py-2 mb-3">
           <Icon name="refresh" size={13} />
-          Retomaste la actividad donde la habías dejado
+          {t('Retomaste la actividad donde la habías dejado')}
         </div>
       )}
       {!isOnline && (
         <div className="flex items-center gap-1.5 text-xs text-stone-600 bg-stone-100 rounded-xl px-3 py-2 mb-3">
           <Icon name="alertTriangle" size={13} />
-          Sin conexión — tus respuestas se siguen guardando en este dispositivo
+          {t('Sin conexión — tus respuestas se siguen guardando en este dispositivo')}
         </div>
       )}
       {submitError && (
@@ -928,17 +932,17 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
         <div className="w-full max-w-2xl bg-white dark:bg-[#1A1E29] border border-stone-200/80 dark:border-stone-800 rounded-2xl p-5 sm:p-7 shadow-md">
           <div className="flex justify-between items-center gap-3 mb-4 pb-3 border-b border-stone-200 dark:border-stone-800">
             <div>
-              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">Paso 1 de 2 · Lectura</div>
+              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">{t('Paso 1 de 2 · Lectura')}</div>
               <div className="text-sm font-bold text-emerald-750 dark:text-emerald-400">{activity.name}</div>
             </div>
             <div className="text-xs text-stone-500 font-semibold bg-stone-100 dark:bg-stone-800 px-2.5 py-1 rounded-full shrink-0">{name}</div>
           </div>
           {banners}
           <p className="text-xs text-stone-500 dark:text-stone-400 mb-2">
-            Leé el texto con atención. {waitingTeacher ? 'Las preguntas aparecen cuando tu docente las habilite.' : `Después vas a responder ${meta.questionCount} preguntas.`}
+            {t('Leé el texto con atención.')}{' '}{waitingTeacher ? t('Las preguntas aparecen cuando tu docente las habilite.') : t('Después vas a responder {questionCount} preguntas.', { questionCount: meta.questionCount })}
           </p>
           <div className="flex flex-wrap items-center gap-2 mb-3">
-            <ReadAloud text={activity.sourceText ?? ''} label="Escuchar el texto" />
+            <ReadAloud text={activity.sourceText ?? ''} label={t('Escuchar el texto')} lang={activityLanguage} />
             <TextSizeControls onChange={changeFont} step={fontStep} max={FONT_SCALES.length - 1} />
           </div>
           {meta.document && !asText ? (
@@ -963,7 +967,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
               onClick={() => setAsText((v) => !v)}
               className="mt-2 text-[11.5px] font-semibold text-emerald-800 dark:text-emerald-300 hover:underline cursor-pointer"
             >
-              {asText ? 'Ver el documento original' : 'Leer como texto (más grande, y para seleccionar palabras)'}
+              {asText ? t('Ver el documento original') : t('Leer como texto (más grande, y para seleccionar palabras)')}
             </button>
           )}
           <div className="pt-4 mt-4 border-t border-stone-200 dark:border-stone-800">
@@ -973,7 +977,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
                   <span className="motion-safe:animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-60" />
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-600" />
                 </span>
-                Esperando a que tu docente habilite las preguntas…
+                {t('Esperando a que tu docente habilite las preguntas…')}
               </div>
             ) : (
               <button
@@ -981,7 +985,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
                 onClick={handleFinishReading}
                 className="w-full flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold py-3 rounded-xl shadow-2xs transition-all cursor-pointer"
               >
-                Terminé de leer · Ir a las preguntas
+                {t('Terminé de leer · Ir a las preguntas')}
                 <Icon name="arrowRight" size={14} />
               </button>
             )}
@@ -999,10 +1003,9 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
         {studentBar}
         <div className="w-full max-w-sm bg-white dark:bg-[#1A1E29] border border-stone-200/80 dark:border-stone-800 rounded-2xl p-6 sm:p-7 shadow-md text-center space-y-3" role="alert">
           <Icon name="clock" size={28} className="mx-auto text-amber-700 dark:text-amber-400" />
-          <div className="text-lg font-bold text-slate-900 dark:text-white">La actividad cerró</div>
+          <div className="text-lg font-bold text-slate-900 dark:text-white">{t('La actividad cerró')}</div>
           <p className="text-xs text-stone-500 dark:text-stone-400">
-            {closedReason === 'docente' ? 'Tu docente cerró la actividad.' : 'Se terminó el horario de la actividad.'} Ya no se
-            pueden cambiar las respuestas.
+            {closedReason === 'docente' ? t('Tu docente cerró la actividad.') : t('Se terminó el horario de la actividad.')}{' '}{t('Ya no se pueden cambiar las respuestas.')}
           </p>
           {submitError ? (
             <>
@@ -1015,13 +1018,13 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
                 disabled={submitting}
                 className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl text-xs disabled:opacity-50 cursor-pointer"
               >
-                {submitting ? 'Enviando…' : 'Reintentar el envío'}
+                {submitting ? t('Enviando…') : t('Reintentar el envío')}
               </button>
             </>
           ) : (
             <div className="flex items-center justify-center gap-2 text-xs font-semibold text-stone-600 dark:text-stone-300">
               <span className="w-3.5 h-3.5 rounded-full border-2 border-emerald-600 border-t-transparent motion-safe:animate-spin" />
-              Enviando las {answeredCount} respuestas que tenías…
+              {t('Enviando las {answeredCount} respuestas que tenías…', { answeredCount })}
             </div>
           )}
         </div>
@@ -1033,7 +1036,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     return (
       <div className="min-h-screen flex flex-col justify-center items-center px-4 pt-12 bg-[#FAF9F6] dark:bg-[#0D0F14]">
         {studentBar}
-        <HabitarLoader size="lg" message="Cargando las preguntas..." />
+        <HabitarLoader size="lg" message={t('Cargando las preguntas...')} />
       </div>
     );
   }
@@ -1047,7 +1050,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
         <div className="flex justify-between items-center gap-3 mb-4 pb-3 border-b border-stone-200 dark:border-stone-800">
           <div>
             {meta.readingMode !== 'LIBRE' && (
-              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">Paso 2 de 2 · Preguntas</div>
+              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">{t('Paso 2 de 2 · Preguntas')}</div>
             )}
             <div className="text-sm font-bold text-emerald-750 dark:text-emerald-400">{activity.name}</div>
           </div>
@@ -1062,7 +1065,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
             className="flex items-center gap-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300 hover:underline cursor-pointer"
           >
             <Icon name="fileText" size={13} />
-            {showText ? 'Ocultar el texto' : meta.document ? 'Volver a ver el documento' : 'Volver a ver el texto'}
+            {showText ? t('Ocultar el texto') : meta.document ? t('Volver a ver el documento') : t('Volver a ver el texto')}
           </button>
           {showText && meta.document && !asText && (
             <div className="mt-2 max-h-[55vh] overflow-y-auto p-2 bg-stone-100 dark:bg-stone-800/40 border border-stone-200/80 dark:border-stone-700 rounded-xl">
@@ -1086,14 +1089,14 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
               onClick={() => setAsText((v) => !v)}
               className="mt-1.5 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 hover:underline cursor-pointer"
             >
-              {asText ? 'Ver el documento original' : 'Leer como texto'}
+              {asText ? t('Ver el documento original') : t('Leer como texto')}
             </button>
           )}
         </div>
 
         {banners}
 
-        <div className="flex flex-wrap gap-1.5 mb-4" role="navigation" aria-label="Preguntas">
+        <div className="flex flex-wrap gap-1.5 mb-4" role="navigation" aria-label={t('Preguntas')}>
           {questions.map((q, i) => {
             const done = Boolean((answers[q.id] ?? '').trim());
             const current = i === safeIndex;
@@ -1103,7 +1106,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
                 type="button"
                 onClick={() => goTo(i)}
                 aria-current={current ? 'step' : undefined}
-                aria-label={`Pregunta ${i + 1}${done ? ', respondida' : ''}`}
+                aria-label={t('Pregunta {value}{value2}', { value: i + 1, value2: done ? t(', respondida') : '' })}
                 className={`w-8 h-8 rounded-lg text-xs font-bold tabular-nums border transition-all cursor-pointer ${
                   current
                     ? 'bg-emerald-700 border-emerald-700 text-white'
@@ -1120,10 +1123,10 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
 
         <div className="flex items-center justify-between text-xs text-stone-500 font-semibold mb-2">
           <span>
-            Pregunta {safeIndex + 1} de {questions.length}
+            {t('Pregunta {value} de {questionsCount}', { value: safeIndex + 1, questionsCount: questions.length })}
           </span>
           <span className="text-[10px] uppercase bg-stone-100 dark:bg-stone-800 px-2 py-0.5 rounded font-bold">
-            {isOpen(currentQuestion) ? 'Respuesta escrita' : 'Elegí una opción'}
+            {isOpen(currentQuestion) ? t('Respuesta escrita') : t('Elegí una opción')}
           </span>
         </div>
 
@@ -1135,10 +1138,11 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
         </div>
         <div className="flex flex-wrap items-center gap-2 mb-4">
           <ReadAloud
+            lang={activityLanguage}
             text={`${currentQuestion.prompt} ${
-              currentQuestion.options?.length ? `Opciones: ${currentQuestion.options.map((o, i) => `${i + 1}, ${o}`).join('. ')}.` : ''
+              currentQuestion.options?.length ? translate(activityLanguage, 'Opciones: {join}.', { join: currentQuestion.options.map((o, i) => `${i + 1}, ${o}`).join('. ') }) : ''
             }`}
-            label="Escuchar la pregunta"
+            label={t('Escuchar la pregunta')}
           />
           <TextSizeControls onChange={changeFont} step={fontStep} max={FONT_SCALES.length - 1} />
         </div>
@@ -1152,7 +1156,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
                 setAnswers((prev) => ({ ...prev, [currentQuestion.id]: value }));
               }}
               rows={6}
-              placeholder="Escribí tu respuesta. Fundamentala con lo que dice el texto."
+              placeholder={t('Escribí tu respuesta. Fundamentala con lo que dice el texto.')}
               className="w-full px-3.5 py-3 border border-stone-200 dark:border-stone-700 rounded-xl text-sm bg-stone-50 dark:bg-[#202533] text-slate-900 dark:text-white focus:border-emerald-600 focus:bg-white outline-none leading-relaxed"
             />
             <div className="text-[11px] text-stone-400 mt-1 text-right">{(answers[currentQuestion.id] ?? '').length} / 2000</div>
@@ -1192,10 +1196,10 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
             className="flex items-center gap-1.5 text-xs font-bold text-stone-600 dark:text-stone-300 px-3 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800 disabled:opacity-40 cursor-pointer"
           >
             <Icon name="arrowLeft" size={13} />
-            Anterior
+            {t('Anterior')}
           </button>
           <span className="text-[11px] text-stone-400 tabular-nums">
-            {answeredCount}/{questions.length} respondidas
+            {t('{answeredCount}/{questionsCount} respondidas', { answeredCount, questionsCount: questions.length })}
           </span>
           {isLast ? (
             <button
@@ -1204,7 +1208,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
               disabled={submitting}
               className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-2xs transition-all disabled:opacity-50 cursor-pointer"
             >
-              {submitting ? 'Enviando…' : 'Enviar respuestas'}
+              {submitting ? t('Enviando…') : t('Enviar respuestas')}
               <Icon name="check" size={13} />
             </button>
           ) : (
@@ -1213,7 +1217,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
               onClick={() => goTo(safeIndex + 1)}
               className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-2xs transition-all cursor-pointer"
             >
-              Siguiente
+              {t('Siguiente')}
               <Icon name="arrowRight" size={13} />
             </button>
           )}
@@ -1225,7 +1229,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
             disabled={submitting}
             className="w-full mt-3 text-xs font-bold text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl py-2.5 cursor-pointer disabled:opacity-50"
           >
-            {submitting ? 'Enviando…' : 'Ya respondí todo · Enviar respuestas'}
+            {submitting ? t('Enviando…') : t('Ya respondí todo · Enviar respuestas')}
           </button>
         )}
       </div>
@@ -1236,14 +1240,15 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
 }
 
 function TextSizeControls({ onChange, step, max }: { onChange: (delta: number) => void; step: number; max: number }) {
+  useI18n();
   const btn =
     'w-8 h-8 rounded-lg border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 font-bold disabled:opacity-40 cursor-pointer hover:bg-stone-50 dark:hover:bg-stone-800';
   return (
-    <div className="inline-flex items-center gap-1" role="group" aria-label="Tamaño de letra">
-      <button type="button" onClick={() => onChange(-1)} disabled={step === 0} className={`${btn} text-[11px]`} aria-label="Achicar la letra">
+    <div className="inline-flex items-center gap-1" role="group" aria-label={t('Tamaño de letra')}>
+      <button type="button" onClick={() => onChange(-1)} disabled={step === 0} className={`${btn} text-[11px]`} aria-label={t('Achicar la letra')}>
         A−
       </button>
-      <button type="button" onClick={() => onChange(1)} disabled={step === max} className={`${btn} text-[14px]`} aria-label="Agrandar la letra">
+      <button type="button" onClick={() => onChange(1)} disabled={step === max} className={`${btn} text-[14px]`} aria-label={t('Agrandar la letra')}>
         A+
       </button>
     </div>

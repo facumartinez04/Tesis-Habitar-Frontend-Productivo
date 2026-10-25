@@ -25,6 +25,7 @@ export interface Institution {
   studentIdMode: 'lista' | 'nombre';
   alertThreshold: number;
   alertEmailsEnabled: boolean;
+  defaultLanguage: 'es' | 'en';
   createdAt: string;
 }
 

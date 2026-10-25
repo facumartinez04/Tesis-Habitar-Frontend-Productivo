@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { t } from '../i18n';
 
 export type QrScannerStatus = 'idle' | 'starting' | 'scanning' | 'error';
 
@@ -25,17 +26,17 @@ function describeCameraError(err: unknown): string {
   switch (name) {
     case 'NotAllowedError':
     case 'PermissionDeniedError':
-      return 'No diste permiso para usar la cámara. Habilitalo desde el candado de la barra de direcciones o ingresá el código a mano.';
+      return t('No diste permiso para usar la cámara. Habilitalo desde el candado de la barra de direcciones o ingresá el código a mano.');
     case 'NotFoundError':
     case 'DevicesNotFoundError':
-      return 'No encontramos ninguna cámara en este dispositivo. Ingresá el código a mano.';
+      return t('No encontramos ninguna cámara en este dispositivo. Ingresá el código a mano.');
     case 'NotReadableError':
     case 'TrackStartError':
-      return 'La cámara está siendo usada por otra aplicación. Cerrala e intentá de nuevo.';
+      return t('La cámara está siendo usada por otra aplicación. Cerrala e intentá de nuevo.');
     case 'OverconstrainedError':
-      return 'No pudimos usar la cámara trasera de este dispositivo. Ingresá el código a mano.';
+      return t('No pudimos usar la cámara trasera de este dispositivo. Ingresá el código a mano.');
     default:
-      return 'No se pudo iniciar la cámara. Ingresá el código a mano.';
+      return t('No se pudo iniciar la cámara. Ingresá el código a mano.');
   }
 }
 
@@ -105,7 +106,7 @@ export function useQrScanner({ elementId, enabled, onScan }: UseQrScannerOptions
       setStatus('starting');
 
       if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
-        setError(INSECURE_CONTEXT);
+        setError(t(INSECURE_CONTEXT));
         setStatus('error');
         return;
       }
@@ -113,7 +114,7 @@ export function useQrScanner({ elementId, enabled, onScan }: UseQrScannerOptions
       const container = await waitForElement(elementId);
       if (isStale()) return;
       if (!container) {
-        setError('No se pudo preparar el visor de la cámara.');
+        setError(t('No se pudo preparar el visor de la cámara.'));
         setStatus('error');
         return;
       }
@@ -133,7 +134,7 @@ export function useQrScanner({ elementId, enabled, onScan }: UseQrScannerOptions
       const handleSuccess = (decodedText: string) => {
         if (lockedRef.current) return;
         lockedRef.current = true;
-        addLog(`QR leído: ${decodedText.slice(0, 40)}`);
+        addLog(t('QR leído: {slice}', { slice: decodedText.slice(0, 40) }));
         try {
           if ('vibrate' in navigator) navigator.vibrate(100);
         } catch {
@@ -142,11 +143,11 @@ export function useQrScanner({ elementId, enabled, onScan }: UseQrScannerOptions
       };
 
       try {
-        addLog('Iniciando cámara trasera…');
+        addLog(t('Iniciando cámara trasera…'));
         await scanner.start({ facingMode: 'environment' }, config, handleSuccess, () => {});
       } catch (firstErr) {
         if (isStale()) return;
-        addLog('Fallback: enumerando cámaras…');
+        addLog(t('Fallback: enumerando cámaras…'));
         try {
           const cameras = await Html5Qrcode.getCameras();
           if (isStale()) return;
@@ -167,7 +168,7 @@ export function useQrScanner({ elementId, enabled, onScan }: UseQrScannerOptions
         void stop();
         return;
       }
-      addLog('Cámara activa, analizando.');
+      addLog(t('Cámara activa, analizando.'));
       setStatus('scanning');
     }
 

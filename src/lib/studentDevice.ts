@@ -1,3 +1,5 @@
+import { t } from '../i18n';
+
 let sessionDeviceId: string | null = null;
 
 export function getOrCreateDeviceId(): string {
@@ -19,13 +21,13 @@ export type StudentIdMode = 'lista' | 'nombre';
 export function studentIdLabel(mode: StudentIdMode): { title: string; placeholder: string; hint: string } {
   return mode === 'lista'
     ? {
-        title: '¿Cuál es tu número de lista?',
-        placeholder: 'Ej: 12',
-        hint: 'No necesitás cuenta ni contraseña, y no se pide tu nombre.',
+        title: t('¿Cuál es tu número de lista?'),
+        placeholder: t('Ej: 12'),
+        hint: t('No necesitás cuenta ni contraseña, y no se pide tu nombre.'),
       }
     : {
-        title: '¡Hola! ¿Cómo te llamás?',
-        placeholder: 'Nombre y apellido',
-        hint: 'Escribí tu nombre y tu apellido. No necesitás cuenta ni contraseña.',
+        title: t('¡Hola! ¿Cómo te llamás?'),
+        placeholder: t('Nombre y apellido'),
+        hint: t('Escribí tu nombre y tu apellido. No necesitás cuenta ni contraseña.'),
       };
 }

@@ -573,6 +573,11 @@ html.dark .ring-emerald-200:not([class*="dark:ring-"]):not([data-keep-white]):no
   --tw-ring-color: rgba(16, 185, 129, 0.35) !important;
 }
 
+html.dark .ring-emerald-400:not([class*="dark:ring-"]):not([data-keep-white]):not([data-keep-white] *),
+:root[data-theme="dark"] .ring-emerald-400:not([class*="dark:ring-"]):not([data-keep-white]):not([data-keep-white] *) {
+  --tw-ring-color: rgba(16, 185, 129, 0.35) !important;
+}
+
 html.dark .ring-rose-200:not([class*="dark:ring-"]):not([data-keep-white]):not([data-keep-white] *),
 :root[data-theme="dark"] .ring-rose-200:not([class*="dark:ring-"]):not([data-keep-white]):not([data-keep-white] *) {
   --tw-ring-color: rgba(244, 63, 94, 0.35) !important;

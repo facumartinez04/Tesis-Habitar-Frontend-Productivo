@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useSession } from '../../../hooks/useSession';
 import { clearSession } from '../../../store/sessionStore';
 import { Icon } from '../ui/Icon';
+import { t, useI18n } from '../../../i18n';
 
 const roleBadgeLabel: Record<string, string> = {
   coordinador: 'Coordinador/a',
@@ -11,6 +12,7 @@ const roleBadgeLabel: Record<string, string> = {
 };
 
 export function SessionUserBadge() {
+  useI18n();
   const session = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -44,8 +46,8 @@ export function SessionUserBadge() {
   }
 
   const roleBadge = session.impersonatedRole
-    ? `Admin (${roleBadgeLabel[session.impersonatedRole] || session.impersonatedRole})`
-    : roleBadgeLabel[session.user.role] || session.user.role;
+    ? t('Admin ({value})', { value: roleBadgeLabel[session.impersonatedRole] || session.impersonatedRole })
+    : t(roleBadgeLabel[session.user.role]) || session.user.role;
 
   const handleLogout = () => {
     clearSession();
@@ -59,7 +61,7 @@ export function SessionUserBadge() {
         onClick={() => setIsOpen((prev) => !prev)}
         aria-expanded={isOpen}
         aria-haspopup="true"
-        aria-label="Abrir menú de usuario"
+        aria-label={t('Abrir menú de usuario')}
         className="flex items-center gap-2.5 px-1.5 py-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all cursor-pointer group"
       >
         <div className="w-8 h-8 rounded-full bg-[#0F6E56] flex items-center justify-center text-[12px] font-bold text-white shadow-sm group-hover:shadow-md transition-shadow shrink-0">
@@ -105,7 +107,7 @@ export function SessionUserBadge() {
               className="w-full flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors cursor-pointer"
             >
               <Icon name="logOut" size={15} className="text-rose-500" />
-              Cerrar sesión
+              {t('Cerrar sesión')}
             </button>
           </div>
         </>

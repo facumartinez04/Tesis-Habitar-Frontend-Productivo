@@ -7,6 +7,7 @@ import { showSuccess, showError, confirmDestructive } from '../../../lib/alerts'
 import { ensureAdminSession } from '../../../services/authService';
 import { createRole, deleteRole, listRoles, updateRole } from '../../../services/roleService';
 import type { PlatformModule, RoleDefinition, RolePermission } from '../../../types/role';
+import { t, useI18n } from '../../../i18n';
 
 const ALL_MODULES: PlatformModule[] = [
   'instituciones',
@@ -148,6 +149,7 @@ function normalizePermissions(existing: RolePermission[] = []): RolePermission[]
 }
 
 export function RolesManagementScreen() {
+  useI18n();
   const [roles, setRoles] = useState<RoleDefinition[] | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -173,7 +175,7 @@ export function RolesManagementScreen() {
       setRoles(list);
     } catch (err) {
       console.error('Error cargando roles:', err);
-      showError('Error', 'No se pudieron cargar los roles.');
+      showError(t('Error'), t('No se pudieron cargar los roles.'));
     } finally {
       setLoading(false);
     }
@@ -198,7 +200,7 @@ export function RolesManagementScreen() {
 
   const handleCloseEditor = () => {
     if (hasChanges) {
-      if (!confirm('Tenés cambios sin guardar. ¿Deseás cerrar de todos modos?')) return;
+      if (!confirm(t('Tenés cambios sin guardar. ¿Deseás cerrar de todos modos?'))) return;
     }
     setEditingRole(null);
     setHasChanges(false);
@@ -277,12 +279,12 @@ export function RolesManagementScreen() {
       await updateRole(editingRole.id, {
         permissions: currentPermissions,
       });
-      showSuccess('Permisos actualizados', `Los permisos de "${editingRole.name}" se guardaron con éxito.`);
+      showSuccess(t('Permisos actualizados'), t('Los permisos de "{name}" se guardaron con éxito.', { name: editingRole.name }));
       setHasChanges(false);
       setEditingRole(null);
       await loadRoles();
     } catch (err: any) {
-      showError('Error al guardar', err.message || 'No se pudieron actualizar los permisos.');
+      showError(t('Error al guardar'), err.message || t('No se pudieron actualizar los permisos.'));
     } finally {
       setIsSaving(false);
     }
@@ -291,18 +293,18 @@ export function RolesManagementScreen() {
   const handleDeleteRole = async (role: RoleDefinition) => {
     if (role.isSystem) return;
     const ok = await confirmDestructive({
-      title: `¿Eliminar rol "${role.name}"?`,
-      text: 'Los usuarios asignados a este rol perderán los permisos específicos configurados.',
-      confirmButtonText: 'Sí, eliminar rol',
+      title: t('¿Eliminar rol "{name}"?', { name: role.name }),
+      text: t('Los usuarios asignados a este rol perderán los permisos específicos configurados.'),
+      confirmButtonText: t('Sí, eliminar rol'),
     });
     if (!ok) return;
 
     try {
       await deleteRole(role.id);
-      showSuccess('Rol eliminado', 'El rol ha sido removido.');
+      showSuccess(t('Rol eliminado'), t('El rol ha sido removido.'));
       await loadRoles();
     } catch (err: any) {
-      showError('Error al eliminar', err.message || 'No se pudo eliminar el rol.');
+      showError(t('Error al eliminar'), err.message || t('No se pudo eliminar el rol.'));
     }
   };
 
@@ -320,7 +322,7 @@ export function RolesManagementScreen() {
         permissions: templateRole ? templateRole.permissions : [],
       });
 
-      showSuccess('Rol creado', `Se creó el rol "${created.name}".`);
+      showSuccess(t('Rol creado'), t('Se creó el rol "{name}".', { name: created.name }));
       setIsCreateOpen(false);
       setNewRoleName('');
       setNewRoleId('');
@@ -329,7 +331,7 @@ export function RolesManagementScreen() {
 
       handleOpenEditRole(created);
     } catch (err: any) {
-      showError('Error al crear rol', err.message || 'No se pudo crear el rol.');
+      showError(t('Error al crear rol'), err.message || t('No se pudo crear el rol.'));
     } finally {
       setIsCreating(false);
     }
@@ -343,14 +345,14 @@ export function RolesManagementScreen() {
       return (
         mod.toLowerCase().includes(q) ||
         info.name.toLowerCase().includes(q) ||
-        info.description.toLowerCase().includes(q) ||
-        info.category.toLowerCase().includes(q)
+        t(info.description).toLowerCase().includes(q) ||
+        t(info.category).toLowerCase().includes(q)
       );
     });
   }, [moduleSearch]);
 
   if (loading) {
-    return <HabitarLoader size="lg" message="Cargando roles y permisos del sistema..." />;
+    return <HabitarLoader size="lg" message={t('Cargando roles y permisos del sistema...')} />;
   }
 
   return (
@@ -363,10 +365,10 @@ export function RolesManagementScreen() {
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-text-pri">
-                Roles y Permisos del Sistema
+                {t('Roles y Permisos del Sistema')}
               </h1>
               <p className="text-xs sm:text-sm text-text-sec mt-0.5">
-                Control de acceso granular basado en roles (RBAC). Configurá permisos módulo por módulo con switches interactivos.
+                {t('Control de acceso granular basado en roles (RBAC). Configurá permisos módulo por módulo con switches interactivos.')}
               </p>
             </div>
           </div>
@@ -377,14 +379,14 @@ export function RolesManagementScreen() {
           className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-semibold shadow-xs transition-all shrink-0 cursor-pointer"
         >
           <Icon name="plus" size={14} />
-          <span>Nuevo Rol Personalizado</span>
+          <span>{t('Nuevo Rol Personalizado')}</span>
         </button>
       </div>
 
       <div className="space-y-3.5">
         <div className="flex items-center justify-between text-xs text-text-sec px-1 font-medium">
-          <span>Roles Activos ({roles?.length || 0})</span>
-          <span>Click en "Editar Permisos" para configurar</span>
+          <span>{t('Roles Activos (')}{roles?.length || 0})</span>
+          <span>{t('Click en "Editar Permisos" para configurar')}</span>
         </div>
 
         {roles && roles.length > 0 ? (
@@ -408,49 +410,49 @@ export function RolesManagementScreen() {
                         {role.name}
                       </span>
                       <span className="font-mono text-[11px] px-2 py-0.5 rounded-md bg-gray-100 dark:bg-zinc-800 text-text-sec border border-gray-200 dark:border-gray-700">
-                        slug: {role.id}
+                        {t('slug: {id}', { id: role.id })}
                       </span>
                       {role.isSystem ? (
                         <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/50">
-                          Rol de Sistema
+                          {t('Rol de Sistema')}
                         </span>
                       ) : (
                         <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/50">
-                          Rol Personalizado
+                          {t('Rol Personalizado')}
                         </span>
                       )}
                     </div>
 
                     <p className="text-xs sm:text-sm text-text-sec line-clamp-2">
-                      {role.description || 'Sin descripción asignada.'}
+                      {t(role.description) || t('Sin descripción asignada.')}
                     </p>
 
                     <div className="flex items-center gap-2 pt-1 flex-wrap text-xs">
                       {isFullAdmin ? (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 font-semibold border border-emerald-200 dark:border-emerald-800/50">
                           <Icon name="check" size={12} />
-                          Acceso Total a Todos los Módulos ({ALL_MODULES.length})
+                          {t('Acceso Total a Todos los Módulos ({ALL_MODULESCount})', { ALL_MODULESCount: ALL_MODULES.length })}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface dark:bg-[#131620] text-text-pri font-medium border border-gray-border dark:border-gray-800">
                           <Icon name="shield" size={12} className="text-emerald-600 dark:text-emerald-400" />
-                          {activePermsCount} de {ALL_MODULES.length} módulos con permisos
+                          {t('{activePermsCount} de {ALL_MODULESCount} módulos con permisos', { activePermsCount, ALL_MODULESCount: ALL_MODULES.length })}
                         </span>
                       )}
 
                       {role.permissions.some((p) => p.module === 'finanzas' && p.canRead) && (
                         <span className="text-[11px] px-2 py-0.5 rounded bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800/40">
-                          <Icon name="creditCard" size={11} className="inline-block align-[-2px] mr-1" />Finanzas / MP
+                          <Icon name="creditCard" size={11} className="inline-block align-[-2px] mr-1" />{t('Finanzas / MP')}
                         </span>
                       )}
                       {role.permissions.some((p) => p.module === 'actividades' && p.canCreate) && (
                         <span className="text-[11px] px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40">
-                          <Icon name="sparkles" size={11} className="inline-block align-[-2px] mr-1" />Crear actividades
+                          <Icon name="sparkles" size={11} className="inline-block align-[-2px] mr-1" />{t('Crear actividades')}
                         </span>
                       )}
                       {role.permissions.some((p) => p.module === 'cumplimiento' && p.canDelete) && (
                         <span className="text-[11px] px-2 py-0.5 rounded bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/40">
-                          <Icon name="lock" size={11} className="inline-block align-[-2px] mr-1" />Purga ARCO
+                          <Icon name="lock" size={11} className="inline-block align-[-2px] mr-1" />{t('Purga ARCO')}
                         </span>
                       )}
                     </div>
@@ -463,7 +465,7 @@ export function RolesManagementScreen() {
                       className="inline-flex items-center gap-2 px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer"
                     >
                       <Icon name="sliders" size={14} />
-                      <span>Editar Permisos</span>
+                      <span>{t('Editar Permisos')}</span>
                     </button>
 
                     {!role.isSystem && (
@@ -471,7 +473,7 @@ export function RolesManagementScreen() {
                         type="button"
                         onClick={() => handleDeleteRole(role)}
                         className="p-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-800/40 rounded-lg transition-colors cursor-pointer"
-                        title="Eliminar Rol Personalizado"
+                        title={t('Eliminar Rol Personalizado')}
                       >
                         <Icon name="trash" size={14} />
                       </button>
@@ -483,7 +485,7 @@ export function RolesManagementScreen() {
           })
         ) : (
           <div className="bg-white dark:bg-[#1A1E29] border border-gray-border dark:border-[#2D3342] rounded-xl p-12 text-center text-text-sec">
-            No se encontraron roles configurados en la plataforma.
+            {t('No se encontraron roles configurados en la plataforma.')}
           </div>
         )}
       </div>
@@ -496,21 +498,21 @@ export function RolesManagementScreen() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="text-lg font-bold text-text-pri tracking-tight flex items-center gap-2">
                     <Icon name="sliders" size={18} className="text-emerald-600 dark:text-emerald-400" />
-                    Permisos de: {editingRole.name}
+                    {t('Permisos de: {name}', { name: editingRole.name })}
                   </h2>
                   <span className="font-mono text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-zinc-800 text-text-sec">
                     {editingRole.id}
                   </span>
                 </div>
                 <p className="text-xs text-text-sec mt-1">
-                  Hacé click en cada módulo para desplegar hacia abajo y activar o desactivar cada permiso con los interruptores.
+                  {t('Hacé click en cada módulo para desplegar hacia abajo y activar o desactivar cada permiso con los interruptores.')}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={handleCloseEditor}
                 className="p-1.5 rounded-lg text-text-ter hover:text-text-pri hover:bg-surface dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-                title="Cerrar"
+                title={t('Cerrar')}
               >
                 <Icon name="close" size={16} />
               </button>
@@ -521,7 +523,7 @@ export function RolesManagementScreen() {
                 <Icon name="search" size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-ter" />
                 <input
                   type="text"
-                  placeholder="Buscar módulo (ej: finanzas, cursos, alumnos)..."
+                  placeholder={t('Buscar módulo (ej: finanzas, cursos, alumnos)...')}
                   value={moduleSearch}
                   onChange={(e) => setModuleSearch(e.target.value)}
                   className="w-full pl-9 pr-3 py-1.5 border border-gray-border dark:border-gray-700 rounded-lg text-xs bg-surface dark:bg-[#131620] text-text-pri placeholder-text-ter focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
@@ -534,21 +536,21 @@ export function RolesManagementScreen() {
                   onClick={() => handleSetGlobal('all')}
                   className="px-2.5 py-1 text-[11px] font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 rounded-md border border-emerald-200 dark:border-emerald-800/40 transition-colors cursor-pointer"
                 >
-                  <Icon name="check" size={11} className="inline-block align-[-2px] mr-1" />Conceder todo
+                  <Icon name="check" size={11} className="inline-block align-[-2px] mr-1" />{t('Conceder todo')}
                 </button>
                 <button
                   type="button"
                   onClick={() => handleSetGlobal('read')}
                   className="px-2.5 py-1 text-[11px] font-medium bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 rounded-md border border-blue-200 dark:border-blue-800/40 transition-colors cursor-pointer"
                 >
-                  <Icon name="eye" size={11} className="inline-block align-[-2px] mr-1" />Sólo lectura
+                  <Icon name="eye" size={11} className="inline-block align-[-2px] mr-1" />{t('Sólo lectura')}
                 </button>
                 <button
                   type="button"
                   onClick={() => handleSetGlobal('none')}
                   className="px-2.5 py-1 text-[11px] font-medium bg-gray-100 dark:bg-zinc-800 text-text-sec hover:text-text-pri rounded-md border border-gray-200 dark:border-gray-700 transition-colors cursor-pointer"
                 >
-                  <Icon name="close" size={11} className="inline-block align-[-2px] mr-1" />Desactivar todo
+                  <Icon name="close" size={11} className="inline-block align-[-2px] mr-1" />{t('Desactivar todo')}
                 </button>
                 <span className="text-gray-300 dark:text-gray-700">|</span>
                 <button
@@ -556,14 +558,14 @@ export function RolesManagementScreen() {
                   onClick={() => handleExpandAll(true)}
                   className="px-2 py-1 text-[11px] text-text-sec hover:text-text-pri underline cursor-pointer"
                 >
-                  Expandir todos
+                  {t('Expandir todos')}
                 </button>
                 <button
                   type="button"
                   onClick={() => handleExpandAll(false)}
                   className="px-2 py-1 text-[11px] text-text-sec hover:text-text-pri underline cursor-pointer"
                 >
-                  Colapsar
+                  {t('Colapsar')}
                 </button>
               </div>
             </div>
@@ -617,14 +619,14 @@ export function RolesManagementScreen() {
                             </span>
                             <span
                               className={`text-[10px] uppercase font-mono px-2 py-0.5 rounded-full border ${
-                                CATEGORY_COLORS[info.category] || 'bg-gray-100 text-gray-700'
+                                CATEGORY_COLORS[t(info.category)] || 'bg-gray-100 text-gray-700'
                               }`}
                             >
-                              {info.category}
+                              {t(info.category)}
                             </span>
                           </div>
                           <p className="text-[11px] text-text-sec truncate max-w-xl">
-                            {info.description}
+                            {t(info.description)}
                           </p>
                         </div>
                       </div>
@@ -632,19 +634,19 @@ export function RolesManagementScreen() {
                       <div className="flex items-center gap-3 shrink-0">
                         {isAllActive ? (
                           <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300">
-                            Acceso Total (5/5)
+                            {t('Acceso Total (5/5)')}
                           </span>
                         ) : isNoneActive ? (
                           <span className="text-[11px] font-medium px-2 py-0.5 rounded bg-gray-100 dark:bg-zinc-800 text-text-ter">
-                            Sin Acceso
+                            {t('Sin Acceso')}
                           </span>
                         ) : perm.canRead && activeCount === 1 ? (
                           <span className="text-[11px] font-medium px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
-                            Solo Lectura
+                            {t('Solo Lectura')}
                           </span>
                         ) : (
                           <span className="text-[11px] font-medium px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
-                            {activeCount} de 5 activos
+                            {t('{activeCount} de 5 activos', { activeCount })}
                           </span>
                         )}
 
@@ -656,7 +658,7 @@ export function RolesManagementScreen() {
                           }}
                           className="text-[11px] text-emerald-700 dark:text-emerald-400 hover:underline font-semibold hidden sm:inline"
                         >
-                          {isAllActive ? 'Desactivar todo' : 'Activar todo'}
+                          {isAllActive ? t('Desactivar todo') : t('Activar todo')}
                         </button>
 
                         <div className={`text-text-ter transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
@@ -672,8 +674,8 @@ export function RolesManagementScreen() {
                             <ToggleSwitch
                               checked={perm.canRead}
                               onChange={(val) => handleTogglePerm(mod, 'canRead', val)}
-                              label="Lectura / Visualización"
-                              description="Acceder al módulo y ver información, listados y métricas."
+                              label={t('Lectura / Visualización')}
+                              description={t('Acceder al módulo y ver información, listados y métricas.')}
                               id={`switch-${mod}-read`}
                               size="md"
                             />
@@ -683,8 +685,8 @@ export function RolesManagementScreen() {
                             <ToggleSwitch
                               checked={perm.canCreate}
                               onChange={(val) => handleTogglePerm(mod, 'canCreate', val)}
-                              label="Creación"
-                              description="Dar de alta y registrar nuevos elementos o registros."
+                              label={t('Creación')}
+                              description={t('Dar de alta y registrar nuevos elementos o registros.')}
                               id={`switch-${mod}-create`}
                               size="md"
                             />
@@ -694,8 +696,8 @@ export function RolesManagementScreen() {
                             <ToggleSwitch
                               checked={perm.canUpdate}
                               onChange={(val) => handleTogglePerm(mod, 'canUpdate', val)}
-                              label="Edición / Modificación"
-                              description="Modificar y actualizar campos, estados y configuraciones."
+                              label={t('Edición / Modificación')}
+                              description={t('Modificar y actualizar campos, estados y configuraciones.')}
                               id={`switch-${mod}-update`}
                               size="md"
                             />
@@ -705,8 +707,8 @@ export function RolesManagementScreen() {
                             <ToggleSwitch
                               checked={perm.canDelete}
                               onChange={(val) => handleTogglePerm(mod, 'canDelete', val)}
-                              label="Eliminación"
-                              description="Borrar o dar de baja registros de manera destructiva."
+                              label={t('Eliminación')}
+                              description={t('Borrar o dar de baja registros de manera destructiva.')}
                               id={`switch-${mod}-delete`}
                               size="md"
                             />
@@ -716,8 +718,8 @@ export function RolesManagementScreen() {
                             <ToggleSwitch
                               checked={perm.canExport}
                               onChange={(val) => handleTogglePerm(mod, 'canExport', val)}
-                              label="Exportación de Datos"
-                              description="Descargar reportes ejecutivos, planillas Excel, CSV o expedientes normativos."
+                              label={t('Exportación de Datos')}
+                              description={t('Descargar reportes ejecutivos, planillas Excel, CSV o expedientes normativos.')}
                               id={`switch-${mod}-export`}
                               size="md"
                             />
@@ -735,10 +737,10 @@ export function RolesManagementScreen() {
                 {hasChanges ? (
                   <span className="text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                    Tenés cambios sin guardar
+                    {t('Tenés cambios sin guardar')}
                   </span>
                 ) : (
-                  <span>Permisos sincronizados con el servidor</span>
+                  <span>{t('Permisos sincronizados con el servidor')}</span>
                 )}
               </div>
 
@@ -748,7 +750,7 @@ export function RolesManagementScreen() {
                   onClick={handleCloseEditor}
                   className="px-4 py-2 border border-gray-border dark:border-gray-700 rounded-lg text-xs font-semibold text-text-sec hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                 >
-                  Cancelar
+                  {t('Cancelar')}
                 </button>
                 <button
                   type="button"
@@ -759,12 +761,12 @@ export function RolesManagementScreen() {
                   {isSaving ? (
                     <>
                       <Icon name="refresh" size={13} className="animate-spin" />
-                      <span>Guardando…</span>
+                      <span>{t('Guardando…')}</span>
                     </>
                   ) : (
                     <>
                       <Icon name="check" size={13} />
-                      <span>Guardar Permisos</span>
+                      <span>{t('Guardar Permisos')}</span>
                     </>
                   )}
                 </button>
@@ -780,7 +782,7 @@ export function RolesManagementScreen() {
             <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800">
               <h2 className="text-base font-bold text-text-pri flex items-center gap-2">
                 <Icon name="shield" size={18} className="text-emerald-700 dark:text-emerald-400" />
-                Crear Nuevo Rol Personalizado
+                {t('Crear Nuevo Rol Personalizado')}
               </h2>
               <button
                 type="button"
@@ -794,12 +796,12 @@ export function RolesManagementScreen() {
             <form onSubmit={handleCreateSubmit} className="space-y-4 pt-1">
               <div>
                 <label className="block text-xs font-semibold text-text-pri mb-1">
-                  Nombre del Rol <span className="text-red-500">*</span>
+                  {t('Nombre del Rol')}{' '}<span className="text-red-500">*</span>
                 </label>
                 <input
                   required
                   type="text"
-                  placeholder="ej. Preceptor, Tutor de Acompañamiento, Auditor Contable"
+                  placeholder={t('ej. Preceptor, Tutor de Acompañamiento, Auditor Contable')}
                   value={newRoleName}
                   onChange={(e) => {
                     setNewRoleName(e.target.value);
@@ -819,23 +821,23 @@ export function RolesManagementScreen() {
 
               <div>
                 <label className="block text-xs font-semibold text-text-pri mb-1">
-                  Identificador Único (slug)
+                  {t('Identificador Único (slug)')}
                 </label>
                 <input
                   type="text"
-                  placeholder="ej. preceptor_academico"
+                  placeholder={t('ej. preceptor_academico')}
                   value={newRoleId}
                   onChange={(e) => setNewRoleId(e.target.value)}
                   className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-3 py-2 text-xs font-mono bg-surface dark:bg-[#131620] text-text-pri focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
                 />
-                <span className="text-[10.5px] text-text-ter">Se generará automáticamente si lo dejás vacío.</span>
+                <span className="text-[10.5px] text-text-ter">{t('Se generará automáticamente si lo dejás vacío.')}</span>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-text-pri mb-1">Descripción</label>
+                <label className="block text-xs font-semibold text-text-pri mb-1">{t('Descripción')}</label>
                 <textarea
                   rows={2}
-                  placeholder="Responsabilidades y alcance de este rol dentro de la institución..."
+                  placeholder={t('Responsabilidades y alcance de este rol dentro de la institución...')}
                   value={newRoleDesc}
                   onChange={(e) => setNewRoleDesc(e.target.value)}
                   className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-3 py-2 text-xs bg-surface dark:bg-[#131620] text-text-pri focus:outline-hidden focus:ring-2 focus:ring-emerald-500 resize-none"
@@ -844,19 +846,19 @@ export function RolesManagementScreen() {
 
               <div>
                 <label className="block text-xs font-semibold text-text-pri mb-1">
-                  Plantilla de Permisos Inicial
+                  {t('Plantilla de Permisos Inicial')}
                 </label>
                 <select
                   value={newRoleTemplate}
                   onChange={(e) => setNewRoleTemplate(e.target.value)}
                   className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-3 py-2 text-xs bg-surface dark:bg-[#131620] text-text-pri focus:outline-hidden focus:ring-2 focus:ring-emerald-500 cursor-pointer"
                 >
-                  <option value="docente">Copiar permisos de Docente Titular</option>
-                  <option value="coordinador">Copiar permisos de Coordinador Pedagógico</option>
-                  <option value="admin">Copiar permisos de Administrador Global</option>
-                  <option value="">Iniciar sin ningún permiso (Vacío)</option>
+                  <option value="docente">{t('Copiar permisos de Docente Titular')}</option>
+                  <option value="coordinador">{t('Copiar permisos de Coordinador Pedagógico')}</option>
+                  <option value="admin">{t('Copiar permisos de Administrador Global')}</option>
+                  <option value="">{t('Iniciar sin ningún permiso (Vacío)')}</option>
                 </select>
-                <span className="text-[10.5px] text-text-ter">Luego podrás ajustar cada interruptor de permiso libremente.</span>
+                <span className="text-[10.5px] text-text-ter">{t('Luego podrás ajustar cada interruptor de permiso libremente.')}</span>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-100 dark:border-gray-800">
@@ -865,14 +867,14 @@ export function RolesManagementScreen() {
                   onClick={() => setIsCreateOpen(false)}
                   className="px-4 py-2 border border-gray-border dark:border-gray-700 rounded-lg text-xs font-semibold text-text-sec hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                 >
-                  Cancelar
+                  {t('Cancelar')}
                 </button>
                 <button
                   type="submit"
                   disabled={isCreating}
                   className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 disabled:opacity-50 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer"
                 >
-                  {isCreating ? 'Creando…' : 'Crear Rol y Configurar'}
+                  {isCreating ? t('Creando…') : t('Crear Rol y Configurar')}
                 </button>
               </div>
             </form>

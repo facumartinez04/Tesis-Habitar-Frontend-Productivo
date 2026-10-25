@@ -23,6 +23,8 @@ import { confirmDestructive, showError } from '../../../lib/alerts';
 import type { ComprehensionAxis, EducationLevel, Institution, AiProvider, AiKeySource } from '../../../types/institution';
 import type { Course } from '../../../types/activity';
 import type { Role } from '../../../types/auth';
+import { LOCALES, setContextLocale, t, useI18n, intlLocale, type Locale } from '../../../i18n';
+import { sessionStore } from '../../../store/sessionStore';
 
 const ROLE_LABEL: Record<Role, string> = { docente: 'Docente', coordinador: 'Coordinador/a',
   director: 'Director/a', admin: 'Admin' };
@@ -30,6 +32,7 @@ const LEVEL_LABEL: Record<EducationLevel, string> = { primario: 'Primario', secu
 const AXIS_LABEL: Record<ComprehensionAxis, string> = { literal: 'Literal', inferencial: 'Inferencial', critico: 'Crítico' };
 
 export function InstitutionSettingsScreen() {
+  useI18n();
   const session = useAuthGuard(['coordinador', 'admin']);
   const { message, showToast } = useToast();
 
@@ -49,6 +52,8 @@ export function InstitutionSettingsScreen() {
   const [aiCustomApiKey, setAiCustomApiKey] = useState('');
   const [aiModel, setAiModel] = useState('');
   const [studentIdMode, setStudentIdMode] = useState<'lista' | 'nombre'>('nombre');
+  const [defaultLanguage, setDefaultLanguage] = useState<Locale>('es');
+  const [savingLanguage, setSavingLanguage] = useState(false);
   const [alertThreshold, setAlertThreshold] = useState(60);
   const [alertEmailsEnabled, setAlertEmailsEnabled] = useState(true);
   const [savingStudents, setSavingStudents] = useState(false);
@@ -93,10 +98,28 @@ export function InstitutionSettingsScreen() {
       setAiCustomApiKey('');
       setTestResult(null);
       setStudentIdMode(institution.studentIdMode);
+      setDefaultLanguage(institution.defaultLanguage);
       setAlertThreshold(institution.alertThreshold);
       setAlertEmailsEnabled(institution.alertEmailsEnabled);
     }
   }, [institution]);
+
+  async function handleSaveLanguage() {
+    if (!session) return;
+    setSavingLanguage(true);
+    try {
+      const updated = await updateInstitutionConfig(session.user.institutionId, { defaultLanguage });
+      setInstitution(updated);
+      const current = sessionStore.get();
+      if (current) sessionStore.set({ ...current, institutionLanguage: updated.defaultLanguage });
+      setContextLocale(updated.defaultLanguage);
+      showToast(t('Idioma de la institución guardado'));
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : t('Error al guardar la configuración'));
+    } finally {
+      setSavingLanguage(false);
+    }
+  }
 
   async function handleSaveStudentsAndAlerts() {
     if (!session) return;
@@ -108,9 +131,9 @@ export function InstitutionSettingsScreen() {
         alertEmailsEnabled,
       });
       setInstitution(updated);
-      showToast('Identificación de alumnos y alertas guardadas');
+      showToast(t('Identificación de alumnos y alertas guardadas'));
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Error al guardar la configuración');
+      showToast(err instanceof Error ? err.message : t('Error al guardar la configuración'));
     } finally {
       setSavingStudents(false);
     }
@@ -134,9 +157,9 @@ export function InstitutionSettingsScreen() {
       });
       setInstitution(updated);
       setAiCustomApiKey('');
-      showToast('Configuración institucional e IA guardada');
+      showToast(t('Configuración institucional e IA guardada'));
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Error al guardar la configuración');
+      showToast(err instanceof Error ? err.message : t('Error al guardar la configuración'));
     } finally {
       setSavingConfig(false);
     }
@@ -155,12 +178,12 @@ export function InstitutionSettingsScreen() {
       });
       setTestResult(res);
       if (res.success) {
-        showToast('¡Prueba de conexión exitosa con la IA!');
+        showToast(t('¡Prueba de conexión exitosa con la IA!'));
       }
     } catch (err) {
       setTestResult({
         success: false,
-        error: err instanceof Error ? err.message : 'Fallo en la prueba de conexión',
+        error: err instanceof Error ? err.message : t('Fallo en la prueba de conexión'),
       });
     } finally {
       setTestingAi(false);
@@ -173,10 +196,10 @@ export function InstitutionSettingsScreen() {
     try {
       await inviteInstitutionUser(session.user.institutionId, { ...inviteForm, provider: 'google' });
       setInviteForm({ name: '', email: '', role: 'docente' });
-      showToast('Usuario invitado');
+      showToast(t('Usuario invitado'));
       refresh();
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'No se pudo invitar al usuario');
+      showToast(err instanceof Error ? err.message : t('No se pudo invitar al usuario'));
     } finally {
       setInviting(false);
     }
@@ -186,9 +209,9 @@ export function InstitutionSettingsScreen() {
     if (!session) return;
     if (user.active) {
       const confirmed = await confirmDestructive({
-        title: `¿Desactivar a ${user.name}?`,
-        text: 'Va a perder el acceso a Habitar hasta que lo vuelvas a activar.',
-        confirmButtonText: 'Sí, desactivar',
+        title: t('¿Desactivar a {name}?', { name: user.name }),
+        text: t('Va a perder el acceso a Habitar hasta que lo vuelvas a activar.'),
+        confirmButtonText: t('Sí, desactivar'),
       });
       if (!confirmed) return;
     }
@@ -196,7 +219,7 @@ export function InstitutionSettingsScreen() {
       await setInstitutionUserActive(session.user.institutionId, user.id, !user.active);
       refresh();
     } catch (err) {
-      showError('No se pudo actualizar el usuario', err instanceof Error ? err.message : undefined);
+      showError(t('No se pudo actualizar el usuario'), err instanceof Error ? err.message : undefined);
     }
   }
 
@@ -209,23 +232,23 @@ export function InstitutionSettingsScreen() {
   async function handleSaveRetention() {
     if (!session) return;
     await updateRetentionPolicy(session.user.institutionId, retentionMonths);
-    showToast('Política de retención actualizada');
+    showToast(t('Política de retención actualizada'));
     refresh();
   }
 
   async function handlePurge() {
     if (!session) return;
     const confirmed = await confirmDestructive({
-      title: '¿Purgar datos vencidos?',
-      text: `Se van a eliminar de forma permanente los alumnos dados de alta hace más de ${retentionMonths} meses. Esta acción no se puede deshacer.`,
-      confirmButtonText: 'Sí, purgar',
+      title: t('¿Purgar datos vencidos?'),
+      text: t('Se van a eliminar de forma permanente los alumnos dados de alta hace más de {retentionMonths} meses. Esta acción no se puede deshacer.', { retentionMonths }),
+      confirmButtonText: t('Sí, purgar'),
     });
     if (!confirmed) return;
 
     setPurging(true);
     try {
       const result = await purgeExpiredData(session.user.institutionId);
-      showToast(`Purga completada: ${result.purgedStudentCount} alumnos eliminados`);
+      showToast(t('Purga completada: {purgedStudentCount} alumnos eliminados', { purgedStudentCount: result.purgedStudentCount }));
       refresh();
     } finally {
       setPurging(false);
@@ -249,50 +272,66 @@ export function InstitutionSettingsScreen() {
   return (
     <div className="space-y-5">
       <Toast message={message} />
-      <div className="text-lg font-semibold text-text-pri tracking-tight">Configuración institucional</div>
+      <div className="text-lg font-semibold text-text-pri tracking-tight">{t('Configuración institucional')}</div>
 
       <Card>
-        <div className="text-[12.5px] font-medium mb-3">CU-05-06 · Niveles y ejes de comprensión habilitados</div>
+        <div className="text-[12.5px] font-medium mb-3">{t('CU-05-06 · Niveles y ejes de comprensión habilitados')}</div>
         <div className="flex flex-wrap gap-4">
           <div>
-            <div className="text-[11px] text-text-ter mb-1.5">Niveles</div>
+            <div className="text-[11px] text-text-ter mb-1.5">{t('Niveles')}</div>
             <div className="flex gap-2">
               {(['primario', 'secundario'] as EducationLevel[]).map((level) => (
                 <label key={level} className="flex items-center gap-1.5 text-[12px] bg-surface rounded-md px-2.5 py-1.5 cursor-pointer">
                   <input type="checkbox" checked={levels.includes(level)} onChange={() => toggle(levels, level, setLevels)} />
-                  {LEVEL_LABEL[level]}
+                  {t(LEVEL_LABEL[level])}
                 </label>
               ))}
             </div>
           </div>
           <div>
-            <div className="text-[11px] text-text-ter mb-1.5">Ejes de comprensión</div>
+            <div className="text-[11px] text-text-ter mb-1.5">{t('Ejes de comprensión')}</div>
             <div className="flex gap-2">
               {(['literal', 'inferencial', 'critico'] as ComprehensionAxis[]).map((axis) => (
                 <label key={axis} className="flex items-center gap-1.5 text-[12px] bg-surface rounded-md px-2.5 py-1.5 cursor-pointer">
                   <input type="checkbox" checked={axes.includes(axis)} onChange={() => toggle(axes, axis, setAxes)} />
-                  {AXIS_LABEL[axis]}
+                  {t(AXIS_LABEL[axis])}
                 </label>
               ))}
             </div>
           </div>
         </div>
         <button onClick={handleSaveConfig} disabled={savingConfig} className="mt-3 bg-green-dark text-white text-[11.5px] px-3 py-1.5 rounded-md disabled:opacity-50">
-          {savingConfig ? 'Guardando…' : 'Guardar configuración'}
+          {savingConfig ? t('Guardando…') : t('Guardar configuración')}
         </button>
       </Card>
 
       <Card>
-        <div className="text-[12.5px] font-medium mb-1">Identificación de los alumnos</div>
+        <div className="text-[12.5px] font-medium mb-1">{t('Idioma de la institución')}</div>
         <div className="text-[11.5px] text-text-sec mb-3 leading-relaxed">
-          Los alumnos no crean cuenta. Por defecto se identifican con su nombre y apellido, que es lo que ve el docente en el
-          panel y en los resultados. Si la institución prefiere no guardar nombres de menores, puede pedir sólo el número de
-          lista: el docente sabe quién es quién por su lista del curso.
+          {t('Es el idioma con el que los alumnos ven las actividades y el aula, el que usan los correos de invitación y alertas, y el que tiene la plataforma para quien todavía no eligió uno. Cada docente puede cambiar el suyo con el selector de la barra superior.')}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {LOCALES.map((option) => (
+            <label key={option.id} className="flex items-center gap-1.5 text-[12px] bg-surface rounded-md px-2.5 py-1.5 cursor-pointer">
+              <input type="radio" name="defaultLanguage" checked={defaultLanguage === option.id} onChange={() => setDefaultLanguage(option.id)} />
+              {option.label}
+            </label>
+          ))}
+          <button onClick={handleSaveLanguage} disabled={savingLanguage} className="bg-green-dark text-white text-[11.5px] px-3 py-1.5 rounded-md disabled:opacity-50">
+            {savingLanguage ? t('Guardando…') : t('Guardar idioma')}
+          </button>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="text-[12.5px] font-medium mb-1">{t('Identificación de los alumnos')}</div>
+        <div className="text-[11.5px] text-text-sec mb-3 leading-relaxed">
+          {t('Los alumnos no crean cuenta. Por defecto se identifican con su nombre y apellido, que es lo que ve el docente en el panel y en los resultados. Si la institución prefiere no guardar nombres de menores, puede pedir sólo el número de lista: el docente sabe quién es quién por su lista del curso.')}
         </div>
         <div className="flex flex-wrap gap-2 mb-4">
           {([
-            { value: 'nombre', label: 'Nombre y apellido' },
-            { value: 'lista', label: 'Sólo número de lista' },
+            { value: 'nombre', label: t('Nombre y apellido') },
+            { value: 'lista', label: t('Sólo número de lista') },
           ] as const).map((opt) => (
             <label key={opt.value} className="flex items-center gap-1.5 text-[12px] bg-surface rounded-md px-2.5 py-1.5 cursor-pointer">
               <input type="radio" name="studentIdMode" checked={studentIdMode === opt.value} onChange={() => setStudentIdMode(opt.value)} />
@@ -301,14 +340,13 @@ export function InstitutionSettingsScreen() {
           ))}
         </div>
 
-        <div className="text-[12.5px] font-medium mb-1">Alertas de rendimiento (CU-03-03)</div>
+        <div className="text-[12.5px] font-medium mb-1">{t('Alertas de rendimiento (CU-03-03)')}</div>
         <div className="text-[11.5px] text-text-sec mb-2 leading-relaxed">
-          Cuando el promedio de un curso en un eje, en sus últimas cinco actividades, queda debajo del umbral, Habitar genera
-          una alerta. Más de 15 puntos debajo, la alerta es crítica.
+          {t('Cuando el promedio de un curso en un eje, en sus últimas cinco actividades, queda debajo del umbral, Habitar genera una alerta. Más de 15 puntos debajo, la alerta es crítica.')}
         </div>
         <div className="flex flex-wrap items-center gap-4 mb-3">
           <label className="flex items-center gap-2 text-[12px]">
-            Umbral
+            {t('Umbral')}
             <input
               type="number"
               min={0}
@@ -317,11 +355,11 @@ export function InstitutionSettingsScreen() {
               onChange={(e) => setAlertThreshold(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
               className="w-[70px] px-2 py-1 border border-gray-border rounded-md text-[12px] bg-white"
             />
-            puntos
+            {t('puntos')}
           </label>
           <label className="flex items-center gap-1.5 text-[12px] cursor-pointer">
             <input type="checkbox" checked={alertEmailsEnabled} onChange={(e) => setAlertEmailsEnabled(e.target.checked)} />
-            Avisar por correo a la coordinación
+            {t('Avisar por correo a la coordinación')}
           </label>
         </div>
         <button
@@ -329,7 +367,7 @@ export function InstitutionSettingsScreen() {
           disabled={savingStudents}
           className="bg-green-dark text-white text-[11.5px] px-3 py-1.5 rounded-md disabled:opacity-50"
         >
-          {savingStudents ? 'Guardando…' : 'Guardar identificación y alertas'}
+          {savingStudents ? t('Guardando…') : t('Guardar identificación y alertas')}
         </button>
       </Card>
 
@@ -338,42 +376,42 @@ export function InstitutionSettingsScreen() {
           <div>
             <div className="text-[13px] font-semibold text-text-pri flex items-center gap-1.5">
               <Icon name="sparkles" size={14} className="text-green-dark" />
-              Inteligencia Artificial y Modelos Pedagógicos
+              {t('Inteligencia Artificial y Modelos Pedagógicos')}
             </div>
             <div className="text-[11.5px] text-text-sec mt-0.5">
-              Motor para la generación de actividades de comprensión lectora (ejes literal, inferencial y crítico).
+              {t('Motor para la generación de actividades de comprensión lectora (ejes literal, inferencial y crítico).')}
             </div>
           </div>
           <Badge color={aiProvider === 'openai' ? 'blue' : 'green'}>
-            {aiProvider === 'openai' ? 'OpenAI (ChatGPT)' : 'DeepSeek'} · {aiKeySource === 'custom' ? 'Clave Propia (BYOK)' : 'Clave Habitar'}
+            {aiProvider === 'openai' ? t('OpenAI (ChatGPT)') : 'DeepSeek'} · {aiKeySource === 'custom' ? t('Clave Propia (BYOK)') : t('Clave Habitar')}
           </Badge>
         </div>
 
         {aiUsage && (
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11.5px] text-text-sec bg-surface border border-gray-border rounded-lg px-3 py-2 mt-1">
             <span>
-              Gasto de IA este mes:{' '}
+              {t('Gasto de IA este mes:')}{' '}
               <strong className="text-text-pri tabular-nums">
-                US$ {(aiUsage.spentUsd ?? 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
+                {t('US$')}{' '}{(aiUsage.spentUsd ?? 0).toLocaleString(intlLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
               </strong>
             </span>
             <span>
-              Tope mensual:{' '}
+              {t('Tope mensual:')}{' '}
               <strong className="text-text-pri tabular-nums">
-                {aiUsage.budgetUsd === null || aiUsage.budgetUsd === undefined ? 'sin tope' : `US$ ${aiUsage.budgetUsd.toLocaleString('es-AR')}`}
+                {aiUsage.budgetUsd === null || aiUsage.budgetUsd === undefined ? t('sin tope') : `US$ ${aiUsage.budgetUsd.toLocaleString(intlLocale())}`}
               </strong>
             </span>
             <span>
-              Generaciones: <strong className="text-text-pri tabular-nums">{aiUsage.used}</strong> de {aiUsage.quota}
+              {t('Generaciones:')}{' '}<strong className="text-text-pri tabular-nums">{aiUsage.used}</strong>{' '}{t('de {quota}', { quota: aiUsage.quota })}
             </span>
-            {aiUsage.overBudget && <span className="text-red-700 dark:text-red-300 font-semibold">Tope alcanzado: la IA queda pausada hasta el mes que viene</span>}
+            {aiUsage.overBudget && <span className="text-red-700 dark:text-red-300 font-semibold">{t('Tope alcanzado: la IA queda pausada hasta el mes que viene')}</span>}
           </div>
         )}
 
         <div className="space-y-4 pt-1">
           <div>
             <div className="text-[11px] font-semibold text-text-sec uppercase tracking-wider mb-2">
-              1. Proveedor de Inteligencia Artificial
+              {t('1. Proveedor de Inteligencia Artificial')}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <button
@@ -392,11 +430,11 @@ export function InstitutionSettingsScreen() {
                 <div className="flex items-center justify-between mb-1">
                   <span className="font-semibold text-[13px] text-text-pri">DeepSeek</span>
                   {aiProvider === 'deepseek' && (
-                    <span className="text-[10.5px] bg-green-dark text-white px-2 py-0.5 rounded-full font-medium">Activo</span>
+                    <span className="text-[10.5px] bg-green-dark text-white px-2 py-0.5 rounded-full font-medium">{t('Activo')}</span>
                   )}
                 </div>
                 <p className="text-[11.5px] text-text-sec">
-                  Modelo con alta capacidad de razonamiento y comprensión textual en español rioplatense.
+                  {t('Modelo con alta capacidad de razonamiento y comprensión textual en español rioplatense.')}
                 </p>
               </button>
 
@@ -414,13 +452,13 @@ export function InstitutionSettingsScreen() {
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-semibold text-[13px] text-text-pri">OpenAI (ChatGPT)</span>
+                  <span className="font-semibold text-[13px] text-text-pri">{t('OpenAI (ChatGPT)')}</span>
                   {aiProvider === 'openai' && (
-                    <span className="text-[10.5px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-medium">Activo</span>
+                    <span className="text-[10.5px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-medium">{t('Activo')}</span>
                   )}
                 </div>
                 <p className="text-[11.5px] text-text-sec">
-                  Modelos GPT-4o-mini y GPT-4o reconocidos mundialmente por velocidad y rigor pedagógico.
+                  {t('Modelos GPT-4o-mini y GPT-4o reconocidos mundialmente por velocidad y rigor pedagógico.')}
                 </p>
               </button>
             </div>
@@ -428,7 +466,7 @@ export function InstitutionSettingsScreen() {
 
           <div>
             <div className="text-[11px] font-semibold text-text-sec uppercase tracking-wider mb-2">
-              2. Origen de la Clave de API (Key Source)
+              {t('2. Origen de la Clave de API (Key Source)')}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <label
@@ -449,9 +487,9 @@ export function InstitutionSettingsScreen() {
                   className="mt-0.5 text-green-dark focus:ring-green-dark"
                 />
                 <div>
-                  <div className="font-medium text-[12.5px] text-text-pri">Clave Central de Habitar (Servidor)</div>
+                  <div className="font-medium text-[12.5px] text-text-pri">{t('Clave Central de Habitar (Servidor)')}</div>
                   <div className="text-[11.5px] text-text-sec mt-0.5">
-                    Utiliza la infraestructura central. El consumo se descuenta de la cuota mensual del plan contratado.
+                    {t('Utiliza la infraestructura central. El consumo se descuenta de la cuota mensual del plan contratado.')}
                   </div>
                 </div>
               </label>
@@ -474,9 +512,9 @@ export function InstitutionSettingsScreen() {
                   className="mt-0.5 text-green-dark focus:ring-green-dark"
                 />
                 <div>
-                  <div className="font-medium text-[12.5px] text-text-pri">Clave Propia de la Escuela (BYOK)</div>
+                  <div className="font-medium text-[12.5px] text-text-pri">{t('Clave Propia de la Escuela (BYOK)')}</div>
                   <div className="text-[11.5px] text-text-sec mt-0.5">
-                    Tu colegio usa su propia API Key de OpenAI o DeepSeek. No consume cuotas de la plataforma Habitar.
+                    {t('Tu colegio usa su propia API Key de OpenAI o DeepSeek. No consume cuotas de la plataforma Habitar.')}
                   </div>
                 </div>
               </label>
@@ -488,11 +526,11 @@ export function InstitutionSettingsScreen() {
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-[11.5px] font-medium text-text-pri">
-                    API Key de {aiProvider === 'openai' ? 'OpenAI' : 'DeepSeek'}
+                    {t('API Key de')}{' '}{aiProvider === 'openai' ? 'OpenAI' : 'DeepSeek'}
                   </label>
                   {institution?.hasCustomApiKey && (
                     <span className="text-[10.5px] text-text-sec font-mono bg-white px-2 py-0.5 rounded border border-gray-border">
-                      Clave guardada: {institution.aiCustomApiKeyMasked}
+                      {t('Clave guardada: {aiCustomApiKeyMasked}', { aiCustomApiKeyMasked: institution.aiCustomApiKeyMasked })}
                     </span>
                   )}
                 </div>
@@ -506,8 +544,8 @@ export function InstitutionSettingsScreen() {
                     }}
                     placeholder={
                       institution?.hasCustomApiKey
-                        ? 'Dejá vacío para conservar la clave actual, o ingresá una nueva'
-                        : 'Ingresá tu clave de API (sk-...)'
+                        ? t('Dejá vacío para conservar la clave actual, o ingresá una nueva')
+                        : t('Ingresá tu clave de API (sk-...)')
                     }
                     className="w-full pr-20 pl-3 py-2 border border-gray-border rounded-md text-[12px] font-mono bg-white"
                   />
@@ -516,17 +554,17 @@ export function InstitutionSettingsScreen() {
                     onClick={() => setShowApiKey(!showApiKey)}
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-text-sec hover:text-text-pri px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded"
                   >
-                    {showApiKey ? 'Ocultar' : 'Mostrar'}
+                    {showApiKey ? t('Ocultar') : t('Mostrar')}
                   </button>
                 </div>
                 <p className="text-[10.5px] text-text-ter mt-1">
-                  Tu clave se almacena de forma cifrada en la base de datos y nunca se comparte con terceros.
+                  {t('Tu clave se almacena de forma cifrada en la base de datos y nunca se comparte con terceros.')}
                 </p>
               </div>
 
               <div>
                 <label className="text-[11.5px] font-medium text-text-pri block mb-1">
-                  Modelo Pedagógico Asignado
+                  {t('Modelo Pedagógico Asignado')}
                 </label>
                 <select
                   value={aiModel}
@@ -538,14 +576,14 @@ export function InstitutionSettingsScreen() {
                 >
                   {aiProvider === 'openai' ? (
                     <>
-                      <option value="gpt-4o-mini">gpt-4o-mini (Recomendado: balance óptimo de velocidad y costo)</option>
-                      <option value="gpt-4o">gpt-4o (Máxima capacidad de razonamiento profundo)</option>
-                      <option value="gpt-3.5-turbo">gpt-3.5-turbo (Legacy)</option>
+                      <option value="gpt-4o-mini">{t('gpt-4o-mini (Recomendado: balance óptimo de velocidad y costo)')}</option>
+                      <option value="gpt-4o">{t('gpt-4o (Máxima capacidad de razonamiento profundo)')}</option>
+                      <option value="gpt-3.5-turbo">{t('gpt-3.5-turbo (Legacy)')}</option>
                     </>
                   ) : (
                     <>
-                      <option value="deepseek-chat">deepseek-chat (Recomendado: alta fluidez y precisión pedagógica)</option>
-                      <option value="deepseek-reasoner">deepseek-reasoner (Modo razonamiento reflexivo)</option>
+                      <option value="deepseek-chat">{t('deepseek-chat (Recomendado: alta fluidez y precisión pedagógica)')}</option>
+                      <option value="deepseek-reasoner">{t('deepseek-reasoner (Modo razonamiento reflexivo)')}</option>
                     </>
                   )}
                 </select>
@@ -568,7 +606,7 @@ export function InstitutionSettingsScreen() {
               />
               <div>
                 <span className="font-semibold block">
-                  {testResult.success ? 'Validación exitosa' : 'Error en la conexión'}
+                  {testResult.success ? t('Validación exitosa') : t('Error en la conexión')}
                 </span>
                 <span>{testResult.success ? testResult.message : testResult.error}</span>
               </div>
@@ -583,7 +621,7 @@ export function InstitutionSettingsScreen() {
               className="flex items-center gap-1.5 bg-surface hover:bg-gray-100 text-text-pri border border-gray-border text-[11.5px] font-medium px-3 py-1.5 rounded-md transition-colors disabled:opacity-50"
             >
               <Icon name="refresh-cw" size={12} className={testingAi ? 'animate-spin' : ''} />
-              {testingAi ? 'Probando conexión…' : 'Probar conexión con la IA'}
+              {testingAi ? t('Probando conexión…') : t('Probar conexión con la IA')}
             </button>
 
             <button
@@ -592,24 +630,24 @@ export function InstitutionSettingsScreen() {
               disabled={savingConfig}
               className="bg-green-dark hover:bg-green-hover text-white text-[11.5px] font-medium px-3.5 py-1.5 rounded-md transition-colors disabled:opacity-50"
             >
-              {savingConfig ? 'Guardando…' : 'Guardar configuración'}
+              {savingConfig ? t('Guardando…') : t('Guardar configuración')}
             </button>
           </div>
         </div>
       </Card>
 
       <Card>
-        <div className="text-[12.5px] font-medium mb-3">CU-05-05 · Usuarios y roles de la institución</div>
+        <div className="text-[12.5px] font-medium mb-3">{t('CU-05-05 · Usuarios y roles de la institución')}</div>
 
         <div className="flex flex-wrap gap-2 mb-3.5">
           <input
-            placeholder="Nombre"
+            placeholder={t('Nombre')}
             value={inviteForm.name}
             onChange={(e) => setInviteForm((f) => ({ ...f, name: e.target.value }))}
             className="border border-gray-border rounded-md px-2.5 py-1.5 text-[12px] flex-1 min-w-[140px]"
           />
           <input
-            placeholder="Email institucional"
+            placeholder={t('Email institucional')}
             value={inviteForm.email}
             onChange={(e) => setInviteForm((f) => ({ ...f, email: e.target.value }))}
             className="border border-gray-border rounded-md px-2.5 py-1.5 text-[12px] flex-1 min-w-[180px]"
@@ -619,23 +657,23 @@ export function InstitutionSettingsScreen() {
             onChange={(e) => setInviteForm((f) => ({ ...f, role: e.target.value as Role }))}
             className="form-select border border-gray-border rounded-md px-2.5 py-1.5 text-[12px]"
           >
-            <option value="docente">{ROLE_LABEL.docente}</option>
-            <option value="coordinador">{ROLE_LABEL.coordinador}</option>
+            <option value="docente">{t(ROLE_LABEL.docente)}</option>
+            <option value="coordinador">{t(ROLE_LABEL.coordinador)}</option>
           </select>
           <button onClick={handleInvite} disabled={inviting} className="bg-green-dark text-white text-[11.5px] px-3 py-1.5 rounded-md disabled:opacity-50">
-            {inviting ? 'Invitando…' : 'Invitar'}
+            {inviting ? t('Invitando…') : t('Invitar')}
           </button>
         </div>
 
         <TableWrap>
           <thead>
             <tr>
-              <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Nombre</th>
-              <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Email</th>
-              <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Rol</th>
-              <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Aulas de Trabajo</th>
-              <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Estado</th>
-              <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Acciones</th>
+              <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">{t('Nombre')}</th>
+              <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">{t('Email')}</th>
+              <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">{t('Rol')}</th>
+              <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">{t('Aulas de Trabajo')}</th>
+              <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">{t('Estado')}</th>
+              <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">{t('Acciones')}</th>
             </tr>
           </thead>
           <tbody>
@@ -649,9 +687,9 @@ export function InstitutionSettingsScreen() {
                     onChange={(e) => handleRoleChange(user, e.target.value as Role)}
                     className="form-select border border-gray-border rounded-md px-2 py-1 text-[11.5px]"
                   >
-                    <option value="docente">{ROLE_LABEL.docente}</option>
-                    <option value="coordinador">{ROLE_LABEL.coordinador}</option>
-                    <option value="admin">{ROLE_LABEL.admin}</option>
+                    <option value="docente">{t(ROLE_LABEL.docente)}</option>
+                    <option value="coordinador">{t(ROLE_LABEL.coordinador)}</option>
+                    <option value="admin">{t(ROLE_LABEL.admin)}</option>
                   </select>
                 </td>
                 <td className="px-2.5 py-2.5 border-b border-gray-border">
@@ -662,7 +700,7 @@ export function InstitutionSettingsScreen() {
                         if (assigned.length === 0) {
                           return (
                             <span className="text-[11px] text-text-sec italic">
-                              Sin aulas
+                              {t('Sin aulas')}
                             </span>
                           );
                         }
@@ -688,7 +726,7 @@ export function InstitutionSettingsScreen() {
                       <button
                         onClick={() => setAssigningTeacher(user)}
                         className="p-1 text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 rounded transition-colors shrink-0"
-                        title="Editar aulas asignadas"
+                        title={t('Editar aulas asignadas')}
                       >
                         <Icon name="edit" size={12} />
                       </button>
@@ -698,7 +736,7 @@ export function InstitutionSettingsScreen() {
                   )}
                 </td>
                 <td className="px-2.5 py-2.5 border-b border-gray-border">
-                  <Badge color={user.active ? 'green' : 'gray'}>{user.active ? 'Activo' : 'Desactivado'}</Badge>
+                  <Badge color={user.active ? 'green' : 'gray'}>{user.active ? t('Activo') : t('Desactivado')}</Badge>
                 </td>
                 <td className="px-2.5 py-2.5 border-b border-gray-border">
                   <div className="flex items-center gap-1.5">
@@ -706,15 +744,15 @@ export function InstitutionSettingsScreen() {
                       <button
                         onClick={() => setAssigningTeacher(user)}
                         className="flex items-center gap-1 bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 rounded-[6px] px-2 py-1 text-[10.5px] font-semibold transition-colors shrink-0"
-                        title="Asignar aulas a este docente"
+                        title={t('Asignar aulas a este docente')}
                       >
                         <Icon name="school" size={11} />
-                        <span>Asignar Aulas</span>
+                        <span>{t('Asignar Aulas')}</span>
                       </button>
                     )}
                     <button onClick={() => handleToggleActive(user)} className="flex items-center gap-1 bg-white border border-gray-border rounded-[6px] px-2 py-1 text-[10.5px]">
                       <Icon name={user.active ? 'lock' : 'check'} size={10} />
-                      {user.active ? 'Desactivar' : 'Reactivar'}
+                      {user.active ? t('Desactivar') : t('Reactivar')}
                     </button>
                   </div>
                 </td>
@@ -725,12 +763,12 @@ export function InstitutionSettingsScreen() {
       </Card>
 
       <Card>
-        <div className="text-[12.5px] font-medium mb-1">CU-04-04 · Retención y purga de datos</div>
+        <div className="text-[12.5px] font-medium mb-1">{t('CU-04-04 · Retención y purga de datos')}</div>
         <div className="text-[11px] text-text-sec mb-3">
-          Los datos de alumnos dados de alta hace más del período configurado son elegibles para purga (Ley 25.326).
+          {t('Los datos de alumnos dados de alta hace más del período configurado son elegibles para purga (Ley 25.326).')}
         </div>
         <div className="flex flex-wrap items-center gap-2.5 mb-3">
-          <label className="text-[12px] text-text-sec">Retener datos por</label>
+          <label className="text-[12px] text-text-sec">{t('Retener datos por')}</label>
           <input
             type="number"
             min={1}
@@ -739,17 +777,17 @@ export function InstitutionSettingsScreen() {
             onChange={(e) => setRetentionMonths(Number(e.target.value))}
             className="w-16 border border-gray-border rounded-md px-2 py-1 text-[12px]"
           />
-          <span className="text-[12px] text-text-sec">meses</span>
+          <span className="text-[12px] text-text-sec">{t('meses')}</span>
           <button onClick={handleSaveRetention} className="bg-white border border-gray-border rounded-md text-[11.5px] px-2.5 py-1.5">
-            Guardar
+            {t('Guardar')}
           </button>
         </div>
         <div className="text-[11px] text-text-ter mb-2.5">
-          Última purga: {retention?.lastPurgeAt ? new Date(retention.lastPurgeAt).toLocaleDateString('es-AR') : 'nunca'}
+          {t('Última purga:')}{' '}{retention?.lastPurgeAt ? new Date(retention.lastPurgeAt).toLocaleDateString(intlLocale()) : t('nunca')}
         </div>
         <button onClick={handlePurge} disabled={purging} className="flex items-center gap-1.5 bg-red text-white text-[11.5px] px-3 py-1.5 rounded-md disabled:opacity-50">
           <Icon name="trash" size={12} />
-          {purging ? 'Purgando…' : 'Ejecutar purga ahora'}
+          {purging ? t('Purgando…') : t('Ejecutar purga ahora')}
         </button>
       </Card>
 
@@ -760,7 +798,7 @@ export function InstitutionSettingsScreen() {
           onClose={() => setAssigningTeacher(null)}
           onSaved={() => {
             refresh();
-            showToast('Aulas asignadas correctamente al docente');
+            showToast(t('Aulas asignadas correctamente al docente'));
           }}
         />
       )}

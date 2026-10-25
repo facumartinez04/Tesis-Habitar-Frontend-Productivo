@@ -5,6 +5,7 @@ import { DocxPages } from '../../ui/DocxPages';
 import { MIN_TEXT_CHARS, openPdf, type PdfHandle } from '../../../../lib/pdfDocument';
 import { extractDocumentWithPreview } from '../../../../lib/documentText';
 import { validateWordCount } from '../../../../services/aiService';
+import { t, useI18n } from '../../../../i18n';
 
 export interface ImportedDocument {
   name: string;
@@ -33,6 +34,7 @@ function countWords(text: string): number {
 }
 
 export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentReviewModalProps) {
+  useI18n();
   const [pdf, setPdf] = useState<PdfHandle | null>(null);
   const [pages, setPages] = useState<PageState[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
@@ -75,7 +77,7 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
           setText(result.text);
         }
       } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : 'No se pudo abrir el documento.');
+        if (!cancelled) setError(err instanceof Error ? err.message : t('No se pudo abrir el documento.'));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -138,23 +140,23 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-2 sm:p-4" role="dialog" aria-modal="true" aria-label="Revisar documento">
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-2 sm:p-4" role="dialog" aria-modal="true" aria-label={t('Revisar documento')}>
       <div className="bg-card-bg border border-gray-border rounded-2xl shadow-2xl w-full max-w-6xl h-[94vh] flex flex-col overflow-hidden">
         <div className="px-5 py-3 border-b border-gray-border flex items-center justify-between gap-3">
           <div className="min-w-0">
             <div className="text-sm font-bold text-text-pri truncate">{doc.name}</div>
             <div className="text-[11.5px] text-text-sec">
               {doc.origin}
-              {pdf && ` · ${pdf.numPages} ${pdf.numPages === 1 ? 'página' : 'páginas'} · elegí las que tienen la lectura`}
+              {pdf && t(' · {numPages} {value} · elegí las que tienen la lectura', { numPages: pdf.numPages, value: pdf.numPages === 1 ? t('página') : t('páginas') })}
             </div>
           </div>
-          <button type="button" onClick={onClose} aria-label="Cerrar" className="text-text-ter hover:text-text-pri p-1.5 rounded-lg cursor-pointer">
+          <button type="button" onClick={onClose} aria-label={t('Cerrar')} className="text-text-ter hover:text-text-pri p-1.5 rounded-lg cursor-pointer">
             <Icon name="close" size={16} />
           </button>
         </div>
 
         {loading ? (
-          <div className="flex-1 flex items-center justify-center"><HabitarLoader size="md" message="Abriendo el documento…" /></div>
+          <div className="flex-1 flex items-center justify-center"><HabitarLoader size="md" message={t('Abriendo el documento…')} /></div>
         ) : error ? (
           <div className="flex-1 flex items-center justify-center p-6">
             <div className="text-sm text-red bg-red-50 border border-red-200 rounded-xl px-4 py-3 max-w-md text-center">{error}</div>
@@ -168,14 +170,14 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
                   const isSelected = selected.includes(n);
                   return (
                     <div key={n} className={`shrink-0 rounded-xl border-2 p-1.5 transition-colors ${active === n ? 'border-emerald-500' : 'border-transparent'}`}>
-                      <button type="button" onClick={() => setActive(n)} className="block cursor-pointer" aria-label={`Ver página ${n}`}>
+                      <button type="button" onClick={() => setActive(n)} className="block cursor-pointer" aria-label={t('Ver página {n}', { n })}>
                         <PageCanvas pdf={pdf} page={n} width={104} />
                       </button>
                       <label className="flex items-center gap-1.5 mt-1.5 text-[11px] text-text-pri cursor-pointer">
                         <input type="checkbox" checked={isSelected} onChange={() => togglePage(n)} className="accent-emerald-600" />
-                        Pág. {n}
+                        {t('Pág. {n}', { n })}
                         {p.needsOcr && (
-                          <span className="ml-auto text-[9.5px] font-bold uppercase text-amber-700 dark:text-amber-300" title="Página escaneada: se lee con OCR">
+                          <span className="ml-auto text-[9.5px] font-bold uppercase text-amber-700 dark:text-amber-300" title={t('Página escaneada: se lee con OCR')}>
                             OCR
                           </span>
                         )}
@@ -194,16 +196,16 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
                   </div>
                   <div className="flex items-center gap-2 text-[11.5px] text-text-sec">
                     <button type="button" disabled={active <= 1} onClick={() => setActive((a) => a - 1)} className="px-2 py-1 rounded-lg border border-gray-border disabled:opacity-40 cursor-pointer">‹</button>
-                    Página {active} de {pdf.numPages}
+                    {t('Página {active} de {numPages}', { active, numPages: pdf.numPages })}
                     <button type="button" disabled={active >= pdf.numPages} onClick={() => setActive((a) => a + 1)} className="px-2 py-1 rounded-lg border border-gray-border disabled:opacity-40 cursor-pointer">›</button>
                     {!selected.includes(active) && (
                       <button type="button" onClick={() => togglePage(active)} className="ml-1 text-emerald-700 dark:text-emerald-300 font-semibold cursor-pointer">
-                        + Usar esta página
+                        {t('+ Usar esta página')}
                       </button>
                     )}
                     {pages[active - 1]?.ocr !== 'running' && (
-                      <button type="button" onClick={() => { setEdited(false); void runOcr(active); }} className="ml-1 underline cursor-pointer" title="Volver a leer la página como imagen">
-                        Leer con OCR
+                      <button type="button" onClick={() => { setEdited(false); void runOcr(active); }} className="ml-1 underline cursor-pointer" title={t('Volver a leer la página como imagen')}>
+                        {t('Leer con OCR')}
                       </button>
                     )}
                   </div>
@@ -221,23 +223,23 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
 
             <div className="lg:w-[380px] shrink-0 border-t lg:border-t-0 lg:border-l border-gray-border flex flex-col min-h-[200px]">
               <div className="px-4 pt-3 pb-1.5 text-[12px] font-bold text-text-pri flex items-center justify-between">
-                Texto que se va a usar
+                {t('Texto que se va a usar')}
                 {edited && pdf && (
                   <button type="button" onClick={() => setEdited(false)} className="text-[11px] font-semibold text-text-sec underline cursor-pointer">
-                    Rearmar desde las páginas
+                    {t('Rearmar desde las páginas')}
                   </button>
                 )}
               </div>
               {ocrRunning && (
                 <div className="mx-4 mb-2 text-[11px] text-text-sec">
-                  Leyendo página {pages.indexOf(ocrRunning) + 1} con OCR… {Math.round(ocrRunning.progress * 100)}%
+                  {t('Leyendo página {value} con OCR… {round}%', { value: pages.indexOf(ocrRunning) + 1, round: Math.round(ocrRunning.progress * 100) })}
                   <div className="h-1 rounded-full bg-gray-bg mt-1 overflow-hidden">
                     <div className="h-full bg-emerald-500 transition-all" style={{ width: `${Math.round(ocrRunning.progress * 100)}%` }} />
                   </div>
                 </div>
               )}
               {pages.some((p) => p.ocr === 'error') && (
-                <div className="mx-4 mb-2 text-[11px] text-red">No se pudo leer alguna página con OCR. Probá de nuevo con «Leer con OCR».</div>
+                <div className="mx-4 mb-2 text-[11px] text-red">{t('No se pudo leer alguna página con OCR. Probá de nuevo con «Leer con OCR».')}</div>
               )}
               <textarea
                 value={text}
@@ -245,12 +247,12 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
                   setText(e.target.value);
                   setEdited(true);
                 }}
-                placeholder={pdf ? 'Marcá las páginas que tienen el texto de la lectura.' : ''}
+                placeholder={pdf ? t('Marcá las páginas que tienen el texto de la lectura.') : ''}
                 className="flex-1 mx-4 mb-2 px-3 py-2 border border-gray-border rounded-xl text-[12.5px] leading-relaxed resize-none"
               />
               <div className="px-4 pb-3 flex items-center justify-between gap-2">
                 <span className={`text-[11.5px] font-semibold ${valid ? 'text-green-mid' : 'text-red'}`}>
-                  {words} palabras {valid ? '· listo' : '· tiene que tener entre 40 y 600'}
+                  {t('{words} palabras', { words })}{' '}{valid ? t('· listo') : t('· tiene que tener entre 40 y 600')}
                 </span>
                 <button
                   type="button"
@@ -265,7 +267,7 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
                   }}
                   className="bg-green-dark hover:opacity-90 text-white text-xs font-bold px-4 py-2 rounded-xl disabled:opacity-50 cursor-pointer"
                 >
-                  Usar este texto
+                  {t('Usar este texto')}
                 </button>
               </div>
             </div>
@@ -277,6 +279,7 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
 }
 
 function PageCanvas({ pdf, page, width }: { pdf: PdfHandle; page: number; width: number }) {
+  useI18n();
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     if (ref.current) void pdf.renderPage(page, ref.current, width).catch(() => undefined);

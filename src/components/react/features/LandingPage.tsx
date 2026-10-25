@@ -4,8 +4,11 @@ import { listPublicPlans, DEFAULT_PUBLIC_PLANS } from '../../../services/subscri
 import type { SubscriptionPlan } from '../../../types/subscription';
 import { sessionStore, clearSession } from '../../../store/sessionStore';
 import { dashboardPathForRole } from '../../../services/authService';
+import { LanguageSelect } from '../ui/LanguageSelect';
+import { t, useI18n, intlLocale } from '../../../i18n';
 
 export function LandingPage() {
+  useI18n();
   const [plans, setPlans] = useState<SubscriptionPlan[]>(DEFAULT_PUBLIC_PLANS);
   const [billingCycle, setBillingCycle] = useState<'MONTHLY' | 'ANNUAL'>('ANNUAL');
   const [activeAxisTab, setActiveAxisTab] = useState<'literal' | 'inferencial' | 'critico'>('inferencial');
@@ -28,75 +31,75 @@ export function LandingPage() {
   }, []);
 
   function fmtPrice(plan: SubscriptionPlan) {
-    if (plan.monthlyPriceArs === 0) return 'Gratis';
+    if (plan.monthlyPriceArs === 0) return t('Gratis');
     const price = billingCycle === 'ANNUAL'
       ? (plan.annualPriceArs || plan.monthlyPriceArs * 10)
       : plan.monthlyPriceArs;
-    return `$${price.toLocaleString('es-AR')}`;
+    return `$${price.toLocaleString(intlLocale())}`;
   }
 
   function fmtCycle(plan: SubscriptionPlan) {
-    if (plan.monthlyPriceArs === 0) return 'durante 60 dias';
-    return billingCycle === 'ANNUAL' ? '/ ano' : '/ mes';
+    if (plan.monthlyPriceArs === 0) return t('durante 60 dias');
+    return billingCycle === 'ANNUAL' ? t('/ año') : t('/ mes');
   }
 
   const axes = {
     literal: {
-      badge: 'Eje 1 - Nivel Explicito',
-      title: 'Eje Literal',
-      subtitle: 'Recuperacion explicita de informacion',
-      description: 'Evalua la capacidad de ubicar hechos, personajes, cronologia y datos textuales tal como fueron formulados en la lectura.',
+      badge: t('Eje 1 - Nivel Explicito'),
+      title: t('Eje Literal'),
+      subtitle: t('Recuperacion explicita de informacion'),
+      description: t('Evalua la capacidad de ubicar hechos, personajes, cronologia y datos textuales tal como fueron formulados en la lectura.'),
       color: '#059669',
       bg: '#ECFDF5',
       border: '#A7F3D0',
-      question: 'Segun el texto sobre biodiversidad, cual es la causa principal de la ruptura en cadena de los ecosistemas?',
+      question: t('Segun el texto sobre biodiversidad, cual es la causa principal de la ruptura en cadena de los ecosistemas?'),
       options: [
-        'El aumento estacional de las lluvias en zonas boscosas.',
-        'La desaparicion de una especie que altera las interdependencias ecologicas.',
-        'La rotacion de cultivos en areas agricolas protegidas.',
-        'El ciclo migratorio natural de las aves rapaces.',
+        t('El aumento estacional de las lluvias en zonas boscosas.'),
+        t('La desaparicion de una especie que altera las interdependencias ecologicas.'),
+        t('La rotacion de cultivos en areas agricolas protegidas.'),
+        t('El ciclo migratorio natural de las aves rapaces.'),
       ],
       correctIndex: 1,
-      benefit: 'Fortalece la lectura atenta, la extraccion de datos concretos y la memoria de trabajo.',
-      feedback: 'En el nivel literal, el alumno identifica directamente el dato explicito formulado en el texto.',
+      benefit: t('Fortalece la lectura atenta, la extraccion de datos concretos y la memoria de trabajo.'),
+      feedback: t('En el nivel literal, el alumno identifica directamente el dato explicito formulado en el texto.'),
     },
     inferencial: {
-      badge: 'Eje 2 - Nivel Comprensivo',
-      title: 'Eje Inferencial',
-      subtitle: 'Lectura entre lineas y deduccion contextual',
-      description: 'Desafia al estudiante a deducir intenciones, relaciones causales no explicitas y significado de vocabulario por contexto.',
+      badge: t('Eje 2 - Nivel Comprensivo'),
+      title: t('Eje Inferencial'),
+      subtitle: t('Lectura entre lineas y deduccion contextual'),
+      description: t('Desafia al estudiante a deducir intenciones, relaciones causales no explicitas y significado de vocabulario por contexto.'),
       color: '#D97706',
       bg: '#FFFBEB',
       border: '#FDE68A',
-      question: 'Que se puede inferir respecto a la relacion entre la biodiversidad y la economia descrita por el autor?',
+      question: t('Que se puede inferir respecto a la relacion entre la biodiversidad y la economia descrita por el autor?'),
       options: [
-        'La conservacion ecologica solo genera gastos innecesarios para el Estado.',
-        'Los servicios ecosistemicos sustentan indirectamente actividades productivas humanas.',
-        'Solo los paises industrializados pueden permitirse cuidar sus recursos naturales.',
-        'Las economias modernas son totalmente independientes del medio ambiente.',
+        t('La conservacion ecologica solo genera gastos innecesarios para el Estado.'),
+        t('Los servicios ecosistemicos sustentan indirectamente actividades productivas humanas.'),
+        t('Solo los paises industrializados pueden permitirse cuidar sus recursos naturales.'),
+        t('Las economias modernas son totalmente independientes del medio ambiente.'),
       ],
       correctIndex: 1,
-      benefit: 'Desarrolla el razonamiento inductivo/deductivo y la integracion profunda de ideas.',
-      feedback: 'En el nivel inferencial, el alumno conecta premisas dispersas para llegar a conclusiones no explicitas.',
+      benefit: t('Desarrolla el razonamiento inductivo/deductivo y la integracion profunda de ideas.'),
+      feedback: t('En el nivel inferencial, el alumno conecta premisas dispersas para llegar a conclusiones no explicitas.'),
     },
     critico: {
-      badge: 'Eje 3 - Nivel Reflexivo',
-      title: 'Eje Critico',
-      subtitle: 'Juicio fundamentado y pensamiento reflexivo',
-      description: 'Estimula la argumentacion, la identificacion de sesgos, la contrastacion de perspectivas y la postura etica del alumno.',
+      badge: t('Eje 3 - Nivel Reflexivo'),
+      title: t('Eje Critico'),
+      subtitle: t('Juicio fundamentado y pensamiento reflexivo'),
+      description: t('Estimula la argumentacion, la identificacion de sesgos, la contrastacion de perspectivas y la postura etica del alumno.'),
       color: '#E11D48',
       bg: '#FFF1F2',
       border: '#FECDD3',
-      question: 'A partir de la tesis del texto, cual de los siguientes argumentos fundamenta mejor una politica de proteccion ambiental comunitaria?',
+      question: t('A partir de la tesis del texto, cual de los siguientes argumentos fundamenta mejor una politica de proteccion ambiental comunitaria?'),
       options: [
-        'Porque la preservacion ecologica es una responsabilidad compartida de impacto etico y generacional.',
-        'Porque impone sanciones monetarias a las comunidades vecinas.',
-        'Porque evita que otras regiones utilicen los recursos hidricos.',
-        'Porque garantiza que los precios de los productos no sufran variaciones.',
+        t('Porque la preservacion ecologica es una responsabilidad compartida de impacto etico y generacional.'),
+        t('Porque impone sanciones monetarias a las comunidades vecinas.'),
+        t('Porque evita que otras regiones utilicen los recursos hidricos.'),
+        t('Porque garantiza que los precios de los productos no sufran variaciones.'),
       ],
       correctIndex: 0,
-      benefit: 'Fomenta el pensamiento critico, la toma de postura reflexiva y la fundamentacion de ideas.',
-      feedback: 'En el nivel critico, el alumno evalua argumentos, valores eticos y toma una postura justificada.',
+      benefit: t('Fomenta el pensamiento critico, la toma de postura reflexiva y la fundamentacion de ideas.'),
+      feedback: t('En el nivel critico, el alumno evalua argumentos, valores eticos y toma una postura justificada.'),
     },
   };
 
@@ -113,28 +116,28 @@ export function LandingPage() {
 
   const faqs = [
     {
-      q: 'Como funciona el codigo QR permanente del aula fisica?',
-      a: 'Cada aula creada en Habitar tiene un codigo QR unico e inmutable (por ejemplo: AULA-6A-8A4F). El colegio lo imprime una sola vez y lo coloca en la puerta o pared del salon. La docente abre la app desde su celular o laptop, escanea el QR en segundos y el sistema la conecta automaticamente a ese espacio para cargar lecturas y vincular actividades.',
+      q: t('Como funciona el codigo QR permanente del aula fisica?'),
+      a: t('Cada aula creada en Habitar tiene un codigo QR unico e inmutable (por ejemplo: AULA-6A-8A4F). El colegio lo imprime una sola vez y lo coloca en la puerta o pared del salon. La docente abre la app desde su celular o laptop, escanea el QR en segundos y el sistema la conecta automaticamente a ese espacio para cargar lecturas y vincular actividades.'),
     },
     {
-      q: 'Que sucede si no hay buena conexion a internet en la escuela?',
-      a: 'Habitar esta disenada como Progressive Web App (PWA) con Service Worker integrado. Los textos de lectura y cuestionarios precargados pueden utilizarse sin interrupciones incluso ante cortes temporales de red, sincronizando los resultados una vez recuperada la conexion.',
+      q: t('Que sucede si no hay buena conexion a internet en la escuela?'),
+      a: t('Habitar esta disenada como Progressive Web App (PWA) con Service Worker integrado. Los textos de lectura y cuestionarios precargados pueden utilizarse sin interrupciones incluso ante cortes temporales de red, sincronizando los resultados una vez recuperada la conexion.'),
     },
     {
-      q: 'Como genera la IA las preguntas en los tres ejes cognitivos?',
-      a: 'El docente puede pegar un texto, subir un archivo (.txt / .md) o importar desde Google Drive. Nuestro motor de IA pedagogica analiza la estructura del texto y formula preguntas calibradas para los tres ejes: Literal, Inferencial y Critico. El docente tiene control total: puede editar, agregar o ajustar cualquier pregunta antes de publicarla.',
+      q: t('Como genera la IA las preguntas en los tres ejes cognitivos?'),
+      a: t('El docente puede pegar un texto, subir un archivo (.txt / .md) o importar desde Google Drive. Nuestro motor de IA pedagogica analiza la estructura del texto y formula preguntas calibradas para los tres ejes: Literal, Inferencial y Critico. El docente tiene control total: puede editar, agregar o ajustar cualquier pregunta antes de publicarla.'),
     },
     {
-      q: 'Como protege Habitar los datos de los estudiantes (Normativa ARCO)?',
-      a: 'La privacidad es nuestro pilar fundamental. Cumplimos con la Ley de Proteccion de Datos Personales, contamos con modulo de consentimiento informado para tutores legales y herramientas nativas para el ejercicio de los derechos ARCO (Acceso, Rectificacion, Cancelacion y Oposicion), con trazabilidad y cifrado.',
+      q: t('Como protege Habitar los datos de los estudiantes (Normativa ARCO)?'),
+      a: t('La privacidad es nuestro pilar fundamental. Cumplimos con la Ley de Proteccion de Datos Personales, contamos con modulo de consentimiento informado para tutores legales y herramientas nativas para el ejercicio de los derechos ARCO (Acceso, Rectificacion, Cancelacion y Oposicion), con trazabilidad y cifrado.'),
     },
     {
-      q: 'Cuanto dura el Piloto Gratuito y que incluye?',
-      a: 'El Piloto Gratuito tiene una vigencia de 60 dias completos para tu institucion. Incluye hasta 15 docentes, 150 alumnos, 8 aulas fisicas con QR permanente, alertas tempranas y exportacion de reportes, sin costo ni compromiso.',
+      q: t('Cuanto dura el Piloto Gratuito y que incluye?'),
+      a: t('El Piloto Gratuito tiene una vigencia de 60 dias completos para tu institucion. Incluye hasta 15 docentes, 150 alumnos, 8 aulas fisicas con QR permanente, alertas tempranas y exportacion de reportes, sin costo ni compromiso.'),
     },
     {
-      q: 'Se pueden personalizar los cupos y modulos para nuestra institucion?',
-      a: 'Si! Desde el panel de administracion de Habitar podemos adaptar planes a medida para colegios de gran tamano, federaciones o distritos escolares, ajustando cupos de alumnos, almacenamiento, dominio propio de marca blanca e integracion con sistemas de gestion escolar.',
+      q: t('Se pueden personalizar los cupos y modulos para nuestra institucion?'),
+      a: t('Si! Desde el panel de administracion de Habitar podemos adaptar planes a medida para colegios de gran tamano, federaciones o distritos escolares, ajustando cupos de alumnos, almacenamiento, dominio propio de marca blanca e integracion con sistemas de gestion escolar.'),
     },
   ];
 
@@ -155,12 +158,14 @@ export function LandingPage() {
           </a>
 
           <nav className="hidden md:flex items-center gap-1 text-[13px] font-medium text-gray-600">
-            <a href="#demo" className="px-3 py-2 rounded-lg hover:text-gray-900 hover:bg-gray-50 transition-colors">Demo</a>
-            <a href="#ejes" className="px-3 py-2 rounded-lg hover:text-gray-900 hover:bg-gray-50 transition-colors">Ejes Cognitivos</a>
-            <a href="#aulas-qr" className="px-3 py-2 rounded-lg hover:text-gray-900 hover:bg-gray-50 transition-colors">Aulas QR</a>
-            <a href="#precios" className="px-3 py-2 rounded-lg hover:text-gray-900 hover:bg-gray-50 transition-colors">Precios</a>
-            <a href="#privacidad" className="px-3 py-2 rounded-lg hover:text-gray-900 hover:bg-gray-50 transition-colors">Privacidad</a>
+            <a href="#demo" className="px-3 py-2 rounded-lg hover:text-gray-900 hover:bg-gray-50 transition-colors">{t('Demo')}</a>
+            <a href="#ejes" className="px-3 py-2 rounded-lg hover:text-gray-900 hover:bg-gray-50 transition-colors">{t('Ejes Cognitivos')}</a>
+            <a href="#aulas-qr" className="px-3 py-2 rounded-lg hover:text-gray-900 hover:bg-gray-50 transition-colors">{t('Aulas QR')}</a>
+            <a href="#precios" className="px-3 py-2 rounded-lg hover:text-gray-900 hover:bg-gray-50 transition-colors">{t('Precios')}</a>
+            <a href="#privacidad" className="px-3 py-2 rounded-lg hover:text-gray-900 hover:bg-gray-50 transition-colors">{t('Privacidad')}</a>
           </nav>
+
+          <LanguageSelect tone="light" className="ml-auto mr-2 sm:ml-0 sm:mr-0" />
 
           <div className="hidden sm:flex items-center gap-2">
             {session ? (
@@ -189,14 +194,14 @@ export function LandingPage() {
                         onClick={() => setUserMenu(false)}
                       >
                         <Icon name="layers" size={15} className="text-gray-400" />
-                        Mi Panel
+                        {t('Mi Panel')}
                       </a>
                       <button
                         onClick={() => { clearSession(); setSession(null); setUserMenu(false); }}
                         className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                       >
                         <Icon name="logOut" size={15} />
-                        Cerrar Sesion
+                        {t('Cerrar Sesion')}
                       </button>
                     </div>
                   </>
@@ -212,16 +217,16 @@ export function LandingPage() {
                   }}
                   className="text-[13px] font-medium text-gray-600 hover:text-gray-900 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
                 >
-                  Soy Alumno
+                  {t('Soy Alumno')}
                 </button>
                 <a href="/login" className="text-[13px] font-medium text-gray-600 hover:text-gray-900 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
-                  Iniciar Sesion
+                  {t('Iniciar Sesion')}
                 </a>
                 <a
                   href="#precios"
                   className="text-[13px] font-semibold text-white bg-[#0F6E56] hover:bg-[#0A4D3C] px-4 py-2 rounded-lg transition-colors"
                 >
-                  Comenzar Gratis
+                  {t('Comenzar Gratis')}
                 </a>
               </>
             )}
@@ -230,7 +235,7 @@ export function LandingPage() {
           <button
             onClick={() => setMobileMenu(!mobileMenu)}
             className="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 cursor-pointer"
-            aria-label="Menu"
+            aria-label={t('Menu')}
           >
             <Icon name={mobileMenu ? 'close' : 'menu'} size={22} />
           </button>
@@ -238,11 +243,11 @@ export function LandingPage() {
 
         {mobileMenu && (
           <div className="md:hidden border-t border-gray-100 bg-white px-4 py-4 space-y-1">
-            <a href="#demo" onClick={() => setMobileMenu(false)} className="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Demo en Vivo</a>
-            <a href="#ejes" onClick={() => setMobileMenu(false)} className="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">3 Ejes Cognitivos</a>
-            <a href="#aulas-qr" onClick={() => setMobileMenu(false)} className="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Aulas QR</a>
-            <a href="#precios" onClick={() => setMobileMenu(false)} className="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Precios</a>
-            <a href="#privacidad" onClick={() => setMobileMenu(false)} className="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Privacidad</a>
+            <a href="#demo" onClick={() => setMobileMenu(false)} className="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">{t('Demo en Vivo')}</a>
+            <a href="#ejes" onClick={() => setMobileMenu(false)} className="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">{t('3 Ejes Cognitivos')}</a>
+            <a href="#aulas-qr" onClick={() => setMobileMenu(false)} className="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">{t('Aulas QR')}</a>
+            <a href="#precios" onClick={() => setMobileMenu(false)} className="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">{t('Precios')}</a>
+            <a href="#privacidad" onClick={() => setMobileMenu(false)} className="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">{t('Privacidad')}</a>
             <div className="pt-3 mt-2 border-t border-gray-100 space-y-2">
               {session ? (
                 <>
@@ -261,14 +266,14 @@ export function LandingPage() {
                     className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
                   >
                     <Icon name="layers" size={16} className="text-gray-400" />
-                    Mi Panel
+                    {t('Mi Panel')}
                   </a>
                   <button
                     onClick={() => { clearSession(); setSession(null); setMobileMenu(false); }}
                     className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-rose-600 hover:bg-rose-50 cursor-pointer"
                   >
                     <Icon name="logOut" size={16} />
-                    Cerrar Sesion
+                    {t('Cerrar Sesion')}
                   </button>
                 </>
               ) : (
@@ -282,13 +287,13 @@ export function LandingPage() {
                     }}
                     className="w-full py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg cursor-pointer"
                   >
-                    Soy Alumno
+                    {t('Soy Alumno')}
                   </button>
                   <a href="/login" className="block w-full text-center py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg">
-                    Iniciar Sesion
+                    {t('Iniciar Sesion')}
                   </a>
                   <a href="#precios" onClick={() => setMobileMenu(false)} className="block w-full text-center py-2.5 bg-[#0F6E56] text-white rounded-lg text-sm font-semibold">
-                    Comenzar Gratis
+                    {t('Comenzar Gratis')}
                   </a>
                 </>
               )}
@@ -305,17 +310,17 @@ export function LandingPage() {
           <div className="max-w-3xl mx-auto text-center space-y-8">
             <div className="inline-flex items-center gap-2 bg-emerald-50 text-[#0F6E56] border border-emerald-200 text-xs font-semibold px-3.5 py-1.5 rounded-full">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Piloto gratuito de 60 dias sin tarjeta de credito
+              {t('Piloto gratuito de 60 dias sin tarjeta de credito')}
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold tracking-tight text-gray-950 leading-[1.1]">
-              Comprension lectora con{' '}
-              <span className="text-[#0F6E56]">diagnostico en tiempo real</span>{' '}
-              para cada aula
+              {t('Comprension lectora con')}{' '}
+              <span className="text-[#0F6E56]">{t('diagnostico en tiempo real')}</span>{' '}
+              {t('para cada aula')}
             </h1>
 
             <p className="text-lg sm:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed font-normal">
-              Diagnosticos en tres ejes cognitivos, codigos QR permanentes en el aula fisica y analitica formativa para docentes y directivos de escuelas primarias y secundarias.
+              {t('Diagnosticos en tres ejes cognitivos, codigos QR permanentes en el aula fisica y analitica formativa para docentes y directivos de escuelas primarias y secundarias.')}
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
@@ -323,26 +328,26 @@ export function LandingPage() {
                 href="#precios"
                 className="w-full sm:w-auto bg-[#0F6E56] hover:bg-[#0A4D3C] text-white px-7 py-3.5 rounded-xl text-sm font-semibold shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                Comenzar Piloto Gratuito
+                {t('Comenzar Piloto Gratuito')}
                 <Icon name="arrowRight" size={16} />
               </a>
               <a
                 href="#demo"
                 className="w-full sm:w-auto text-gray-700 hover:text-gray-900 bg-white border border-gray-200 hover:border-gray-300 px-7 py-3.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                Ver Demo Interactiva
+                {t('Ver Demo Interactiva')}
               </a>
             </div>
           </div>
 
           <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-px bg-gray-200 rounded-2xl overflow-hidden max-w-2xl mx-auto">
             {[
-              { value: '3 Ejes', label: 'Literal, Inferencial y Critico' },
-              { value: 'QR Fijo', label: 'Un cartel por aula, para siempre' },
-              { value: 'ARCO', label: 'Cumplimiento normativo PBA' },
+              { value: '3 Ejes', label: t('Literal, Inferencial y Critico') },
+              { value: 'QR Fijo', label: t('Un cartel por aula, para siempre') },
+              { value: 'ARCO', label: t('Cumplimiento normativo PBA') },
             ].map((s) => (
               <div key={s.value} className="bg-white px-6 py-5 text-center">
-                <div className="text-xl font-extrabold text-gray-900">{s.value}</div>
+                <div className="text-xl font-extrabold text-gray-900">{t(s.value)}</div>
                 <div className="text-xs text-gray-500 mt-1 font-medium">{s.label}</div>
               </div>
             ))}
@@ -353,12 +358,12 @@ export function LandingPage() {
       <section id="demo" className="py-20 sm:py-24 bg-gray-50/50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-12">
-            <p className="text-xs font-semibold uppercase tracking-widest text-[#0F6E56] mb-3">Simulador en vivo</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#0F6E56] mb-3">{t('Simulador en vivo')}</p>
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-950">
-              Experimenta la evaluacion en tres ejes
+              {t('Experimenta la evaluacion en tres ejes')}
             </h2>
             <p className="mt-3 text-gray-500 text-sm sm:text-base">
-              Selecciona un eje, lee el fragmento y hace clic en una opcion para ver la retroalimentacion instantanea.
+              {t('Selecciona un eje, lee el fragmento y hace clic en una opcion para ver la retroalimentacion instantanea.')}
             </p>
           </div>
 
@@ -366,7 +371,7 @@ export function LandingPage() {
             <div className="flex border-b border-gray-200">
               {(['literal', 'inferencial', 'critico'] as const).map((tab) => {
                 const active = activeAxisTab === tab;
-                const labels = { literal: 'Literal', inferencial: 'Inferencial', critico: 'Critico' };
+                const labels = { literal: t('Literal'), inferencial: t('Inferencial'), critico: t('Critico') };
                 const colors = { literal: '#059669', inferencial: '#D97706', critico: '#E11D48' };
                 return (
                   <button
@@ -391,10 +396,10 @@ export function LandingPage() {
               <div className="bg-gray-50 rounded-xl p-4 sm:p-5 border border-gray-100">
                 <div className="flex items-center gap-2 mb-3">
                   <Icon name="fileText" size={14} className="text-gray-400" />
-                  <span className="text-xs font-medium text-gray-500">Texto de lectura: "Biodiversidad y Ecosistemas" - 6to Grado</span>
+                  <span className="text-xs font-medium text-gray-500">{t('Texto de lectura: "Biodiversidad y Ecosistemas" - 6to Grado')}</span>
                 </div>
                 <p className="text-sm text-gray-700 leading-relaxed italic">
-                  "La biodiversidad es el conjunto de formas de vida que habitan nuestro planeta. Cada ecosistema alberga especies que dependen entre si para regular el clima, mantener los suelos fertiles y proveer agua limpia. La perdida de una sola especie vegetal o animal genera efectos en cadena que impactan en la produccion de alimentos y en la salud humana."
+                  {t('"La biodiversidad es el conjunto de formas de vida que habitan nuestro planeta. Cada ecosistema alberga especies que dependen entre si para regular el clima, mantener los suelos fertiles y proveer agua limpia. La perdida de una sola especie vegetal o animal genera efectos en cadena que impactan en la produccion de alimentos y en la salud humana."')}
                 </p>
               </div>
 
@@ -403,7 +408,7 @@ export function LandingPage() {
                   className="inline-block text-[11px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-md mb-3"
                   style={{ backgroundColor: ax.bg, color: ax.color, border: `1px solid ${ax.border}` }}
                 >
-                  {ax.badge}
+                  {t(ax.badge)}
                 </span>
                 <h3 className="text-base sm:text-lg font-bold text-gray-900 leading-snug">
                   {ax.question}
@@ -439,7 +444,7 @@ export function LandingPage() {
                     color: demoFeedback ? '#065F46' : '#92400E',
                   }}
                 >
-                  <span className="font-semibold">{demoFeedback ? 'Respuesta correcta' : 'Incorrecto'}: </span>
+                  <span className="font-semibold">{demoFeedback ? t('Respuesta correcta') : t('Incorrecto')}: </span>
                   {ax.feedback}
                 </div>
               )}
@@ -451,31 +456,31 @@ export function LandingPage() {
       <section id="ejes" className="py-20 sm:py-24">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-14">
-            <p className="text-xs font-semibold uppercase tracking-widest text-[#0F6E56] mb-3">Marco pedagogico</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#0F6E56] mb-3">{t('Marco pedagogico')}</p>
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-950">
-              Los tres ejes de la comprension lectora
+              {t('Los tres ejes de la comprension lectora')}
             </h2>
             <p className="mt-3 text-gray-500 text-sm sm:text-base max-w-xl mx-auto">
-              Cada evaluacion se estructura en tres dimensiones cognitivas complementarias para un diagnostico preciso.
+              {t('Cada evaluacion se estructura en tres dimensiones cognitivas complementarias para un diagnostico preciso.')}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {([
               {
-                num: '1', title: 'Eje Literal', sub: 'Nivel Explicito', color: '#059669', bg: '#ECFDF5', border: '#A7F3D0',
-                desc: 'Evalua la capacidad de ubicar hechos, personajes, cronologia y datos textuales tal como fueron formulados.',
-                benefit: 'Fortalece la lectura atenta y la extraccion de datos concretos.',
+                num: '1', title: t('Eje Literal'), sub: t('Nivel Explicito'), color: '#059669', bg: '#ECFDF5', border: '#A7F3D0',
+                desc: t('Evalua la capacidad de ubicar hechos, personajes, cronologia y datos textuales tal como fueron formulados.'),
+                benefit: t('Fortalece la lectura atenta y la extraccion de datos concretos.'),
               },
               {
-                num: '2', title: 'Eje Inferencial', sub: 'Nivel Comprensivo', color: '#D97706', bg: '#FFFBEB', border: '#FDE68A',
-                desc: 'Desafia a deducir intenciones, relaciones causales no explicitas y significado de vocabulario por contexto.',
-                benefit: 'Desarrolla el razonamiento inductivo/deductivo y la integracion de ideas.',
+                num: '2', title: t('Eje Inferencial'), sub: t('Nivel Comprensivo'), color: '#D97706', bg: '#FFFBEB', border: '#FDE68A',
+                desc: t('Desafia a deducir intenciones, relaciones causales no explicitas y significado de vocabulario por contexto.'),
+                benefit: t('Desarrolla el razonamiento inductivo/deductivo y la integracion de ideas.'),
               },
               {
-                num: '3', title: 'Eje Critico', sub: 'Nivel Reflexivo', color: '#E11D48', bg: '#FFF1F2', border: '#FECDD3',
-                desc: 'Estimula la argumentacion, la identificacion de sesgos y la contrastacion de perspectivas.',
-                benefit: 'Fomenta el pensamiento critico y la toma de postura reflexiva.',
+                num: '3', title: t('Eje Critico'), sub: t('Nivel Reflexivo'), color: '#E11D48', bg: '#FFF1F2', border: '#FECDD3',
+                desc: t('Estimula la argumentacion, la identificacion de sesgos y la contrastacion de perspectivas.'),
+                benefit: t('Fomenta el pensamiento critico y la toma de postura reflexiva.'),
               },
             ] as const).map((axis) => (
               <div key={axis.num} className="group bg-white border border-gray-200 rounded-2xl p-6 hover:border-gray-300 hover:shadow-md transition-all flex flex-col">
@@ -506,19 +511,19 @@ export function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div className="space-y-6">
-              <p className="text-xs font-semibold uppercase tracking-widest text-[#0F6E56]">Innovacion en el aula</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-[#0F6E56]">{t('Innovacion en el aula')}</p>
               <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-950 leading-tight">
-                Codigos QR permanentes en cada salon
+                {t('Codigos QR permanentes en cada salon')}
               </h2>
               <p className="text-gray-500 text-sm sm:text-base leading-relaxed">
-                Se imprime una sola vez, se pega en la pared y funciona para siempre. Sin proyectores, sin enlaces largos, sin generar codigos nuevos cada semana.
+                {t('Se imprime una sola vez, se pega en la pared y funciona para siempre. Sin proyectores, sin enlaces largos, sin generar codigos nuevos cada semana.')}
               </p>
 
               <div className="space-y-3 pt-2">
                 {[
-                  { step: '1', title: 'Crea el aula', desc: 'Materia, salon fisico, grado, division y turno.', color: '#0F6E56' },
-                  { step: '2', title: 'Imprimí el cartel QR', desc: 'Poster A4 listo para pegar en la pared del salon.', color: '#D97706' },
-                  { step: '3', title: 'Escaneá y empezá', desc: 'La docente escanea el QR y sube el texto de lectura.', color: '#3B82F6' },
+                  { step: '1', title: t('Crea el aula'), desc: t('Materia, salon fisico, grado, division y turno.'), color: '#0F6E56' },
+                  { step: '2', title: t('Imprimí el cartel QR'), desc: t('Poster A4 listo para pegar en la pared del salon.'), color: '#D97706' },
+                  { step: '3', title: t('Escaneá y empezá'), desc: t('La docente escanea el QR y sube el texto de lectura.'), color: '#3B82F6' },
                 ].map((s) => (
                   <div key={s.step} className="flex items-start gap-4 p-4 bg-white border border-gray-200 rounded-xl">
                     <div
@@ -539,23 +544,23 @@ export function LandingPage() {
             <div className="flex justify-center">
               <div className="w-full max-w-xs bg-white border border-gray-200 rounded-2xl p-6 shadow-sm text-center space-y-4">
                 <span className="inline-block text-[10px] font-semibold uppercase tracking-widest text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                  Cartel Oficial de Aula
+                  {t('Cartel Oficial de Aula')}
                 </span>
                 <div>
-                  <div className="text-lg font-extrabold text-gray-900">AULA 6to A - Salon 12</div>
-                  <div className="text-xs text-gray-400 font-medium mt-0.5">Turno Manana</div>
+                  <div className="text-lg font-extrabold text-gray-900">{t('AULA 6to A - Salon 12')}</div>
+                  <div className="text-xs text-gray-400 font-medium mt-0.5">{t('Turno Manana')}</div>
                 </div>
                 <div className="w-40 h-40 mx-auto bg-gray-50 p-3 rounded-xl border border-gray-200 flex flex-col items-center justify-center">
                   <Icon name="qrCode" size={96} className="text-gray-800" />
                   <span className="font-mono text-[11px] font-bold text-gray-600 mt-1.5 tracking-wider">AULA-6A-8A4F</span>
                 </div>
                 <p className="text-xs text-gray-400 font-medium">
-                  Escanear con la app docente de Habitar
+                  {t('Escanear con la app docente de Habitar')}
                 </p>
                 <div className="pt-3 border-t border-gray-100 flex justify-center">
                   <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600">
                     <Icon name="printer" size={14} className="text-[#0F6E56]" />
-                    Listo para imprimir en A4
+                    {t('Listo para imprimir en A4')}
                   </span>
                 </div>
               </div>
@@ -567,12 +572,12 @@ export function LandingPage() {
       <section id="analitica" className="py-20 sm:py-24">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-14">
-            <p className="text-xs font-semibold uppercase tracking-widest text-[#0F6E56] mb-3">Para directivos</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#0F6E56] mb-3">{t('Para directivos')}</p>
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-950">
-              Vision integral del rendimiento escolar
+              {t('Vision integral del rendimiento escolar')}
             </h2>
             <p className="mt-3 text-gray-500 text-sm sm:text-base max-w-xl mx-auto">
-              Detecta a tiempo a los estudiantes que necesitan apoyo y toma decisiones pedagogicas respaldadas por evidencia.
+              {t('Detecta a tiempo a los estudiantes que necesitan apoyo y toma decisiones pedagogicas respaldadas por evidencia.')}
             </p>
           </div>
 
@@ -580,20 +585,20 @@ export function LandingPage() {
             {[
               {
                 icon: 'alertTriangle' as const,
-                title: 'Alertas Tempranas',
-                desc: 'Algoritmos que detectan caidas en comprension inferencial o critica antes de las instancias de cierre.',
+                title: t('Alertas Tempranas'),
+                desc: t('Algoritmos que detectan caidas en comprension inferencial o critica antes de las instancias de cierre.'),
                 color: '#D97706', bg: '#FFFBEB',
               },
               {
                 icon: 'activity' as const,
-                title: 'Comparador de Periodos',
-                desc: 'Contrasta el rendimiento entre Periodo A y B con deltas porcentuales en cada eje cognitivo.',
+                title: t('Comparador de Periodos'),
+                desc: t('Contrasta el rendimiento entre Periodo A y B con deltas porcentuales en cada eje cognitivo.'),
                 color: '#059669', bg: '#ECFDF5',
               },
               {
                 icon: 'download' as const,
-                title: 'Exportacion Institucional',
-                desc: 'Reportes completos en Excel o PDF con un solo clic para inspectores y supervisores.',
+                title: t('Exportacion Institucional'),
+                desc: t('Reportes completos en Excel o PDF con un solo clic para inspectores y supervisores.'),
                 color: '#3B82F6', bg: '#EFF6FF',
               },
             ].map((f) => (
@@ -615,12 +620,12 @@ export function LandingPage() {
       <section id="precios" className="py-20 sm:py-24 bg-gray-50/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-12">
-            <p className="text-xs font-semibold uppercase tracking-widest text-[#0F6E56] mb-3">Precios</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#0F6E56] mb-3">{t('Precios')}</p>
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-950">
-              Planes de suscripcion institucional
+              {t('Planes de suscripcion institucional')}
             </h2>
             <p className="mt-3 text-gray-500 text-sm sm:text-base max-w-xl mx-auto">
-              Comenza con un piloto gratuito de 60 dias o elegi el plan que mejor se adapte a tu escuela.
+              {t('Comenza con un piloto gratuito de 60 dias o elegi el plan que mejor se adapte a tu escuela.')}
             </p>
 
             <div className="mt-8 inline-flex items-center p-1 bg-gray-200/60 rounded-lg">
@@ -630,7 +635,7 @@ export function LandingPage() {
                   billingCycle === 'MONTHLY' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
                 }`}
               >
-                Mensual
+                {t('Mensual')}
               </button>
               <button
                 onClick={() => setBillingCycle('ANNUAL')}
@@ -638,7 +643,7 @@ export function LandingPage() {
                   billingCycle === 'ANNUAL' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
                 }`}
               >
-                Anual
+                {t('Anual')}
                 <span className="text-[10px] font-semibold text-[#0F6E56] bg-emerald-50 px-1.5 py-0.5 rounded">-17%</span>
               </button>
             </div>
@@ -665,29 +670,29 @@ export function LandingPage() {
                         ? 'bg-gray-900 text-white'
                         : 'bg-gray-100 text-gray-700'
                     }`}>
-                      {plan.badge}
+                      {t(plan.badge)}
                     </span>
                   )}
 
-                  <h3 className="text-lg font-bold text-gray-900 mt-2">{plan.name}</h3>
-                  <p className="text-sm text-gray-500 mt-1 mb-5">{plan.description}</p>
+                  <h3 className="text-lg font-bold text-gray-900 mt-2">{t(plan.name)}</h3>
+                  <p className="text-sm text-gray-500 mt-1 mb-5">{t(plan.description)}</p>
 
                   <div className="mb-6">
                     <span className="text-3xl font-extrabold text-gray-900">{fmtPrice(plan)}</span>
                     <span className="text-sm text-gray-400 ml-1.5">{fmtCycle(plan)}</span>
                     {billingCycle === 'ANNUAL' && plan.monthlyPriceArs > 0 && (
                       <div className="text-xs text-[#0F6E56] font-medium mt-1">
-                        ${Math.round((plan.annualPriceArs || plan.monthlyPriceArs * 10) / 12).toLocaleString('es-AR')}/mes
+                        ${Math.round((plan.annualPriceArs || plan.monthlyPriceArs * 10) / 12).toLocaleString(intlLocale())}{t('/mes')}
                       </div>
                     )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 mb-6 text-xs">
                     {[
-                      { label: 'Alumnos', val: plan.maxStudents.toLocaleString('es-AR') },
-                      { label: 'Aulas QR', val: String(plan.maxCourses) },
-                      { label: 'Docentes', val: String(plan.maxUsers) },
-                      { label: 'Storage', val: `${plan.storageGb} GB` },
+                      { label: t('Alumnos'), val: plan.maxStudents.toLocaleString(intlLocale()) },
+                      { label: t('Aulas QR'), val: String(plan.maxCourses) },
+                      { label: t('Docentes'), val: String(plan.maxUsers) },
+                      { label: t('Storage'), val: `${plan.storageGb} GB` },
                     ].map((m) => (
                       <div key={m.label} className="bg-gray-50 rounded-lg p-2.5 border border-gray-100">
                         <div className="text-[10px] text-gray-400 font-medium uppercase">{m.label}</div>
@@ -700,7 +705,7 @@ export function LandingPage() {
                     {(plan.features?.bullets || []).map((b, i) => (
                       <div key={i} className="flex items-start gap-2">
                         <Icon name="check" size={14} className="text-[#0F6E56] mt-0.5 shrink-0" />
-                        <span className="text-sm text-gray-600 leading-snug">{b}</span>
+                        <span className="text-sm text-gray-600 leading-snug">{t(b)}</span>
                       </div>
                     ))}
                   </div>
@@ -713,7 +718,7 @@ export function LandingPage() {
                         : 'bg-gray-100 hover:bg-gray-200 text-gray-900 border border-gray-200'
                     }`}
                   >
-                    {plan.monthlyPriceArs === 0 ? 'Iniciar Piloto Gratuito' : `Elegir ${plan.name}`}
+                    {plan.monthlyPriceArs === 0 ? t('Iniciar Piloto Gratuito') : t('Elegir {name}', { name: t(plan.name) })}
                   </a>
                 </div>
               );
@@ -722,16 +727,16 @@ export function LandingPage() {
 
           <div className="mt-12 bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="text-center sm:text-left">
-              <h4 className="text-base font-bold text-gray-900">Red escolar o distrito educativo?</h4>
+              <h4 className="text-base font-bold text-gray-900">{t('Red escolar o distrito educativo?')}</h4>
               <p className="text-sm text-gray-500 mt-1 max-w-lg">
-                Planes personalizados con cupos a medida, facturacion por orden de compra, soporte presencial y capacitaciones.
+                {t('Planes personalizados con cupos a medida, facturacion por orden de compra, soporte presencial y capacitaciones.')}
               </p>
             </div>
             <a
               href="mailto:contacto@habitar.lat?subject=Consulta%20Plan%20Institucional%20Habitar"
               className="shrink-0 bg-gray-900 hover:bg-gray-800 text-white px-5 py-3 rounded-xl text-sm font-semibold transition-colors"
             >
-              Contactar Asesor
+              {t('Contactar Asesor')}
             </a>
           </div>
         </div>
@@ -740,35 +745,35 @@ export function LandingPage() {
       <section id="privacidad" className="py-20 sm:py-24">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-14">
-            <p className="text-xs font-semibold uppercase tracking-widest text-[#0F6E56] mb-3">Seguridad y cumplimiento</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#0F6E56] mb-3">{t('Seguridad y cumplimiento')}</p>
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-950">
-              Cumplimiento normativo y privacidad escolar
+              {t('Cumplimiento normativo y privacidad escolar')}
             </h2>
             <p className="mt-3 text-gray-500 text-sm sm:text-base max-w-xl mx-auto">
-              Disenado desde sus cimientos para las exigencias juridicas de la Provincia de Buenos Aires.
+              {t('Disenado desde sus cimientos para las exigencias juridicas de la Provincia de Buenos Aires.')}
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
               {
-                icon: 'school' as const, title: 'Marco DGCyE', color: '#0F6E56', bg: '#ECFDF5',
-                desc: 'Alineado a la Ley Provincial 13.688 y la Ley Nacional 26.061. Interes superior de la ninez.',
+                icon: 'school' as const, title: t('Marco DGCyE'), color: '#0F6E56', bg: '#ECFDF5',
+                desc: t('Alineado a la Ley Provincial 13.688 y la Ley Nacional 26.061. Interes superior de la ninez.'),
                 tag: 'Jurisdiccion PBA',
               },
               {
-                icon: 'lock' as const, title: 'Gobernanza B2B', color: '#D97706', bg: '#FFFBEB',
-                desc: 'La Escuela es la exclusiva Responsable del Tratamiento. Habitar no vende ni cede datos.',
+                icon: 'lock' as const, title: t('Gobernanza B2B'), color: '#D97706', bg: '#FFFBEB',
+                desc: t('La Escuela es la exclusiva Responsable del Tratamiento. Habitar no vende ni cede datos.'),
                 tag: 'Contrato B2B',
               },
               {
-                icon: 'sparkles' as const, title: 'IA Etica', color: '#7C3AED', bg: '#F5F3FF',
-                desc: 'Las respuestas de alumnos nunca entrenan modelos comerciales. Supervision docente obligatoria.',
+                icon: 'sparkles' as const, title: t('IA Etica'), color: '#7C3AED', bg: '#F5F3FF',
+                desc: t('Las respuestas de alumnos nunca entrenan modelos comerciales. Supervision docente obligatoria.'),
                 tag: 'Sin perfilamiento',
               },
               {
-                icon: 'shield' as const, title: 'ARCO y Cifrado', color: '#3B82F6', bg: '#EFF6FF',
-                desc: 'TLS 1.3 en transito, AES-256 en reposo. Derechos ARCO garantizados ante solicitud formal.',
+                icon: 'shield' as const, title: t('ARCO y Cifrado'), color: '#3B82F6', bg: '#EFF6FF',
+                desc: t('TLS 1.3 en transito, AES-256 en reposo. Derechos ARCO garantizados ante solicitud formal.'),
                 tag: 'Auditoria completa',
               },
             ].map((c) => (
@@ -784,7 +789,7 @@ export function LandingPage() {
                 <div className="mt-4 pt-3 border-t border-gray-100">
                   <span className="text-[11px] font-medium text-[#0F6E56] flex items-center gap-1">
                     <Icon name="check" size={12} />
-                    {c.tag}
+                    {t(c.tag)}
                   </span>
                 </div>
               </div>
@@ -793,16 +798,16 @@ export function LandingPage() {
 
           <div className="mt-10 bg-[#0F6E56] rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="text-center sm:text-left">
-              <h4 className="text-base font-bold text-white">Politica Integral de Privacidad</h4>
+              <h4 className="text-base font-bold text-white">{t('Politica Integral de Privacidad')}</h4>
               <p className="text-sm text-emerald-200 mt-1 max-w-lg">
-                Bases normativas PBA, roles contractuales, protocolos ante incidentes y contacto del DPO.
+                {t('Bases normativas PBA, roles contractuales, protocolos ante incidentes y contacto del DPO.')}
               </p>
             </div>
             <a
               href="/privacidad"
               className="shrink-0 bg-white hover:bg-emerald-50 text-gray-900 px-5 py-3 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2 cursor-pointer"
             >
-              Leer Politica Completa
+              {t('Leer Politica Completa')}
               <Icon name="arrowRight" size={14} />
             </a>
           </div>
@@ -812,9 +817,9 @@ export function LandingPage() {
       <section id="faq" className="py-20 sm:py-24 bg-gray-50/50">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
-            <p className="text-xs font-semibold uppercase tracking-widest text-[#0F6E56] mb-3">Preguntas frecuentes</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#0F6E56] mb-3">{t('Preguntas frecuentes')}</p>
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-950">
-              Todo lo que necesitas saber
+              {t('Todo lo que necesitas saber')}
             </h2>
           </div>
 
@@ -849,24 +854,24 @@ export function LandingPage() {
       <section className="py-20 sm:py-24 bg-[#0F6E56]">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center space-y-6">
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
-            Suma tu escuela a la nueva era de la comprension lectora
+            {t('Suma tu escuela a la nueva era de la comprension lectora')}
           </h2>
           <p className="text-emerald-100 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
-            Inicia hoy tu prueba piloto gratuita de 60 dias y descubri como el diagnostico en tres ejes transforma los resultados.
+            {t('Inicia hoy tu prueba piloto gratuita de 60 dias y descubri como el diagnostico en tres ejes transforma los resultados.')}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <a
               href="#precios"
               className="w-full sm:w-auto bg-white hover:bg-emerald-50 text-gray-900 px-7 py-3.5 rounded-xl text-sm font-semibold shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
-              Ver Planes y Comenzar
+              {t('Ver Planes y Comenzar')}
               <Icon name="arrowRight" size={16} />
             </a>
             <a
               href="/login"
               className="w-full sm:w-auto text-white border border-white/25 hover:bg-white/10 px-7 py-3.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center cursor-pointer"
             >
-              Ingresar a la Plataforma
+              {t('Ingresar a la Plataforma')}
             </a>
           </div>
         </div>
@@ -885,47 +890,47 @@ export function LandingPage() {
                 </span>
               </div>
               <p className="text-xs text-gray-400 leading-relaxed">
-                Evaluacion y fortalecimiento de la comprension lectora escolar.
+                {t('Evaluacion y fortalecimiento de la comprension lectora escolar.')}
               </p>
             </div>
 
             <div>
-              <h5 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3">Plataforma</h5>
+              <h5 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3">{t('Plataforma')}</h5>
               <ul className="space-y-2 text-xs text-gray-500">
-                <li><a href="/login" className="hover:text-[#0F6E56] transition-colors">Acceso Docentes</a></li>
-                <li><a href="/login" className="hover:text-[#0F6E56] transition-colors">Portal Directivo</a></li>
-                <li><a href="#aulas-qr" className="hover:text-[#0F6E56] transition-colors">Aulas QR</a></li>
-                <li><a href="#precios" className="hover:text-[#0F6E56] transition-colors">Precios</a></li>
+                <li><a href="/login" className="hover:text-[#0F6E56] transition-colors">{t('Acceso Docentes')}</a></li>
+                <li><a href="/login" className="hover:text-[#0F6E56] transition-colors">{t('Portal Directivo')}</a></li>
+                <li><a href="#aulas-qr" className="hover:text-[#0F6E56] transition-colors">{t('Aulas QR')}</a></li>
+                <li><a href="#precios" className="hover:text-[#0F6E56] transition-colors">{t('Precios')}</a></li>
               </ul>
             </div>
 
             <div>
-              <h5 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3">Legal</h5>
+              <h5 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3">{t('Legal')}</h5>
               <ul className="space-y-2 text-xs text-gray-500">
-                <li><a href="/privacidad" className="hover:text-[#0F6E56] transition-colors">Politica de Privacidad</a></li>
-                <li><a href="/consentimiento" className="hover:text-[#0F6E56] transition-colors">Consentimiento Menores</a></li>
-                <li><a href="/brand" className="hover:text-[#0F6E56] transition-colors">Kit de Marca</a></li>
-                <li><a href="/status" className="hover:text-[#0F6E56] transition-colors">Estado del Sistema</a></li>
+                <li><a href="/privacidad" className="hover:text-[#0F6E56] transition-colors">{t('Politica de Privacidad')}</a></li>
+                <li><a href="/consentimiento" className="hover:text-[#0F6E56] transition-colors">{t('Consentimiento Menores')}</a></li>
+                <li><a href="/brand" className="hover:text-[#0F6E56] transition-colors">{t('Kit de Marca')}</a></li>
+                <li><a href="/status" className="hover:text-[#0F6E56] transition-colors">{t('Estado del Sistema')}</a></li>
               </ul>
             </div>
 
             <div>
-              <h5 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3">Contacto</h5>
+              <h5 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3">{t('Contacto')}</h5>
               <p className="text-xs text-gray-400 leading-relaxed">
-                Soporte para instituciones educativas de Argentina y Latinoamerica.
+                {t('Soporte para instituciones educativas de Argentina y Latinoamerica.')}
               </p>
               <a href="mailto:contacto@habitar.lat" className="text-xs font-medium text-[#0F6E56] mt-2 block">
-                contacto@habitar.lat
+                {t('contacto@habitar.lat')}
               </a>
             </div>
           </div>
 
           <div className="pt-8 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400">
-            <span>{new Date().getFullYear()} Habitar - Todos los derechos reservados. Proyecto de Tesis de Grado.</span>
+            <span>{t('{getFullYear} Habitar - Todos los derechos reservados. Proyecto de Tesis de Grado.', { getFullYear: new Date().getFullYear() })}</span>
             <div className="flex gap-4 font-medium">
-              <a href="/privacidad" className="hover:text-[#0F6E56] transition-colors">Privacidad</a>
-              <a href="/consentimiento" className="hover:text-[#0F6E56] transition-colors">Consentimiento</a>
-              <a href="/status" className="hover:text-[#0F6E56] transition-colors">Estado</a>
+              <a href="/privacidad" className="hover:text-[#0F6E56] transition-colors">{t('Privacidad')}</a>
+              <a href="/consentimiento" className="hover:text-[#0F6E56] transition-colors">{t('Consentimiento')}</a>
+              <a href="/status" className="hover:text-[#0F6E56] transition-colors">{t('Estado')}</a>
             </div>
           </div>
         </div>

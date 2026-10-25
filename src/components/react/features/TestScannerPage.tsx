@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { useAuthGuard } from '../../../hooks/useAuthGuard';
 import QRCode from 'qrcode';
 import { StudentQrScannerModal } from './StudentQrScannerModal';
+import { t, useI18n } from '../../../i18n';
 
 export function TestScannerPage() {
+  useI18n();
   useAuthGuard(['admin']);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [scannedResult, setScannedResult] = useState<string | null>(null);
@@ -19,34 +21,34 @@ export function TestScannerPage() {
 
   return (
     <div className="p-8 max-w-lg mx-auto bg-white min-h-screen text-slate-800 flex flex-col items-center gap-6">
-      <h1 className="text-2xl font-bold">Prueba Aislada del Escáner</h1>
+      <h1 className="text-2xl font-bold">{t('Prueba Aislada del Escáner')}</h1>
       
       <div className="w-full bg-slate-100 p-6 rounded-xl text-center space-y-4">
-        <h2 className="font-semibold text-lg">1. Generador de QR</h2>
+        <h2 className="font-semibold text-lg">{t('1. Generador de QR')}</h2>
         <p className="text-sm text-slate-500">
-          Si abres esta página en tu PC, aquí tienes un QR de prueba listo para escanear con el celular.
+          {t('Si abres esta página en tu PC, aquí tienes un QR de prueba listo para escanear con el celular.')}
         </p>
         {qrImageUrl && (
-          <img src={qrImageUrl} alt="QR de Prueba" className="mx-auto border-4 border-white shadow-sm rounded-lg" />
+          <img src={qrImageUrl} alt={t('QR de Prueba')} className="mx-auto border-4 border-white shadow-sm rounded-lg" />
         )}
       </div>
 
       <div className="w-full bg-emerald-50 p-6 rounded-xl text-center space-y-4 border border-emerald-100">
-        <h2 className="font-semibold text-lg text-emerald-800">2. Lector de QR</h2>
+        <h2 className="font-semibold text-lg text-emerald-800">{t('2. Lector de QR')}</h2>
         <p className="text-sm text-emerald-600">
-          Abre el lector para probar la cámara y los logs.
+          {t('Abre el lector para probar la cámara y los logs.')}
         </p>
         <button 
           onClick={() => setIsScannerOpen(true)}
           className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all active:scale-95"
         >
-          Abrir Lector Ahora
+          {t('Abrir Lector Ahora')}
         </button>
       </div>
 
       {scannedResult && (
         <div className="w-full bg-blue-50 border border-blue-200 p-4 rounded-xl text-center">
-          <h3 className="text-sm font-bold text-blue-800 mb-1">¡Lectura Exitosa!</h3>
+          <h3 className="text-sm font-bold text-blue-800 mb-1">{t('¡Lectura Exitosa!')}</h3>
           <p className="font-mono text-lg text-blue-900 bg-white p-2 rounded border border-blue-100">
             {scannedResult}
           </p>
@@ -57,7 +59,7 @@ export function TestScannerPage() {
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
         onCodeScanned={(code, type) => {
-          setScannedResult(`Tipo: ${type} | Código: ${code}`);
+          setScannedResult(t('Tipo: {type} | Código: {code}', { type, code }));
           setIsScannerOpen(false);
         }}
       />

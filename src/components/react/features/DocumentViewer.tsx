@@ -3,6 +3,7 @@ import { HabitarLoader } from '../ui/HabitarLoader';
 import { DocxPages } from '../ui/DocxPages';
 import { fetchActivityDocument, type ActivityDocumentMeta } from '../../../services/activityService';
 import { openPdf, type PdfHandle } from '../../../lib/pdfDocument';
+import { t, useI18n } from '../../../i18n';
 
 interface DocumentViewerProps {
   code: string;
@@ -30,6 +31,7 @@ function sanitizeHtml(html: string): string {
 }
 
 export function DocumentViewer({ code, document: meta, onError }: DocumentViewerProps) {
+  useI18n();
   const [pdf, setPdf] = useState<PdfHandle | null>(null);
   const [html, setHtml] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -81,13 +83,13 @@ export function DocumentViewer({ code, document: meta, onError }: DocumentViewer
     <div ref={containerRef} className="w-full">
       {loading && (
         <div className="py-10">
-          <HabitarLoader size="sm" message="Abriendo el documento…" />
+          <HabitarLoader size="sm" message={t('Abriendo el documento…')} />
         </div>
       )}
       {pdf && width > 0 && (
         <div className="space-y-3">
           {pages.map((n, i) => (
-            <PdfPage key={n} pdf={pdf} page={n} width={width} label={`Página ${i + 1} de ${pages.length}`} />
+            <PdfPage key={n} pdf={pdf} page={n} width={width} label={t('Página {value} de {pagesCount}', { value: i + 1, pagesCount: pages.length })} />
           ))}
         </div>
       )}
@@ -97,6 +99,7 @@ export function DocumentViewer({ code, document: meta, onError }: DocumentViewer
 }
 
 function PdfPage({ pdf, page, width, label }: { pdf: PdfHandle; page: number; width: number; label: string }) {
+  useI18n();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);

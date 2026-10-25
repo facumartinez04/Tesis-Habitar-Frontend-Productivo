@@ -1,4 +1,5 @@
 import Swal from 'sweetalert2';
+import { t } from '../i18n';
 
 const themed = Swal.mixin({
   confirmButtonColor: '#0F6E56',
@@ -19,8 +20,8 @@ export async function confirmDestructive(options: {
     title: options.title,
     text: options.text,
     showCancelButton: true,
-    confirmButtonText: options.confirmButtonText ?? 'Sí, continuar',
-    cancelButtonText: 'Cancelar',
+    confirmButtonText: options.confirmButtonText ?? t('Sí, continuar'),
+    cancelButtonText: t('Cancelar'),
     reverseButtons: true,
     confirmButtonColor: '#E24B4A',
   });
@@ -33,8 +34,8 @@ export async function confirmAction(options: { title: string; text?: string; con
     title: options.title,
     text: options.text,
     showCancelButton: true,
-    confirmButtonText: options.confirmButtonText ?? 'Confirmar',
-    cancelButtonText: 'Cancelar',
+    confirmButtonText: options.confirmButtonText ?? t('Confirmar'),
+    cancelButtonText: t('Cancelar'),
     reverseButtons: true,
   });
   return result.isConfirmed;

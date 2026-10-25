@@ -3,6 +3,7 @@ import type { AttemptPolicy, ComprehensionAxis, DiagnosticType } from '../types/
 import type { Question } from '../types/question';
 import type { ReadingMode } from '../services/activityService';
 import { clearWizardDocument } from '../lib/wizardDocument';
+import type { Locale } from '../i18n';
 
 export interface ActivityWizardState {
   educationLevel: string;
@@ -24,6 +25,7 @@ export interface ActivityWizardState {
   documentName?: string | null;
   templateId?: string | null;
   showFeedback?: boolean;
+  language?: Locale;
   saveToBank?: boolean;
   name: string;
   generatedCode: string | null;

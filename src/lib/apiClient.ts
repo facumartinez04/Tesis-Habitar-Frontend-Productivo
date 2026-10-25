@@ -1,4 +1,5 @@
 import { sessionStore } from '../store/sessionStore';
+import { getLocale, t } from '../i18n';
 
 const API_URL =
   import.meta.env.PUBLIC_API_URL ||
@@ -26,8 +27,12 @@ export function apiUrl(path: string): string {
   return `${API_URL}${path}`;
 }
 
+export function languageHeaders(): Record<string, string> {
+  return { 'X-Habitar-Language': getLocale() };
+}
+
 export function authHeaders(): Record<string, string> {
-  const headers: Record<string, string> = {};
+  const headers: Record<string, string> = { ...languageHeaders() };
   const session = sessionStore.get();
   if (session?.token) headers.Authorization = `Bearer ${session.token}`;
   if (session?.impersonatedInstitutionId) headers['X-Impersonate-Institution'] = session.impersonatedInstitutionId;
@@ -37,7 +42,7 @@ export function authHeaders(): Record<string, string> {
 
 export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): Promise<T> {
   const { method = 'GET', body, auth = true } = options;
-  const headers: Record<string, string> = { 'Content-Type': 'application/json', ...(auth ? authHeaders() : {}) };
+  const headers: Record<string, string> = { 'Content-Type': 'application/json', ...languageHeaders(), ...(auth ? authHeaders() : {}) };
 
   const response = await fetch(`${API_URL}${path}`, {
     method,
@@ -52,7 +57,7 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new ApiError(response.status, data?.error ?? 'Error de red inesperado');
+    throw new ApiError(response.status, data?.error ?? t('Error de red inesperado'));
   }
 
   return data as T;

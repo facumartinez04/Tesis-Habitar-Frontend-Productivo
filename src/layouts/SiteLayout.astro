@@ -1,12 +1,14 @@
 ---
 import '../styles/global.css';
 import { ClientRouter } from 'astro:transitions';
+import { LanguageSelect } from '../components/react/ui/LanguageSelect';
 
 interface Props {
   title: string;
   description?: string;
   image?: string;
   forceLight?: boolean;
+  languageSelect?: boolean;
 }
 
 const {
@@ -14,6 +16,7 @@ const {
   description = 'Habitar — Comprensión lectora asistida por Inteligencia Artificial, analítica formativa y diagnóstica para instituciones educativas.',
   image = '/logo-habitar.jpg',
   forceLight = false,
+  languageSelect = false,
 } = Astro.props;
 
 const isLanding = forceLight || Astro.url.pathname === '/' || Astro.url.pathname === '';
@@ -57,6 +60,7 @@ const jsonLd = {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{pageTitle}</title>
+    <meta name="habitar-page-title" content={title} />
     <meta name="description" content={description} />
     <meta name="keywords" content="comprensión lectora, inteligencia artificial, analítica educativa, rúbricas pedagógicas, evaluación formativa, colegios, educación primaria, educación secundaria, Habitar" />
     <meta name="author" content="Habitar" />
@@ -139,6 +143,18 @@ const jsonLd = {
   </head>
   <body class="min-h-screen bg-surface text-text-pri transition-colors duration-200">
     <slot />
+    {languageSelect && (
+      <div data-print-hide class="fixed top-3 right-3 z-50">
+        <LanguageSelect client:load />
+      </div>
+    )}
+    <script>
+      import { translateDocument } from '../i18n/dom';
+
+      translateDocument();
+      document.addEventListener('astro:page-load', () => translateDocument());
+      window.addEventListener('habitar-locale-change', () => translateDocument());
+    </script>
     <script>      if ('serviceWorker' in navigator) {
         import('virtual:pwa-register').then(({ registerSW }) =>
           registerSW({

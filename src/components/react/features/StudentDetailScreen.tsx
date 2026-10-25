@@ -12,20 +12,22 @@ import { useQueryParam } from '../../../hooks/useQueryParam';
 import { getStudentDetail } from '../../../services/studentService';
 import { createFeedback, listFeedback, type Feedback } from '../../../services/feedbackService';
 import type { StudentDetail, StudentTrendPoint } from '../../../types/student';
+import { t, useI18n } from '../../../i18n';
+import { T } from '../../../i18n/T';
 
 const statusBadge = {
-  bien: { label: 'Bien', color: 'green' as const },
-  regular: { label: 'Regular', color: 'amber' as const },
+  bien: { label: <T k={'Bien'} />, color: 'green' as const },
+  regular: { label: <T k={'Regular'} />, color: 'amber' as const },
   bajo: {
     label: (
       <span className="flex items-center gap-1">
         <Icon name="alertTriangle" size={11} />
-        Rendimiento bajo
+        <T k={'Rendimiento bajo'} />
       </span>
     ),
     color: 'red' as const,
   },
-  sin_datos: { label: 'Sin datos', color: 'gray' as const },
+  sin_datos: { label: <T k={'Sin datos'} />, color: 'gray' as const },
 };
 
 const axisColor = { literal: '#1D9E75', inferencial: '#EF9F27', critico: '#E24B4A' };
@@ -46,6 +48,7 @@ function buildLine(trend: StudentTrendPoint[], key: 'literal' | 'inferencial' | 
 }
 
 export function StudentDetailScreen() {
+  useI18n();
   const session = useAuthGuard(['docente', 'coordinador', 'admin']);
   const studentId = useQueryParam('id');
   const [student, setStudent] = useState<StudentDetail | null>(null);
@@ -101,12 +104,12 @@ export function StudentDetailScreen() {
         <Avatar initials={student.initials} bg="var(--color-amber-bg)" color="var(--color-amber-text)" />
         <div className="min-w-0">
           <div className="text-[15px] font-medium truncate">{student.name}</div>
-          <div className="text-[11.5px] text-text-sec truncate">{student.courseName} · {student.activitiesAnswered} actividades respondidas</div>
+          <div className="text-[11.5px] text-text-sec truncate">{t('{courseName} · {activitiesAnswered} actividades respondidas', { courseName: student.courseName, activitiesAnswered: student.activitiesAnswered })}</div>
         </div>
         <Badge color={badge.color} className="sm:ml-auto">{badge.label}</Badge>
       </div>
 
-      <div className="text-xs font-medium text-text-sec mb-2">Evolución por eje · trimestre</div>
+      <div className="text-xs font-medium text-text-sec mb-2">{t('Evolución por eje · trimestre')}</div>
       <div className="bg-surface rounded-md p-3.5 mb-4">
         {student.trend.length > 0 ? (
           <svg viewBox="0 0 500 120" className="w-full h-[120px]">
@@ -129,17 +132,17 @@ export function StudentDetailScreen() {
             })}
           </svg>
         ) : (
-          <div className="text-xs text-text-ter text-center py-6">Sin datos suficientes para graficar la evolución</div>
+          <div className="text-xs text-text-ter text-center py-6">{t('Sin datos suficientes para graficar la evolución')}</div>
         )}
         <div className="flex gap-3.5 mt-2">
           <div className="flex items-center gap-1.5 text-[11px] text-text-sec">
-            <span className="w-5 h-0.5 rounded-sm" style={{ background: axisColor.literal }} /> Literal
+            <span className="w-5 h-0.5 rounded-sm" style={{ background: axisColor.literal }} />{' '}{t('Literal')}
           </div>
           <div className="flex items-center gap-1.5 text-[11px] text-text-sec">
-            <span className="w-5 h-0.5 rounded-sm" style={{ background: axisColor.inferencial }} /> Inferencial
+            <span className="w-5 h-0.5 rounded-sm" style={{ background: axisColor.inferencial }} />{' '}{t('Inferencial')}
           </div>
           <div className="flex items-center gap-1.5 text-[11px] text-text-sec">
-            <span className="w-5 h-0.5 rounded-sm" style={{ background: axisColor.critico }} /> Crítico
+            <span className="w-5 h-0.5 rounded-sm" style={{ background: axisColor.critico }} />{' '}{t('Crítico')}
           </div>
         </div>
       </div>
@@ -147,11 +150,11 @@ export function StudentDetailScreen() {
       <TableWrap>
         <thead>
           <tr>
-            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Actividad</th>
-            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Fecha</th>
-            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Literal</th>
-            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Inferencial</th>
-            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Crítico</th>
+            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">{t('Actividad')}</th>
+            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">{t('Fecha')}</th>
+            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">{t('Literal')}</th>
+            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">{t('Inferencial')}</th>
+            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">{t('Crítico')}</th>
           </tr>
         </thead>
         <tbody>
@@ -166,16 +169,16 @@ export function StudentDetailScreen() {
           ))}
         </tbody>
       </TableWrap>
-      <Pagination page={pagedHistory.page} totalPages={pagedHistory.totalPages} total={pagedHistory.total} pageSize={pagedHistory.pageSize} onChange={pagedHistory.setPage} label="actividades" />
+      <Pagination page={pagedHistory.page} totalPages={pagedHistory.totalPages} total={pagedHistory.total} pageSize={pagedHistory.pageSize} onChange={pagedHistory.setPage} label={t('actividades')} />
 
       <div className="mt-5">
-        <div className="text-xs font-medium text-text-sec mb-2">CU-03-06 · Retroalimentación</div>
+        <div className="text-xs font-medium text-text-sec mb-2">{t('CU-03-06 · Retroalimentación')}</div>
         <div className="bg-white border border-gray-border rounded-md p-3.5">
           <div className="flex gap-2 mb-3">
             <input
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Escribí una devolución para el/la alumno/a…"
+              placeholder={t('Escribí una devolución para el/la alumno/a…')}
               className="flex-1 border border-gray-border rounded-md px-2.5 py-1.5 text-[12px]"
             />
             <button
@@ -183,11 +186,11 @@ export function StudentDetailScreen() {
               disabled={sending || !newMessage.trim()}
               className="bg-green-dark text-white text-[12px] px-3 py-1.5 rounded-md disabled:opacity-50 shrink-0"
             >
-              {sending ? 'Enviando…' : 'Registrar'}
+              {sending ? t('Enviando…') : t('Registrar')}
             </button>
           </div>
           {feedback.length === 0 ? (
-            <div className="text-[11.5px] text-text-ter">Todavía no hay retroalimentación registrada.</div>
+            <div className="text-[11.5px] text-text-ter">{t('Todavía no hay retroalimentación registrada.')}</div>
           ) : (
             <div className="space-y-2">
               {feedback.map((item) => (

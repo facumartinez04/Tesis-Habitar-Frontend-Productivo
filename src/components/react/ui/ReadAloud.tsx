@@ -1,14 +1,21 @@
 import { useEffect, useState } from 'react';
 import { Icon } from './Icon';
+import { t, useI18n, type Locale } from '../../../i18n';
 
 interface ReadAloudProps {
   text: string;
   label?: string;
   className?: string;
+  lang?: Locale;
 }
 
-function spanishVoice(): SpeechSynthesisVoice | null {
+const SPEECH_LANG: Record<Locale, string> = { es: 'es-AR', en: 'en-US' };
+
+function voiceFor(lang: Locale): SpeechSynthesisVoice | null {
   const voices = window.speechSynthesis.getVoices();
+  if (lang === 'en') {
+    return voices.find((v) => v.lang === 'en-US') ?? voices.find((v) => v.lang.startsWith('en')) ?? null;
+  }
   return (
     voices.find((v) => v.lang === 'es-AR') ??
     voices.find((v) => v.lang === 'es-419' || v.lang === 'es-US' || v.lang === 'es-MX') ??
@@ -17,7 +24,9 @@ function spanishVoice(): SpeechSynthesisVoice | null {
   );
 }
 
-export function ReadAloud({ text, label = 'Escuchar', className = '' }: ReadAloudProps) {
+export function ReadAloud({ text, label = t('Escuchar'), className = '', lang }: ReadAloudProps) {
+  const { locale } = useI18n();
+  const speechLang = lang ?? locale;
   const [supported, setSupported] = useState(false);
   const [speaking, setSpeaking] = useState(false);
 
@@ -46,8 +55,8 @@ export function ReadAloud({ text, label = 'Escuchar', className = '' }: ReadAlou
     }
     synth.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'es-AR';
-    const voice = spanishVoice();
+    u.lang = SPEECH_LANG[speechLang];
+    const voice = voiceFor(speechLang);
     if (voice) u.voice = voice;
     u.rate = 0.95;
     u.onend = () => setSpeaking(false);
@@ -68,7 +77,7 @@ export function ReadAloud({ text, label = 'Escuchar', className = '' }: ReadAlou
       } ${className}`}
     >
       <Icon name={speaking ? 'close' : 'volume'} size={13} />
-      {speaking ? 'Detener' : label}
+      {speaking ? t('Detener') : label}
     </button>
   );
 }

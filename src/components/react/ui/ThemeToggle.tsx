@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Icon } from './Icon';
 import { applyTheme, getStoredTheme, getResolvedTheme, type ThemeMode } from '../../../lib/theme';
+import { t, useI18n } from '../../../i18n';
 
 interface ThemeToggleProps {
   variant?: 'segmented' | 'compact';
@@ -8,6 +9,7 @@ interface ThemeToggleProps {
 }
 
 export function ThemeToggle({ variant = 'segmented', className = '' }: ThemeToggleProps) {
+  useI18n();
   const [currentMode, setCurrentMode] = useState<ThemeMode>('system');
   const [resolved, setResolved] = useState<'light' | 'dark'>('light');
   const [mounted, setMounted] = useState(false);
@@ -53,13 +55,13 @@ export function ThemeToggle({ variant = 'segmented', className = '' }: ThemeTogg
     };
 
     const iconName = currentMode === 'system' ? 'monitor' : currentMode === 'dark' ? 'moon' : 'sun';
-    const label = currentMode === 'system' ? 'Tema: Sistema' : currentMode === 'dark' ? 'Tema: Oscuro' : 'Tema: Claro';
+    const label = currentMode === 'system' ? t('Tema: Sistema') : currentMode === 'dark' ? t('Tema: Oscuro') : t('Tema: Claro');
 
     return (
       <button
         type="button"
         onClick={() => handleSelect(nextModeMap[currentMode])}
-        title={`${label} (Click para cambiar)`}
+        title={t('{label} (Click para cambiar)', { label })}
         aria-label={label}
         className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1A1E29] hover:bg-gray-50 dark:hover:bg-[#252B3B] text-gray-700 dark:text-gray-300 transition-colors cursor-pointer ${className}`}
       >
@@ -70,15 +72,15 @@ export function ThemeToggle({ variant = 'segmented', className = '' }: ThemeTogg
   }
 
   const modes: { mode: ThemeMode; icon: 'sun' | 'moon' | 'monitor'; label: string }[] = [
-    { mode: 'light', icon: 'sun', label: 'Claro' },
-    { mode: 'dark', icon: 'moon', label: 'Oscuro' },
-    { mode: 'system', icon: 'monitor', label: 'Sistema' },
+    { mode: 'light', icon: 'sun', label: t('Claro') },
+    { mode: 'dark', icon: 'moon', label: t('Oscuro') },
+    { mode: 'system', icon: 'monitor', label: t('Sistema') },
   ];
 
   return (
     <div
       role="group"
-      aria-label="Seleccionar tema visual"
+      aria-label={t('Seleccionar tema visual')}
       className={`inline-flex items-center p-0.5 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 ${className}`}
     >
       {modes.map(({ mode, icon, label }) => (
@@ -87,7 +89,7 @@ export function ThemeToggle({ variant = 'segmented', className = '' }: ThemeTogg
           type="button"
           onClick={() => handleSelect(mode)}
           aria-pressed={currentMode === mode}
-          title={`Modo ${label.toLowerCase()}`}
+          title={t('Modo {toLowerCase}', { toLowerCase: label.toLowerCase() })}
           className={`flex items-center justify-center p-1.5 sm:px-2.5 sm:py-1.5 rounded-md text-xs font-medium transition-all duration-150 cursor-pointer ${
             currentMode === mode
               ? 'bg-white dark:bg-[#252B3B] text-emerald-700 dark:text-emerald-400 shadow-sm font-semibold'

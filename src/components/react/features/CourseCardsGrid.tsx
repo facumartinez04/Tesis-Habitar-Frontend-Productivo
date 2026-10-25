@@ -2,6 +2,7 @@ import { Icon } from '../ui/Icon';
 import { usePagination } from '../../../hooks/usePagination';
 import { Pagination } from '../ui/Pagination';
 import type { Course } from '../../../types/activity';
+import { t, useI18n } from '../../../i18n';
 
 interface CourseCardsGridProps {
   courses: Course[];
@@ -12,10 +13,11 @@ interface CourseCardsGridProps {
 const SHIFT_LABEL: Record<string, string> = { MAÑANA: 'Mañana', TARDE: 'Tarde', NOCHE: 'Noche' };
 
 function studentsLabel(count: number | undefined): string {
-  return (count ?? 0) === 1 ? 'alumno registrado' : 'alumnos registrados';
+  return (count ?? 0) === 1 ? t('alumno registrado') : t('alumnos registrados');
 }
 
 export function CourseCardsGrid({ courses, onOpen, onShowQr }: CourseCardsGridProps) {
+  useI18n();
   const pagedCourses = usePagination(courses, 12, courses.length);
   return (
     <>
@@ -24,7 +26,7 @@ export function CourseCardsGrid({ courses, onOpen, onShowQr }: CourseCardsGridPr
         const details = [
           course.subject,
           [course.grade, course.division ? `"${course.division}"` : ''].filter(Boolean).join(' '),
-          course.shift ? `Turno ${SHIFT_LABEL[course.shift] ?? course.shift}` : '',
+          course.shift ? t('Turno {value}', { value: t(SHIFT_LABEL[course.shift] ?? course.shift) }) : '',
         ].filter(Boolean);
         return (
           <div
@@ -35,7 +37,7 @@ export function CourseCardsGrid({ courses, onOpen, onShowQr }: CourseCardsGridPr
               type="button"
               onClick={() => onOpen(course.id)}
               className="flex-1 text-left p-5 rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-500 cursor-pointer"
-              aria-label={`Entrar al aula ${course.name}`}
+              aria-label={t('Entrar al aula {name}', { name: course.name })}
             >
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
@@ -44,7 +46,7 @@ export function CourseCardsGrid({ courses, onOpen, onShowQr }: CourseCardsGridPr
                 {course.activeActivityId && (
                   <span className="inline-flex items-center gap-1.5 text-[10.5px] font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 rounded-full px-2 py-0.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    Actividad vinculada
+                    {t('Actividad vinculada')}
                   </span>
                 )}
               </div>
@@ -64,7 +66,7 @@ export function CourseCardsGrid({ courses, onOpen, onShowQr }: CourseCardsGridPr
                   </div>
                 </div>
                 <div className="text-right text-[11px] text-stone-500 dark:text-stone-400 space-y-0.5">
-                  {course.room && <div>Salón {course.room}</div>}
+                  {course.room && <div>{t('Salón {room}', { room: course.room })}</div>}
                   {course.qrCode && <div className="font-mono font-semibold text-emerald-800 dark:text-emerald-300">{course.qrCode}</div>}
                 </div>
               </div>
@@ -77,14 +79,14 @@ export function CourseCardsGrid({ courses, onOpen, onShowQr }: CourseCardsGridPr
                 className="flex items-center gap-1.5 text-xs font-semibold text-stone-600 dark:text-stone-300 hover:text-emerald-700 dark:hover:text-emerald-300 cursor-pointer"
               >
                 <Icon name="qrCode" size={13} />
-                QR del aula
+                {t('QR del aula')}
               </button>
               <button
                 type="button"
                 onClick={() => onOpen(course.id)}
                 className="flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-300 cursor-pointer"
               >
-                Ver detalles
+                {t('Ver detalles')}
                 <Icon name="arrowRight" size={12} className="group-hover:translate-x-0.5 transition-transform" />
               </button>
             </div>
@@ -92,7 +94,7 @@ export function CourseCardsGrid({ courses, onOpen, onShowQr }: CourseCardsGridPr
         );
       })}
     </div>
-      <Pagination page={pagedCourses.page} totalPages={pagedCourses.totalPages} total={pagedCourses.total} pageSize={pagedCourses.pageSize} onChange={pagedCourses.setPage} label="aulas" />
+      <Pagination page={pagedCourses.page} totalPages={pagedCourses.totalPages} total={pagedCourses.total} pageSize={pagedCourses.pageSize} onChange={pagedCourses.setPage} label={t('aulas')} />
     </>
   );
 }

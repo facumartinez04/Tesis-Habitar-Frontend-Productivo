@@ -1,3 +1,5 @@
+import { t } from '../i18n';
+
 export const SUPPORTED_EXTENSIONS = ['.txt', '.md', '.docx', '.pdf'] as const;
 
 export const SUPPORTED_MIME_TYPES = [
@@ -57,7 +59,7 @@ async function docxToText(data: ArrayBuffer): Promise<string> {
 }
 
 export async function extractText(file: Blob, name: string, mimeType = file.type): Promise<string> {
-  if (file.size > MAX_BYTES) throw new Error('El archivo es demasiado grande (más de 15 MB).');
+  if (file.size > MAX_BYTES) throw new Error(t('El archivo es demasiado grande (más de 15 MB).'));
   const ext = extensionOf(name);
   let text: string;
   if (ext === '.pdf' || mimeType === 'application/pdf') {
@@ -67,11 +69,11 @@ export async function extractText(file: Blob, name: string, mimeType = file.type
   } else if (ext === '.txt' || ext === '.md' || mimeType.startsWith('text/')) {
     text = await file.text();
   } else {
-    throw new Error('Formato no admitido. Usá un Google Docs, Word (.docx), PDF o texto (.txt, .md).');
+    throw new Error(t('Formato no admitido. Usá un Google Docs, Word (.docx), PDF o texto (.txt, .md).'));
   }
   const normalized = normalizeText(text);
   if (!normalized) {
-    throw new Error('No se encontró texto en el archivo. Si es un PDF escaneado (una imagen), no tiene texto para leer.');
+    throw new Error(t('No se encontró texto en el archivo. Si es un PDF escaneado (una imagen), no tiene texto para leer.'));
   }
   return normalized;
 }
@@ -96,7 +98,7 @@ export async function extractDocumentWithPreview(
       mammoth.convertToHtml({ arrayBuffer }),
     ]);
     const text = normalizeText(rawTextResult.value);
-    if (!text) throw new Error('No se encontró texto en el archivo Word.');
+    if (!text) throw new Error(t('No se encontró texto en el archivo Word.'));
     return {
       text,
       previewType: 'docx',

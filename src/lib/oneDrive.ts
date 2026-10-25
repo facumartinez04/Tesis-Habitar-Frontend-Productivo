@@ -1,5 +1,6 @@
 import type { IPublicClientApplication } from '@azure/msal-browser';
 import { SUPPORTED_EXTENSIONS } from './documentText';
+import { t } from '../i18n';
 
 const SCOPES = ['Files.Read'];
 const GRAPH = 'https://graph.microsoft.com/v1.0';
@@ -53,15 +54,15 @@ export async function getOneDriveToken(config: { clientId: string; tenantId: str
     return result.accessToken;
   } catch (err) {
     const code = (err as { errorCode?: string }).errorCode;
-    if (code === 'user_cancelled') throw new Error('Se cerró la ventana de Microsoft sin dar permiso.');
-    if (code === 'popup_window_error') throw new Error('El navegador bloqueó la ventana de Microsoft. Permití las ventanas emergentes para habitar.lat.');
-    throw new Error('No se pudo conectar con OneDrive.');
+    if (code === 'user_cancelled') throw new Error(t('Se cerró la ventana de Microsoft sin dar permiso.'));
+    if (code === 'popup_window_error') throw new Error(t('El navegador bloqueó la ventana de Microsoft. Permití las ventanas emergentes para habitar.lat.'));
+    throw new Error(t('No se pudo conectar con OneDrive.'));
   }
 }
 
 async function graph<T>(token: string, path: string): Promise<T> {
   const res = await fetch(`${GRAPH}${path}`, { headers: { Authorization: `Bearer ${token}` } });
-  if (!res.ok) throw new Error(`OneDrive respondió con error ${res.status}.`);
+  if (!res.ok) throw new Error(t('OneDrive respondió con error {status}.', { status: res.status }));
   return res.json() as Promise<T>;
 }
 
@@ -102,6 +103,6 @@ export async function downloadDriveFile(token: string, item: DriveItem): Promise
   const res = await fetch(`${GRAPH}/me/drive/items/${encodeURIComponent(item.id)}/content`, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  if (!res.ok) throw new Error(`OneDrive no entregó el archivo (error ${res.status}).`);
+  if (!res.ok) throw new Error(t('OneDrive no entregó el archivo (error {status}).', { status: res.status }));
   return res.blob();
 }

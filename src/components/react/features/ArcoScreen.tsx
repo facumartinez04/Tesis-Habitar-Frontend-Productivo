@@ -13,6 +13,7 @@ import { useToast } from '../../../hooks/useToast';
 import { deleteStudentData, exportStudentData, getAuditLog, searchArcoStudents } from '../../../services/complianceService';
 import { confirmDestructive } from '../../../lib/alerts';
 import type { ArcoStudentRecord, AuditLogEntry } from '../../../types/compliance';
+import { t, useI18n } from '../../../i18n';
 
 const operationBadge: Record<AuditLogEntry['operation'], { label: string; color: 'blue' | 'red' | 'green' }> = {
   exportacion: { label: 'Exportación', color: 'blue' },
@@ -21,6 +22,7 @@ const operationBadge: Record<AuditLogEntry['operation'], { label: string; color:
 };
 
 export function ArcoScreen() {
+  useI18n();
   const session = useAuthGuard(['coordinador', 'admin']);
   const { message, showToast } = useToast();
   const [query, setQuery] = useState('');
@@ -60,22 +62,22 @@ export function ArcoScreen() {
     URL.revokeObjectURL(url);
     await refresh();
     setBusy(false);
-    showToast('Datos exportados');
+    showToast(t('Datos exportados'));
   }
 
   async function handleDelete() {
     if (!selected || !session) return;
     const confirmed = await confirmDestructive({
-      title: `¿Eliminar los datos de ${selected.name}?`,
-      text: 'Esta acción no se puede deshacer y quedará registrada en el log de auditoría.',
-      confirmButtonText: 'Sí, eliminar',
+      title: t('¿Eliminar los datos de {name}?', { name: selected.name }),
+      text: t('Esta acción no se puede deshacer y quedará registrada en el log de auditoría.'),
+      confirmButtonText: t('Sí, eliminar'),
     });
     if (!confirmed) return;
     setBusy(true);
     await deleteStudentData(session.user.institutionId, selected.id);
     await refresh();
     setBusy(false);
-    showToast('Datos eliminados');
+    showToast(t('Datos eliminados'));
   }
 
   if (!session) {
@@ -106,9 +108,9 @@ export function ArcoScreen() {
   return (
     <div>
       <Toast message={message} />
-      <div className="text-lg font-semibold text-text-pri mb-[3px] tracking-tight">Cumplimiento — Datos personales (ARCO)</div>
+      <div className="text-lg font-semibold text-text-pri mb-[3px] tracking-tight">{t('Cumplimiento — Datos personales (ARCO)')}</div>
       <div className="text-[12.5px] text-text-sec mb-[18px]">
-        Solicitudes de acceso, rectificación, cancelación u oposición · Ley 25.326
+        {t('Solicitudes de acceso, rectificación, cancelación u oposición · Ley 25.326')}
       </div>
 
       <div className="flex gap-2 mb-4">
@@ -116,12 +118,12 @@ export function ArcoScreen() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && refresh()}
-          placeholder="Nombre o número de lista..."
+          placeholder={t('Nombre o número de lista...')}
           className="flex-1 px-2.5 py-[7px] border border-gray-border rounded-[6px] text-[12.5px]"
         />
         <button onClick={refresh} className="flex items-center gap-1.5 bg-green-dark text-white rounded-[6px] px-4 py-2 text-[12.5px] font-medium">
           <Icon name="search" size={14} />
-          Buscar
+          {t('Buscar')}
         </button>
       </div>
 
@@ -132,7 +134,7 @@ export function ArcoScreen() {
             <div>
               <div className="text-[13px] font-medium">{selected.name} · {selected.courseName}</div>
               <div className="text-[11.5px] text-text-sec">
-                {selected.activitiesCount} actividades registradas · Última: {selected.lastActivityDate ?? '—'}
+                {t('{activitiesCount} actividades registradas · Última:', { activitiesCount: selected.activitiesCount })}{' '}{selected.lastActivityDate ?? '—'}
               </div>
             </div>
           </div>
@@ -143,7 +145,7 @@ export function ArcoScreen() {
               className="flex-1 flex items-center justify-center gap-1.5 bg-white border border-gray-border rounded-[6px] py-2 text-[12.5px] disabled:opacity-50"
             >
               <Icon name="download" size={14} />
-              Exportar datos (JSON)
+              {t('Exportar datos (JSON)')}
             </button>
             <button
               onClick={handleDelete}
@@ -151,22 +153,22 @@ export function ArcoScreen() {
               className="flex-1 flex items-center justify-center gap-1.5 bg-red-bg border border-[#F09595] text-red-text rounded-[6px] py-2 text-[12.5px] disabled:opacity-50"
             >
               <Icon name="trash" size={14} />
-              Eliminar datos
+              {t('Eliminar datos')}
             </button>
           </div>
         </Card>
       ) : (
-        <div className="text-xs text-text-ter mb-4">No se encontraron alumnos para esa búsqueda.</div>
+        <div className="text-xs text-text-ter mb-4">{t('No se encontraron alumnos para esa búsqueda.')}</div>
       )}
 
-      <div className="text-xs font-medium text-text-sec mb-2">Registro de auditoría</div>
+      <div className="text-xs font-medium text-text-sec mb-2">{t('Registro de auditoría')}</div>
       <TableWrap>
         <thead>
           <tr>
-            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Fecha</th>
-            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Alumno</th>
-            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Operación</th>
-            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Usuario</th>
+            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">{t('Fecha')}</th>
+            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">{t('Alumno')}</th>
+            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">{t('Operación')}</th>
+            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">{t('Usuario')}</th>
           </tr>
         </thead>
         <tbody>
@@ -175,14 +177,14 @@ export function ArcoScreen() {
               <td className="px-2.5 py-2.5 border-b border-gray-border">{entry.date}</td>
               <td className="px-2.5 py-2.5 border-b border-gray-border">{entry.studentName}</td>
               <td className="px-2.5 py-2.5 border-b border-gray-border">
-                <Badge color={operationBadge[entry.operation].color}>{operationBadge[entry.operation].label}</Badge>
+                <Badge color={operationBadge[entry.operation].color}>{t(operationBadge[entry.operation].label)}</Badge>
               </td>
               <td className="px-2.5 py-2.5 border-b border-gray-border">{entry.performedBy}</td>
             </tr>
           ))}
         </tbody>
       </TableWrap>
-      <Pagination page={pagedAuditLog.page} totalPages={pagedAuditLog.totalPages} total={pagedAuditLog.total} pageSize={pagedAuditLog.pageSize} onChange={pagedAuditLog.setPage} label="registros" />
+      <Pagination page={pagedAuditLog.page} totalPages={pagedAuditLog.totalPages} total={pagedAuditLog.total} pageSize={pagedAuditLog.pageSize} onChange={pagedAuditLog.setPage} label={t('registros')} />
     </div>
   );
 }

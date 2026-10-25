@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Skeleton } from '../ui/Skeleton';
+import { t, useI18n, intlLocale } from '../../../i18n';
 
 const API_URL =
   import.meta.env.PUBLIC_API_URL ||
@@ -36,22 +37,25 @@ function formatUptime(seconds: number): string {
 }
 
 function Dot({ ok }: { ok: boolean }) {
+  useI18n();
   return <span className={`inline-block w-2.5 h-2.5 rounded-full ${ok ? 'bg-green-mid' : 'bg-red'}`} />;
 }
 
 function Row({ label, ok, detail }: { label: string; ok: boolean; detail?: string }) {
+  useI18n();
   return (
     <div className="flex items-center justify-between py-2.5 border-b border-gray-border last:border-0">
       <div className="flex items-center gap-2.5">
         <Dot ok={ok} />
         <span className="text-[13px] text-text-pri">{label}</span>
       </div>
-      <span className={`text-[11.5px] ${ok ? 'text-green-mid' : 'text-red'}`}>{detail ?? (ok ? 'OK' : 'Error')}</span>
+      <span className={`text-[11.5px] ${ok ? 'text-green-mid' : 'text-red'}`}>{detail ?? (ok ? 'OK' : t('Error'))}</span>
     </div>
   );
 }
 
 export function StatusScreen() {
+  useI18n();
   const [backend, setBackend] = useState<FetchState>({ kind: 'loading' });
   const [swActive, setSwActive] = useState<boolean | null>(null);
 
@@ -62,7 +66,7 @@ export function StatusScreen() {
       const report = (await res.json()) as StatusReport;
       setBackend({ kind: 'ready', report });
     } catch {
-      setBackend({ kind: 'error', message: 'No se pudo contactar al backend' });
+      setBackend({ kind: 'error', message: t('No se pudo contactar al backend') });
     }
   }
 
@@ -83,26 +87,26 @@ export function StatusScreen() {
       <div className="w-full max-w-[480px]">
         <div className="flex items-center justify-between mb-6">
           <div className="text-[22px] font-bold text-text-pri tracking-tight">
-            Habi<span className="text-green-dark">tar</span> — Status
+            Habi<span className="text-green-dark">tar</span>{' '}{t('— Status')}
           </div>
           <button
             onClick={loadBackendStatus}
             className="text-[11.5px] text-text-sec border border-gray-border rounded-md px-2.5 py-1.5 hover:border-green-mid transition-colors"
           >
-            Actualizar
+            {t('Actualizar')}
           </button>
         </div>
 
         <div className="bg-white border border-gray-border rounded-xl p-4 mb-4">
-          <div className="text-[12px] font-semibold text-text-sec uppercase tracking-wide mb-2">Frontend</div>
-          <Row label="Sitio cargado" ok={true} />
-          <Row label="PWA / Service worker" ok={swActive === true} detail={swActive === null ? 'Verificando…' : swActive ? 'Activo' : 'No registrado'} />
-          <Row label="Conexión a internet" ok={navigator.onLine} detail={navigator.onLine ? 'Online' : 'Offline'} />
+          <div className="text-[12px] font-semibold text-text-sec uppercase tracking-wide mb-2">{t('Frontend')}</div>
+          <Row label={t('Sitio cargado')} ok={true} />
+          <Row label={t('PWA / Service worker')} ok={swActive === true} detail={swActive === null ? t('Verificando…') : swActive ? t('Activo') : t('No registrado')} />
+          <Row label={t('Conexión a internet')} ok={navigator.onLine} detail={navigator.onLine ? t('Online') : t('Offline')} />
         </div>
 
         <div className="bg-white border border-gray-border rounded-xl p-4 mb-4">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[12px] font-semibold text-text-sec uppercase tracking-wide">Backend</div>
+            <div className="text-[12px] font-semibold text-text-sec uppercase tracking-wide">{t('Backend')}</div>
             {backend.kind === 'ready' && (
               <span className={`text-[10.5px] font-medium px-2 py-0.5 rounded-full ${overallOk ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                 {backend.report.status.toUpperCase()}
@@ -133,9 +137,9 @@ export function StatusScreen() {
 
           {backend.kind === 'ready' && (
             <>
-              <Row label="API alcanzable" ok={true} />
+              <Row label={t('API alcanzable')} ok={true} />
               <Row
-                label="Base de datos"
+                label={t('Base de datos')}
                 ok={backend.report.checks.database.ok}
                 detail={
                   backend.report.checks.database.ok
@@ -145,30 +149,30 @@ export function StatusScreen() {
               />
               {backend.report.checks.database.ok && (
                 <Row
-                  label="Migraciones aplicadas"
+                  label={t('Migraciones aplicadas')}
                   ok={true}
                   detail={
                     backend.report.checks.database.appliedMigrations !== undefined
                       ? `${backend.report.checks.database.appliedMigrations} (última: ${backend.report.checks.database.lastMigration ?? '—'})`
-                      : 'Sin datos'
+                      : t('Sin datos')
                   }
                 />
               )}
-              <Row label="IA — DeepSeek" ok={backend.report.checks.deepseek.configured} detail={backend.report.checks.deepseek.configured ? 'Configurada' : 'Sin configurar (usa plantillas)'} />
-              <Row label="OAuth — Google" ok={backend.report.checks.oauth.google.configured} detail={backend.report.checks.oauth.google.configured ? 'Configurado' : 'Sin configurar'} />
-              <Row label="OAuth — Microsoft" ok={backend.report.checks.oauth.microsoft.configured} detail={backend.report.checks.oauth.microsoft.configured ? 'Configurado' : 'Sin configurar'} />
+              <Row label={t('IA — DeepSeek')} ok={backend.report.checks.deepseek.configured} detail={backend.report.checks.deepseek.configured ? t('Configurada') : t('Sin configurar (usa plantillas)')} />
+              <Row label={t('OAuth — Google')} ok={backend.report.checks.oauth.google.configured} detail={backend.report.checks.oauth.google.configured ? t('Configurado') : t('Sin configurar')} />
+              <Row label={t('OAuth — Microsoft')} ok={backend.report.checks.oauth.microsoft.configured} detail={backend.report.checks.oauth.microsoft.configured ? t('Configurado') : t('Sin configurar')} />
 
               <div className="mt-3 pt-3 border-t border-gray-border text-[11px] text-text-ter space-y-0.5">
-                <div>Uptime: {formatUptime(backend.report.uptimeSeconds)}</div>
-                <div>Node: {backend.report.nodeVersion}</div>
-                <div>FRONTEND_URL configurado: {backend.report.config.frontendUrl}</div>
-                <div>Última actualización: {new Date(backend.report.timestamp).toLocaleTimeString('es-AR')}</div>
+                <div>{t('Uptime: {formatUptime}', { formatUptime: formatUptime(backend.report.uptimeSeconds) })}</div>
+                <div>{t('Node: {nodeVersion}', { nodeVersion: backend.report.nodeVersion })}</div>
+                <div>{t('FRONTEND_URL configurado: {frontendUrl}', { frontendUrl: backend.report.config.frontendUrl })}</div>
+                <div>{t('Última actualización:')}{' '}{new Date(backend.report.timestamp).toLocaleTimeString(intlLocale())}</div>
               </div>
             </>
           )}
         </div>
 
-        <a href="/login" className="text-[11.5px] text-text-sec underline block text-center">Volver al login</a>
+        <a href="/login" className="text-[11.5px] text-text-sec underline block text-center">{t('Volver al login')}</a>
       </div>
     </div>
   );

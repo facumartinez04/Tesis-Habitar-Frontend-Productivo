@@ -1,7 +1,9 @@
 import { clearSession } from '../../../store/sessionStore';
 import { logout } from '../../../services/authService';
+import { t, useI18n } from '../../../i18n';
 
 export function LogoutButton() {
+  useI18n();
   async function handleLogout() {
     await logout();
     clearSession();
@@ -10,7 +12,7 @@ export function LogoutButton() {
 
   return (
     <button onClick={handleLogout} className="text-xs text-text-ter hover:text-text-pri transition-colors">
-      Cerrar sesión
+      {t('Cerrar sesión')}
     </button>
   );
 }

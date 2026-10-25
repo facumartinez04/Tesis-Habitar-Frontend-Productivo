@@ -33,6 +33,10 @@ import { CourseDevicesModal } from './CourseDevicesModal';
 import { ReviewAnswersModal } from './ReviewAnswersModal';
 import { CourseInsightsPanel } from './CourseInsightsPanel';
 import { CourseCardsGrid } from './CourseCardsGrid';
+import { t, useI18n } from '../../../i18n';
+import { T } from '../../../i18n/T';
+import { HelpTip } from '../ui/HelpTip';
+import { OnboardingTour, teacherTourSteps } from './OnboardingTour';
 
 const activityStatusBadge: Record<ActivitySummary['status'], { label: string; color: 'green' | 'amber' | 'gray' }> = {
   borrador: { label: 'Borrador', color: 'gray' },
@@ -42,21 +46,22 @@ const activityStatusBadge: Record<ActivitySummary['status'], { label: string; co
 };
 
 const statusBadge: Record<PerformanceStatus, { label: ReactNode; color: 'green' | 'amber' | 'red' | 'gray' }> = {
-  bien: { label: 'Bien', color: 'green' },
-  regular: { label: 'Regular', color: 'amber' },
+  bien: { label: <T k={'Bien'} />, color: 'green' },
+  regular: { label: <T k={'Regular'} />, color: 'amber' },
   bajo: {
     label: (
       <span className="flex items-center gap-1">
         <Icon name="alertTriangle" size={11} />
-        Bajo
+        <T k={'Bajo'} />
       </span>
     ),
     color: 'red',
   },
-  sin_datos: { label: 'Sin datos', color: 'gray' },
+  sin_datos: { label: <T k={'Sin datos'} />, color: 'gray' },
 };
 
 export function TeacherDashboard() {
+  useI18n();
   const session = useAuthGuard(['docente']);
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState<string>('');
@@ -105,7 +110,7 @@ export function TeacherDashboard() {
         setView('grid');
       }
     } catch {
-      showToast('Error al cargar la lista de aulas');
+      showToast(t('Error al cargar la lista de aulas'));
     } finally {
       setLoadingCourses(false);
     }
@@ -165,17 +170,17 @@ export function TeacherDashboard() {
       return exists ? prev : [course, ...prev];
     });
     openCourse(course.id);
-    showToast(`Conectado al aula: ${course.name}`);
+    showToast(t('Conectado al aula: {name}', { name: course.name }));
   }
 
   async function handleDuplicate(activityId: string) {
     setBusyActivityId(activityId);
     try {
       await duplicateActivity(activityId);
-      showToast('Actividad duplicada como borrador');
+      showToast(t('Actividad duplicada como borrador'));
       if (summary) refreshActivities(summary.courseId);
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'No se pudo duplicar la actividad');
+      showToast(err instanceof Error ? err.message : t('No se pudo duplicar la actividad'));
     } finally {
       setBusyActivityId(null);
     }
@@ -185,9 +190,9 @@ export function TeacherDashboard() {
     setBusyActivityId(activityId);
     try {
       await saveActivityAsTemplate(activityId);
-      showToast(`«${activityName}» quedó en el banco de la institución`);
+      showToast(t('«{activityName}» quedó en el banco de la institución', { activityName }));
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'No se pudo guardar en el banco');
+      showToast(err instanceof Error ? err.message : t('No se pudo guardar en el banco'));
     } finally {
       setBusyActivityId(null);
     }
@@ -195,18 +200,18 @@ export function TeacherDashboard() {
 
   async function handleCloseNow(activityId: string) {
     const confirmed = await confirmAction({
-      title: '¿Cerrar la actividad ahora?',
-      text: 'Los alumnos ya no van a poder responder, y el texto se borra de Habitar como prevé la política de datos.',
-      confirmButtonText: 'Sí, cerrar',
+      title: t('¿Cerrar la actividad ahora?'),
+      text: t('Los alumnos ya no van a poder responder, y el texto se borra de Habitar como prevé la política de datos.'),
+      confirmButtonText: t('Sí, cerrar'),
     });
     if (!confirmed) return;
     setBusyActivityId(activityId);
     try {
       await closeActivityNow(activityId);
-      showToast('Actividad cerrada');
+      showToast(t('Actividad cerrada'));
       if (summary) refreshActivities(summary.courseId);
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'No se pudo cerrar la actividad');
+      showToast(err instanceof Error ? err.message : t('No se pudo cerrar la actividad'));
     } finally {
       setBusyActivityId(null);
     }
@@ -220,16 +225,16 @@ export function TeacherDashboard() {
 
   async function handlePublishNow(activityId: string) {
     const confirmed = await confirmAction({
-      title: '¿Publicar la actividad ahora?',
-      text: 'Va a quedar disponible para los alumnos antes de la fecha programada.',
-      confirmButtonText: 'Sí, publicar',
+      title: t('¿Publicar la actividad ahora?'),
+      text: t('Va a quedar disponible para los alumnos antes de la fecha programada.'),
+      confirmButtonText: t('Sí, publicar'),
     });
     if (!confirmed) return;
 
     setBusyActivityId(activityId);
     try {
       await publishActivityNow(activityId);
-      showToast('Actividad publicada');
+      showToast(t('Actividad publicada'));
       if (summary) refreshActivities(summary.courseId);
     } finally {
       setBusyActivityId(null);
@@ -241,9 +246,9 @@ export function TeacherDashboard() {
     setExporting(true);
     try {
       await exportCourseReport(summary.courseId);
-      showToast('Reporte exportado');
+      showToast(t('Reporte exportado'));
     } catch {
-      showToast('No se pudo exportar el reporte');
+      showToast(t('No se pudo exportar el reporte'));
     } finally {
       setExporting(false);
     }
@@ -267,7 +272,7 @@ export function TeacherDashboard() {
   const currentCourse = courses.find((c) => c.id === selectedCourseId) || courses[0];
 
   if (!session || loadingCourses) {
-    return <HabitarLoader size="lg" message="Cargando tus aulas y métricas pedagógicas..." />;
+    return <HabitarLoader size="lg" message={t('Cargando tus aulas y métricas pedagógicas...')} />;
   }
 
   if (courses.length === 0) {
@@ -276,8 +281,8 @@ export function TeacherDashboard() {
         <Toast message={message} />
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
           <div>
-            <h1 className="text-lg font-semibold text-text-pri tracking-tight">Mis Aulas y Cursos</h1>
-            <p className="text-[12.5px] text-text-sec">Aulas físicas con código QR permanente para actividades</p>
+            <h1 className="text-lg font-semibold text-text-pri tracking-tight">{t('Mis Aulas y Cursos')}</h1>
+            <p className="text-[12.5px] text-text-sec">{t('Aulas físicas con código QR permanente para actividades')}</p>
           </div>
           <div className="flex gap-2">
             <button
@@ -285,7 +290,7 @@ export function TeacherDashboard() {
               className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-[6px] px-3 py-1.5 text-[11.5px] font-medium shadow-sm transition-colors"
             >
               <Icon name="camera" size={13} />
-              Escanear QR de Aula
+              {t('Escanear QR de Aula')}
             </button>
           </div>
         </div>
@@ -294,9 +299,9 @@ export function TeacherDashboard() {
           <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-200">
             <Icon name="school" size={28} />
           </div>
-          <h2 className="text-base font-semibold text-text-pri mb-1">Aún no tenés aulas asignadas</h2>
+          <h2 className="text-base font-semibold text-text-pri mb-1">{t('Aún no tenés aulas asignadas')}</h2>
           <p className="text-xs text-text-sec mb-5 leading-relaxed">
-            Pedile a tu coordinador o director que te asigne un aula, o escaneá el QR fijo de un aula existente para conectarte.
+            {t('Pedile a tu coordinador o director que te asigne un aula, o escaneá el QR fijo de un aula existente para conectarte.')}
           </p>
           <div className="flex justify-center gap-2.5">
             <button
@@ -304,7 +309,7 @@ export function TeacherDashboard() {
               className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-medium shadow-sm transition-all flex items-center gap-1.5"
             >
               <Icon name="camera" size={13} />
-              Escanear QR de Aula
+              {t('Escanear QR de Aula')}
             </button>
           </div>
         </div>
@@ -319,6 +324,7 @@ export function TeacherDashboard() {
           isOpen={Boolean(selectedQrCourse)}
           onClose={() => setSelectedQrCourse(null)}
         />
+        <OnboardingTour tourId="docente" steps={teacherTourSteps()} />
       </div>
     );
   }
@@ -330,24 +336,33 @@ export function TeacherDashboard() {
         <Toast message={message} />
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
           <div>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Mis Aulas y Cursos</h1>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+              {t('Mis Aulas y Cursos')}
+              <HelpTip
+                title={t('Mis aulas')}
+                text={t('Cada tarjeta es un aula física con su código QR fijo. Entrá a un aula para ver cómo comprenden tus alumnos, crear actividades y revisar respuestas.')}
+              />
+            </h1>
             <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-              {courses.length === 1 ? '1 aula' : `${courses.length} aulas`} · {totalStudents}{' '}
-              {totalStudents === 1 ? 'alumno registrado' : 'alumnos registrados'}. Entrá a un aula para ver sus resultados y
-              actividades.
+              {courses.length === 1 ? t('1 aula') : t('{coursesCount} aulas', { coursesCount: courses.length })} · {totalStudents}{' '}
+              {totalStudents === 1 ? t('alumno registrado') : t('alumnos registrados')}{t('. Entrá a un aula para ver sus resultados y actividades.')}
             </p>
           </div>
           <button
+            data-tour="scan-qr"
             onClick={() => setIsScannerOpen(true)}
             className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all cursor-pointer self-start sm:self-auto"
-            title="Escanear el código QR fijo del aula"
+            title={t('Escanear el código QR fijo del aula')}
           >
             <Icon name="camera" size={14} />
-            <span>Escanear QR</span>
+            <span>{t('Escanear QR')}</span>
           </button>
         </div>
 
-        <CourseCardsGrid courses={courses} onOpen={openCourse} onShowQr={setSelectedQrCourse} />
+        <div data-tour="course-cards">
+          <CourseCardsGrid courses={courses} onOpen={openCourse} onShowQr={setSelectedQrCourse} />
+        </div>
+        <OnboardingTour tourId="docente" steps={teacherTourSteps()} />
 
         <QrScannerModal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} onCourseDetected={handleCourseScanned} />
         <CourseQrModal course={selectedQrCourse} isOpen={Boolean(selectedQrCourse)} onClose={() => setSelectedQrCourse(null)} />
@@ -365,7 +380,7 @@ export function TeacherDashboard() {
         className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 dark:text-stone-300 hover:text-emerald-700 dark:hover:text-emerald-300 mb-3 cursor-pointer"
       >
         <Icon name="arrowLeft" size={13} />
-        Todas mis aulas
+        {t('Todas mis aulas')}
       </button>
 
       {scannedCourse && (
@@ -376,16 +391,16 @@ export function TeacherDashboard() {
             </div>
             <div>
               <div className="text-xs font-semibold text-emerald-950 flex items-center gap-2">
-                <span>Conectado al aula física: <strong>{scannedCourse.name}</strong></span>
+                <span>{t('Conectado al aula física:')}{' '}<strong>{scannedCourse.name}</strong></span>
                 <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-mono font-medium">
                   {scannedCourse.qrCode}
                 </span>
               </div>
               <div className="text-[11px] text-emerald-700 mt-0.5">
-                {scannedCourse.subject && `Materia: ${scannedCourse.subject} · `}
-                {scannedCourse.room ? `Salón: ${scannedCourse.room} · ` : ''}
-                {scannedCourse.shift ? `Turno: ${scannedCourse.shift} · ` : ''}
-                El aula está seleccionada para subir lecturas o vincular actividades.
+                {scannedCourse.subject && t('Materia: {subject} · ', { subject: scannedCourse.subject })}
+                {scannedCourse.room ? t('Salón: {room} · ', { room: scannedCourse.room }) : ''}
+                {scannedCourse.shift ? t('Turno: {shift} · ', { shift: scannedCourse.shift }) : ''}
+                {t('El aula está seleccionada para subir lecturas o vincular actividades.')}
               </div>
             </div>
           </div>
@@ -395,19 +410,19 @@ export function TeacherDashboard() {
               className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 shadow-sm transition-colors"
             >
               <Icon name="fileText" size={13} />
-              Subir lectura para este aula
+              {t('Subir lectura para este aula')}
             </a>
             <button
               onClick={() => setSelectedQrCourse(scannedCourse)}
               className="bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-50 px-2.5 py-1.5 rounded-md text-xs font-medium flex items-center gap-1 transition-colors"
             >
               <Icon name="qrCode" size={12} />
-              Ver QR
+              {t('Ver QR')}
             </button>
             <button
               onClick={() => setScannedCourse(null)}
               className="text-emerald-600 hover:text-emerald-900 p-1 text-sm leading-none"
-              title="Cerrar notificación"
+              title={t('Cerrar notificación')}
             >
               <Icon name="close" size={16} />
             </button>
@@ -419,10 +434,14 @@ export function TeacherDashboard() {
         <div className="flex flex-wrap items-center gap-3">
           <div>
             <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-              {currentCourse?.name ?? 'Aula'}
+              {currentCourse?.name ?? t('Aula')}
             </h1>
-            <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-              Diagnóstico áulico formativo y gestión de actividades
+            <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5 flex items-center gap-1.5">
+              {t('Diagnóstico áulico formativo y gestión de actividades')}
+              <HelpTip
+                title={t('Vista del aula')}
+                text={t('Desde acá ves los resultados del aula, mostrás el QR fijo para que entren los alumnos, revisás los dispositivos vinculados, comparás dos períodos y exportás el reporte.')}
+              />
             </p>
           </div>
         </div>
@@ -431,28 +450,28 @@ export function TeacherDashboard() {
           <button
             onClick={() => setIsScannerOpen(true)}
             className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
-            title="Escanear el código QR fijo del aula"
+            title={t('Escanear el código QR fijo del aula')}
           >
             <Icon name="camera" size={14} />
-            <span>Escanear QR</span>
+            <span>{t('Escanear QR')}</span>
           </button>
           {currentCourse && (
             <>
               <button
                 onClick={() => setSelectedQrCourse(currentCourse)}
                 className="flex items-center gap-1.5 bg-white dark:bg-[#1A1E29] border border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 shadow-2xs transition-all cursor-pointer"
-                title="Ver e imprimir el QR fijo de esta aula"
+                title={t('Ver e imprimir el QR fijo de esta aula')}
               >
                 <Icon name="qrCode" size={13} className="text-emerald-700" />
-                <span>QR Fijo</span>
+                <span>{t('QR Fijo')}</span>
               </button>
               <button
                 onClick={() => setIsDevicesModalOpen(true)}
                 className="flex items-center gap-1.5 bg-white dark:bg-[#1A1E29] border border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 shadow-2xs transition-all cursor-pointer"
-                title="Ver dispositivos de alumnos vinculados a esta aula"
+                title={t('Ver dispositivos de alumnos vinculados a esta aula')}
               >
                 <Icon name="kanban" size={13} />
-                <span>Dispositivos</span>
+                <span>{t('Dispositivos')}</span>
               </button>
             </>
           )}
@@ -461,14 +480,14 @@ export function TeacherDashboard() {
             className="flex items-center gap-1.5 bg-emerald-750 hover:bg-emerald-850 text-white rounded-xl px-3.5 py-2 text-xs font-bold shadow-2xs hover:shadow-xs transition-all"
           >
             <Icon name="fileText" size={13} />
-            <span>Subir Lectura</span>
+            <span>{t('Subir Lectura')}</span>
           </a>
           <button
             onClick={() => setCompareOpen((v) => !v)}
             className="flex items-center gap-1.5 bg-white dark:bg-[#1A1E29] border border-stone-200 dark:border-stone-700 hover:bg-stone-50 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-2xs transition-colors cursor-pointer"
           >
             <Icon name="activity" size={13} />
-            <span>Comparar</span>
+            <span>{t('Comparar')}</span>
           </button>
           <button
             onClick={handleExport}
@@ -476,7 +495,7 @@ export function TeacherDashboard() {
             className="flex items-center gap-1.5 bg-white dark:bg-[#1A1E29] border border-stone-200 dark:border-stone-700 hover:bg-stone-50 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-2xs transition-colors disabled:opacity-50 cursor-pointer"
           >
             <Icon name="download" size={13} />
-            <span>{exporting ? 'Exportando…' : 'Exportar'}</span>
+            <span>{exporting ? t('Exportando…') : t('Exportar')}</span>
           </button>
         </div>
       </div>
@@ -485,27 +504,35 @@ export function TeacherDashboard() {
         <div>
           {currentCourse ? (
             <>
-              Aula: <strong className="text-slate-900 dark:text-white">{currentCourse.name}</strong>
-              {currentCourse.room && <> · Salón: <strong>{currentCourse.room}</strong></>}
-              {currentCourse.qrCode && <> · QR: <span className="font-mono text-emerald-800 dark:text-emerald-300 font-bold">{currentCourse.qrCode}</span></>}
-              {summary && <> · {summary.studentCount} alumnos</>}
+              {t('Aula:')}{' '}<strong className="text-slate-900 dark:text-white">{currentCourse.name}</strong>
+              {currentCourse.room && <>{' '}{t('· Salón:')}{' '}<strong>{currentCourse.room}</strong></>}
+              {currentCourse.qrCode && <>{' '}{t('· QR:')}{' '}<span className="font-mono text-emerald-800 dark:text-emerald-300 font-bold">{currentCourse.qrCode}</span></>}
+              {summary && <>{' '}{t('· {studentCount} alumnos', { studentCount: summary.studentCount })}</>}
             </>
           ) : (
-            summary && `Comprensión lectora · ${summary.courseName} · ${summary.studentCount} alumnos`
+            summary && t('Comprensión lectora · {courseName} · {studentCount} alumnos', { courseName: summary.courseName, studentCount: summary.studentCount })
           )}
         </div>
         {aiUsage && (
           <div className="flex items-center gap-1.5 text-[11px] font-semibold text-stone-500 dark:text-stone-400">
             <Icon name="sparkles" size={12} className="text-emerald-700" />
-            <span>IA: <strong>{aiUsage.used}</strong>/{aiUsage.quota}</span>
+            <span>{t('IA:')}{' '}<strong>{aiUsage.used}</strong>/{aiUsage.quota}</span>
+            <HelpTip
+              align="end"
+              title={t('Generaciones de IA')}
+              text={t('Cuántas veces se usó la IA este mes para generar preguntas, sobre el total que permite el plan de la institución. Si se agota, Habitar propone preguntas por plantilla.')}
+            />
           </div>
         )}
       </div>
 
       {compareOpen && summary && (
         <div className="bg-white dark:bg-[#1A1E29] border border-stone-200 dark:border-stone-700 rounded-2xl p-5 mb-5 shadow-xs">
-          <div className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-3">
-            Comparar desempeño formativo entre dos períodos
+          <div className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            {t('Comparar desempeño formativo entre dos períodos')}
+            <HelpTip
+              text={t('Elegí las fechas de inicio y fin del primer período y después las del segundo. Habitar compara el promedio de cada eje y muestra cuántos puntos subió o bajó.')}
+            />
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-3">
             <input type="date" value={range.fromA} onChange={(e) => setRange((r) => ({ ...r, fromA: e.target.value }))} className="border border-stone-200 dark:border-stone-700 rounded-xl px-3 py-2 text-xs bg-stone-50 dark:bg-stone-900" />
@@ -514,7 +541,7 @@ export function TeacherDashboard() {
             <input type="date" value={range.toB} onChange={(e) => setRange((r) => ({ ...r, toB: e.target.value }))} className="border border-stone-200 dark:border-stone-700 rounded-xl px-3 py-2 text-xs bg-stone-50 dark:bg-stone-900" />
           </div>
           <button onClick={handleCompare} disabled={comparing} className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-2xs transition-all disabled:opacity-50 cursor-pointer">
-            {comparing ? 'Comparando períodos…' : 'Ejecutar Comparación'}
+            {comparing ? t('Comparando períodos…') : t('Ejecutar Comparación')}
           </button>
 
           {comparison && (
@@ -538,34 +565,36 @@ export function TeacherDashboard() {
       {summary && (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-            <MetricCard value={pct(summary.averages.literal)} label="Comprensión Literal" color="var(--color-green-mid)" />
-            <MetricCard value={pct(summary.averages.inferencial)} label="Comprensión Inferencial" color="var(--color-amber)" />
-            <MetricCard value={pct(summary.averages.critico)} label="Comprensión Crítica" color="var(--color-red)" />
-            <MetricCard value={String(summary.activityCount)} label="Actividades Completadas" />
+            <MetricCard value={pct(summary.averages.literal)} label={t('Comprensión Literal')} color="var(--color-green-mid)" help={t('Porcentaje de aciertos en preguntas cuya respuesta está escrita en el texto. Es el promedio de todas las actividades del aula.')} />
+            <MetricCard value={pct(summary.averages.inferencial)} label={t('Comprensión Inferencial')} color="var(--color-amber)" help={t('Mide si los alumnos relacionan ideas y sacan conclusiones que el texto no dice de forma explícita.')} />
+            <MetricCard value={pct(summary.averages.critico)} label={t('Comprensión Crítica')} color="var(--color-red)" help={t('Puntaje de las respuestas abiertas en las que el alumno opina con argumentos del texto. Cuenta recién cuando confirmás la corrección que propone la IA.')} />
+            <MetricCard value={String(summary.activityCount)} label={t('Actividades Completadas')} help={t('Cantidad de actividades de este aula que ya recibieron respuestas de los alumnos.')} />
           </div>
 
           {summary.pendingReviews > 0 && (
             <div className="flex items-center gap-2 text-xs text-amber-900 dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-xl px-3.5 py-2.5 mb-4">
               <Icon name="edit" size={13} />
-              Hay {summary.pendingReviews} respuestas escritas sin revisar. El eje crítico de esos alumnos figura como
-              pendiente hasta que confirmes el puntaje (botón «Revisar respuestas» en cada actividad).
+              {t('Hay {pendingReviews} respuestas escritas sin revisar. El eje crítico de esos alumnos figura como pendiente hasta que confirmes el puntaje (botón «Revisar respuestas» en cada actividad).', { pendingReviews: summary.pendingReviews })}
             </div>
           )}
 
           <CourseInsightsPanel courseId={summary.courseId} refreshKey={insightsKey} />
 
           <div className="mb-6">
-            <div className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2.5">
-              Rendimiento por Alumno en el Aula
+            <div className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+              {t('Rendimiento por Alumno en el Aula')}
+              <HelpTip
+                text={t('Promedio de cada alumno en los tres ejes. El estado diagnóstico resume si está bien, regular o bajo según el umbral de la institución. Tocá una fila para ver la evolución del alumno.')}
+              />
             </div>
             <TableWrap>
               <thead>
                 <tr className="bg-stone-50 dark:bg-[#161A24] border-b border-stone-200 dark:border-stone-800">
-                  <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Alumno</th>
-                  <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Literal</th>
-                  <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Inferencial</th>
-                  <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Crítico</th>
-                  <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Estado Diagnóstico</th>
+                  <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">{t('Alumno')}</th>
+                  <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">{t('Literal')}</th>
+                  <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">{t('Inferencial')}</th>
+                  <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">{t('Crítico')}</th>
+                  <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">{t('Estado Diagnóstico')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-200/80 dark:divide-stone-800">
@@ -578,7 +607,7 @@ export function TeacherDashboard() {
                     <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">{row.studentName}</td>
                     <td className="px-4 py-3 text-stone-700 dark:text-stone-300 font-medium">{pct(row.scores?.literal)}</td>
                     <td className="px-4 py-3 text-stone-700 dark:text-stone-300 font-medium">{pct(row.scores?.inferencial)}</td>
-                    <td className="px-4 py-3 text-stone-700 dark:text-stone-300 font-medium">{row.criticoPending ? <span className="text-amber-700 text-xs font-semibold">pendiente</span> : pct(row.scores?.critico)}</td>
+                    <td className="px-4 py-3 text-stone-700 dark:text-stone-300 font-medium">{row.criticoPending ? <span className="text-amber-700 text-xs font-semibold">{t('pendiente')}</span> : pct(row.scores?.critico)}</td>
                     <td className="px-4 py-3">
                       <Badge color={statusBadge[row.status].color}>{statusBadge[row.status].label}</Badge>
                     </td>
@@ -586,30 +615,33 @@ export function TeacherDashboard() {
                 ))}
               </tbody>
             </TableWrap>
-            <Pagination page={pagedRows.page} totalPages={pagedRows.totalPages} total={pagedRows.total} pageSize={pagedRows.pageSize} onChange={pagedRows.setPage} label="alumnos" />
+            <Pagination page={pagedRows.page} totalPages={pagedRows.totalPages} total={pagedRows.total} pageSize={pagedRows.pageSize} onChange={pagedRows.setPage} label={t('alumnos')} />
           </div>
         </>
       )}
 
       <div className="mt-8 mb-6">
-        <div className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2.5">
-          Actividades Asignadas al Aula
+        <div className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+          {t('Actividades Asignadas al Aula')}
+          <HelpTip
+            text={t('Las lecturas que creaste para este aula. Desde las acciones podés abrir el panel en vivo, publicar o cerrar una actividad, duplicarla, guardarla en el banco y revisar las respuestas escritas.')}
+          />
         </div>
         <TableWrap>
           <thead>
             <tr className="bg-stone-50 dark:bg-[#161A24] border-b border-stone-200 dark:border-stone-800">
-              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Actividad</th>
-              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Código</th>
-              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Disponible desde</th>
-              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Estado</th>
-              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">Acciones</th>
+              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">{t('Actividad')}</th>
+              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">{t('Código')}</th>
+              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">{t('Disponible desde')}</th>
+              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">{t('Estado')}</th>
+              <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">{t('Acciones')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-200/80 dark:divide-stone-800">
             {activities.length === 0 && (
               <tr>
                 <td colSpan={5} className="px-4 py-4 text-xs text-stone-500 text-center">
-                  Todavía no creaste actividades para este curso. Hacé clic en "Subir Lectura" para comenzar.
+                  {t('Todavía no creaste actividades para este curso. Hacé clic en "Subir Lectura" para comenzar.')}
                 </td>
               </tr>
             )}
@@ -619,7 +651,7 @@ export function TeacherDashboard() {
                 <td className="px-4 py-3 font-mono text-xs font-bold text-emerald-800 dark:text-emerald-300">{act.code}</td>
                 <td className="px-4 py-3 text-stone-600 dark:text-stone-400 text-xs">{act.availableFrom}</td>
                 <td className="px-4 py-3">
-                  <Badge color={activityStatusBadge[act.status].color}>{activityStatusBadge[act.status].label}</Badge>
+                  <Badge color={activityStatusBadge[act.status].color}>{t(activityStatusBadge[act.status].label)}</Badge>
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
@@ -629,7 +661,7 @@ export function TeacherDashboard() {
                       className="flex items-center gap-1.5 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 hover:bg-stone-50 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-colors disabled:opacity-50 cursor-pointer shadow-2xs"
                     >
                       <Icon name="copy" size={11} />
-                      <span>Duplicar</span>
+                      <span>{t('Duplicar')}</span>
                     </button>
                     {act.status !== 'borrador' && (
                       <a
@@ -641,7 +673,7 @@ export function TeacherDashboard() {
                         }`}
                       >
                         {act.status === 'cerrada' ? <Icon name="eye" size={11} /> : <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
-                        <span>{act.status === 'cerrada' ? 'Ver' : 'En vivo'}</span>
+                        <span>{act.status === 'cerrada' ? t('Ver') : t('En vivo')}</span>
                       </a>
                     )}
                     {(act.status === 'publicada' || act.status === 'cerrada') && (
@@ -650,18 +682,18 @@ export function TeacherDashboard() {
                         className="flex items-center gap-1.5 bg-white dark:bg-stone-800 border border-amber-300 dark:border-amber-700/60 hover:bg-amber-50 rounded-lg px-2.5 py-1 text-xs font-semibold text-amber-900 dark:text-amber-200 transition-colors cursor-pointer shadow-2xs"
                       >
                         <Icon name="edit" size={11} />
-                        <span>Revisar respuestas</span>
+                        <span>{t('Revisar respuestas')}</span>
                       </button>
                     )}
                     {act.status !== 'cerrada' && (
                       <button
                         onClick={() => handleSaveToBank(act.id, act.name)}
                         disabled={busyActivityId === act.id}
-                        title="Guarda el texto, las preguntas y el documento para reutilizarla"
+                        title={t('Guarda el texto, las preguntas y el documento para reutilizarla')}
                         className="flex items-center gap-1.5 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-700 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 transition-colors cursor-pointer disabled:opacity-50"
                       >
                         <Icon name="layers" size={11} />
-                        <span>Guardar en el banco</span>
+                        <span>{t('Guardar en el banco')}</span>
                       </button>
                     )}
                     {act.status === 'publicada' && (
@@ -671,7 +703,7 @@ export function TeacherDashboard() {
                         className="flex items-center gap-1.5 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 hover:bg-stone-50 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-colors disabled:opacity-50 cursor-pointer shadow-2xs"
                       >
                         <Icon name="lock" size={11} />
-                        <span>Cerrar</span>
+                        <span>{t('Cerrar')}</span>
                       </button>
                     )}
                     {act.status === 'programada' && (
@@ -680,7 +712,7 @@ export function TeacherDashboard() {
                         disabled={busyActivityId === act.id}
                         className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg px-2.5 py-1 text-xs font-semibold shadow-2xs transition-colors disabled:opacity-50 cursor-pointer"
                       >
-                        <span>Publicar ahora</span>
+                        <span>{t('Publicar ahora')}</span>
                       </button>
                     )}
                   </div>
@@ -689,7 +721,7 @@ export function TeacherDashboard() {
             ))}
           </tbody>
         </TableWrap>
-        <Pagination page={pagedActivities.page} totalPages={pagedActivities.totalPages} total={pagedActivities.total} pageSize={pagedActivities.pageSize} onChange={pagedActivities.setPage} label="actividades" />
+        <Pagination page={pagedActivities.page} totalPages={pagedActivities.totalPages} total={pagedActivities.total} pageSize={pagedActivities.pageSize} onChange={pagedActivities.setPage} label={t('actividades')} />
       </div>
 
       <QrScannerModal

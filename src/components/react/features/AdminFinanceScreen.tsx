@@ -24,10 +24,12 @@ import type {
   PlatformExpense,
   PlatformFinanceSummary,
 } from '../../../types/finance';
+import { t, useI18n, intlLocale } from '../../../i18n';
 
 type Tab = 'resumen' | 'gastos' | 'ganancias' | 'mercadopago';
 
 export function AdminFinanceScreen() {
+  useI18n();
   const [activeTab, setActiveTab] = useState<Tab>('resumen');
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<PlatformFinanceSummary | null>(null);
@@ -99,7 +101,7 @@ export function AdminFinanceScreen() {
   const handleSaveExpense = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!expenseForm.title || !expenseForm.amountArs) {
-      showError('Datos incompletos', 'Ingresá el título y monto del gasto.');
+      showError(t('Datos incompletos'), t('Ingresá el título y monto del gasto.'));
       return;
     }
     try {
@@ -112,7 +114,7 @@ export function AdminFinanceScreen() {
         receiptUrl: expenseForm.receiptUrl,
         status: expenseForm.status,
       });
-      showSuccess('Gasto registrado', 'El gasto fue incorporado correctamente al balance del negocio.');
+      showSuccess(t('Gasto registrado'), t('El gasto fue incorporado correctamente al balance del negocio.'));
       setIsExpenseModalOpen(false);
       setExpenseForm({
         category: 'INFRAESTRUCTURA',
@@ -125,25 +127,25 @@ export function AdminFinanceScreen() {
       });
       loadData();
     } catch (err: any) {
-      showError('Error', err.message || 'No se pudo registrar el gasto');
+      showError(t('Error'), err.message || t('No se pudo registrar el gasto'));
     }
   };
 
   const handleDeleteExpense = async (id: string) => {
-    if (!confirm('¿Seguro que deseás eliminar este registro de gasto?')) return;
+    if (!confirm(t('¿Seguro que deseás eliminar este registro de gasto?'))) return;
     try {
       await deletePlatformExpense(id);
-      showSuccess('Eliminado', 'Gasto eliminado con éxito.');
+      showSuccess(t('Eliminado'), t('Gasto eliminado con éxito.'));
       loadData();
     } catch (err: any) {
-      showError('Error', err.message || 'No se pudo eliminar el gasto');
+      showError(t('Error'), err.message || t('No se pudo eliminar el gasto'));
     }
   };
 
   const handleGenerateCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!checkoutForm.planName || !checkoutForm.amountArs || !checkoutForm.payerEmail) {
-      showError('Datos requeridos', 'Completá el plan, monto y email de la institución.');
+      showError(t('Datos requeridos'), t('Completá el plan, monto y email de la institución.'));
       return;
     }
     try {
@@ -155,15 +157,15 @@ export function AdminFinanceScreen() {
       });
       setIsCheckoutModalOpen(false);
       showSuccess(
-        'Link de Pago Generado',
-        `Se creó el Checkout Pro de Mercado Pago. Podés compartir el link con el colegio.`
+        t('Link de Pago Generado'),
+        t('Se creó el Checkout Pro de Mercado Pago. Podés compartir el link con el colegio.')
       );
       if (res.preferenceUrl) {
         window.open(res.preferenceUrl, '_blank');
       }
       loadData();
     } catch (err: any) {
-      showError('Error', err.message || 'No se pudo generar el checkout');
+      showError(t('Error'), err.message || t('No se pudo generar el checkout'));
     }
   };
 
@@ -172,10 +174,10 @@ export function AdminFinanceScreen() {
     setSavingConfig(true);
     try {
       await savePlatformFinanceConfig(mpForm);
-      showSuccess('Configuración guardada', 'Las credenciales de Mercado Pago han sido actualizadas.');
+      showSuccess(t('Configuración guardada'), t('Las credenciales de Mercado Pago han sido actualizadas.'));
       loadData();
     } catch (err: any) {
-      showError('Error', err.message || 'No se pudo guardar la configuración.');
+      showError(t('Error'), err.message || t('No se pudo guardar la configuración.'));
     } finally {
       setSavingConfig(false);
     }
@@ -186,11 +188,11 @@ export function AdminFinanceScreen() {
 
   const handleTestPayment = async () => {
     const ok = await confirmAction({
-      title: `¿Crear un pago de prueba de $ ${testAmount}?`,
+      title: t('¿Crear un pago de prueba de $ {testAmount}?', { testAmount }),
       text: mpForm.mpIsSandbox
-        ? 'Se abre Mercado Pago en modo de prueba. Pagá con un usuario comprador de prueba: no se mueve dinero real.'
-        : 'Atención: el modo de prueba está desactivado, así que el pago sería real.',
-      confirmButtonText: 'Crear y abrir Mercado Pago',
+        ? t('Se abre Mercado Pago en modo de prueba. Pagá con un usuario comprador de prueba: no se mueve dinero real.')
+        : t('Atención: el modo de prueba está desactivado, así que el pago sería real.'),
+      confirmButtonText: t('Crear y abrir Mercado Pago'),
     });
     if (!ok) return;
     setCreatingTestPayment(true);
@@ -199,7 +201,7 @@ export function AdminFinanceScreen() {
       window.open(res.preferenceUrl, '_blank', 'noopener');
       void loadData();
     } catch (err) {
-      showError('No se pudo crear el pago de prueba', err instanceof Error ? err.message : '');
+      showError(t('No se pudo crear el pago de prueba'), err instanceof Error ? err.message : '');
     } finally {
       setCreatingTestPayment(false);
     }
@@ -207,30 +209,30 @@ export function AdminFinanceScreen() {
 
   const handleTestMp = async () => {
     if (!mpForm.mpAccessToken) {
-      showError('Falta Access Token', 'Ingresá un Access Token para realizar la prueba.');
+      showError(t('Falta Access Token'), t('Ingresá un Access Token para realizar la prueba.'));
       return;
     }
     setTestingMp(true);
     try {
       const res = await testMercadoPagoConnection(mpForm.mpAccessToken);
       if (res.success) {
-        showSuccess('Conexión Exitosa', res.message);
+        showSuccess(t('Conexión Exitosa'), res.message);
       } else {
-        showError('Fallo de Conexión', res.message);
+        showError(t('Fallo de Conexión'), res.message);
       }
     } catch (err: any) {
-      showError('Error', err.message || 'Error de conexión con Mercado Pago');
+      showError(t('Error'), err.message || t('Error de conexión con Mercado Pago'));
     } finally {
       setTestingMp(false);
     }
   };
 
   const formatMoney = (amount: number) => {
-    return `$${amount.toLocaleString('es-AR')}`;
+    return `$${amount.toLocaleString(intlLocale())}`;
   };
 
   if (loading) {
-    return <HabitarLoader size="lg" message="Cargando métricas financieras y balances..." />;
+    return <HabitarLoader size="lg" message={t('Cargando métricas financieras y balances...')} />;
   }
 
   return (
@@ -238,10 +240,10 @@ export function AdminFinanceScreen() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-text-pri">
-            Finanzas del Negocio & Mercado Pago
+            {t('Finanzas del Negocio & Mercado Pago')}
           </h1>
           <p className="text-xs sm:text-sm text-text-sec mt-0.5">
-            Control integral de gastos operativos, cobranzas por suscripciones y conexión con la API de Mercado Pago.
+            {t('Control integral de gastos operativos, cobranzas por suscripciones y conexión con la API de Mercado Pago.')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -250,14 +252,14 @@ export function AdminFinanceScreen() {
             className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-surface hover:bg-gray-bg border border-gray-border rounded-lg text-xs font-semibold text-text-pri transition-colors shadow-2xs"
           >
             <Icon name="plus" size={14} />
-            <span>Registrar Gasto</span>
+            <span>{t('Registrar Gasto')}</span>
           </button>
           <button
             onClick={() => setIsCheckoutModalOpen(true)}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors"
           >
             <Icon name="creditCard" size={14} />
-            <span>Cobro Mercado Pago</span>
+            <span>{t('Cobro Mercado Pago')}</span>
           </button>
         </div>
       </div>
@@ -265,7 +267,7 @@ export function AdminFinanceScreen() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white border border-gray-border rounded-xl p-4 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-text-sec">Ganancias por Cobros</span>
+            <span className="text-xs font-medium text-text-sec">{t('Ganancias por Cobros')}</span>
             <span className="p-1.5 rounded-lg bg-emerald-50 text-emerald-700">
               <Icon name="trendingUp" size={16} />
             </span>
@@ -273,12 +275,12 @@ export function AdminFinanceScreen() {
           <div className="text-2xl font-extrabold text-emerald-800 mt-2">
             {formatMoney(summary?.totalRevenueArs || 0)}
           </div>
-          <div className="text-[11px] text-text-sec mt-1">Suscripciones cobradas a colegios</div>
+          <div className="text-[11px] text-text-sec mt-1">{t('Suscripciones cobradas a colegios')}</div>
         </div>
 
         <div className="bg-white border border-gray-border rounded-xl p-4 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-text-sec">Gastos Operativos</span>
+            <span className="text-xs font-medium text-text-sec">{t('Gastos Operativos')}</span>
             <span className="p-1.5 rounded-lg bg-red-50 text-red-600">
               <Icon name="trendingDown" size={16} />
             </span>
@@ -286,12 +288,12 @@ export function AdminFinanceScreen() {
           <div className="text-2xl font-extrabold text-red-700 mt-2">
             {formatMoney(summary?.totalExpensesArs || 0)}
           </div>
-          <div className="text-[11px] text-text-sec mt-1">Cloud, IA, emails e infraestructura</div>
+          <div className="text-[11px] text-text-sec mt-1">{t('Cloud, IA, emails e infraestructura')}</div>
         </div>
 
         <div className="bg-white border border-gray-border rounded-xl p-4 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-text-sec">Margen Neto</span>
+            <span className="text-xs font-medium text-text-sec">{t('Margen Neto')}</span>
             <span className="p-1.5 rounded-lg bg-blue-50 text-blue-700">
               <Icon name="wallet" size={16} />
             </span>
@@ -299,12 +301,12 @@ export function AdminFinanceScreen() {
           <div className="text-2xl font-extrabold text-text-pri mt-2">
             {formatMoney(summary?.netProfitArs || 0)}
           </div>
-          <div className="text-[11px] text-emerald-700 font-semibold mt-1">Balance positivo consolidado</div>
+          <div className="text-[11px] text-emerald-700 font-semibold mt-1">{t('Balance positivo consolidado')}</div>
         </div>
 
         <div className="bg-white border border-gray-border rounded-xl p-4 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-text-sec">MRR (Ingreso Mensual)</span>
+            <span className="text-xs font-medium text-text-sec">{t('MRR (Ingreso Mensual)')}</span>
             <span className="p-1.5 rounded-lg bg-amber-50 text-amber-700">
               <Icon name="activity" size={16} />
             </span>
@@ -313,7 +315,7 @@ export function AdminFinanceScreen() {
             {formatMoney(summary?.mrrArs || 0)}
           </div>
           <div className="text-[11px] text-text-sec mt-1">
-            ARR proyectado: {formatMoney(summary?.arrArs || 0)}
+            {t('ARR proyectado: {formatMoney}', { formatMoney: formatMoney(summary?.arrArs || 0) })}
           </div>
         </div>
       </div>
@@ -329,7 +331,7 @@ export function AdminFinanceScreen() {
         >
           <span className="flex items-center gap-2">
             <Icon name="chart" size={15} />
-            Balance & Resumen
+            {t('Balance & Resumen')}
           </span>
         </button>
 
@@ -343,7 +345,7 @@ export function AdminFinanceScreen() {
         >
           <span className="flex items-center gap-2">
             <Icon name="trendingDown" size={15} />
-            Gastos del Negocio ({expenses.length})
+            {t('Gastos del Negocio ({expensesCount})', { expensesCount: expenses.length })}
           </span>
         </button>
 
@@ -357,7 +359,7 @@ export function AdminFinanceScreen() {
         >
           <span className="flex items-center gap-2">
             <Icon name="trendingUp" size={15} />
-            Ganancias por Cobros ({transactions.length})
+            {t('Ganancias por Cobros ({transactionsCount})', { transactionsCount: transactions.length })}
           </span>
         </button>
 
@@ -371,7 +373,7 @@ export function AdminFinanceScreen() {
         >
           <span className="flex items-center gap-2">
             <Icon name="creditCard" size={15} />
-            Conexión API Mercado Pago
+            {t('Conexión API Mercado Pago')}
           </span>
         </button>
       </div>
@@ -382,13 +384,13 @@ export function AdminFinanceScreen() {
             <div className="bg-white border border-gray-border rounded-xl p-5 shadow-2xs space-y-4">
               <h3 className="text-sm font-bold text-text-pri flex items-center gap-2">
                 <Icon name="layers" size={16} className="text-emerald-700" />
-                Desglose de Gastos Operativos de Plataforma
+                {t('Desglose de Gastos Operativos de Plataforma')}
               </h3>
               <div className="space-y-3">
                 {[
-                  { cat: 'INFRAESTRUCTURA', label: 'Infraestructura Cloud (PostgreSQL, Hosting)', color: 'bg-blue-600', val: 120000 },
-                  { cat: 'IA_SERVICIOS', label: 'Consumo de IA (DeepSeek & OpenAI)', color: 'bg-emerald-600', val: 145000 },
-                  { cat: 'SERVICIOS_CORREO', label: 'Correos Transaccionales (Resend)', color: 'bg-amber-600', val: 28000 },
+                  { cat: 'INFRAESTRUCTURA', label: t('Infraestructura Cloud (PostgreSQL, Hosting)'), color: 'bg-blue-600', val: 120000 },
+                  { cat: 'IA_SERVICIOS', label: t('Consumo de IA (DeepSeek & OpenAI)'), color: 'bg-emerald-600', val: 145000 },
+                  { cat: 'SERVICIOS_CORREO', label: t('Correos Transaccionales (Resend)'), color: 'bg-amber-600', val: 28000 },
                 ].map((item) => (
                   <div key={item.cat} className="space-y-1">
                     <div className="flex justify-between text-xs">
@@ -406,22 +408,22 @@ export function AdminFinanceScreen() {
             <div className="bg-white border border-gray-border rounded-xl p-5 shadow-2xs space-y-4">
               <h3 className="text-sm font-bold text-text-pri flex items-center gap-2">
                 <Icon name="shield" size={16} className="text-emerald-700" />
-                Flujo de Caja y Estado de Facturación
+                {t('Flujo de Caja y Estado de Facturación')}
               </h3>
               <div className="grid grid-cols-2 gap-3 pt-1">
                 <div className="p-3 rounded-lg bg-surface border border-gray-border">
-                  <div className="text-[11px] text-text-sec uppercase font-semibold">Cobros Aprobados</div>
-                  <div className="text-base font-bold text-emerald-700 mt-1">100% al día</div>
-                  <div className="text-[10px] text-text-sec mt-0.5">3 colegios con suscripción activa</div>
+                  <div className="text-[11px] text-text-sec uppercase font-semibold">{t('Cobros Aprobados')}</div>
+                  <div className="text-base font-bold text-emerald-700 mt-1">{t('100% al día')}</div>
+                  <div className="text-[10px] text-text-sec mt-0.5">{t('3 colegios con suscripción activa')}</div>
                 </div>
                 <div className="p-3 rounded-lg bg-surface border border-gray-border">
-                  <div className="text-[11px] text-text-sec uppercase font-semibold">Integración Mercado Pago</div>
-                  <div className="text-base font-bold text-emerald-700 mt-1">Activa & Conectada</div>
-                  <div className="text-[10px] text-text-sec mt-0.5">Checkout Pro habilitado</div>
+                  <div className="text-[11px] text-text-sec uppercase font-semibold">{t('Integración Mercado Pago')}</div>
+                  <div className="text-base font-bold text-emerald-700 mt-1">{t('Activa & Conectada')}</div>
+                  <div className="text-[10px] text-text-sec mt-0.5">{t('Checkout Pro habilitado')}</div>
                 </div>
               </div>
               <div className="p-3 rounded-lg bg-emerald-50 text-emerald-950 text-xs border border-emerald-200 leading-relaxed">
-                <strong>Modelo Sostenible:</strong> Los ingresos anuales superan ampliamente el costo operativo mensual de infraestructura y LLMs, garantizando solvencia para la expansión a nuevas instituciones.
+                <strong>{t('Modelo Sostenible:')}</strong>{' '}{t('Los ingresos anuales superan ampliamente el costo operativo mensual de infraestructura y LLMs, garantizando solvencia para la expansión a nuevas instituciones.')}
               </div>
             </div>
           </div>
@@ -432,14 +434,14 @@ export function AdminFinanceScreen() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-xs text-text-sec">
-              Mostrando {expenses.length} registros de egresos de la plataforma
+              {t('Mostrando {expensesCount} registros de egresos de la plataforma', { expensesCount: expenses.length })}
             </span>
             <button
               onClick={() => setIsExpenseModalOpen(true)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-semibold"
             >
               <Icon name="plus" size={13} />
-              <span>Nuevo Gasto</span>
+              <span>{t('Nuevo Gasto')}</span>
             </button>
           </div>
 
@@ -448,27 +450,27 @@ export function AdminFinanceScreen() {
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="border-b border-gray-border bg-surface text-text-sec font-semibold">
-                    <th className="py-3 px-4">Fecha</th>
-                    <th className="py-3 px-4">Concepto / Detalle</th>
-                    <th className="py-3 px-4">Categoría</th>
-                    <th className="py-3 px-4">Proveedor</th>
-                    <th className="py-3 px-4 text-right">Monto</th>
-                    <th className="py-3 px-4 text-center">Estado</th>
-                    <th className="py-3 px-4 text-center">Acciones</th>
+                    <th className="py-3 px-4">{t('Fecha')}</th>
+                    <th className="py-3 px-4">{t('Concepto / Detalle')}</th>
+                    <th className="py-3 px-4">{t('Categoría')}</th>
+                    <th className="py-3 px-4">{t('Proveedor')}</th>
+                    <th className="py-3 px-4 text-right">{t('Monto')}</th>
+                    <th className="py-3 px-4 text-center">{t('Estado')}</th>
+                    <th className="py-3 px-4 text-center">{t('Acciones')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-border">
                   {expenses.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="py-8 text-center text-text-sec">
-                        No hay gastos registrados todavía.
+                        {t('No hay gastos registrados todavía.')}
                       </td>
                     </tr>
                   ) : (
                     pagedExpenses.pageItems.map((exp) => (
                       <tr key={exp.id} className="hover:bg-surface/50 transition-colors">
                         <td className="py-3 px-4 text-text-sec whitespace-nowrap">
-                          {new Date(exp.date).toLocaleDateString('es-AR')}
+                          {new Date(exp.date).toLocaleDateString(intlLocale())}
                         </td>
                         <td className="py-3 px-4">
                           <div className="font-semibold text-text-pri">{exp.title}</div>
@@ -494,7 +496,7 @@ export function AdminFinanceScreen() {
                           <button
                             onClick={() => handleDeleteExpense(exp.id)}
                             className="p-1 text-text-sec hover:text-red transition-colors"
-                            title="Eliminar gasto"
+                            title={t('Eliminar gasto')}
                           >
                             <Icon name="trash" size={14} />
                           </button>
@@ -514,14 +516,14 @@ export function AdminFinanceScreen() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-xs text-text-sec">
-              Historial de cobranzas y transacciones registradas
+              {t('Historial de cobranzas y transacciones registradas')}
             </span>
             <button
               onClick={() => setIsCheckoutModalOpen(true)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-semibold"
             >
               <Icon name="creditCard" size={13} />
-              <span>Generar Checkout MP</span>
+              <span>{t('Generar Checkout MP')}</span>
             </button>
           </div>
 
@@ -530,31 +532,31 @@ export function AdminFinanceScreen() {
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="border-b border-gray-border bg-surface text-text-sec font-semibold">
-                    <th className="py-3 px-4">Fecha</th>
-                    <th className="py-3 px-4">Descripción</th>
-                    <th className="py-3 px-4">Institución / Pagador</th>
-                    <th className="py-3 px-4">Método</th>
-                    <th className="py-3 px-4 text-right">Monto</th>
-                    <th className="py-3 px-4 text-center">Estado</th>
-                    <th className="py-3 px-4 text-center">Checkout Link</th>
+                    <th className="py-3 px-4">{t('Fecha')}</th>
+                    <th className="py-3 px-4">{t('Descripción')}</th>
+                    <th className="py-3 px-4">{t('Institución / Pagador')}</th>
+                    <th className="py-3 px-4">{t('Método')}</th>
+                    <th className="py-3 px-4 text-right">{t('Monto')}</th>
+                    <th className="py-3 px-4 text-center">{t('Estado')}</th>
+                    <th className="py-3 px-4 text-center">{t('Checkout Link')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-border">
                   {transactions.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="py-8 text-center text-text-sec">
-                        No hay cobros registrados.
+                        {t('No hay cobros registrados.')}
                       </td>
                     </tr>
                   ) : (
                     pagedTransactions.pageItems.map((tx) => (
                       <tr key={tx.id} className="hover:bg-surface/50 transition-colors">
                         <td className="py-3 px-4 text-text-sec whitespace-nowrap">
-                          {new Date(tx.createdAt).toLocaleDateString('es-AR')}
+                          {new Date(tx.createdAt).toLocaleDateString(intlLocale())}
                         </td>
                         <td className="py-3 px-4 font-semibold text-text-pri">{tx.description}</td>
                         <td className="py-3 px-4">
-                          <div className="text-text-pri font-medium">{tx.payerName || 'Institución'}</div>
+                          <div className="text-text-pri font-medium">{tx.payerName || t('Institución')}</div>
                           <div className="text-[10.5px] text-text-sec">{tx.payerEmail}</div>
                         </td>
                         <td className="py-3 px-4 whitespace-nowrap">
@@ -584,7 +586,7 @@ export function AdminFinanceScreen() {
                               rel="noreferrer"
                               className="text-emerald-700 hover:underline inline-flex items-center gap-1 font-semibold"
                             >
-                              <span>Ver link</span>
+                              <span>{t('Ver link')}</span>
                               <Icon name="arrowRight" size={11} />
                             </a>
                           ) : (
@@ -596,7 +598,7 @@ export function AdminFinanceScreen() {
                   )}
                 </tbody>
               </table>
-              <Pagination page={pagedTransactions.page} totalPages={pagedTransactions.totalPages} total={pagedTransactions.total} pageSize={pagedTransactions.pageSize} onChange={pagedTransactions.setPage} label="cobros" />
+              <Pagination page={pagedTransactions.page} totalPages={pagedTransactions.totalPages} total={pagedTransactions.total} pageSize={pagedTransactions.pageSize} onChange={pagedTransactions.setPage} label={t('cobros')} />
             </div>
           </div>
         </div>
@@ -607,50 +609,50 @@ export function AdminFinanceScreen() {
           <div className="bg-white border border-gray-border rounded-xl p-6 shadow-2xs space-y-5">
             <div className="flex items-start justify-between">
               <div>
-                <h3 className="text-base font-bold text-text-pri">Credenciales de Mercado Pago API</h3>
+                <h3 className="text-base font-bold text-text-pri">{t('Credenciales de Mercado Pago API')}</h3>
                 <p className="text-xs text-text-sec mt-1">
-                  Ingresá tus credenciales de Mercado Pago Developers para generar enlaces de pago automáticos y recibir notificaciones por Webhook.
+                  {t('Ingresá tus credenciales de Mercado Pago Developers para generar enlaces de pago automáticos y recibir notificaciones por Webhook.')}
                 </p>
               </div>
               <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
-                Checkout Pro
+                {t('Checkout Pro')}
               </span>
             </div>
 
             <form onSubmit={handleSaveMpConfig} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-text-pri mb-1">
-                  Access Token de Mercado Pago
+                  {t('Access Token de Mercado Pago')}
                 </label>
                 <input
                   type="password"
                   value={mpForm.mpAccessToken}
                   onChange={(e) => setMpForm({ ...mpForm, mpAccessToken: e.target.value })}
-                  placeholder="APP_USR-xxxxxxxxxxxxxxxxxxxxxxxx..."
+                  placeholder={t('APP_USR-xxxxxxxxxxxxxxxxxxxxxxxx...')}
                   className="w-full px-3 py-2 border border-gray-border rounded-lg text-xs font-mono"
                 />
                 <span className="text-[11px] text-text-sec mt-1 block">
-                  Obtenelo en{' '}
+                  {t('Obtenelo en')}{' '}
                   <a
                     href="https://www.mercadopago.com.ar/developers/panel/app"
                     target="_blank"
                     rel="noreferrer"
                     className="text-emerald-700 hover:underline font-semibold"
                   >
-                    Mercado Pago Developers &gt; Tus Credenciales
+                    {t('Mercado Pago Developers > Tus Credenciales')}
                   </a>
                 </span>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-text-pri mb-1">
-                  Public Key (Opcional)
+                  {t('Public Key (Opcional)')}
                 </label>
                 <input
                   type="text"
                   value={mpForm.mpPublicKey}
                   onChange={(e) => setMpForm({ ...mpForm, mpPublicKey: e.target.value })}
-                  placeholder="APP_USR-xxxxxxxx-xxxx-xxxx..."
+                  placeholder={t('APP_USR-xxxxxxxx-xxxx-xxxx...')}
                   className="w-full px-3 py-2 border border-gray-border rounded-lg text-xs font-mono"
                 />
               </div>
@@ -664,7 +666,7 @@ export function AdminFinanceScreen() {
                   className="rounded text-emerald-700"
                 />
                 <label htmlFor="sandbox-switch" className="text-xs font-medium text-text-pri">
-                  Modo Sandbox (Entorno de pruebas con tarjetas simuladas)
+                  {t('Modo Sandbox (Entorno de pruebas con tarjetas simuladas)')}
                 </label>
               </div>
 
@@ -674,7 +676,7 @@ export function AdminFinanceScreen() {
                   disabled={savingConfig}
                   className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-xs disabled:opacity-50"
                 >
-                  {savingConfig ? 'Guardando...' : 'Guardar Credenciales'}
+                  {savingConfig ? t('Guardando...') : t('Guardar Credenciales')}
                 </button>
 
                 <button
@@ -684,7 +686,7 @@ export function AdminFinanceScreen() {
                   className="px-4 py-2 border border-gray-border hover:bg-surface rounded-lg text-xs font-semibold text-text-pri disabled:opacity-50 flex items-center gap-1.5"
                 >
                   <Icon name="refresh" size={13} className={testingMp ? 'animate-spin' : ''} />
-                  <span>{testingMp ? 'Probando...' : 'Probar Conexión con API'}</span>
+                  <span>{testingMp ? t('Probando...') : t('Probar Conexión con API')}</span>
                 </button>
               </div>
             </form>
@@ -692,10 +694,10 @@ export function AdminFinanceScreen() {
 
           <div className="bg-surface border border-gray-border rounded-xl p-5 space-y-3">
             <h4 className="text-xs font-bold uppercase tracking-wider text-text-pri">
-              URL del Webhook de Notificaciones
+              {t('URL del Webhook de Notificaciones')}
             </h4>
             <p className="text-xs text-text-sec leading-relaxed">
-              Configurá esta URL en tu panel de Mercado Pago Developers para que Habitar acredite los pagos de suscripciones de manera automática e instantánea:
+              {t('Configurá esta URL en tu panel de Mercado Pago Developers para que Habitar acredite los pagos de suscripciones de manera automática e instantánea:')}
             </p>
             <div className="flex items-center gap-2">
               <input
@@ -708,30 +710,27 @@ export function AdminFinanceScreen() {
                 type="button"
                 onClick={() => {
                   navigator.clipboard.writeText(apiUrl('/finances/webhook/mercadopago'));
-                  showSuccess('Copiado', 'URL del Webhook copiada al portapapeles.');
+                  showSuccess(t('Copiado'), t('URL del Webhook copiada al portapapeles.'));
                 }}
                 className="px-3 py-2 bg-white border border-gray-border hover:bg-surface text-xs font-semibold rounded-lg text-text-pri flex items-center gap-1.5"
               >
                 <Icon name="copy" size={13} />
-                <span>Copiar</span>
+                <span>{t('Copiar')}</span>
               </button>
             </div>
             <p className="text-[11px] text-text-ter leading-relaxed">
-              En el panel de Mercado Pago, elegí el evento «Pagos» y copiá la «clave secreta» de la firma en el campo de arriba: con
-              ella Habitar verifica que cada aviso venga de Mercado Pago. Igual, el estado de cada pago se consulta siempre a la API de
-              Mercado Pago.
+              {t('En el panel de Mercado Pago, elegí el evento «Pagos» y copiá la «clave secreta» de la firma en el campo de arriba: con ella Habitar verifica que cada aviso venga de Mercado Pago. Igual, el estado de cada pago se consulta siempre a la API de Mercado Pago.')}
             </p>
           </div>
 
           <div className="bg-surface border border-gray-border rounded-xl p-5 space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-text-pri">Probar un pago</h4>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-text-pri">{t('Probar un pago')}</h4>
             <p className="text-xs text-text-sec leading-relaxed">
-              Crea un cobro chico y abre Mercado Pago para pagarlo. Con credenciales de prueba, pagá con un usuario comprador de
-              prueba y una tarjeta de prueba de Mercado Pago: al volver, el pago aparece en «Ganancias» con su estado real.
+              {t('Crea un cobro chico y abre Mercado Pago para pagarlo. Con credenciales de prueba, pagá con un usuario comprador de prueba y una tarjeta de prueba de Mercado Pago: al volver, el pago aparece en «Ganancias» con su estado real.')}
             </p>
             <div className="flex flex-wrap items-center gap-2">
               <label className="text-xs text-text-sec">
-                Monto $
+                {t('Monto $')}
                 <input
                   type="number"
                   min={1}
@@ -747,7 +746,7 @@ export function AdminFinanceScreen() {
                 className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold disabled:opacity-50 flex items-center gap-1.5"
               >
                 <Icon name="creditCard" size={13} />
-                <span>{creatingTestPayment ? 'Creando…' : 'Hacer un pago de prueba'}</span>
+                <span>{creatingTestPayment ? t('Creando…') : t('Hacer un pago de prueba')}</span>
               </button>
             </div>
           </div>
@@ -758,7 +757,7 @@ export function AdminFinanceScreen() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white border border-gray-border rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-gray-border">
-              <h3 className="text-base font-bold text-text-pri">Registrar Gasto de Plataforma</h3>
+              <h3 className="text-base font-bold text-text-pri">{t('Registrar Gasto de Plataforma')}</h3>
               <button
                 onClick={() => setIsExpenseModalOpen(false)}
                 className="p-1 text-text-sec hover:text-text-pri"
@@ -769,11 +768,11 @@ export function AdminFinanceScreen() {
 
             <form onSubmit={handleSaveExpense} className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-text-pri mb-1">Concepto / Título</label>
+                <label className="block text-xs font-semibold text-text-pri mb-1">{t('Concepto / Título')}</label>
                 <input
                   type="text"
                   required
-                  placeholder="Ej: Factura Servidor Neon PostgreSQL"
+                  placeholder={t('Ej: Factura Servidor Neon PostgreSQL')}
                   value={expenseForm.title}
                   onChange={(e) => setExpenseForm({ ...expenseForm, title: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-border rounded-lg text-xs"
@@ -782,7 +781,7 @@ export function AdminFinanceScreen() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-text-pri mb-1">Monto (ARS)</label>
+                  <label className="block text-xs font-semibold text-text-pri mb-1">{t('Monto (ARS)')}</label>
                   <input
                     type="number"
                     required
@@ -793,28 +792,28 @@ export function AdminFinanceScreen() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-text-pri mb-1">Categoría</label>
+                  <label className="block text-xs font-semibold text-text-pri mb-1">{t('Categoría')}</label>
                   <select
                     value={expenseForm.category}
                     onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-border rounded-lg text-xs form-select"
                   >
-                    <option value="INFRAESTRUCTURA">Infraestructura</option>
-                    <option value="IA_SERVICIOS">IA (DeepSeek/OpenAI)</option>
-                    <option value="SERVICIOS_CORREO">Envíos de Email</option>
-                    <option value="MARKETING">Marketing & Difusión</option>
-                    <option value="LEGAL_CONTABLE">Legal y Contable</option>
-                    <option value="SALARIOS">Salarios / Honorarios</option>
-                    <option value="OTROS">Otros</option>
+                    <option value="INFRAESTRUCTURA">{t('Infraestructura')}</option>
+                    <option value="IA_SERVICIOS">{t('IA (DeepSeek/OpenAI)')}</option>
+                    <option value="SERVICIOS_CORREO">{t('Envíos de Email')}</option>
+                    <option value="MARKETING">{t('Marketing & Difusión')}</option>
+                    <option value="LEGAL_CONTABLE">{t('Legal y Contable')}</option>
+                    <option value="SALARIOS">{t('Salarios / Honorarios')}</option>
+                    <option value="OTROS">{t('Otros')}</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-text-pri mb-1">Proveedor / Empresa</label>
+                <label className="block text-xs font-semibold text-text-pri mb-1">{t('Proveedor / Empresa')}</label>
                 <input
                   type="text"
-                  placeholder="Ej: Neon Tech, DeepSeek, Resend"
+                  placeholder={t('Ej: Neon Tech, DeepSeek, Resend')}
                   value={expenseForm.supplier}
                   onChange={(e) => setExpenseForm({ ...expenseForm, supplier: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-border rounded-lg text-xs"
@@ -822,10 +821,10 @@ export function AdminFinanceScreen() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-text-pri mb-1">Detalle opcional</label>
+                <label className="block text-xs font-semibold text-text-pri mb-1">{t('Detalle opcional')}</label>
                 <textarea
                   rows={2}
-                  placeholder="Observaciones o número de comprobante..."
+                  placeholder={t('Observaciones o número de comprobante...')}
                   value={expenseForm.description}
                   onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-border rounded-lg text-xs"
@@ -838,13 +837,13 @@ export function AdminFinanceScreen() {
                   onClick={() => setIsExpenseModalOpen(false)}
                   className="px-4 py-2 border border-gray-border rounded-lg text-xs font-semibold text-text-sec hover:text-text-pri"
                 >
-                  Cancelar
+                  {t('Cancelar')}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-xs"
                 >
-                  Guardar Gasto
+                  {t('Guardar Gasto')}
                 </button>
               </div>
             </form>
@@ -856,7 +855,7 @@ export function AdminFinanceScreen() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white border border-gray-border rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-gray-border">
-              <h3 className="text-base font-bold text-text-pri">Crear Cobro con Mercado Pago</h3>
+              <h3 className="text-base font-bold text-text-pri">{t('Crear Cobro con Mercado Pago')}</h3>
               <button
                 onClick={() => setIsCheckoutModalOpen(false)}
                 className="p-1 text-text-sec hover:text-text-pri"
@@ -867,7 +866,7 @@ export function AdminFinanceScreen() {
 
             <form onSubmit={handleGenerateCheckout} className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-text-pri mb-1">Concepto del Plan</label>
+                <label className="block text-xs font-semibold text-text-pri mb-1">{t('Concepto del Plan')}</label>
                 <input
                   type="text"
                   required
@@ -878,7 +877,7 @@ export function AdminFinanceScreen() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-text-pri mb-1">Monto a Cobrar (ARS)</label>
+                <label className="block text-xs font-semibold text-text-pri mb-1">{t('Monto a Cobrar (ARS)')}</label>
                 <input
                   type="number"
                   required
@@ -889,11 +888,11 @@ export function AdminFinanceScreen() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-text-pri mb-1">Email del Pagador / Colegio</label>
+                <label className="block text-xs font-semibold text-text-pri mb-1">{t('Email del Pagador / Colegio')}</label>
                 <input
                   type="email"
                   required
-                  placeholder="administracion@colegio.edu.ar"
+                  placeholder={t('administracion@colegio.edu.ar')}
                   value={checkoutForm.payerEmail}
                   onChange={(e) => setCheckoutForm({ ...checkoutForm, payerEmail: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-border rounded-lg text-xs"
@@ -901,10 +900,10 @@ export function AdminFinanceScreen() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-text-pri mb-1">Nombre de la Institución</label>
+                <label className="block text-xs font-semibold text-text-pri mb-1">{t('Nombre de la Institución')}</label>
                 <input
                   type="text"
-                  placeholder="Instituto San Martín"
+                  placeholder={t('Instituto San Martín')}
                   value={checkoutForm.payerName}
                   onChange={(e) => setCheckoutForm({ ...checkoutForm, payerName: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-border rounded-lg text-xs"
@@ -917,14 +916,14 @@ export function AdminFinanceScreen() {
                   onClick={() => setIsCheckoutModalOpen(false)}
                   className="px-4 py-2 border border-gray-border rounded-lg text-xs font-semibold text-text-sec hover:text-text-pri"
                 >
-                  Cancelar
+                  {t('Cancelar')}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1.5"
                 >
                   <Icon name="creditCard" size={13} />
-                  <span>Generar Link MP</span>
+                  <span>{t('Generar Link MP')}</span>
                 </button>
               </div>
             </form>

@@ -15,11 +15,13 @@ import { OneDrivePickerModal } from './OneDrivePickerModal';
 import { ActivityBankModal } from './ActivityBankModal';
 import { fetchActivityTemplate, type ActivityTemplateSummary } from '../../../../services/activityService';
 import { clearWizardDocument, documentKind, saveWizardDocument } from '../../../../lib/wizardDocument';
+import { LOCALES, t, useI18n, type Locale } from '../../../../i18n';
 
 const DEFAULT_TEXT =
   'La biodiversidad es el conjunto de formas de vida que habitan nuestro planeta. Cada ecosistema alberga especies que dependen entre sí para sobrevivir. Cuando una especie desaparece, las consecuencias se propagan en cadena hacia el resto del sistema. Proteger la biodiversidad no es solo una cuestión ambiental, sino también cultural y económica.';
 
 export function NewActivityStep1() {
+  const { locale } = useI18n();
   const wizard = useStore(activityWizardStore);
   const [text, setText] = useState('');
   const [generating, setGenerating] = useState(false);
@@ -36,23 +38,24 @@ export function NewActivityStep1() {
   const [bankOpen, setBankOpen] = useState(false);
   const [loadingTemplate, setLoadingTemplate] = useState(false);
 
-  async function handlePickTemplate(t: ActivityTemplateSummary) {
+  async function handlePickTemplate(entry: ActivityTemplateSummary) {
     setLoadingTemplate(true);
     try {
-      const { sourceText, questions, template } = await fetchActivityTemplate(t.id);
+      const { sourceText, questions, template } = await fetchActivityTemplate(entry.id);
       await clearWizardDocument();
       updateWizard({
         sourceText,
         wordCount: template.wordCount,
         questions,
         templateId: template.id,
-        documentName: template.hasDocument ? `${template.documentFileName ?? 'documento'} (del banco)` : null,
+        documentName: template.hasDocument ? t('{value} (del banco)', { value: template.documentFileName ?? t('documento') }) : null,
         educationLevel: template.educationLevel || wizard.educationLevel,
+        language: template.language ?? wizard.language,
         name: template.name,
       });
       window.location.href = '/docente/actividades/nueva/revisar';
     } catch (err) {
-      setImportError(err instanceof Error ? err.message : 'No se pudo usar la actividad del banco.');
+      setImportError(err instanceof Error ? err.message : t('No se pudo usar la actividad del banco.'));
       setLoadingTemplate(false);
     }
   }
@@ -84,7 +87,7 @@ export function NewActivityStep1() {
       const picked = await pickFileFromGoogleDrive(integrations.googleDrive, provider === 'google' ? email : undefined);
       if (picked) setReviewDoc({ ...picked, origin: 'Google Drive' });
     } catch (err) {
-      setImportError(err instanceof Error ? err.message : 'No se pudo traer el archivo de Google Drive.');
+      setImportError(err instanceof Error ? err.message : t('No se pudo traer el archivo de Google Drive.'));
     } finally {
       setImporting(null);
     }
@@ -97,7 +100,7 @@ export function NewActivityStep1() {
     try {
       setOneDriveToken(await getOneDriveToken(integrations.oneDrive, provider === 'microsoft' ? email : undefined));
     } catch (err) {
-      setImportError(err instanceof Error ? err.message : 'No se pudo conectar con OneDrive.');
+      setImportError(err instanceof Error ? err.message : t('No se pudo conectar con OneDrive.'));
     } finally {
       setImporting(null);
     }
@@ -137,14 +140,14 @@ export function NewActivityStep1() {
     e.target.value = '';
     if (!file) return;
     setImportError(null);
-    setReviewDoc({ name: file.name, file, mimeType: file.type, origin: 'Tu computadora' });
+    setReviewDoc({ name: file.name, file, mimeType: file.type, origin: t('Tu computadora') });
   }
 
   async function handleGenerate() {
     setGenerating(true);
     setGenerateError(null);
     try {
-      const result = await generateQuestions(text, wizard.focusAxis ?? undefined);
+      const result = await generateQuestions(text, wizard.focusAxis ?? undefined, wizard.language ?? locale);
       updateWizard({
         sourceText: text,
         wordCount: result.wordCount,
@@ -152,7 +155,7 @@ export function NewActivityStep1() {
       });
       window.location.href = '/docente/actividades/nueva/revisar';
     } catch (err) {
-      setGenerateError(err instanceof Error ? err.message : 'No se pudieron generar las preguntas. Intentá de nuevo.');
+      setGenerateError(err instanceof Error ? err.message : t('No se pudieron generar las preguntas. Intentá de nuevo.'));
     } finally {
       setGenerating(false);
     }
@@ -160,14 +163,14 @@ export function NewActivityStep1() {
 
   return (
     <div>
-      <div className="text-lg font-semibold text-text-pri mb-[3px] tracking-tight">Nueva actividad</div>
-      <div className="text-[12.5px] text-text-sec mb-[18px]">Cargá el texto fuente para generar preguntas con IA</div>
+      <div className="text-lg font-semibold text-text-pri mb-[3px] tracking-tight">{t('Nueva actividad')}</div>
+      <div className="text-[12.5px] text-text-sec mb-[18px]">{t('Cargá el texto fuente para generar preguntas con IA')}</div>
 
       <Stepper
         steps={[
-          { label: 'Texto', state: 'current' },
-          { label: 'Revisar', state: 'pending' },
-          { label: 'Configurar', state: 'pending' },
+          { label: t('Texto'), state: 'current' },
+          { label: t('Revisar'), state: 'pending' },
+          { label: t('Configurar'), state: 'pending' },
           { label: 'QR', state: 'pending' },
         ]}
       />
@@ -180,16 +183,16 @@ export function NewActivityStep1() {
             </div>
             <div>
               <div className="text-xs font-semibold text-emerald-950 flex items-center gap-2">
-                <span>Aula asignada: <strong>{boundCourse?.name || wizard.courseName}</strong></span>
+                <span>{t('Aula asignada:')}{' '}<strong>{boundCourse?.name || wizard.courseName}</strong></span>
                 {boundCourse?.qrCode && (
                   <span className="text-[10.5px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-mono font-medium">
-                    QR: {boundCourse.qrCode}
+                    {t('QR: {qrCode}', { qrCode: boundCourse.qrCode })}
                   </span>
                 )}
               </div>
               <div className="text-[11px] text-emerald-700">
-                {boundCourse?.room ? `Salón: ${boundCourse.room} · ` : ''}
-                Esta actividad y sus preguntas quedarán vinculadas al aula fija.
+                {boundCourse?.room ? t('Salón: {room} · ', { room: boundCourse.room }) : ''}
+                {t('Esta actividad y sus preguntas quedarán vinculadas al aula fija.')}
               </div>
             </div>
           </div>
@@ -197,26 +200,26 @@ export function NewActivityStep1() {
             href="/docente"
             className="text-xs text-emerald-700 hover:text-emerald-900 font-medium underline shrink-0"
           >
-            Cambiar aula
+            {t('Cambiar aula')}
           </a>
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3.5">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3.5">
         <div className="form-group">
-          <label className="block text-[11px] text-text-sec mb-[5px] font-medium">Nivel educativo</label>
+          <label className="block text-[11px] text-text-sec mb-[5px] font-medium">{t('Nivel educativo')}</label>
           <select
             className="form-select w-full px-2.5 py-[7px] border border-gray-border rounded-[6px] text-[12.5px] bg-white"
             value={wizard.educationLevel}
             onChange={(e) => updateWizard({ educationLevel: e.target.value })}
           >
-            <option>Secundario — 4°</option>
-            <option>Secundario — 5°</option>
-            <option>Primario — 6°</option>
+            <option value="Secundario — 4°">{t('Secundario — 4°')}</option>
+            <option value="Secundario — 5°">{t('Secundario — 5°')}</option>
+            <option value="Primario — 6°">{t('Primario — 6°')}</option>
           </select>
         </div>
         <div className="form-group">
-          <label className="block text-[11px] text-text-sec mb-[5px] font-medium">Eje foco</label>
+          <label className="block text-[11px] text-text-sec mb-[5px] font-medium">{t('Eje foco')}</label>
           <select
             className="form-select w-full px-2.5 py-[7px] border border-gray-border rounded-[6px] text-[12.5px] bg-white"
             value={wizard.focusAxis ?? ''}
@@ -225,20 +228,34 @@ export function NewActivityStep1() {
               updateWizard({ focusAxis: value || null, axis: value || 'inferencial' });
             }}
           >
-            <option value="">Sin foco — mezcla estándar</option>
-            <option value="literal">Literal (3 de 5 preguntas)</option>
-            <option value="inferencial">Inferencial (3 de 5 preguntas)</option>
-            <option value="critico">Crítico (3 de 5 preguntas)</option>
+            <option value="">{t('Sin foco — mezcla estándar')}</option>
+            <option value="literal">{t('Literal (3 de 5 preguntas)')}</option>
+            <option value="inferencial">{t('Inferencial (3 de 5 preguntas)')}</option>
+            <option value="critico">{t('Crítico (3 de 5 preguntas)')}</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label className="block text-[11px] text-text-sec mb-[5px] font-medium">{t('Idioma de la actividad')}</label>
+          <select
+            className="form-select w-full px-2.5 py-[7px] border border-gray-border rounded-[6px] text-[12.5px] bg-white"
+            value={wizard.language ?? locale}
+            onChange={(e) => updateWizard({ language: e.target.value as Locale })}
+          >
+            {LOCALES.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.label}
+              </option>
+            ))}
           </select>
         </div>
       </div>
 
       <div className="form-group mb-2.5">
-        <label className="block text-[11px] text-text-sec mb-[5px] font-medium">Texto fuente</label>
+        <label className="block text-[11px] text-text-sec mb-[5px] font-medium">{t('Texto fuente')}</label>
         <div className="flex flex-wrap items-center gap-2 mb-2">
           <label className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-300 hover:bg-emerald-100 text-emerald-900 rounded-[6px] px-2.5 py-1.5 text-xs cursor-pointer font-medium transition-colors">
             <Icon name="fileText" size={13} />
-            Subir archivo (Word, PDF, texto)
+            {t('Subir archivo (Word, PDF, texto)')}
             <input
               type="file"
               accept=".txt,.md,.docx,.pdf"
@@ -253,7 +270,7 @@ export function NewActivityStep1() {
             className="flex items-center gap-1.5 bg-white border border-gray-border rounded-[6px] px-2.5 py-1.5 text-xs text-text-pri font-medium hover:bg-gray-50 disabled:opacity-50 cursor-pointer"
           >
             <Icon name="layers" size={12} />
-            {loadingTemplate ? 'Cargando…' : 'Banco de la institución'}
+            {loadingTemplate ? t('Cargando…') : t('Banco de la institución')}
           </button>
           <button
             type="button"
@@ -261,7 +278,7 @@ export function NewActivityStep1() {
             className="flex items-center gap-1.5 bg-white border border-gray-border rounded-[6px] px-2.5 py-1.5 text-xs text-text-sec hover:text-text-pri"
           >
             <Icon name="refresh" size={12} />
-            Texto de ejemplo
+            {t('Texto de ejemplo')}
           </button>
           {(provider === 'microsoft' ? ['onedrive', 'drive'] : ['drive', 'onedrive']).map((source) => {
             const isDrive = source === 'drive';
@@ -275,10 +292,10 @@ export function NewActivityStep1() {
                 disabled={!configured || importing !== null}
                 title={
                   !configured
-                    ? `${isDrive ? 'Google Drive' : 'OneDrive'} todavía no está habilitado en el servidor`
+                    ? t('{value} todavía no está habilitado en el servidor', { value: isDrive ? 'Google Drive' : 'OneDrive' })
                     : isOwn
-                      ? `Abrir ${isDrive ? 'tu Google Drive' : 'tu OneDrive'} (${email})`
-                      : `Abrir ${isDrive ? 'Google Drive' : 'OneDrive'} con otra cuenta`
+                      ? t('Abrir {value} ({email})', { value: isDrive ? t('tu Google Drive') : t('tu OneDrive'), email })
+                      : t('Abrir {value} con otra cuenta', { value: isDrive ? 'Google Drive' : 'OneDrive' })
                 }
                 className={`flex items-center gap-1.5 border rounded-[6px] px-2.5 py-1.5 text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
                   isOwn && configured
@@ -287,7 +304,7 @@ export function NewActivityStep1() {
                 }`}
               >
                 <Icon name={isDrive ? 'folder' : 'cloud'} size={13} />
-                {importing === source ? 'Abriendo…' : isDrive ? 'Google Drive' : 'OneDrive'}
+                {importing === source ? t('Abriendo…') : isDrive ? 'Google Drive' : 'OneDrive'}
               </button>
             );
           })}
@@ -298,15 +315,14 @@ export function NewActivityStep1() {
         {importedFrom && !importError && (
           <div className="text-[11.5px] text-text-sec mb-2 flex items-center gap-1.5">
             <Icon name="check" size={12} className="text-green-mid" />
-            Texto cargado desde {importedFrom}. Es el que usa la IA para las preguntas: revisalo y editalo si hace falta.
+            {t('Texto cargado desde {importedFrom}. Es el que usa la IA para las preguntas: revisalo y editalo si hace falta.', { importedFrom })}
           </div>
         )}
         {wizard.documentName && (
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-emerald-900 dark:text-emerald-200 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 rounded-[6px] px-3 py-2 mb-2">
             <Icon name="fileText" size={13} />
             <span>
-              Los alumnos van a leer el documento original: <strong>{wizard.documentName}</strong>. Se borra de Habitar al cerrar la
-              actividad.
+              {t('Los alumnos van a leer el documento original:')}{' '}<strong>{wizard.documentName}</strong>{t('. Se borra de Habitar al cerrar la actividad.')}
             </span>
             <button
               type="button"
@@ -316,21 +332,21 @@ export function NewActivityStep1() {
               }}
               className="font-semibold underline cursor-pointer"
             >
-              Mostrar sólo el texto
+              {t('Mostrar sólo el texto')}
             </button>
           </div>
         )}
         {lastDoc && (
           <button type="button" onClick={() => setReviewDoc(lastDoc)} className="text-[11.5px] font-semibold text-green-dark hover:underline mb-2 inline-flex items-center gap-1 cursor-pointer">
             <Icon name="eye" size={12} />
-            Ver el documento y cambiar las páginas
+            {t('Ver el documento y cambiar las páginas')}
           </button>
         )}
 
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Pegá acá el texto que van a leer los alumnos, o subí un archivo (Word, PDF o texto)."
+          placeholder={t('Pegá acá el texto que van a leer los alumnos, o subí un archivo (Word, PDF o texto).')}
           rows={6}
           className="w-full px-2.5 py-2 border border-gray-border rounded-[6px] text-xs bg-white leading-relaxed resize-none"
         />
@@ -343,12 +359,12 @@ export function NewActivityStep1() {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2.5">
         <div className="text-[11.5px] text-text-sec">
           {wordCount === 0 ? (
-            'Cargá un texto de entre 40 y 600 palabras'
+            t('Cargá un texto de entre 40 y 600 palabras')
           ) : (
             <>
-              <span className={`font-semibold ${isValid ? 'text-green-mid' : 'text-red'}`}>{wordCount} palabras</span>
+              <span className={`font-semibold ${isValid ? 'text-green-mid' : 'text-red'}`}>{t('{wordCount} palabras', { wordCount })}</span>
               {' · '}
-              {isValid ? 'Rango válido para nivel seleccionado (40–600)' : 'El texto debe tener entre 40 y 600 palabras'}
+              {isValid ? t('Rango válido para nivel seleccionado (40–600)') : t('El texto debe tener entre 40 y 600 palabras')}
             </>
           )}
         </div>
@@ -357,9 +373,9 @@ export function NewActivityStep1() {
           disabled={!isValid || generating}
           className="flex items-center justify-center gap-1.5 bg-green-dark text-white px-4 py-2 rounded-[6px] text-[12.5px] font-medium disabled:opacity-50"
         >
-          {generating ? 'Generando…' : (
+          {generating ? t('Generando…') : (
             <>
-              Generar preguntas
+              {t('Generar preguntas')}
               <Icon name="sparkles" size={13} />
             </>
           )}
@@ -374,7 +390,7 @@ export function NewActivityStep1() {
           setReviewDoc({ ...picked, origin: 'OneDrive' });
         }}
       />
-      <ActivityBankModal isOpen={bankOpen} onClose={() => setBankOpen(false)} onPick={(t) => { setBankOpen(false); void handlePickTemplate(t); }} />
+      <ActivityBankModal isOpen={bankOpen} onClose={() => setBankOpen(false)} onPick={(template) => { setBankOpen(false); void handlePickTemplate(template); }} />
       <DocumentReviewModal
         document={reviewDoc}
         onClose={() => setReviewDoc(null)}

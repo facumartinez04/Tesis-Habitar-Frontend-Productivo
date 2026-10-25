@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Icon } from '../../ui/Icon';
 import { HabitarLoader } from '../../ui/HabitarLoader';
 import { downloadDriveFile, listFolder, searchDrive, type DriveItem } from '../../../../lib/oneDrive';
+import { t, useI18n } from '../../../../i18n';
 
 interface OneDrivePickerModalProps {
   token: string | null;
@@ -17,6 +18,7 @@ function formatSize(bytes: number): string {
 }
 
 export function OneDrivePickerModal({ token, isOpen, onClose, onPicked }: OneDrivePickerModalProps) {
+  useI18n();
   const [path, setPath] = useState<{ id?: string; name: string }[]>([{ name: 'Mi OneDrive' }]);
   const [items, setItems] = useState<DriveItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -58,7 +60,7 @@ export function OneDrivePickerModal({ token, isOpen, onClose, onPicked }: OneDri
     try {
       setItems(await searchDrive(token, q));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo buscar en OneDrive.');
+      setError(err instanceof Error ? err.message : t('No se pudo buscar en OneDrive.'));
     } finally {
       setLoading(false);
     }
@@ -79,7 +81,7 @@ export function OneDrivePickerModal({ token, isOpen, onClose, onPicked }: OneDri
       const file = await downloadDriveFile(token, item);
       onPicked({ name: item.name, file, mimeType: file.type });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo leer el archivo.');
+      setError(err instanceof Error ? err.message : t('No se pudo leer el archivo.'));
     } finally {
       setReading(null);
     }
@@ -88,14 +90,14 @@ export function OneDrivePickerModal({ token, isOpen, onClose, onPicked }: OneDri
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-label="Elegir un archivo de OneDrive">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-label={t('Elegir un archivo de OneDrive')}>
       <div className="bg-card-bg border border-gray-border rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[85vh] overflow-hidden">
         <div className="px-5 py-3.5 border-b border-gray-border flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm font-bold text-text-pri">
             <Icon name="cloud" size={16} />
-            Elegí el texto desde OneDrive
+            {t('Elegí el texto desde OneDrive')}
           </div>
-          <button type="button" onClick={onClose} aria-label="Cerrar" className="text-text-ter hover:text-text-pri p-1 rounded-lg cursor-pointer">
+          <button type="button" onClick={onClose} aria-label={t('Cerrar')} className="text-text-ter hover:text-text-pri p-1 rounded-lg cursor-pointer">
             <Icon name="close" size={16} />
           </button>
         </div>
@@ -106,21 +108,21 @@ export function OneDrivePickerModal({ token, isOpen, onClose, onPicked }: OneDri
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar por nombre del archivo…"
+              placeholder={t('Buscar por nombre del archivo…')}
               className="w-full pl-8 pr-2.5 py-1.5 border border-gray-border rounded-[6px] text-[12.5px]"
             />
           </div>
           <button type="submit" className="text-xs font-semibold px-3 py-1.5 rounded-[6px] bg-green-dark text-white cursor-pointer">
-            Buscar
+            {t('Buscar')}
           </button>
         </form>
 
         <div className="px-5 py-2 text-[11.5px] text-text-sec flex flex-wrap items-center gap-1">
           {searching ? (
             <>
-              Resultados para «{query.trim()}» ·
+              {t('Resultados para «{trim}» ·', { trim: query.trim() })}
               <button type="button" className="underline cursor-pointer" onClick={() => { setSearching(false); setQuery(''); }}>
-                volver a las carpetas
+                {t('volver a las carpetas')}
               </button>
             </>
           ) : (
@@ -144,9 +146,9 @@ export function OneDrivePickerModal({ token, isOpen, onClose, onPicked }: OneDri
 
         <div className="flex-1 overflow-y-auto px-2 pb-3">
           {loading ? (
-            <div className="py-10 flex justify-center"><HabitarLoader size="md" message="Cargando OneDrive…" /></div>
+            <div className="py-10 flex justify-center"><HabitarLoader size="md" message={t('Cargando OneDrive…')} /></div>
           ) : items.length === 0 ? (
-            <div className="py-10 text-center text-xs text-text-sec">{searching ? 'No se encontraron archivos.' : 'Esta carpeta está vacía.'}</div>
+            <div className="py-10 text-center text-xs text-text-sec">{searching ? t('No se encontraron archivos.') : t('Esta carpeta está vacía.')}</div>
           ) : (
             <ul>
               {items.map((item) => (
@@ -160,7 +162,7 @@ export function OneDrivePickerModal({ token, isOpen, onClose, onPicked }: OneDri
                     <Icon name={item.isFolder ? 'folder' : 'fileText'} size={15} className={item.isFolder ? 'text-amber' : 'text-text-sec'} />
                     <span className="flex-1 min-w-0 truncate text-[12.5px] text-text-pri">{item.name}</span>
                     <span className="text-[11px] text-text-ter shrink-0">
-                      {reading === item.id ? 'Leyendo…' : item.isFolder ? '' : item.supported ? formatSize(item.size) : 'Formato no admitido'}
+                      {reading === item.id ? t('Leyendo…') : item.isFolder ? '' : item.supported ? formatSize(item.size) : t('Formato no admitido')}
                     </span>
                   </button>
                 </li>
@@ -170,7 +172,7 @@ export function OneDrivePickerModal({ token, isOpen, onClose, onPicked }: OneDri
         </div>
 
         <div className="px-5 py-2.5 border-t border-gray-border text-[11px] text-text-ter">
-          Se admiten Word (.docx), PDF y texto (.txt, .md). El archivo se lee en este dispositivo y no se guarda en Habitar.
+          {t('Se admiten Word (.docx), PDF y texto (.txt, .md). El archivo se lee en este dispositivo y no se guarda en Habitar.')}
         </div>
       </div>
     </div>

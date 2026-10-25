@@ -5,6 +5,7 @@ import { HabitarLoader } from '../ui/HabitarLoader';
 import { listCourseStudentDevices, unlinkCourseStudentDevice } from '../../../services/courseService';
 import { showSuccess, showError, confirmDestructive } from '../../../lib/alerts';
 import type { Course, CourseStudentDevice } from '../../../types/activity';
+import { t, useI18n, intlLocale } from '../../../i18n';
 
 interface CourseDevicesModalProps {
   course: Course | null;
@@ -13,6 +14,7 @@ interface CourseDevicesModalProps {
 }
 
 export function CourseDevicesModal({ course, isOpen, onClose }: CourseDevicesModalProps) {
+  useI18n();
   const [devices, setDevices] = useState<CourseStudentDevice[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -24,7 +26,7 @@ export function CourseDevicesModal({ course, isOpen, onClose }: CourseDevicesMod
     listCourseStudentDevices(course.id)
       .then(setDevices)
       .catch((err: any) => {
-        showError('Error', err.message || 'No se pudieron cargar los dispositivos del aula.');
+        showError(t('Error'), err.message || t('No se pudieron cargar los dispositivos del aula.'));
       })
       .finally(() => {
         setLoading(false);
@@ -47,8 +49,8 @@ export function CourseDevicesModal({ course, isOpen, onClose }: CourseDevicesMod
     if (!course) return;
 
     const confirmed = await confirmDestructive({
-      title: `¿Desvincular dispositivo de ${device.studentName}?`,
-      text: 'El alumno podrá registrar un nuevo dispositivo (celular o tablet) la próxima vez que escanee el código QR del aula.',
+      title: t('¿Desvincular dispositivo de {studentName}?', { studentName: device.studentName }),
+      text: t('El alumno podrá registrar un nuevo dispositivo (celular o tablet) la próxima vez que escanee el código QR del aula.'),
     });
 
     if (!confirmed) return;
@@ -56,10 +58,10 @@ export function CourseDevicesModal({ course, isOpen, onClose }: CourseDevicesMod
     setUnlinkingId(device.id);
     try {
       const res = await unlinkCourseStudentDevice(course.id, device.id);
-      showSuccess('Dispositivo desvinculado', res.message);
+      showSuccess(t('Dispositivo desvinculado'), res.message);
       setDevices((prev) => prev.filter((d) => d.id !== device.id));
     } catch (err: any) {
-      showError('Error al desvincular', err.message || 'No se pudo desvincular el dispositivo.');
+      showError(t('Error al desvincular'), err.message || t('No se pudo desvincular el dispositivo.'));
     } finally {
       setUnlinkingId(null);
     }
@@ -77,11 +79,11 @@ export function CourseDevicesModal({ course, isOpen, onClose }: CourseDevicesMod
             </span>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-text-pri">Dispositivos del Aula</h2>
-                <Badge color="green">{devices.length} vinculados</Badge>
+                <h2 className="text-base font-bold text-text-pri">{t('Dispositivos del Aula')}</h2>
+                <Badge color="green">{t('{devicesCount} vinculados', { devicesCount: devices.length })}</Badge>
               </div>
               <p className="text-xs text-text-sec mt-0.5">
-                {course.name} {course.room ? `• Salón ${course.room}` : ''}
+                {course.name} {course.room ? t('• Salón {room}', { room: course.room }) : ''}
               </p>
             </div>
           </div>
@@ -96,7 +98,7 @@ export function CourseDevicesModal({ course, isOpen, onClose }: CourseDevicesMod
         <div className="bg-emerald-50/70 dark:bg-emerald-950/30 border-b border-emerald-200/60 dark:border-emerald-800/40 px-6 py-3 flex items-start gap-2.5 text-xs text-emerald-900 dark:text-emerald-200">
           <Icon name="lock" size={14} className="mt-0.5 shrink-0" />
           <div className="leading-relaxed">
-            <strong>Control de Identidad Única:</strong> Cada alumno puede tener un solo dispositivo vinculado al aula física. Si un alumno cambió de celular o tablet, presioná <strong>"Desvincular"</strong> para que pueda escanear y registrar su nuevo equipo.
+            <strong>{t('Control de Identidad Única:')}</strong>{' '}{t('Cada alumno puede tener un solo dispositivo vinculado al aula física. Si un alumno cambió de celular o tablet, presioná')}{' '}<strong>{t('"Desvincular"')}</strong>{' '}{t('para que pueda escanear y registrar su nuevo equipo.')}
           </div>
         </div>
 
@@ -108,7 +110,7 @@ export function CourseDevicesModal({ course, isOpen, onClose }: CourseDevicesMod
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar alumno por nombre o apellido..."
+              placeholder={t('Buscar alumno por nombre o apellido...')}
               className="w-full pl-9 pr-4 py-2 border border-gray-border dark:border-[#2D3342] rounded-xl text-xs bg-white dark:bg-[#1A1E29] text-text-pri focus:border-emerald-600 outline-none"
             />
           </div>
@@ -117,18 +119,18 @@ export function CourseDevicesModal({ course, isOpen, onClose }: CourseDevicesMod
         <div className="p-6 overflow-y-auto flex-1 space-y-3">
           {loading ? (
             <div className="py-12 flex justify-center">
-              <HabitarLoader size="md" message="Cargando dispositivos..." />
+              <HabitarLoader size="md" message={t('Cargando dispositivos...')} />
             </div>
           ) : filteredDevices.length === 0 ? (
             <div className="text-center py-12 space-y-2">
               <Icon name="smartphone" size={30} className="mx-auto text-text-ter" />
               <div className="text-sm font-semibold text-text-pri">
-                {search ? 'No se encontraron alumnos con esa búsqueda' : 'No hay dispositivos vinculados aún'}
+                {search ? t('No se encontraron alumnos con esa búsqueda') : t('No hay dispositivos vinculados aún')}
               </div>
               <p className="text-xs text-text-sec max-w-sm mx-auto">
                 {search
-                  ? 'Verificá que el nombre esté bien escrito.'
-                  : 'Los alumnos aparecerán aquí automáticamente cuando escaneen el código QR del aula por primera vez.'}
+                  ? t('Verificá que el nombre esté bien escrito.')
+                  : t('Los alumnos aparecerán aquí automáticamente cuando escaneen el código QR del aula por primera vez.')}
               </p>
             </div>
           ) : (
@@ -154,7 +156,7 @@ export function CourseDevicesModal({ course, isOpen, onClose }: CourseDevicesMod
                           </span>
                           <span>•</span>
                           <span>
-                            Vinculado: {new Date(d.linkedAt).toLocaleDateString('es-AR')}
+                            {t('Vinculado:')}{' '}{new Date(d.linkedAt).toLocaleDateString(intlLocale())}
                           </span>
                         </div>
                       </div>
@@ -168,7 +170,7 @@ export function CourseDevicesModal({ course, isOpen, onClose }: CourseDevicesMod
                         className="px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 text-xs font-semibold hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                       >
                         <Icon name="trash" size={12} />
-                        <span>{isUnlinking ? 'Desvinculando…' : 'Desvincular'}</span>
+                        <span>{isUnlinking ? t('Desvinculando…') : t('Desvincular')}</span>
                       </button>
                     </div>
                   </div>
@@ -180,13 +182,13 @@ export function CourseDevicesModal({ course, isOpen, onClose }: CourseDevicesMod
 
         <div className="px-6 py-3.5 bg-gray-50 dark:bg-[#1A1E29] border-t border-gray-border dark:border-[#2D3342] flex items-center justify-between text-xs">
           <span className="text-text-ter">
-            Total: {devices.length} {devices.length === 1 ? 'dispositivo' : 'dispositivos'}
+            {t('Total: {devicesCount}', { devicesCount: devices.length })}{' '}{devices.length === 1 ? t('dispositivo') : t('dispositivos')}
           </span>
           <button
             onClick={onClose}
             className="px-4 py-2 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-text-pri font-medium rounded-xl transition-colors cursor-pointer"
           >
-            Cerrar
+            {t('Cerrar')}
           </button>
         </div>
       </div>

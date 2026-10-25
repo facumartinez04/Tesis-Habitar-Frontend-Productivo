@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { completeOAuthCallback } from '../../../services/authService';
+import { t, useI18n } from '../../../i18n';
 
 export function AuthCallbackScreen() {
+  useI18n();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -19,14 +21,14 @@ export function AuthCallbackScreen() {
     completeOAuthCallback(token)
       .then(() => window.location.replace(dashboardPath))
       .catch(() => {
-        setError('No se pudo completar el inicio de sesión');
+        setError(t('No se pudo completar el inicio de sesión'));
         setTimeout(() => window.location.replace('/login'), 2000);
       });
   }, []);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-surface">
-      <div className="text-[13px] text-text-sec">{error ?? 'Iniciando sesión…'}</div>
+      <div className="text-[13px] text-text-sec">{error ?? t('Iniciando sesión…')}</div>
     </div>
   );
 }

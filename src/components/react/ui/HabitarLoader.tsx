@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { t, useI18n } from '../../../i18n';
 
 interface HabitarLoaderProps {
   size?: 'sm' | 'md' | 'lg' | 'fullscreen';
@@ -10,11 +11,12 @@ interface HabitarLoaderProps {
 
 export function HabitarLoader({
   size = 'md',
-  message = 'Cargando...',
+  message = t('Cargando...'),
   overlay = false,
   className = '',
   autoFullscreenOnInitialLoad = true,
 }: HabitarLoaderProps) {
+  useI18n();
 
   const [isInitialWebLoad] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;

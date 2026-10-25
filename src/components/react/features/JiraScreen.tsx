@@ -14,6 +14,7 @@ import type {
 import { jiraService } from '../../../services/jiraService';
 import { SkeletonKanban } from '../ui/Skeleton';
 import { HabitarLoader } from '../ui/HabitarLoader';
+import { t, useI18n } from '../../../i18n';
 
 const COLUMNS: { id: JiraStatus; title: string; accent: string }[] = [
   { id: 'todo', title: 'Por Hacer', accent: 'border-t-gray-400' },
@@ -23,6 +24,7 @@ const COLUMNS: { id: JiraStatus; title: string; accent: string }[] = [
 ];
 
 export function JiraScreen() {
+  useI18n();
   useAuthGuard(['admin']);
   const [issues, setIssues] = useState<JiraIssue[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,7 +57,7 @@ export function JiraScreen() {
       const data = await jiraService.getIssues();
       setIssues(data);
     } catch {
-      showToast('Error al conectar con el servidor');
+      showToast(t('Error al conectar con el servidor'));
     } finally {
       setLoading(false);
     }
@@ -71,7 +73,7 @@ export function JiraScreen() {
         const q = filters.search.toLowerCase();
         if (
           !issue.id.toLowerCase().includes(q) &&
-          !issue.title.toLowerCase().includes(q) &&
+          !t(issue.title).toLowerCase().includes(q) &&
           !issue.description?.toLowerCase().includes(q)
         ) {
           return false;
@@ -91,7 +93,7 @@ export function JiraScreen() {
     try {
       await jiraService.updateIssue(id, { status: newStatus });
     } catch {
-      showToast('Error al actualizar');
+      showToast(t('Error al actualizar'));
       loadIssues();
     }
   };
@@ -101,26 +103,26 @@ export function JiraScreen() {
       const created = await jiraService.createIssue(cardData);
       setIssues((prev) => [created, ...prev]);
       setIsCreateOpen(false);
-      showToast(`Tarea ${created.id} creada en PostgreSQL`);
+      showToast(t('Tarea {id} creada en PostgreSQL', { id: created.id }));
     } catch {
-      showToast('Error al crear tarea');
+      showToast(t('Error al crear tarea'));
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm(`¿Eliminar la tarea ${id}?`)) return;
+    if (!confirm(t('¿Eliminar la tarea {id}?', { id }))) return;
     try {
       await jiraService.deleteIssue(id);
       setIssues((prev) => prev.filter((i) => i.id !== id));
       setSelectedIssue(null);
-      showToast('Tarea eliminada');
+      showToast(t('Tarea eliminada'));
     } catch {
-      showToast('Error al eliminar');
+      showToast(t('Error al eliminar'));
     }
   };
 
   if (loading) {
-    return <HabitarLoader size="lg" message="Sincronizando tablero Jira de tareas y soporte..." />;
+    return <HabitarLoader size="lg" message={t('Sincronizando tablero Jira de tareas y soporte...')} />;
   }
 
   return (
@@ -133,9 +135,9 @@ export function JiraScreen() {
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Jira de Administración</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('Jira de Administración')}</h1>
           <p className="text-xs text-gray-500 mt-0.5">
-            Tablero de incidencias y sprints persistido en PostgreSQL
+            {t('Tablero de incidencias y sprints persistido en PostgreSQL')}
           </p>
         </div>
 
@@ -145,7 +147,7 @@ export function JiraScreen() {
             className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-teal-800 text-white hover:bg-teal-900 transition-colors shadow-xs"
           >
             <KeyIcon />
-            <span>Tokens IA</span>
+            <span>{t('Tokens IA')}</span>
           </button>
           <button
             onClick={() => {
@@ -155,7 +157,7 @@ export function JiraScreen() {
             className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors shadow-xs"
           >
             <PlusIcon />
-            <span>Nueva Incidencia</span>
+            <span>{t('Nueva Incidencia')}</span>
           </button>
         </div>
       </div>
@@ -164,7 +166,7 @@ export function JiraScreen() {
         <div className="flex items-center gap-2 flex-1 max-w-sm">
           <input
             type="text"
-            placeholder="Buscar por código (HAB-...) o título..."
+            placeholder={t('Buscar por código (HAB-...) o título...')}
             value={filters.search}
             onChange={(e) => setFilters({ ...filters, search: e.target.value })}
             className="w-full text-xs px-3 py-1.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-teal-700"
@@ -177,18 +179,18 @@ export function JiraScreen() {
             onChange={(e) => setFilters({ ...filters, priority: e.target.value as any })}
             className="text-xs px-2.5 py-1.5 rounded-lg border border-gray-300 bg-white"
           >
-            <option value="all">Todas las prioridades</option>
-            <option value="urgent">Urgente</option>
-            <option value="high">Alta</option>
-            <option value="medium">Media</option>
-            <option value="low">Baja</option>
+            <option value="all">{t('Todas las prioridades')}</option>
+            <option value="urgent">{t('Urgente')}</option>
+            <option value="high">{t('Alta')}</option>
+            <option value="medium">{t('Media')}</option>
+            <option value="low">{t('Baja')}</option>
           </select>
 
           <button
             onClick={() => setViewMode(viewMode === 'board' ? 'list' : 'board')}
             className="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-xs font-medium"
           >
-            {viewMode === 'board' ? 'Ver Lista' : 'Ver Tablero'}
+            {viewMode === 'board' ? t('Ver Lista') : t('Ver Tablero')}
           </button>
         </div>
       </div>
@@ -212,7 +214,7 @@ export function JiraScreen() {
                 >
                   <div className="flex items-center justify-between mb-3 px-1">
                     <span className="text-xs font-bold uppercase tracking-wider text-gray-700">
-                      {col.title}
+                      {t(col.title)}
                     </span>
                     <span className="text-[11px] font-bold bg-white text-gray-600 px-2 py-0.5 rounded-full shadow-2xs">
                       {colIssues.length}
@@ -235,7 +237,7 @@ export function JiraScreen() {
                           </span>
                         </div>
                         <p className="text-xs font-medium text-gray-800 line-clamp-2">
-                          {issue.title}
+                          {t(issue.title)}
                         </p>
                         <div className="flex items-center justify-between pt-2 border-t border-gray-100 text-[11px] text-gray-400">
                           <span>{issue.type}</span>
@@ -248,7 +250,7 @@ export function JiraScreen() {
 
                     {colIssues.length === 0 && (
                       <div className="py-12 border-2 border-dashed border-gray-200 rounded-lg text-center text-xs text-gray-400">
-                        Arrastrá tarjetas aquí
+                        {t('Arrastrá tarjetas aquí')}
                       </div>
                     )}
                   </div>
@@ -262,11 +264,11 @@ export function JiraScreen() {
           <table className="w-full text-left text-xs">
             <thead className="bg-gray-50 border-b border-gray-200 text-[11px] font-bold text-gray-500 uppercase">
               <tr>
-                <th className="py-3 px-4">Código</th>
-                <th className="py-3 px-4">Título</th>
-                <th className="py-3 px-4">Estado</th>
-                <th className="py-3 px-4">Prioridad</th>
-                <th className="py-3 px-4">Tipo</th>
+                <th className="py-3 px-4">{t('Código')}</th>
+                <th className="py-3 px-4">{t('Título')}</th>
+                <th className="py-3 px-4">{t('Estado')}</th>
+                <th className="py-3 px-4">{t('Prioridad')}</th>
+                <th className="py-3 px-4">{t('Tipo')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -277,7 +279,7 @@ export function JiraScreen() {
                   className="hover:bg-gray-50 cursor-pointer"
                 >
                   <td className="py-3 px-4 font-bold text-teal-800">{issue.id}</td>
-                  <td className="py-3 px-4 font-medium text-gray-800">{issue.title}</td>
+                  <td className="py-3 px-4 font-medium text-gray-800">{t(issue.title)}</td>
                   <td className="py-3 px-4 capitalize text-gray-600">{issue.status}</td>
                   <td className="py-3 px-4 capitalize text-gray-600">{issue.priority}</td>
                   <td className="py-3 px-4 capitalize text-gray-500">{issue.type}</td>
@@ -285,14 +287,14 @@ export function JiraScreen() {
               ))}
             </tbody>
           </table>
-          <Pagination page={pagedFilteredIssues.page} totalPages={pagedFilteredIssues.totalPages} total={pagedFilteredIssues.total} pageSize={pagedFilteredIssues.pageSize} onChange={pagedFilteredIssues.setPage} label="tarjetas" />
+          <Pagination page={pagedFilteredIssues.page} totalPages={pagedFilteredIssues.totalPages} total={pagedFilteredIssues.total} pageSize={pagedFilteredIssues.pageSize} onChange={pagedFilteredIssues.setPage} label={t('tarjetas')} />
         </div>
       )}
 
       {isCreateOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-xl">
-            <h2 className="text-base font-bold text-gray-900">Nueva Incidencia</h2>
+            <h2 className="text-base font-bold text-gray-900">{t('Nueva Incidencia')}</h2>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -308,16 +310,16 @@ export function JiraScreen() {
               className="space-y-3"
             >
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Título</label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">{t('Título')}</label>
                 <input
                   name="title"
                   required
-                  placeholder="Ej: Implementar endpoint de analíticas"
+                  placeholder={t('Ej: Implementar endpoint de analíticas')}
                   className="w-full text-xs p-2.5 rounded-lg border border-gray-300"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Descripción</label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">{t('Descripción')}</label>
                 <textarea
                   name="description"
                   rows={3}
@@ -326,22 +328,22 @@ export function JiraScreen() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Prioridad</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">{t('Prioridad')}</label>
                   <select name="priority" className="w-full text-xs p-2 rounded-lg border border-gray-300 bg-white">
-                    <option value="medium">Media</option>
-                    <option value="urgent">Urgente</option>
-                    <option value="high">Alta</option>
-                    <option value="low">Baja</option>
+                    <option value="medium">{t('Media')}</option>
+                    <option value="urgent">{t('Urgente')}</option>
+                    <option value="high">{t('Alta')}</option>
+                    <option value="low">{t('Baja')}</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Tipo</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">{t('Tipo')}</label>
                   <select name="type" className="w-full text-xs p-2 rounded-lg border border-gray-300 bg-white">
-                    <option value="task">Tarea</option>
-                    <option value="story">Historia</option>
-                    <option value="bug">Bug</option>
-                    <option value="epic">Épica</option>
-                    <option value="improvement">Mejora</option>
+                    <option value="task">{t('Tarea')}</option>
+                    <option value="story">{t('Historia')}</option>
+                    <option value="bug">{t('Bug')}</option>
+                    <option value="epic">{t('Épica')}</option>
+                    <option value="improvement">{t('Mejora')}</option>
                   </select>
                 </div>
               </div>
@@ -351,13 +353,13 @@ export function JiraScreen() {
                   onClick={() => setIsCreateOpen(false)}
                   className="px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-100 rounded-lg"
                 >
-                  Cancelar
+                  {t('Cancelar')}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-1.5 text-xs font-semibold bg-teal-700 text-white rounded-lg hover:bg-teal-800"
                 >
-                  Crear Incidencia
+                  {t('Crear Incidencia')}
                 </button>
               </div>
             </form>
@@ -377,22 +379,22 @@ export function JiraScreen() {
                 <Icon name="close" size={16} />
               </button>
             </div>
-            <h3 className="text-base font-bold text-gray-900">{selectedIssue.title}</h3>
+            <h3 className="text-base font-bold text-gray-900">{t(selectedIssue.title)}</h3>
             <p className="text-xs text-gray-600 whitespace-pre-wrap">
-              {selectedIssue.description || 'Sin descripción adicional.'}
+              {selectedIssue.description || t('Sin descripción adicional.')}
             </p>
             <div className="flex items-center justify-between pt-4 border-t text-xs">
               <button
                 onClick={() => handleDelete(selectedIssue.id)}
                 className="text-red-600 hover:text-red-800 font-semibold"
               >
-                Eliminar Incidencia
+                {t('Eliminar Incidencia')}
               </button>
               <button
                 onClick={() => setSelectedIssue(null)}
                 className="px-4 py-1.5 bg-gray-100 rounded-lg font-medium"
               >
-                Cerrar
+                {t('Cerrar')}
               </button>
             </div>
           </div>
@@ -407,6 +409,7 @@ export function JiraScreen() {
 }
 
 function TokenModal({ onClose }: { onClose: () => void }) {
+  useI18n();
   const [tokens, setTokens] = useState<JiraToken[]>([]);
   const [name, setName] = useState('');
   const [newToken, setNewToken] = useState<string | null>(null);
@@ -417,7 +420,7 @@ function TokenModal({ onClose }: { onClose: () => void }) {
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
-    const created = await jiraService.createToken(name.trim() || 'AI Jira Agent');
+    const created = await jiraService.createToken(name.trim() || t('AI Jira Agent'));
     setNewToken(created.token);
     setName('');
     jiraService.getTokens().then(setTokens);
@@ -432,7 +435,7 @@ function TokenModal({ onClose }: { onClose: () => void }) {
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-xl">
         <div className="flex items-center justify-between border-b pb-3">
-          <h3 className="text-base font-bold text-gray-900">Access Tokens para IA</h3>
+          <h3 className="text-base font-bold text-gray-900">{t('Access Tokens para IA')}</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-sm">
             <Icon name="close" size={16} />
           </button>
@@ -441,7 +444,7 @@ function TokenModal({ onClose }: { onClose: () => void }) {
         <form onSubmit={handleGenerate} className="flex gap-2">
           <input
             type="text"
-            placeholder="Nombre del agente (ej. Asistente de tareas)"
+            placeholder={t('Nombre del agente (ej. Asistente de tareas)')}
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="flex-1 text-xs px-3 py-2 rounded-lg border border-gray-300"
@@ -450,13 +453,13 @@ function TokenModal({ onClose }: { onClose: () => void }) {
             type="submit"
             className="px-3 py-2 bg-teal-800 text-white text-xs font-semibold rounded-lg hover:bg-teal-900 shrink-0"
           >
-            Generar Token
+            {t('Generar Token')}
           </button>
         </form>
 
         {newToken && (
           <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-lg space-y-1">
-            <p className="text-[11px] font-bold text-emerald-800">¡Token creado exitosamente!</p>
+            <p className="text-[11px] font-bold text-emerald-800">{t('¡Token creado exitosamente!')}</p>
             <code className="text-xs font-mono font-bold text-emerald-950 block select-all bg-white p-2 rounded border border-emerald-200">
               {newToken}
             </code>
@@ -464,21 +467,21 @@ function TokenModal({ onClose }: { onClose: () => void }) {
         )}
 
         <div className="space-y-2">
-          <p className="text-xs font-bold text-gray-700">Tokens activos en PostgreSQL:</p>
+          <p className="text-xs font-bold text-gray-700">{t('Tokens activos en PostgreSQL:')}</p>
           <div className="max-h-40 overflow-y-auto divide-y divide-gray-100 border rounded-lg">
-            {tokens.map((t) => (
-              <div key={t.id} className="p-2 flex items-center justify-between text-xs">
+            {tokens.map((tokenItem) => (
+              <div key={tokenItem.id} className="p-2 flex items-center justify-between text-xs">
                 <div>
-                  <span className="font-semibold text-gray-800">{t.name}</span>
+                  <span className="font-semibold text-gray-800">{tokenItem.name}</span>
                   <p className="text-[10px] text-gray-400 font-mono">
-                    {t.token.slice(0, 16)}...
+                    {tokenItem.token.slice(0, 16)}...
                   </p>
                 </div>
                 <button
-                  onClick={() => handleRevoke(t.id)}
+                  onClick={() => handleRevoke(tokenItem.id)}
                   className="text-red-500 hover:text-red-700 text-xs"
                 >
-                  Revocar
+                  {t('Revocar')}
                 </button>
               </div>
             ))}
@@ -487,7 +490,7 @@ function TokenModal({ onClose }: { onClose: () => void }) {
 
         <div className="flex justify-end pt-2">
           <button onClick={onClose} className="px-4 py-1.5 text-xs bg-gray-100 rounded-lg">
-            Cerrar
+            {t('Cerrar')}
           </button>
         </div>
       </div>
@@ -496,6 +499,7 @@ function TokenModal({ onClose }: { onClose: () => void }) {
 }
 
 function KeyIcon() {
+  useI18n();
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="7.5" cy="15.5" r="5.5" />
@@ -506,6 +510,7 @@ function KeyIcon() {
 }
 
 function PlusIcon() {
+  useI18n();
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <line x1="12" y1="5" x2="12" y2="19" />

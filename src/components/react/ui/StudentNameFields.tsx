@@ -1,3 +1,5 @@
+import { t, useI18n } from '../../../i18n';
+
 interface StudentNameFieldsProps {
   firstName: string;
   lastName: string;
@@ -11,9 +13,9 @@ const LETTERS = /^[\p{L}][\p{L}'’\- ]*$/u;
 export function studentNameError(firstName: string, lastName: string): string | null {
   const first = firstName.trim();
   const last = lastName.trim();
-  if (!first || !last) return 'Completá tu nombre y tu apellido.';
-  if (first.length < 2 || last.length < 2) return 'El nombre y el apellido tienen que tener al menos 2 letras.';
-  if (!LETTERS.test(first) || !LETTERS.test(last)) return 'Usá sólo letras en el nombre y el apellido.';
+  if (!first || !last) return t('Completá tu nombre y tu apellido.');
+  if (first.length < 2 || last.length < 2) return t('El nombre y el apellido tienen que tener al menos 2 letras.');
+  if (!LETTERS.test(first) || !LETTERS.test(last)) return t('Usá sólo letras en el nombre y el apellido.');
   return null;
 }
 
@@ -32,30 +34,31 @@ export function splitStudentName(full: string): { firstName: string; lastName: s
 }
 
 export function StudentNameFields({ firstName, lastName, onChange, inputClassName, autoFocus }: StudentNameFieldsProps) {
+  useI18n();
   return (
     <div className="grid grid-cols-2 gap-2">
       <label className="block text-left">
-        <span className="block text-[11px] font-semibold text-stone-500 dark:text-stone-400 mb-1">Nombre</span>
+        <span className="block text-[11px] font-semibold text-stone-500 dark:text-stone-400 mb-1">{t('Nombre')}</span>
         <input
           value={firstName}
           onChange={(e) => onChange({ firstName: e.target.value, lastName })}
           autoComplete="given-name"
           autoCapitalize="words"
           maxLength={40}
-          placeholder="Ej: Mateo"
+          placeholder={t('Ej: Mateo')}
           className={inputClassName}
           autoFocus={autoFocus}
         />
       </label>
       <label className="block text-left">
-        <span className="block text-[11px] font-semibold text-stone-500 dark:text-stone-400 mb-1">Apellido</span>
+        <span className="block text-[11px] font-semibold text-stone-500 dark:text-stone-400 mb-1">{t('Apellido')}</span>
         <input
           value={lastName}
           onChange={(e) => onChange({ firstName, lastName: e.target.value })}
           autoComplete="family-name"
           autoCapitalize="words"
           maxLength={40}
-          placeholder="Ej: González"
+          placeholder={t('Ej: González')}
           className={inputClassName}
         />
       </label>

@@ -9,8 +9,8 @@ const COURSE_PREFIX = 'AULA-';
 const ABSOLUTE_URL = /^[a-z][a-z0-9+.-]*:\/\//i;
 
 export function looksLikeUrl(text: string): boolean {
-  const t = text.trim();
-  return ABSOLUTE_URL.test(t) || t.startsWith('/');
+  const trimmed = text.trim();
+  return ABSOLUTE_URL.test(trimmed) || trimmed.startsWith('/');
 }
 
 function asUrl(text: string): URL | null {

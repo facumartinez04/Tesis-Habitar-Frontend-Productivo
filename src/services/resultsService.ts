@@ -7,9 +7,10 @@ import type {
   PerformanceStatus,
   UsageMetrics,
 } from '../types/result';
-import { apiFetch } from '../lib/apiClient';
+import { apiFetch, languageHeaders } from '../lib/apiClient';
 import { toLower } from '../lib/caseAdapters';
 import { sessionStore } from '../store/sessionStore';
+import { t } from '../i18n';
 
 const API_URL =
   import.meta.env.PUBLIC_API_URL ||
@@ -88,9 +89,9 @@ export async function getInstitutionSummary(institutionId: string): Promise<Inst
 export async function exportCourseReport(courseId: string): Promise<void> {
   const session = sessionStore.get();
   const response = await fetch(`${API_URL}/results/courses/${courseId}/export`, {
-    headers: session?.token ? { Authorization: `Bearer ${session.token}` } : {},
+    headers: { ...languageHeaders(), ...(session?.token ? { Authorization: `Bearer ${session.token}` } : {}) },
   });
-  if (!response.ok) throw new Error('No se pudo exportar el reporte');
+  if (!response.ok) throw new Error(t('No se pudo exportar el reporte'));
 
   const blob = await response.blob();
   const url = URL.createObjectURL(blob);

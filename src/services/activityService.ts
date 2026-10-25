@@ -4,6 +4,7 @@ import { ApiError } from '../lib/apiClient';
 import type { Question } from '../types/question';
 import { apiFetch, apiUrl, authHeaders } from '../lib/apiClient';
 import { toLower, toUpper } from '../lib/caseAdapters';
+import { isLocale, t, type Locale } from '../i18n';
 
 export interface CreateActivityInput {
   name: string;
@@ -22,6 +23,7 @@ export interface CreateActivityInput {
   readingHelp?: boolean;
   showFeedback?: boolean;
   templateId?: string | null;
+  language?: Locale;
 }
 
 export type ReadingMode = 'LECTURA_PRIMERO' | 'DOCENTE_HABILITA' | 'LIBRE';
@@ -45,6 +47,7 @@ interface BackendActivity {
   readingMode?: ReadingMode;
   questionsReleasedAt?: string | null;
   readingHelp?: boolean;
+  language?: string;
 }
 
 interface BackendQuestion {
@@ -65,6 +68,7 @@ interface GetActivityResponse {
   questionCount?: number;
   questionsReleased?: boolean;
   studentIdMode: 'LISTA' | 'NOMBRE';
+  institutionLanguage?: string;
 }
 
 export interface SubmitResponseResult {
@@ -124,6 +128,7 @@ export async function createActivity(input: CreateActivityInput): Promise<Activi
       readingMode: input.readingMode ?? 'LECTURA_PRIMERO',
       readingHelp: input.readingHelp ?? true,
       showFeedback: input.showFeedback ?? true,
+      ...(input.language ? { language: input.language } : {}),
       ...(input.templateId ? { templateId: input.templateId } : {}),
       questions: input.questions.map((question) => ({
         axis: toUpper(question.axis),
@@ -146,6 +151,7 @@ export type PublicActivityResult =
       activity: Activity;
       questions: Question[];
       studentIdMode: StudentIdMode;
+      language: Locale;
       readingMode: ReadingMode;
       questionsReleased: boolean;
       questionsReleasedAt: string | null;
@@ -163,6 +169,7 @@ export async function getActivityByCode(code: string): Promise<PublicActivityRes
       activity: toActivity(result.activity),
       questions: result.questions.map(toQuestion),
       studentIdMode: result.studentIdMode === 'NOMBRE' ? 'nombre' : 'lista',
+      language: isLocale(result.activity.language) ? result.activity.language : isLocale(result.institutionLanguage) ? result.institutionLanguage : 'es',
       readingMode: result.activity.readingMode ?? 'LECTURA_PRIMERO',
       questionsReleased: result.questionsReleased ?? true,
       questionsReleasedAt: result.activity.questionsReleasedAt ?? null,
@@ -315,7 +322,7 @@ export async function uploadActivityDocument(
     body: doc.file,
   });
   const data = await res.json().catch(() => null);
-  if (!res.ok) throw new ApiError(res.status, data?.error ?? (res.status === 413 ? 'El archivo supera los 15 MB' : 'No se pudo subir el documento'));
+  if (!res.ok) throw new ApiError(res.status, data?.error ?? (res.status === 413 ? t('El archivo supera los 15 MB') : t('No se pudo subir el documento')));
   return data as ActivityDocumentMeta;
 }
 
@@ -323,7 +330,7 @@ export async function fetchActivityDocument(code: string): Promise<Blob> {
   const res = await fetch(apiUrl(`/activities/${code}/document`));
   if (!res.ok) {
     const data = await res.json().catch(() => null);
-    throw new ApiError(res.status, data?.error ?? 'No se pudo abrir el documento');
+    throw new ApiError(res.status, data?.error ?? t('No se pudo abrir el documento'));
   }
   return res.blob();
 }
@@ -355,6 +362,7 @@ export interface ActivityTemplateSummary {
   name: string;
   educationLevel: string;
   axis: string;
+  language?: Locale;
   authorName: string;
   questionCount: number;
   wordCount: number;

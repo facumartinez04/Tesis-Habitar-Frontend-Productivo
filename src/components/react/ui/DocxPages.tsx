@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { t, useI18n } from '../../../i18n';
 
 interface DocxPagesProps {
   html: string;
@@ -12,6 +13,7 @@ const CONTENT_CLASS =
   'text-neutral-900 text-[13px] leading-relaxed break-words [&_p]:mb-3 [&_h1]:text-lg [&_h1]:font-bold [&_h1]:mb-3 [&_h2]:text-base [&_h2]:font-bold [&_h2]:mb-2 [&_h3]:font-bold [&_h3]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3 [&_img]:max-w-full [&_img]:h-auto [&_img]:my-2 [&_table]:w-full [&_table]:my-3 [&_table]:border-collapse [&_td]:border [&_td]:border-neutral-300 [&_td]:p-1.5 [&_th]:border [&_th]:border-neutral-300 [&_th]:p-1.5 [&_a]:text-emerald-800 [&_a]:underline';
 
 export function DocxPages({ html, maxWidth = 640 }: DocxPagesProps) {
+  useI18n();
   const wrapRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
@@ -80,7 +82,7 @@ export function DocxPages({ html, maxWidth = 640 }: DocxPagesProps) {
             <div className={CONTENT_CLASS} dangerouslySetInnerHTML={{ __html: page }} />
           </div>
           <figcaption className="text-[10.5px] text-stone-400 mt-1 tabular-nums">
-            Página {i + 1} de {pages.length}
+            {t('Página {value} de {pagesCount}', { value: i + 1, pagesCount: pages.length })}
           </figcaption>
         </figure>
       ))}

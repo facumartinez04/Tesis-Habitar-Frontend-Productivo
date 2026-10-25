@@ -4,6 +4,7 @@ import { useQrScanner } from '../../../hooks/useQrScanner';
 import { looksLikeUrl, parseScannedQr } from '../../../lib/qrCode';
 import { getCourseByQrCode } from '../../../services/courseService';
 import type { Course } from '../../../types/activity';
+import { t, useI18n } from '../../../i18n';
 
 const READER_ID = 'teacher-qr-reader-container';
 
@@ -18,6 +19,7 @@ interface QrScannerModalProps {
 }
 
 export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerModalProps) {
+  useI18n();
   const [manualCode, setManualCode] = useState('');
   const [verifying, setVerifying] = useState(false);
   const [activeTab, setActiveTab] = useState<'camara' | 'manual'>('camara');
@@ -26,7 +28,7 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
   async function resolveCourse(rawText: string) {
     const { code } = parseScannedQr(rawText);
     if (!code) {
-      setLinkError('Ese código QR no contiene un código de aula.');
+      setLinkError(t('Ese código QR no contiene un código de aula.'));
       resume();
       return;
     }
@@ -39,7 +41,7 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
       onClose();
     } catch (err) {
       setLinkError(
-        err instanceof Error && err.message ? err.message : `No encontramos un aula con el código ${code}.`
+        err instanceof Error && err.message ? err.message : t('No encontramos un aula con el código {code}.', { code })
       );
       resume();
     } finally {
@@ -84,18 +86,18 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
               <Icon name="camera" size={18} />
             </span>
             <div>
-              <h2 className="text-sm font-bold text-text-pri">Vincular Aula</h2>
+              <h2 className="text-sm font-bold text-text-pri">{t('Vincular Aula')}</h2>
             </div>
           </div>
-          <button onClick={onClose} aria-label="Cerrar" className="text-text-ter hover:text-text-pri p-2 rounded-lg transition-colors cursor-pointer"><Icon name="close" size={16} /></button>
+          <button onClick={onClose} aria-label={t('Cerrar')} className="text-text-ter hover:text-text-pri p-2 rounded-lg transition-colors cursor-pointer"><Icon name="close" size={16} /></button>
         </div>
 
         <div className="flex border-b border-gray-border dark:border-[#2D3342] text-xs font-semibold">
           <button onClick={() => setActiveTab('camara')} className={`${TAB_BASE} ${activeTab === 'camara' ? TAB_ACTIVE : TAB_IDLE}`}>
-            <Icon name="camera" size={14} /> Escanear
+            <Icon name="camera" size={14} />{' '}{t('Escanear')}
           </button>
           <button onClick={() => setActiveTab('manual')} className={`${TAB_BASE} ${activeTab === 'manual' ? TAB_ACTIVE : TAB_IDLE}`}>
-            <Icon name="code" size={14} /> Escribir PIN
+            <Icon name="code" size={14} />{' '}{t('Escribir PIN')}
           </button>
         </div>
 
@@ -108,14 +110,14 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
                 {status === 'starting' && !verifying && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-white/80 text-[11px] gap-2 z-10">
                     <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-                    <span>Encendiendo cámara…</span>
+                    <span>{t('Encendiendo cámara…')}</span>
                   </div>
                 )}
 
                 {verifying && (
                   <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center text-white space-y-3 z-20">
                     <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-xs font-semibold">Vinculando…</span>
+                    <span className="text-xs font-semibold">{t('Vinculando…')}</span>
                   </div>
                 )}
 
@@ -133,7 +135,7 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
               )}
 
               <p className="text-[11px] text-text-ter text-center max-w-[240px] leading-relaxed">
-                Apuntá la cámara al código QR impreso que se encuentra en la pared o puerta del aula.
+                {t('Apuntá la cámara al código QR impreso que se encuentra en la pared o puerta del aula.')}
               </p>
             </div>
           )}
@@ -169,7 +171,7 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
                 disabled={verifying || !manualCode.trim()}
                 className="w-full py-3.5 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 text-white rounded-xl text-sm font-bold transition-colors shadow-lg shadow-emerald-900/20 cursor-pointer"
               >
-                {verifying ? 'Vinculando...' : 'Vincular Aula →'}
+                {verifying ? t('Vinculando...') : t('Vincular Aula →')}
               </button>
             </form>
           )}

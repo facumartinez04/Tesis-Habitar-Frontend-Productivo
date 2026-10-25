@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { apiFetch } from '../lib/apiClient';
+import { t } from '../i18n';
 
 export interface Page<T> {
   items: T[];
@@ -56,7 +57,7 @@ export function useServerPage<T>(path: string | null, pageSize = 20) {
         setData(res);
         setError(null);
       })
-      .catch((err: Error) => id === requestId.current && setError(err.message || 'No se pudo cargar'))
+      .catch((err: Error) => id === requestId.current && setError(err.message || t('No se pudo cargar')))
       .finally(() => id === requestId.current && setLoading(false));
   }, [path, page, pageSize, q]);
 

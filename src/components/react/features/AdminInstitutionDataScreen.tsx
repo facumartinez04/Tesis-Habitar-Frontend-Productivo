@@ -13,6 +13,7 @@ import { getInstitutionBySlug } from '../../../services/institutionService';
 import { apiFetch } from '../../../lib/apiClient';
 import { confirmDestructive, showError } from '../../../lib/alerts';
 import type { Institution } from '../../../types/institution';
+import { t, useI18n, intlLocale } from '../../../i18n';
 
 type Tab = 'activities' | 'courses' | 'students' | 'deletions';
 
@@ -67,7 +68,7 @@ const STATUS: Record<string, { label: string; color: 'green' | 'amber' | 'gray' 
 const KIND_LABEL: Record<DeletionRow['kind'], string> = { ACTIVIDAD: 'Actividad', AULA: 'Aula', ALUMNO: 'Alumno' };
 
 function dateOf(iso: string): string {
-  return new Date(iso).toLocaleString('es-AR', {
+  return new Date(iso).toLocaleString(intlLocale(), {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -93,6 +94,7 @@ const th = 'text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b
 const td = 'px-2.5 py-2.5 border-b border-gray-border';
 
 export function AdminInstitutionDataScreen() {
+  useI18n();
   const slug = useQueryParam('slug', '');
   const { message, showToast } = useToast();
   const [institution, setInstitution] = useState<Institution | null>(null);
@@ -120,7 +122,7 @@ export function AdminInstitutionDataScreen() {
   }
 
   async function remove(kind: 'activities' | 'courses' | 'students', id: string, title: string, text: string, done: (r: Record<string, number>) => string) {
-    const ok = await confirmDestructive({ title, text: `${text} No se puede deshacer.`, confirmButtonText: 'Sí, borrar definitivamente' });
+    const ok = await confirmDestructive({ title, text: t('{text} No se puede deshacer.', { text }), confirmButtonText: t('Sí, borrar definitivamente') });
     if (!ok) return;
     setDeleting(id);
     try {
@@ -128,17 +130,17 @@ export function AdminInstitutionDataScreen() {
       showToast(done(result));
       list.reload();
     } catch (err) {
-      await showError('No se pudo borrar', err instanceof Error ? err.message : undefined);
+      await showError(t('No se pudo borrar'), err instanceof Error ? err.message : undefined);
     } finally {
       setDeleting(null);
     }
   }
 
   if (notFound || !slug) {
-    return <div className="text-sm text-text-sec">No se encontró la institución. Volvé al listado de instituciones.</div>;
+    return <div className="text-sm text-text-sec">{t('No se encontró la institución. Volvé al listado de instituciones.')}</div>;
   }
 
-  const current = TABS.find((t) => t.id === tab)!;
+  const current = TABS.find((tabItem) => tabItem.id === tab)!;
   const items = list.data?.items ?? [];
   const delBtn =
     'inline-flex items-center gap-1 text-[10.5px] font-semibold text-red-700 dark:text-red-300 border border-red-300 dark:border-red-500/40 rounded-[6px] px-2 py-1 hover:bg-red-50 dark:hover:bg-red-500/10 disabled:opacity-50 cursor-pointer';
@@ -147,28 +149,28 @@ export function AdminInstitutionDataScreen() {
     <div>
       <a href="/admin/instituciones" className="inline-flex items-center gap-1 text-[11.5px] text-text-sec hover:text-text-pri mb-2">
         <Icon name="arrowLeft" size={12} />
-        Instituciones
+        {t('Instituciones')}
       </a>
-      <div className="text-lg font-semibold text-text-pri mb-[3px] tracking-tight">Datos de {institution?.name ?? '…'}</div>
+      <div className="text-lg font-semibold text-text-pri mb-[3px] tracking-tight">{t('Datos de')}{' '}{institution?.name ?? '…'}</div>
       <div className="text-[12.5px] text-text-sec mb-[18px]">
-        Revisá y borrá actividades, aulas o alumnos de esta institución. Los borrados son definitivos y quedan registrados.
+        {t('Revisá y borrá actividades, aulas o alumnos de esta institución. Los borrados son definitivos y quedan registrados.')}
       </div>
 
       <div className="flex flex-wrap gap-1 mb-3 border-b border-gray-border" role="tablist">
-        {TABS.map((t) => (
+        {TABS.map((tabItem) => (
           <button
-            key={t.id}
+            key={tabItem.id}
             type="button"
             role="tab"
-            aria-selected={tab === t.id}
-            onClick={() => switchTab(t.id)}
+            aria-selected={tab === tabItem.id}
+            onClick={() => switchTab(tabItem.id)}
             className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border-b-2 -mb-px cursor-pointer ${
-              tab === t.id ? 'border-emerald-600 text-text-pri' : 'border-transparent text-text-sec hover:text-text-pri'
+              tab === tabItem.id ? 'border-emerald-600 text-text-pri' : 'border-transparent text-text-sec hover:text-text-pri'
             }`}
           >
-            <Icon name={t.icon} size={13} />
-            {t.label}
-            {tab === t.id && list.data && <span className="text-[10.5px] text-text-ter tabular-nums">{list.data.total}</span>}
+            <Icon name={tabItem.icon} size={13} />
+            {t(tabItem.label)}
+            {tab === tabItem.id && list.data && <span className="text-[10.5px] text-text-ter tabular-nums">{list.data.total}</span>}
           </button>
         ))}
       </div>
@@ -178,7 +180,7 @@ export function AdminInstitutionDataScreen() {
         <input
           value={list.search}
           onChange={(e) => list.setSearch(e.target.value)}
-          placeholder={current.search}
+          placeholder={t(current.search)}
           className="w-full pl-8 pr-2.5 py-[7px] border border-gray-border rounded-[6px] text-[12.5px]"
         />
       </div>
@@ -194,11 +196,11 @@ export function AdminInstitutionDataScreen() {
               <>
                 <thead>
                   <tr>
-                    <th className={th}>Actividad</th>
-                    <th className={th}>Aula</th>
-                    <th className={th}>Estado</th>
-                    <th className={th}>Respuestas</th>
-                    <th className={th}>Creada</th>
+                    <th className={th}>{t('Actividad')}</th>
+                    <th className={th}>{t('Aula')}</th>
+                    <th className={th}>{t('Estado')}</th>
+                    <th className={th}>{t('Respuestas')}</th>
+                    <th className={th}>{t('Creada')}</th>
                     <th className={th} />
                   </tr>
                 </thead>
@@ -211,7 +213,7 @@ export function AdminInstitutionDataScreen() {
                       </td>
                       <td className={`${td} text-text-sec`}>{a.courseName}</td>
                       <td className={td}>
-                        <Badge color={STATUS[a.status]?.color ?? 'gray'}>{STATUS[a.status]?.label ?? a.status}</Badge>
+                        <Badge color={STATUS[a.status]?.color ?? 'gray'}>{t(STATUS[a.status]?.label) ?? a.status}</Badge>
                       </td>
                       <td className={`${td} tabular-nums`}>{a.responses}</td>
                       <td className={`${td} text-text-sec text-[11.5px] tabular-nums`}>{dateOf(a.createdAt)}</td>
@@ -226,12 +228,12 @@ export function AdminInstitutionDataScreen() {
                               a.id,
                               `¿Borrar «${a.name}»?`,
                               `Se borran la actividad, sus preguntas y ${plural(a.responses, 'respuesta', 'respuestas')} con sus resultados.`,
-                              (r) => `Actividad borrada (${plural(r.responses ?? 0, 'respuesta', 'respuestas')})`,
+                              (r) => t('Actividad borrada ({plural})', { plural: plural(r.responses ?? 0, 'respuesta', 'respuestas') }),
                             )
                           }
                         >
                           <Icon name="trash" size={11} />
-                          Borrar
+                          {t('Borrar')}
                         </button>
                       </td>
                     </tr>
@@ -243,11 +245,11 @@ export function AdminInstitutionDataScreen() {
               <>
                 <thead>
                   <tr>
-                    <th className={th}>Aula</th>
-                    <th className={th}>Docente</th>
-                    <th className={th}>Alumnos</th>
-                    <th className={th}>Actividades</th>
-                    <th className={th}>Respuestas</th>
+                    <th className={th}>{t('Aula')}</th>
+                    <th className={th}>{t('Docente')}</th>
+                    <th className={th}>{t('Alumnos')}</th>
+                    <th className={th}>{t('Actividades')}</th>
+                    <th className={th}>{t('Respuestas')}</th>
                     <th className={th} />
                   </tr>
                 </thead>
@@ -273,12 +275,12 @@ export function AdminInstitutionDataScreen() {
                               c.id,
                               `¿Borrar el aula «${c.name}»?`,
                               `Se borran ${plural(c.activities, 'actividad', 'actividades')}, ${plural(c.students, 'alumno', 'alumnos')} y ${plural(c.responses, 'respuesta', 'respuestas')}, además de sus alertas y celulares vinculados.`,
-                              (r) => `Aula borrada (${plural(r.activities ?? 0, 'actividad', 'actividades')}, ${plural(r.students ?? 0, 'alumno', 'alumnos')})`,
+                              (r) => t('Aula borrada ({plural}, {plural2})', { plural: plural(r.activities ?? 0, 'actividad', 'actividades'), plural2: plural(r.students ?? 0, 'alumno', 'alumnos') }),
                             )
                           }
                         >
                           <Icon name="trash" size={11} />
-                          Borrar
+                          {t('Borrar')}
                         </button>
                       </td>
                     </tr>
@@ -290,10 +292,10 @@ export function AdminInstitutionDataScreen() {
               <>
                 <thead>
                   <tr>
-                    <th className={th}>Alumno</th>
-                    <th className={th}>Aula</th>
-                    <th className={th}>Resultados</th>
-                    <th className={th}>Alta</th>
+                    <th className={th}>{t('Alumno')}</th>
+                    <th className={th}>{t('Aula')}</th>
+                    <th className={th}>{t('Resultados')}</th>
+                    <th className={th}>{t('Alta')}</th>
                     <th className={th} />
                   </tr>
                 </thead>
@@ -315,12 +317,12 @@ export function AdminInstitutionDataScreen() {
                               s.id,
                               `¿Borrar a ${s.name} de ${s.courseName}?`,
                               `Se borran sus respuestas y ${plural(s.results, 'resultado', 'resultados')}.`,
-                              () => 'Alumno borrado',
+                              () => t('Alumno borrado'),
                             )
                           }
                         >
                           <Icon name="trash" size={11} />
-                          Borrar
+                          {t('Borrar')}
                         </button>
                       </td>
                     </tr>
@@ -332,11 +334,11 @@ export function AdminInstitutionDataScreen() {
               <>
                 <thead>
                   <tr>
-                    <th className={th}>Fecha</th>
-                    <th className={th}>Qué</th>
-                    <th className={th}>Nombre</th>
-                    <th className={th}>Arrastró</th>
-                    <th className={th}>Quién</th>
+                    <th className={th}>{t('Fecha')}</th>
+                    <th className={th}>{t('Qué')}</th>
+                    <th className={th}>{t('Nombre')}</th>
+                    <th className={th}>{t('Arrastró')}</th>
+                    <th className={th}>{t('Quién')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -344,7 +346,7 @@ export function AdminInstitutionDataScreen() {
                     <tr key={d.id}>
                       <td className={`${td} text-text-sec text-[11.5px] tabular-nums whitespace-nowrap`}>{dateOf(d.createdAt)}</td>
                       <td className={td}>
-                        <Badge color="gray">{KIND_LABEL[d.kind]}</Badge>
+                        <Badge color="gray">{t(KIND_LABEL[d.kind])}</Badge>
                       </td>
                       <td className={`${td} font-medium`}>{d.targetName}</td>
                       <td className={`${td} text-text-sec text-[11.5px]`}>{detailsText(d)}</td>
@@ -358,7 +360,7 @@ export function AdminInstitutionDataScreen() {
               <tbody>
                 <tr>
                   <td colSpan={6} className="px-2.5 py-6 text-center text-text-ter text-[12px]">
-                    {list.search ? 'No hay resultados para la búsqueda.' : tab === 'deletions' ? 'Todavía no se borró nada.' : 'No hay datos.'}
+                    {t(list.search) ? t('No hay resultados para la búsqueda.') : tab === 'deletions' ? t('Todavía no se borró nada.') : t('No hay datos.')}
                   </td>
                 </tr>
               </tbody>
@@ -370,7 +372,7 @@ export function AdminInstitutionDataScreen() {
             total={list.data.total}
             pageSize={list.data.pageSize}
             onChange={list.setPage}
-            label={current.label.toLowerCase()}
+            label={t(current.label).toLowerCase()}
           />
         </div>
       )}

@@ -1,13 +1,17 @@
+import { t, useI18n } from '../../../i18n';
+
 interface SkeletonProps {
   className?: string;
   style?: React.CSSProperties;
 }
 
 export function Skeleton({ className = '', style }: SkeletonProps) {
+  useI18n();
   return <div className={`skeleton-shimmer rounded-md ${className}`} style={style} />;
 }
 
 export function SkeletonText({ lines = 3, className = '' }: { lines?: number; className?: string }) {
+  useI18n();
   return (
     <div className={`space-y-2 ${className}`}>
       {Array.from({ length: lines }).map((_, i) => {
@@ -19,6 +23,7 @@ export function SkeletonText({ lines = 3, className = '' }: { lines?: number; cl
 }
 
 export function SkeletonMetricCard() {
+  useI18n();
   return (
     <div className="bg-white border border-gray-border rounded-xl p-4 space-y-3">
       <div className="flex items-center justify-between">
@@ -32,6 +37,7 @@ export function SkeletonMetricCard() {
 }
 
 export function SkeletonMetricCards({ count = 3 }: { count?: number }) {
+  useI18n();
   return (
     <div className={`grid grid-cols-1 sm:grid-cols-${count} gap-3 mb-6`}>
       {Array.from({ length: count }).map((_, i) => (
@@ -42,6 +48,7 @@ export function SkeletonMetricCards({ count = 3 }: { count?: number }) {
 }
 
 export function SkeletonTable({ rows = 5, cols = 4 }: { rows?: number; cols?: number }) {
+  useI18n();
   return (
     <div className="bg-white border border-gray-border rounded-xl overflow-hidden shadow-xs">
       <div className="px-4 py-3 border-b border-gray-border bg-surface flex items-center justify-between">
@@ -67,6 +74,7 @@ export function SkeletonTable({ rows = 5, cols = 4 }: { rows?: number; cols?: nu
 }
 
 export function SkeletonCard({ className = '' }: { className?: string }) {
+  useI18n();
   return (
     <div className={`bg-white border border-gray-border rounded-xl p-5 space-y-4 ${className}`}>
       <div className="flex items-center justify-between">
@@ -89,6 +97,7 @@ export function SkeletonCard({ className = '' }: { className?: string }) {
 }
 
 export function SkeletonKanban() {
+  useI18n();
   return (
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -103,7 +112,7 @@ export function SkeletonKanban() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {['Por Hacer', 'En Progreso', 'En Revisión', 'Completada'].map((col) => (
+        {[t('Por Hacer'), t('En Progreso'), t('En Revisión'), t('Completada')].map((col) => (
           <div key={col} className="bg-surface border border-gray-border rounded-xl p-3 space-y-3">
             <div className="flex items-center justify-between pb-2 border-b border-gray-200">
               <Skeleton className="h-4 w-24" />

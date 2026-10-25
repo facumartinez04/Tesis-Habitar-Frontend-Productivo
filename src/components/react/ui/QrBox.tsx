@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
+import { t, useI18n } from '../../../i18n';
 
 interface QrBoxProps {
   code: string;
@@ -7,6 +8,7 @@ interface QrBoxProps {
 }
 
 export function QrBox({ code, size = 'sm' }: QrBoxProps) {
+  useI18n();
   const isLg = size === 'lg';
   const boxWidth = isLg ? 240 : 160;
   const qrSize = isLg ? 190 : 120;
@@ -31,7 +33,7 @@ export function QrBox({ code, size = 'sm' }: QrBoxProps) {
       {dataUrl ? (
         <img
           src={dataUrl}
-          alt={`Código QR para acceder a la actividad ${code}`}
+          alt={t('Código QR para acceder a la actividad {code}', { code })}
           style={{ width: qrSize, height: qrSize }}
           className="rounded"
         />

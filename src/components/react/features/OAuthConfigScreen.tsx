@@ -13,8 +13,10 @@ import { activateOAuthAccess, deactivateOAuthAccess, getOAuthAccessStatus } from
 import { confirmAction, showError } from '../../../lib/alerts';
 import type { Institution } from '../../../types/institution';
 import type { OAuthAccessStatus } from '../../../types/oauth';
+import { t, useI18n } from '../../../i18n';
 
 export function OAuthConfigScreen() {
+  useI18n();
   const institutionSlug = useQueryParam('slug', '');
   const { message, showToast } = useToast();
   const [institution, setInstitution] = useState<Institution | null>(null);
@@ -39,10 +41,10 @@ export function OAuthConfigScreen() {
     if (!institution || !status) return;
     const activating = status.institutionStatus !== 'activo';
     const confirmed = await confirmAction({
-      title: activating ? '¿Activar el acceso?' : '¿Desactivar el acceso?',
+      title: activating ? t('¿Activar el acceso?') : t('¿Desactivar el acceso?'),
       text: activating
-        ? `Los emails con dominio ${institution.domain} van a poder iniciar sesión de inmediato.`
-        : `Los usuarios con dominio ${institution.domain} no van a poder iniciar sesión hasta que lo reactives.`,
+        ? t('Los emails con dominio {domain} van a poder iniciar sesión de inmediato.', { domain: institution.domain })
+        : t('Los usuarios con dominio {domain} no van a poder iniciar sesión hasta que lo reactives.', { domain: institution.domain }),
     });
     if (!confirmed) return;
 
@@ -50,19 +52,19 @@ export function OAuthConfigScreen() {
     try {
       const updated = activating ? await activateOAuthAccess(institution.id) : await deactivateOAuthAccess(institution.id);
       setStatus(updated);
-      showToast(activating ? 'Acceso activado' : 'Acceso desactivado');
+      showToast(activating ? t('Acceso activado') : t('Acceso desactivado'));
     } catch (err) {
-      await showError('No se pudo actualizar el estado', err instanceof Error ? err.message : undefined);
+      await showError(t('No se pudo actualizar el estado'), err instanceof Error ? err.message : undefined);
     } finally {
       setLoading(false);
     }
   }
 
   if (!institutionSlug) {
-    return <div className="text-xs text-text-ter">Elegí una institución desde el listado.</div>;
+    return <div className="text-xs text-text-ter">{t('Elegí una institución desde el listado.')}</div>;
   }
   if (notFound) {
-    return <div className="text-xs text-red-800">No se encontró la institución "{institutionSlug}".</div>;
+    return <div className="text-xs text-red-800">{t('No se encontró la institución "{institutionSlug}".', { institutionSlug })}</div>;
   }
   if (!status || !institution) {
     return (
@@ -83,11 +85,11 @@ export function OAuthConfigScreen() {
     <div>
       <Toast message={message} />
       <div className="text-lg font-semibold text-text-pri mb-[3px] tracking-tight">
-        Acceso — {institution.name}
+        {t('Acceso — {name}', { name: institution.name })}
       </div>
       <div className="text-[12.5px] text-text-sec mb-[18px]">
-        Habitar usa una única aplicación OAuth por proveedor para toda la plataforma: cualquier cuenta con dominio{' '}
-        <span className="font-mono">{institution.domain}</span> puede iniciar sesión mientras la institución esté activa.
+        {t('Habitar usa una única aplicación OAuth por proveedor para toda la plataforma: cualquier cuenta con dominio')}{' '}
+        <span className="font-mono">{institution.domain}</span>{' '}{t('puede iniciar sesión mientras la institución esté activa.')}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-2.5 mb-[18px]">
@@ -95,9 +97,9 @@ export function OAuthConfigScreen() {
           <div className="flex items-center gap-2">
             <GoogleIcon size={22} />
             <div>
-              <div className="text-[13px] font-medium">Google Workspace</div>
+              <div className="text-[13px] font-medium">{t('Google Workspace')}</div>
               <Badge color={status.googleConfigured ? 'green' : 'gray'}>
-                {status.googleConfigured ? 'Configurado en el servidor' : 'Sin credenciales configuradas'}
+                {status.googleConfigured ? t('Configurado en el servidor') : t('Sin credenciales configuradas')}
               </Badge>
             </div>
           </div>
@@ -106,9 +108,9 @@ export function OAuthConfigScreen() {
           <div className="flex items-center gap-2">
             <MicrosoftIcon size={22} />
             <div>
-              <div className="text-[13px] font-medium">Microsoft 365</div>
+              <div className="text-[13px] font-medium">{t('Microsoft 365')}</div>
               <Badge color={status.microsoftConfigured ? 'green' : 'gray'}>
-                {status.microsoftConfigured ? 'Configurado en el servidor' : 'Sin credenciales configuradas'}
+                {status.microsoftConfigured ? t('Configurado en el servidor') : t('Sin credenciales configuradas')}
               </Badge>
             </div>
           </div>
@@ -118,20 +120,19 @@ export function OAuthConfigScreen() {
       <Card>
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <div className="text-[12.5px] font-medium mb-1">Estado de la institución</div>
+            <div className="text-[12.5px] font-medium mb-1">{t('Estado de la institución')}</div>
             <div className="text-[11.5px] text-text-sec">
-              Coordinador/a: <span className="font-medium">{status.coordinatorEmail}</span>
+              {t('Coordinador/a:')}{' '}<span className="font-medium">{status.coordinatorEmail}</span>
             </div>
           </div>
-          <Badge color={isActive ? 'green' : 'amber'}>{isActive ? 'Activa — login habilitado' : 'Piloto no confirmado'}</Badge>
+          <Badge color={isActive ? 'green' : 'amber'}>{isActive ? t('Activa — login habilitado') : t('Piloto no confirmado')}</Badge>
         </div>
       </Card>
 
       {!status.googleConfigured && !status.microsoftConfigured && (
         <div className="bg-red-100 text-red-800 rounded-[6px] px-3.5 py-2.5 mt-4 text-[12.5px] flex items-center gap-2">
           <Icon name="alertTriangle" size={15} />
-          El servidor no tiene configurado ningún proveedor OAuth (variables de entorno GOOGLE_CLIENT_ID/SECRET o
-          MICROSOFT_CLIENT_ID/SECRET). Nadie va a poder iniciar sesión hasta configurarlas.
+          {t('El servidor no tiene configurado ningún proveedor OAuth (variables de entorno GOOGLE_CLIENT_ID/SECRET o MICROSOFT_CLIENT_ID/SECRET). Nadie va a poder iniciar sesión hasta configurarlas.')}
         </div>
       )}
 
@@ -143,7 +144,7 @@ export function OAuthConfigScreen() {
             isActive ? 'bg-white border border-gray-border text-red-800' : 'bg-green-dark text-white'
           }`}
         >
-          {loading ? 'Guardando…' : isActive ? 'Desactivar acceso' : 'Activar acceso'}
+          {loading ? t('Guardando…') : isActive ? t('Desactivar acceso') : t('Activar acceso')}
         </button>
       </div>
     </div>

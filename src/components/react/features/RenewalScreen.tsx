@@ -26,9 +26,10 @@ import type {
   SubscriptionPlan,
   UpdatePlanInput,
 } from '../../../types/subscription';
+import { t, useI18n, intlLocale } from '../../../i18n';
 
 function formatArs(value: number) {
-  return new Intl.NumberFormat('es-AR').format(value);
+  return new Intl.NumberFormat(intlLocale()).format(value);
 }
 
 const DEFAULT_FEATURE_FLAGS: PlanFeatures = {
@@ -43,6 +44,7 @@ const DEFAULT_FEATURE_FLAGS: PlanFeatures = {
 };
 
 export function RenewalScreen() {
+  useI18n();
   const { message, showToast } = useToast();
   const [activeTab, setActiveTab] = useState<'instituciones' | 'planes' | 'comparativa'>('instituciones');
 
@@ -104,7 +106,7 @@ export function RenewalScreen() {
       setSubscriptions((prev) => prev.map((s) => (s.id === id ? updated : s)));
     }
     setBusyId(null);
-    showToast('Renovación confirmada exitosamente');
+    showToast(t('Renovación confirmada exitosamente'));
   }
 
   function handleOpenCustomize(sub: Subscription) {
@@ -144,9 +146,9 @@ export function RenewalScreen() {
     if (updated) {
       setSubscriptions((prev) => prev.map((s) => (s.id === customizingSub.id ? updated : s)));
       setCustomizingSub(null);
-      showToast('Personalización guardada con éxito');
+      showToast(t('Personalización guardada con éxito'));
     } else {
-      alert('Error guardando la personalización');
+      alert(t('Error guardando la personalización'));
     }
   }
 
@@ -196,16 +198,16 @@ export function RenewalScreen() {
       if (editingPlan) {
         const updated = await updatePlan(editingPlan.id, planForm as UpdatePlanInput);
         setPlans((prev) => prev.map((p) => (p.id === editingPlan.id ? updated : p)));
-        showToast(`Plan "${updated.name}" actualizado`);
+        showToast(t('Plan "{name}" actualizado', { name: updated.name }));
       } else {
         const created = await createPlan(planForm);
         setPlans((prev) => [...prev, created]);
-        showToast(`Plan "${created.name}" creado con éxito`);
+        showToast(t('Plan "{name}" creado con éxito', { name: created.name }));
       }
       setIsPlanModalOpen(false);
       await loadData();
     } catch (err: any) {
-      alert('Error guardando el plan: ' + err.message);
+      alert(t('Error guardando el plan: ') + err.message);
     } finally {
       setIsSavingPlan(false);
     }
@@ -213,16 +215,16 @@ export function RenewalScreen() {
 
   async function handleDeletePlan(plan: SubscriptionPlan) {
     const ok = window.confirm(
-      `¿Deseás eliminar o desactivar el plan "${plan.name}"? Si está en uso por alguna institución, pasará a inactivo.`
+      t('¿Deseás eliminar o desactivar el plan "{name}"? Si está en uso por alguna institución, pasará a inactivo.', { name: plan.name })
     );
     if (!ok) return;
 
     try {
       await deletePlan(plan.id);
-      showToast(`Plan "${plan.name}" procesado`);
+      showToast(t('Plan "{name}" procesado', { name: plan.name }));
       await loadData();
     } catch (err: any) {
-      alert('Error: ' + err.message);
+      alert(t('Error: ') + err.message);
     }
   }
 
@@ -251,7 +253,7 @@ export function RenewalScreen() {
   }
 
   if (loading) {
-    return <HabitarLoader size="lg" message="Cargando planes de suscripción e instituciones..." />;
+    return <HabitarLoader size="lg" message={t('Cargando planes de suscripción e instituciones...')} />;
   }
 
   return (
@@ -262,10 +264,10 @@ export function RenewalScreen() {
         <div>
           <div className="text-lg font-semibold text-text-pri tracking-tight flex items-center gap-2">
             <Icon name="refresh" size={18} className="text-emerald-700" />
-            Gestión de Suscripciones y Planes Comerciales
+            {t('Gestión de Suscripciones y Planes Comerciales')}
           </div>
           <div className="text-[12.5px] text-text-sec mt-0.5">
-            Administrá contratos, creá planes de suscripción con sus características y personalizá cupos exclusivos por institución.
+            {t('Administrá contratos, creá planes de suscripción con sus características y personalizá cupos exclusivos por institución.')}
           </div>
         </div>
         {activeTab === 'planes' && (
@@ -274,7 +276,7 @@ export function RenewalScreen() {
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors self-start sm:self-auto"
           >
             <Icon name="plus" size={13} />
-            Crear Nuevo Plan
+            {t('Crear Nuevo Plan')}
           </button>
         )}
       </div>
@@ -289,7 +291,7 @@ export function RenewalScreen() {
           }`}
         >
           <Icon name="school" size={13} />
-          Suscripciones por Institución
+          {t('Suscripciones por Institución')}
           <span className="ml-1 bg-gray-100 text-text-sec px-1.5 py-0.5 rounded text-[10px]">
             {subscriptions.length}
           </span>
@@ -304,7 +306,7 @@ export function RenewalScreen() {
           }`}
         >
           <Icon name="tag" size={13} />
-          Planes de Suscripción
+          {t('Planes de Suscripción')}
           <span className="ml-1 bg-gray-100 text-text-sec px-1.5 py-0.5 rounded text-[10px]">
             {plans.length}
           </span>
@@ -319,7 +321,7 @@ export function RenewalScreen() {
           }`}
         >
           <Icon name="chart" size={13} />
-          Matriz Comparativa de Capacidades
+          {t('Matriz Comparativa de Capacidades')}
         </button>
       </div>
 
@@ -328,7 +330,7 @@ export function RenewalScreen() {
           <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 text-xs text-emerald-900 flex items-start gap-3">
             <Icon name="shield" size={16} className="text-emerald-700 shrink-0 mt-0.5" />
             <div>
-              <strong>Personalización por Negocio:</strong> Cada colegio puede tener un plan base (ej: Estándar o Premium) y límites o módulos personalizados exclusivamente para su convenio (ej: más docentes, alumnos, acceso a API o precio acordado).
+              <strong>{t('Personalización por Negocio:')}</strong>{' '}{t('Cada colegio puede tener un plan base (ej: Estándar o Premium) y límites o módulos personalizados exclusivamente para su convenio (ej: más docentes, alumnos, acceso a API o precio acordado).')}
             </div>
           </div>
 
@@ -356,71 +358,71 @@ export function RenewalScreen() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-base font-bold text-text-pri">{sub.institutionName}</span>
                         <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-semibold text-xs">
-                          {basePlan?.name || sub.planName || 'Plan Personalizado'}
+                          {basePlan?.name || sub.planName || t('Plan Personalizado')}
                         </span>
                         {hasCustomOverrides && (
                           <span className="px-2 py-0.5 bg-amber-100 text-amber-900 rounded font-semibold text-[10px] flex items-center gap-1">
                             <Icon name="lock" size={10} />
-                            Personalizado a medida
+                            {t('Personalizado a medida')}
                           </span>
                         )}
                         {sub.managementStatus === 'confirmado' ? (
                           <Badge color="green">
                             <span className="flex items-center gap-1">
                               <Icon name="check" size={11} />
-                              Confirmado
+                              {t('Confirmado')}
                             </span>
                           </Badge>
                         ) : isUrgent ? (
                           <Badge color="amber">
                             <span className="flex items-center gap-1">
                               <Icon name="clock" size={11} />
-                              Vence en {sub.daysUntilExpiration} días
+                              {t('Vence en {daysUntilExpiration} días', { daysUntilExpiration: sub.daysUntilExpiration })}
                             </span>
                           </Badge>
                         ) : (
-                          <Badge color="gray">En {sub.daysUntilExpiration} días</Badge>
+                          <Badge color="gray">{t('En {daysUntilExpiration} días', { daysUntilExpiration: sub.daysUntilExpiration })}</Badge>
                         )}
                       </div>
 
                       <div className="text-xs text-text-sec flex items-center gap-2 flex-wrap">
                         <span>
-                          Precio: <strong>ARS {formatArs(sub.monthlyPriceArs)}</strong>/mes ({sub.billingCycle === 'ANNUAL' ? 'Facturación Anual' : 'Facturación Mensual'})
+                          {t('Precio:')}{' '}<strong>ARS {formatArs(sub.monthlyPriceArs)}</strong>/mes ({sub.billingCycle === 'ANNUAL' ? t('Facturación Anual') : t('Facturación Mensual')})
                         </span>
                         <span>•</span>
                         <span>
-                          Vencimiento: <strong>{sub.expiresAt}</strong> ({sub.durationMonths} meses)
+                          {t('Vencimiento:')}{' '}<strong>{sub.expiresAt}</strong>{' '}{t('({durationMonths} meses)', { durationMonths: sub.durationMonths })}
                         </span>
                       </div>
 
                       <div className="pt-2 flex flex-wrap items-center gap-3 text-[11px] text-text-sec font-mono">
                         <span className="bg-gray-50 border border-gray-border px-2 py-1 rounded">
-                          <Icon name="users" size={12} className="inline-block align-[-2px] mr-1" />Docentes: <strong>{sub.effectiveMaxUsers ?? 50}</strong>
+                          <Icon name="users" size={12} className="inline-block align-[-2px] mr-1" />{t('Docentes:')}{' '}<strong>{sub.effectiveMaxUsers ?? 50}</strong>
                         </span>
                         <span className="bg-gray-50 border border-gray-border px-2 py-1 rounded">
-                          <Icon name="school" size={12} className="inline-block align-[-2px] mr-1" />Alumnos: <strong>{sub.effectiveMaxStudents ?? 500}</strong>
+                          <Icon name="school" size={12} className="inline-block align-[-2px] mr-1" />{t('Alumnos:')}{' '}<strong>{sub.effectiveMaxStudents ?? 500}</strong>
                         </span>
                         <span className="bg-gray-50 border border-gray-border px-2 py-1 rounded">
-                          <Icon name="book" size={12} className="inline-block align-[-2px] mr-1" />Cursos: <strong>{sub.effectiveMaxCourses ?? 20}</strong>
+                          <Icon name="book" size={12} className="inline-block align-[-2px] mr-1" />{t('Cursos:')}{' '}<strong>{sub.effectiveMaxCourses ?? 20}</strong>
                         </span>
                         <span className="bg-gray-50 border border-gray-border px-2 py-1 rounded">
-                          <Icon name="database" size={12} className="inline-block align-[-2px] mr-1" />Almacenamiento: <strong>{sub.effectiveStorageGb ?? 10} GB</strong>
+                          <Icon name="database" size={12} className="inline-block align-[-2px] mr-1" />{t('Almacenamiento:')}{' '}<strong>{sub.effectiveStorageGb ?? 10} GB</strong>
                         </span>
                         {sub.effectiveFeatures?.hasAiAnalytics && (
                           <span className="bg-purple-50 text-purple-700 border border-purple-200 px-2 py-1 rounded font-sans font-medium">
-                            <Icon name="sparkles" size={12} className="inline-block align-[-2px] mr-1" />IA activa
+                            <Icon name="sparkles" size={12} className="inline-block align-[-2px] mr-1" />{t('IA activa')}
                           </span>
                         )}
                         {sub.effectiveFeatures?.hasApiAccess && (
                           <span className="bg-blue-50 text-blue-700 border border-blue-200 px-2 py-1 rounded font-sans font-medium">
-                            <Icon name="plug" size={12} className="inline-block align-[-2px] mr-1" />API conectada
+                            <Icon name="plug" size={12} className="inline-block align-[-2px] mr-1" />{t('API conectada')}
                           </span>
                         )}
                       </div>
 
                       {sub.customNotes && (
                         <div className="text-[11px] text-text-ter italic mt-1">
-                          Nota de acuerdo: {sub.customNotes}
+                          {t('Nota de acuerdo: {customNotes}', { customNotes: sub.customNotes })}
                         </div>
                       )}
                     </div>
@@ -431,7 +433,7 @@ export function RenewalScreen() {
                         className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-border hover:bg-gray-50 rounded-lg text-xs font-semibold text-text-pri shadow-2xs transition-colors"
                       >
                         <Icon name="sliders" size={13} />
-                        Personalizar Negocio
+                        {t('Personalizar Negocio')}
                       </button>
 
                       {sub.managementStatus !== 'confirmado' && (
@@ -440,7 +442,7 @@ export function RenewalScreen() {
                           disabled={busyId === sub.id}
                           className="flex items-center gap-1 px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-xs font-semibold shadow-xs disabled:opacity-50 transition-colors"
                         >
-                          {busyId === sub.id ? 'Renovando…' : 'Renovar'}
+                          {busyId === sub.id ? t('Renovando…') : t('Renovar')}
                         </button>
                       )}
                     </div>
@@ -449,7 +451,7 @@ export function RenewalScreen() {
               );
             })}
           </div>
-            <Pagination page={pagedSubscriptions.page} totalPages={pagedSubscriptions.totalPages} total={pagedSubscriptions.total} pageSize={pagedSubscriptions.pageSize} onChange={pagedSubscriptions.setPage} label="suscripciones" />
+            <Pagination page={pagedSubscriptions.page} totalPages={pagedSubscriptions.totalPages} total={pagedSubscriptions.total} pageSize={pagedSubscriptions.pageSize} onChange={pagedSubscriptions.setPage} label={t('suscripciones')} />
         </div>
       )}
 
@@ -468,13 +470,13 @@ export function RenewalScreen() {
                 <div>
                   {plan.badge && (
                     <span className="absolute top-4 right-4 bg-emerald-100 text-emerald-900 font-bold text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider">
-                      {plan.badge}
+                      {t(plan.badge)}
                     </span>
                   )}
 
-                  <h3 className="text-base font-bold text-text-pri">{plan.name}</h3>
+                  <h3 className="text-base font-bold text-text-pri">{t(plan.name)}</h3>
                   <p className="text-xs text-text-sec mt-1 line-clamp-2 min-h-[32px]">
-                    {plan.description || 'Plan comercial estándar de la plataforma.'}
+                    {t(plan.description) || t('Plan comercial estándar de la plataforma.')}
                   </p>
 
                   <div className="mt-4 pb-4 border-b border-gray-100">
@@ -486,26 +488,26 @@ export function RenewalScreen() {
                     </div>
                     {plan.annualPriceArs > 0 && (
                       <div className="text-[11px] text-text-sec mt-0.5">
-                        ARS {formatArs(plan.annualPriceArs)} al año (ahorro de 2 meses)
+                        {t('ARS {formatArs} al año (ahorro de 2 meses)', { formatArs: formatArs(plan.annualPriceArs) })}
                       </div>
                     )}
                   </div>
 
                   <div className="py-3 space-y-1.5 text-xs text-text-sec border-b border-gray-100">
                     <div className="flex items-center justify-between">
-                      <span>Personal docente:</span>
-                      <strong className="text-text-pri">{plan.maxUsers} usuarios</strong>
+                      <span>{t('Personal docente:')}</span>
+                      <strong className="text-text-pri">{t('{maxUsers} usuarios', { maxUsers: plan.maxUsers })}</strong>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span>Alumnos activos:</span>
-                      <strong className="text-text-pri">{plan.maxStudents} alumnos</strong>
+                      <span>{t('Alumnos activos:')}</span>
+                      <strong className="text-text-pri">{t('{maxStudents} alumnos', { maxStudents: plan.maxStudents })}</strong>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span>Divisiones / Cursos:</span>
-                      <strong className="text-text-pri">{plan.maxCourses} cursos</strong>
+                      <span>{t('Divisiones / Cursos:')}</span>
+                      <strong className="text-text-pri">{t('{maxCourses} cursos', { maxCourses: plan.maxCourses })}</strong>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span>Almacenamiento:</span>
+                      <span>{t('Almacenamiento:')}</span>
                       <strong className="text-text-pri">{plan.storageGb} GB</strong>
                     </div>
                   </div>
@@ -515,18 +517,18 @@ export function RenewalScreen() {
                       plan.features.bullets.map((b, i) => (
                         <li key={i} className="flex items-start gap-2">
                           <Icon name="check" size={12} className="text-emerald-600 shrink-0 mt-0.5" />
-                          <span>{b}</span>
+                          <span>{t(b)}</span>
                         </li>
                       ))
                     ) : (
                       <>
                         <li className="flex items-start gap-2">
                           <Icon name="check" size={12} className="text-emerald-600 shrink-0 mt-0.5" />
-                          <span>Alertas tempranas de asistencia</span>
+                          <span>{t('Alertas tempranas de asistencia')}</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <Icon name="check" size={12} className="text-emerald-600 shrink-0 mt-0.5" />
-                          <span>Cumplimiento legal y ARCO</span>
+                          <span>{t('Cumplimiento legal y ARCO')}</span>
                         </li>
                       </>
                     )}
@@ -538,12 +540,12 @@ export function RenewalScreen() {
                     onClick={() => handleOpenEditPlan(plan)}
                     className="w-full py-1.5 border border-gray-border bg-white hover:bg-gray-50 rounded-lg text-xs font-semibold text-text-pri transition-colors"
                   >
-                    Editar Plan
+                    {t('Editar Plan')}
                   </button>
                   <button
                     onClick={() => handleDeletePlan(plan)}
                     className="p-1.5 border border-red-200 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    title="Eliminar o desactivar plan"
+                    title={t('Eliminar o desactivar plan')}
                   >
                     <Icon name="trash" size={13} />
                   </button>
@@ -558,16 +560,16 @@ export function RenewalScreen() {
         <div className="bg-white border border-gray-border rounded-xl shadow-2xs overflow-hidden">
           <div className="p-4 border-b border-gray-border bg-gray-50/50 flex items-center justify-between">
             <span className="text-xs font-semibold text-text-pri">
-              Comparativa Detallada de Capacidades por Plan
+              {t('Comparativa Detallada de Capacidades por Plan')}
             </span>
-            <span className="text-xs text-text-ter">Vista de configuración comercial</span>
+            <span className="text-xs text-text-ter">{t('Vista de configuración comercial')}</span>
           </div>
 
           <TableWrap>
             <thead>
               <tr>
                 <th className="text-left text-xs font-semibold text-text-pri px-4 py-3 border-b border-gray-border bg-white w-1/4">
-                  Característica / Recurso
+                  {t('Característica / Recurso')}
                 </th>
                 {plans.map((p) => (
                   <th
@@ -584,7 +586,7 @@ export function RenewalScreen() {
             </thead>
             <tbody className="divide-y divide-gray-100 text-xs">
               <tr>
-                <td className="px-4 py-2.5 font-medium text-text-pri">Límite de Docentes / Staff</td>
+                <td className="px-4 py-2.5 font-medium text-text-pri">{t('Límite de Docentes / Staff')}</td>
                 {plans.map((p) => (
                   <td key={p.id} className="px-4 py-2.5 text-center font-mono">
                     {p.maxUsers}
@@ -592,7 +594,7 @@ export function RenewalScreen() {
                 ))}
               </tr>
               <tr>
-                <td className="px-4 py-2.5 font-medium text-text-pri">Límite de Estudiantes</td>
+                <td className="px-4 py-2.5 font-medium text-text-pri">{t('Límite de Estudiantes')}</td>
                 {plans.map((p) => (
                   <td key={p.id} className="px-4 py-2.5 text-center font-mono">
                     {p.maxStudents}
@@ -600,7 +602,7 @@ export function RenewalScreen() {
                 ))}
               </tr>
               <tr>
-                <td className="px-4 py-2.5 font-medium text-text-pri">Límite de Cursos / Divisiones</td>
+                <td className="px-4 py-2.5 font-medium text-text-pri">{t('Límite de Cursos / Divisiones')}</td>
                 {plans.map((p) => (
                   <td key={p.id} className="px-4 py-2.5 text-center font-mono">
                     {p.maxCourses}
@@ -608,7 +610,7 @@ export function RenewalScreen() {
                 ))}
               </tr>
               <tr>
-                <td className="px-4 py-2.5 font-medium text-text-pri">Espacio de Almacenamiento</td>
+                <td className="px-4 py-2.5 font-medium text-text-pri">{t('Espacio de Almacenamiento')}</td>
                 {plans.map((p) => (
                   <td key={p.id} className="px-4 py-2.5 text-center font-mono">
                     {p.storageGb} GB
@@ -616,11 +618,11 @@ export function RenewalScreen() {
                 ))}
               </tr>
               <tr>
-                <td className="px-4 py-2.5 font-medium text-text-pri">Alertas Tempranas de Ausentismo</td>
+                <td className="px-4 py-2.5 font-medium text-text-pri">{t('Alertas Tempranas de Ausentismo')}</td>
                 {plans.map((p) => (
                   <td key={p.id} className="px-4 py-2.5 text-center">
                     {p.features.hasEarlyAlerts ? (
-                      <span className="text-emerald-700 font-bold"><Icon name="check" size={12} className="inline-block align-[-2px] mr-1" />Incluido</span>
+                      <span className="text-emerald-700 font-bold"><Icon name="check" size={12} className="inline-block align-[-2px] mr-1" />{t('Incluido')}</span>
                     ) : (
                       <span className="text-gray-400">—</span>
                     )}
@@ -628,11 +630,11 @@ export function RenewalScreen() {
                 ))}
               </tr>
               <tr>
-                <td className="px-4 py-2.5 font-medium text-text-pri">Analítica Predictiva con IA</td>
+                <td className="px-4 py-2.5 font-medium text-text-pri">{t('Analítica Predictiva con IA')}</td>
                 {plans.map((p) => (
                   <td key={p.id} className="px-4 py-2.5 text-center">
                     {p.features.hasAiAnalytics ? (
-                      <span className="text-purple-700 font-bold"><Icon name="check" size={12} className="inline-block align-[-2px] mr-1" />Incluido</span>
+                      <span className="text-purple-700 font-bold"><Icon name="check" size={12} className="inline-block align-[-2px] mr-1" />{t('Incluido')}</span>
                     ) : (
                       <span className="text-gray-400">—</span>
                     )}
@@ -640,11 +642,11 @@ export function RenewalScreen() {
                 ))}
               </tr>
               <tr>
-                <td className="px-4 py-2.5 font-medium text-text-pri">Gestión de Privacidad & ARCO</td>
+                <td className="px-4 py-2.5 font-medium text-text-pri">{t('Gestión de Privacidad & ARCO')}</td>
                 {plans.map((p) => (
                   <td key={p.id} className="px-4 py-2.5 text-center">
                     {p.features.hasArcoCompliance ? (
-                      <span className="text-emerald-700 font-bold"><Icon name="check" size={12} className="inline-block align-[-2px] mr-1" />Incluido</span>
+                      <span className="text-emerald-700 font-bold"><Icon name="check" size={12} className="inline-block align-[-2px] mr-1" />{t('Incluido')}</span>
                     ) : (
                       <span className="text-gray-400">—</span>
                     )}
@@ -652,11 +654,11 @@ export function RenewalScreen() {
                 ))}
               </tr>
               <tr>
-                <td className="px-4 py-2.5 font-medium text-text-pri">Dominio Personalizado (Marca Blanca)</td>
+                <td className="px-4 py-2.5 font-medium text-text-pri">{t('Dominio Personalizado (Marca Blanca)')}</td>
                 {plans.map((p) => (
                   <td key={p.id} className="px-4 py-2.5 text-center">
                     {p.features.hasCustomDomain ? (
-                      <span className="text-emerald-700 font-bold"><Icon name="check" size={12} className="inline-block align-[-2px] mr-1" />Incluido</span>
+                      <span className="text-emerald-700 font-bold"><Icon name="check" size={12} className="inline-block align-[-2px] mr-1" />{t('Incluido')}</span>
                     ) : (
                       <span className="text-gray-400">—</span>
                     )}
@@ -664,11 +666,11 @@ export function RenewalScreen() {
                 ))}
               </tr>
               <tr>
-                <td className="px-4 py-2.5 font-medium text-text-pri">API & Integración SIS/ERP</td>
+                <td className="px-4 py-2.5 font-medium text-text-pri">{t('API & Integración SIS/ERP')}</td>
                 {plans.map((p) => (
                   <td key={p.id} className="px-4 py-2.5 text-center">
                     {p.features.hasApiAccess ? (
-                      <span className="text-emerald-700 font-bold"><Icon name="check" size={12} className="inline-block align-[-2px] mr-1" />Incluido</span>
+                      <span className="text-emerald-700 font-bold"><Icon name="check" size={12} className="inline-block align-[-2px] mr-1" />{t('Incluido')}</span>
                     ) : (
                       <span className="text-gray-400">—</span>
                     )}
@@ -676,11 +678,11 @@ export function RenewalScreen() {
                 ))}
               </tr>
               <tr>
-                <td className="px-4 py-2.5 font-medium text-text-pri">Soporte SLA Dedicado 24/7</td>
+                <td className="px-4 py-2.5 font-medium text-text-pri">{t('Soporte SLA Dedicado 24/7')}</td>
                 {plans.map((p) => (
                   <td key={p.id} className="px-4 py-2.5 text-center">
                     {p.features.hasSlaSupport ? (
-                      <span className="text-emerald-700 font-bold"><Icon name="check" size={12} className="inline-block align-[-2px] mr-1" />Incluido</span>
+                      <span className="text-emerald-700 font-bold"><Icon name="check" size={12} className="inline-block align-[-2px] mr-1" />{t('Incluido')}</span>
                     ) : (
                       <span className="text-gray-400">—</span>
                     )}
@@ -688,11 +690,11 @@ export function RenewalScreen() {
                 ))}
               </tr>
               <tr>
-                <td className="px-4 py-2.5 font-medium text-text-pri">Exportación Avanzada Excel / PDF</td>
+                <td className="px-4 py-2.5 font-medium text-text-pri">{t('Exportación Avanzada Excel / PDF')}</td>
                 {plans.map((p) => (
                   <td key={p.id} className="px-4 py-2.5 text-center">
                     {p.features.hasExportReports ? (
-                      <span className="text-emerald-700 font-bold"><Icon name="check" size={12} className="inline-block align-[-2px] mr-1" />Incluido</span>
+                      <span className="text-emerald-700 font-bold"><Icon name="check" size={12} className="inline-block align-[-2px] mr-1" />{t('Incluido')}</span>
                     ) : (
                       <span className="text-gray-400">—</span>
                     )}
@@ -711,10 +713,10 @@ export function RenewalScreen() {
               <div>
                 <h2 className="text-base font-bold text-text-pri flex items-center gap-2">
                   <Icon name="sliders" size={16} className="text-emerald-700 dark:text-emerald-400" />
-                  Personalización Exclusiva: {customizingSub.institutionName}
+                  {t('Personalización Exclusiva: {institutionName}', { institutionName: customizingSub.institutionName })}
                 </h2>
                 <p className="text-xs text-text-sec mt-0.5">
-                  Ajustá cupos, tarifas y módulos especiales acordados con este cliente por encima de su plan base.
+                  {t('Ajustá cupos, tarifas y módulos especiales acordados con este cliente por encima de su plan base.')}
                 </p>
               </div>
               <button
@@ -728,7 +730,7 @@ export function RenewalScreen() {
             <form onSubmit={handleSaveCustomize} className="space-y-4 pt-1">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-text-pri mb-1">Plan Comercial Base</label>
+                  <label className="block text-xs font-semibold text-text-pri mb-1">{t('Plan Comercial Base')}</label>
                   <select
                     value={customizingSub.planId}
                     onChange={async (e) => {
@@ -747,14 +749,14 @@ export function RenewalScreen() {
                   >
                     {plans.map((p) => (
                       <option key={p.id} value={p.id}>
-                        {p.name} (ARS {formatArs(p.monthlyPriceArs)}/m)
+                        {t('{name} (ARS {formatArs}/m)', { name: p.name, formatArs: formatArs(p.monthlyPriceArs) })}
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-text-pri mb-1">Precio Acordado Mensual (ARS)</label>
+                  <label className="block text-xs font-semibold text-text-pri mb-1">{t('Precio Acordado Mensual (ARS)')}</label>
                   <input
                     type="number"
                     value={customPrice}
@@ -764,14 +766,14 @@ export function RenewalScreen() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-text-pri mb-1">Ciclo de Facturación</label>
+                  <label className="block text-xs font-semibold text-text-pri mb-1">{t('Ciclo de Facturación')}</label>
                   <select
                     value={customBillingCycle}
                     onChange={(e) => setCustomBillingCycle(e.target.value as any)}
                     className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-3 py-2 text-xs bg-surface dark:bg-[#131620] text-text-pri focus:ring-2 focus:ring-emerald-500"
                   >
-                    <option value="MONTHLY">Mensual</option>
-                    <option value="ANNUAL">Anual</option>
+                    <option value="MONTHLY">{t('Mensual')}</option>
+                    <option value="ANNUAL">{t('Anual')}</option>
                   </select>
                 </div>
               </div>
@@ -779,17 +781,17 @@ export function RenewalScreen() {
               <div className="bg-gray-50/80 dark:bg-[#131620] p-3.5 rounded-xl border border-gray-border/70 dark:border-gray-800 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-text-pri">
-                    Límites y Cupos Personalizados para este Colegio
+                    {t('Límites y Cupos Personalizados para este Colegio')}
                   </span>
-                  <span className="text-[11px] text-text-ter">Dejar vacío para usar el valor por defecto del plan</span>
+                  <span className="text-[11px] text-text-ter">{t('Dejar vacío para usar el valor por defecto del plan')}</span>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div>
-                    <label className="block text-[11px] font-medium text-text-sec mb-1">Docentes / Personal</label>
+                    <label className="block text-[11px] font-medium text-text-sec mb-1">{t('Docentes / Personal')}</label>
                     <input
                       type="number"
-                      placeholder="ej: 100"
+                      placeholder={t('ej: 100')}
                       value={customUsers}
                       onChange={(e) => setCustomUsers(e.target.value === '' ? '' : Number(e.target.value))}
                       className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-2.5 py-1.5 text-xs bg-white dark:bg-[#1A1E29] text-text-pri"
@@ -797,10 +799,10 @@ export function RenewalScreen() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-medium text-text-sec mb-1">Alumnos Activos</label>
+                    <label className="block text-[11px] font-medium text-text-sec mb-1">{t('Alumnos Activos')}</label>
                     <input
                       type="number"
-                      placeholder="ej: 1200"
+                      placeholder={t('ej: 1200')}
                       value={customStudents}
                       onChange={(e) => setCustomStudents(e.target.value === '' ? '' : Number(e.target.value))}
                       className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-2.5 py-1.5 text-xs bg-white dark:bg-[#1A1E29] text-text-pri"
@@ -808,10 +810,10 @@ export function RenewalScreen() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-medium text-text-sec mb-1">Cursos / Aulas</label>
+                    <label className="block text-[11px] font-medium text-text-sec mb-1">{t('Cursos / Aulas')}</label>
                     <input
                       type="number"
-                      placeholder="ej: 50"
+                      placeholder={t('ej: 50')}
                       value={customCourses}
                       onChange={(e) => setCustomCourses(e.target.value === '' ? '' : Number(e.target.value))}
                       className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-2.5 py-1.5 text-xs bg-white dark:bg-[#1A1E29] text-text-pri"
@@ -819,10 +821,10 @@ export function RenewalScreen() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-medium text-text-sec mb-1">Almacenamiento (GB)</label>
+                    <label className="block text-[11px] font-medium text-text-sec mb-1">{t('Almacenamiento (GB)')}</label>
                     <input
                       type="number"
-                      placeholder="ej: 50"
+                      placeholder={t('ej: 50')}
                       value={customStorage}
                       onChange={(e) => setCustomStorage(e.target.value === '' ? '' : Number(e.target.value))}
                       className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-2.5 py-1.5 text-xs bg-white dark:bg-[#1A1E29] text-text-pri"
@@ -833,7 +835,7 @@ export function RenewalScreen() {
 
               <div className="space-y-2">
                 <label className="block text-xs font-semibold text-text-pri">
-                  Módulos y Capacidades Habilitadas para esta Escuela:
+                  {t('Módulos y Capacidades Habilitadas para esta Escuela:')}
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                   <label className="flex items-center gap-2 p-2 border border-gray-border dark:border-gray-800 rounded-lg bg-white dark:bg-[#131620] cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 text-text-pri">
@@ -843,7 +845,7 @@ export function RenewalScreen() {
                       onChange={(e) => setCustomFeatures({ ...customFeatures, hasAiAnalytics: e.target.checked })}
                       className="rounded text-emerald-600 focus:ring-emerald-500"
                     />
-                    <span>Analítica e Inteligencia Artificial</span>
+                    <span>{t('Analítica e Inteligencia Artificial')}</span>
                   </label>
 
                   <label className="flex items-center gap-2 p-2 border border-gray-border dark:border-gray-800 rounded-lg bg-white dark:bg-[#131620] cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 text-text-pri">
@@ -853,7 +855,7 @@ export function RenewalScreen() {
                       onChange={(e) => setCustomFeatures({ ...customFeatures, hasEarlyAlerts: e.target.checked })}
                       className="rounded text-emerald-600 focus:ring-emerald-500"
                     />
-                    <span>Sistema de Alertas Tempranas</span>
+                    <span>{t('Sistema de Alertas Tempranas')}</span>
                   </label>
 
                   <label className="flex items-center gap-2 p-2 border border-gray-border dark:border-gray-800 rounded-lg bg-white dark:bg-[#131620] cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 text-text-pri">
@@ -863,7 +865,7 @@ export function RenewalScreen() {
                       onChange={(e) => setCustomFeatures({ ...customFeatures, hasApiAccess: e.target.checked })}
                       className="rounded text-emerald-600 focus:ring-emerald-500"
                     />
-                    <span>Acceso a API y Webhooks (SIS / ERP)</span>
+                    <span>{t('Acceso a API y Webhooks (SIS / ERP)')}</span>
                   </label>
 
                   <label className="flex items-center gap-2 p-2 border border-gray-border dark:border-gray-800 rounded-lg bg-white dark:bg-[#131620] cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 text-text-pri">
@@ -873,7 +875,7 @@ export function RenewalScreen() {
                       onChange={(e) => setCustomFeatures({ ...customFeatures, hasCustomDomain: e.target.checked })}
                       className="rounded text-emerald-600 focus:ring-emerald-500"
                     />
-                    <span>Dominio Propio / Marca Blanca</span>
+                    <span>{t('Dominio Propio / Marca Blanca')}</span>
                   </label>
 
                   <label className="flex items-center gap-2 p-2 border border-gray-border dark:border-gray-800 rounded-lg bg-white dark:bg-[#131620] cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 text-text-pri">
@@ -883,7 +885,7 @@ export function RenewalScreen() {
                       onChange={(e) => setCustomFeatures({ ...customFeatures, hasSlaSupport: e.target.checked })}
                       className="rounded text-emerald-600 focus:ring-emerald-500"
                     />
-                    <span>SLA y Soporte Técnico Dedicado</span>
+                    <span>{t('SLA y Soporte Técnico Dedicado')}</span>
                   </label>
 
                   <label className="flex items-center gap-2 p-2 border border-gray-border dark:border-gray-800 rounded-lg bg-white dark:bg-[#131620] cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 text-text-pri">
@@ -893,16 +895,16 @@ export function RenewalScreen() {
                       onChange={(e) => setCustomFeatures({ ...customFeatures, hasArcoCompliance: e.target.checked })}
                       className="rounded text-emerald-600 focus:ring-emerald-500"
                     />
-                    <span>Módulo de Privacidad y Derechos ARCO</span>
+                    <span>{t('Módulo de Privacidad y Derechos ARCO')}</span>
                   </label>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-text-pri mb-1">Notas Comerciales del Acuerdo</label>
+                <label className="block text-xs font-semibold text-text-pri mb-1">{t('Notas Comerciales del Acuerdo')}</label>
                 <textarea
                   rows={2}
-                  placeholder="ej: Descuento 20% acordado por convenio con red de colegios. Incluye 2 sedes."
+                  placeholder={t('ej: Descuento 20% acordado por convenio con red de colegios. Incluye 2 sedes.')}
                   value={customNotes}
                   onChange={(e) => setCustomNotes(e.target.value)}
                   className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-3 py-2 text-xs bg-surface dark:bg-[#131620] text-text-pri focus:ring-2 focus:ring-emerald-500 resize-none"
@@ -915,14 +917,14 @@ export function RenewalScreen() {
                   onClick={() => setCustomizingSub(null)}
                   className="px-4 py-2 border border-gray-border dark:border-gray-700 text-xs rounded-lg text-text-sec hover:bg-gray-100 dark:hover:bg-zinc-800 font-medium"
                 >
-                  Cancelar
+                  {t('Cancelar')}
                 </button>
                 <button
                   type="submit"
                   disabled={isSavingCustom}
                   className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 disabled:opacity-50 text-white text-xs font-semibold rounded-lg shadow-xs transition-colors"
                 >
-                  {isSavingCustom ? 'Guardando…' : 'Guardar Personalización'}
+                  {isSavingCustom ? t('Guardando…') : t('Guardar Personalización')}
                 </button>
               </div>
             </form>
@@ -936,7 +938,7 @@ export function RenewalScreen() {
             <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800">
               <h2 className="text-base font-bold text-text-pri flex items-center gap-2">
                 <Icon name="tag" size={16} className="text-emerald-700 dark:text-emerald-400" />
-                {editingPlan ? `Editar Plan: ${editingPlan.name}` : 'Crear Nuevo Plan de Suscripción'}
+                {editingPlan ? t('Editar Plan: {name}', { name: editingPlan.name }) : t('Crear Nuevo Plan de Suscripción')}
               </h2>
               <button
                 onClick={() => setIsPlanModalOpen(false)}
@@ -950,12 +952,12 @@ export function RenewalScreen() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-text-pri mb-1">
-                    Nombre del Plan <span className="text-red-500">*</span>
+                    {t('Nombre del Plan')}{' '}<span className="text-red-500">*</span>
                   </label>
                   <input
                     required
                     type="text"
-                    placeholder="ej: Plan Red de Colegios"
+                    placeholder={t('ej: Plan Red de Colegios')}
                     value={planForm.name}
                     onChange={(e) => setPlanForm({ ...planForm, name: e.target.value })}
                     className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-3 py-2 text-xs bg-surface dark:bg-[#131620] text-text-pri focus:ring-2 focus:ring-emerald-500"
@@ -963,10 +965,10 @@ export function RenewalScreen() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-text-pri mb-1">Distintivo / Badge</label>
+                  <label className="block text-xs font-semibold text-text-pri mb-1">{t('Distintivo / Badge')}</label>
                   <input
                     type="text"
-                    placeholder="ej: Popular, Recomendado, Piloto"
+                    placeholder={t('ej: Popular, Recomendado, Piloto')}
                     value={planForm.badge}
                     onChange={(e) => setPlanForm({ ...planForm, badge: e.target.value })}
                     className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-3 py-2 text-xs bg-surface dark:bg-[#131620] text-text-pri focus:ring-2 focus:ring-emerald-500"
@@ -975,10 +977,10 @@ export function RenewalScreen() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-text-pri mb-1">Descripción Comercial</label>
+                <label className="block text-xs font-semibold text-text-pri mb-1">{t('Descripción Comercial')}</label>
                 <input
                   type="text"
-                  placeholder="Breve descripción del público objetivo y ventajas de este plan..."
+                  placeholder={t('Breve descripción del público objetivo y ventajas de este plan...')}
                   value={planForm.description}
                   onChange={(e) => setPlanForm({ ...planForm, description: e.target.value })}
                   className="w-full border border-gray-border dark:border-gray-700 rounded-lg px-3 py-2 text-xs bg-surface dark:bg-[#131620] text-text-pri focus:ring-2 focus:ring-emerald-500"
@@ -988,7 +990,7 @@ export function RenewalScreen() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-text-pri mb-1">
-                    Precio Mensual (ARS) <span className="text-red-500">*</span>
+                    {t('Precio Mensual (ARS)')}{' '}<span className="text-red-500">*</span>
                   </label>
                   <input
                     required
@@ -1000,7 +1002,7 @@ export function RenewalScreen() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-text-pri mb-1">Precio Anual (ARS)</label>
+                  <label className="block text-xs font-semibold text-text-pri mb-1">{t('Precio Anual (ARS)')}</label>
                   <input
                     type="number"
                     value={planForm.annualPriceArs}
@@ -1011,10 +1013,10 @@ export function RenewalScreen() {
               </div>
 
               <div className="bg-gray-50/80 dark:bg-[#131620] p-3.5 rounded-xl border border-gray-border/70 dark:border-gray-800 space-y-3">
-                <span className="text-xs font-bold text-text-pri block">Límites y Recursos Incluidos en el Plan</span>
+                <span className="text-xs font-bold text-text-pri block">{t('Límites y Recursos Incluidos en el Plan')}</span>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div>
-                    <label className="block text-[11px] font-medium text-text-sec mb-1">Docentes</label>
+                    <label className="block text-[11px] font-medium text-text-sec mb-1">{t('Docentes')}</label>
                     <input
                       type="number"
                       value={planForm.maxUsers}
@@ -1024,7 +1026,7 @@ export function RenewalScreen() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-medium text-text-sec mb-1">Alumnos</label>
+                    <label className="block text-[11px] font-medium text-text-sec mb-1">{t('Alumnos')}</label>
                     <input
                       type="number"
                       value={planForm.maxStudents}
@@ -1034,7 +1036,7 @@ export function RenewalScreen() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-medium text-text-sec mb-1">Cursos</label>
+                    <label className="block text-[11px] font-medium text-text-sec mb-1">{t('Cursos')}</label>
                     <input
                       type="number"
                       value={planForm.maxCourses}
@@ -1044,7 +1046,7 @@ export function RenewalScreen() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-medium text-text-sec mb-1">Storage (GB)</label>
+                    <label className="block text-[11px] font-medium text-text-sec mb-1">{t('Storage (GB)')}</label>
                     <input
                       type="number"
                       value={planForm.storageGb}
@@ -1056,7 +1058,7 @@ export function RenewalScreen() {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-xs font-semibold text-text-pri">Características y Módulos Incluidos:</label>
+                <label className="block text-xs font-semibold text-text-pri">{t('Características y Módulos Incluidos:')}</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                   <label className="flex items-center gap-2 p-2 border border-gray-border dark:border-gray-800 rounded-lg bg-white dark:bg-[#131620] cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 text-text-pri">
                     <input
@@ -1070,7 +1072,7 @@ export function RenewalScreen() {
                       }
                       className="rounded text-emerald-600 focus:ring-emerald-500"
                     />
-                    <span>Analítica Predictiva con IA</span>
+                    <span>{t('Analítica Predictiva con IA')}</span>
                   </label>
 
                   <label className="flex items-center gap-2 p-2 border border-gray-border dark:border-gray-800 rounded-lg bg-white dark:bg-[#131620] cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 text-text-pri">
@@ -1085,7 +1087,7 @@ export function RenewalScreen() {
                       }
                       className="rounded text-emerald-600 focus:ring-emerald-500"
                     />
-                    <span>Alertas Tempranas de Ausentismo</span>
+                    <span>{t('Alertas Tempranas de Ausentismo')}</span>
                   </label>
 
                   <label className="flex items-center gap-2 p-2 border border-gray-border dark:border-gray-800 rounded-lg bg-white dark:bg-[#131620] cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 text-text-pri">
@@ -1100,7 +1102,7 @@ export function RenewalScreen() {
                       }
                       className="rounded text-emerald-600 focus:ring-emerald-500"
                     />
-                    <span>Acceso a API & Webhooks</span>
+                    <span>{t('Acceso a API & Webhooks')}</span>
                   </label>
 
                   <label className="flex items-center gap-2 p-2 border border-gray-border dark:border-gray-800 rounded-lg bg-white dark:bg-[#131620] cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 text-text-pri">
@@ -1115,7 +1117,7 @@ export function RenewalScreen() {
                       }
                       className="rounded text-emerald-600 focus:ring-emerald-500"
                     />
-                    <span>Dominio Personalizado (Marca Blanca)</span>
+                    <span>{t('Dominio Personalizado (Marca Blanca)')}</span>
                   </label>
 
                   <label className="flex items-center gap-2 p-2 border border-gray-border dark:border-gray-800 rounded-lg bg-white dark:bg-[#131620] cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 text-text-pri">
@@ -1130,7 +1132,7 @@ export function RenewalScreen() {
                       }
                       className="rounded text-emerald-600 focus:ring-emerald-500"
                     />
-                    <span>Soporte SLA Dedicado</span>
+                    <span>{t('Soporte SLA Dedicado')}</span>
                   </label>
 
                   <label className="flex items-center gap-2 p-2 border border-gray-border dark:border-gray-800 rounded-lg bg-white dark:bg-[#131620] cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 text-text-pri">
@@ -1145,19 +1147,19 @@ export function RenewalScreen() {
                       }
                       className="rounded text-emerald-600 focus:ring-emerald-500"
                     />
-                    <span>Privacidad & Derechos ARCO</span>
+                    <span>{t('Privacidad & Derechos ARCO')}</span>
                   </label>
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-text-pri mb-1">
-                  Viñetas de Marketing (Bullets comerciales)
+                  {t('Viñetas de Marketing (Bullets comerciales)')}
                 </label>
                 <div className="flex gap-2 mb-2">
                   <input
                     type="text"
-                    placeholder="ej: Hasta 50 docentes incluidos"
+                    placeholder={t('ej: Hasta 50 docentes incluidos')}
                     value={bulletText}
                     onChange={(e) => setBulletText(e.target.value)}
                     onKeyDown={(e) => {
@@ -1173,7 +1175,7 @@ export function RenewalScreen() {
                     onClick={handleAddBullet}
                     className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-text-pri rounded-lg text-xs font-medium"
                   >
-                    Agregar
+                    {t('Agregar')}
                   </button>
                 </div>
 
@@ -1202,14 +1204,14 @@ export function RenewalScreen() {
                   onClick={() => setIsPlanModalOpen(false)}
                   className="px-4 py-2 border border-gray-border text-xs rounded-lg text-text-sec hover:bg-gray-100 font-medium"
                 >
-                  Cancelar
+                  {t('Cancelar')}
                 </button>
                 <button
                   type="submit"
                   disabled={isSavingPlan || !planForm.name.trim()}
                   className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 disabled:opacity-50 text-white text-xs font-semibold rounded-lg shadow-xs transition-colors"
                 >
-                  {isSavingPlan ? 'Guardando…' : editingPlan ? 'Actualizar Plan' : 'Crear Plan'}
+                  {isSavingPlan ? t('Guardando…') : editingPlan ? t('Actualizar Plan') : t('Crear Plan')}
                 </button>
               </div>
             </form>

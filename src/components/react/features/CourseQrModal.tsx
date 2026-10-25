@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { Icon } from '../ui/Icon';
 import type { Course } from '../../../types/activity';
+import { t, useI18n } from '../../../i18n';
 
 interface CourseQrModalProps {
   course: Course | null;
@@ -11,6 +12,7 @@ interface CourseQrModalProps {
 }
 
 export function CourseQrModal({ course, isOpen, onClose, onUploadForCourse }: CourseQrModalProps) {
+  useI18n();
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
 
   useEffect(() => {
@@ -52,8 +54,8 @@ export function CourseQrModal({ course, isOpen, onClose, onUploadForCourse }: Co
               <Icon name="kanban" size={16} />
             </span>
             <div>
-              <h2 className="text-sm font-bold text-text-pri">QR Fijo Permanente del Aula</h2>
-              <p className="text-[11px] text-text-sec">Cartel para proyectar o pegar en el aula física</p>
+              <h2 className="text-sm font-bold text-text-pri">{t('QR Fijo Permanente del Aula')}</h2>
+              <p className="text-[11px] text-text-sec">{t('Cartel para proyectar o pegar en el aula física')}</p>
             </div>
           </div>
           <button onClick={onClose} className="text-text-ter hover:text-text-pri text-sm font-bold p-1">
@@ -79,7 +81,7 @@ export function CourseQrModal({ course, isOpen, onClose, onUploadForCourse }: Co
 
             <div data-keep-white="true" className="p-3 bg-white border border-gray-border rounded-xl shadow-xs inline-block mx-auto">
               {qrDataUrl ? (
-                <img src={qrDataUrl} alt={`QR Fijo ${course.name}`} className="w-48 h-48 mx-auto" />
+                <img src={qrDataUrl} alt={t('QR Fijo {name}', { name: course.name })} className="w-48 h-48 mx-auto" />
               ) : (
                 <div className="w-48 h-48 bg-gray-100 animate-pulse rounded-lg" />
               )}
@@ -87,7 +89,7 @@ export function CourseQrModal({ course, isOpen, onClose, onUploadForCourse }: Co
 
             <div className="space-y-0.5">
               <span className="text-[10px] text-text-ter uppercase tracking-wider font-semibold block">
-                Identificador Fijo de Aula
+                {t('Identificador Fijo de Aula')}
               </span>
               <span className="font-mono text-base font-bold tracking-widest text-emerald-800 bg-emerald-50 px-3 py-1 rounded-lg inline-block border border-emerald-200">
                 {course.qrCode || `AULA-${course.id.substring(0, 6).toUpperCase()}`}
@@ -95,7 +97,7 @@ export function CourseQrModal({ course, isOpen, onClose, onUploadForCourse }: Co
             </div>
 
             <p className="text-[10.5px] text-text-ter leading-tight pt-1">
-              Docentes y alumnos escanean este código fijo dentro del aula para sincronizarse y resolver actividades de lectura.
+              {t('Docentes y alumnos escanean este código fijo dentro del aula para sincronizarse y resolver actividades de lectura.')}
             </p>
           </div>
         </div>
@@ -107,14 +109,14 @@ export function CourseQrModal({ course, isOpen, onClose, onUploadForCourse }: Co
               className="flex-1 sm:flex-initial flex items-center justify-center gap-1 px-3 py-2 bg-white border border-gray-border hover:bg-gray-100 rounded-lg text-xs font-semibold text-text-pri transition-colors"
             >
               <Icon name="printer" size={13} />
-              Imprimir
+              {t('Imprimir')}
             </button>
             <button
               onClick={handleDownload}
               className="flex-1 sm:flex-initial flex items-center justify-center gap-1 px-3 py-2 bg-white border border-gray-border hover:bg-gray-100 rounded-lg text-xs font-semibold text-text-pri transition-colors"
             >
               <Icon name="download" size={13} />
-              Descargar
+              {t('Descargar')}
             </button>
           </div>
 
@@ -126,7 +128,7 @@ export function CourseQrModal({ course, isOpen, onClose, onUploadForCourse }: Co
             className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-xs font-bold transition-colors shadow-xs"
           >
             <Icon name="plus" size={13} />
-            Subir Material a esta Aula →
+            {t('Subir Material a esta Aula →')}
           </button>
         </div>
       </div>

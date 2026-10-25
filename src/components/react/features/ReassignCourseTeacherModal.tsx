@@ -3,6 +3,7 @@ import { Icon } from '../ui/Icon';
 import { setCourseTeachers, listCourseTeachers } from '../../../services/courseService';
 import type { Course } from '../../../types/activity';
 import type { InstitutionUser } from '../../../services/institutionUsersService';
+import { t, useI18n } from '../../../i18n';
 
 interface ReassignCourseTeacherModalProps {
   course: Course;
@@ -17,6 +18,7 @@ export function ReassignCourseTeacherModal({
   onClose,
   onSaved,
 }: ReassignCourseTeacherModalProps) {
+  useI18n();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -25,7 +27,7 @@ export function ReassignCourseTeacherModal({
   useEffect(() => {
     listCourseTeachers(course.id)
       .then((assigned) => {
-        setSelectedIds(assigned.map((t) => t.teacherId));
+        setSelectedIds(assigned.map((assignment) => assignment.teacherId));
       })
       .catch(() => {
         if (course.teacherId) setSelectedIds([course.teacherId]);
@@ -48,7 +50,7 @@ export function ReassignCourseTeacherModal({
       onSaved();
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al asignar docentes');
+      setError(err instanceof Error ? err.message : t('Error al asignar docentes'));
     } finally {
       setSaving(false);
     }
@@ -65,10 +67,10 @@ export function ReassignCourseTeacherModal({
             </div>
             <div>
               <h3 className="font-bold text-base text-slate-900 dark:text-white leading-tight">
-                Asignar Docentes al Aula
+                {t('Asignar Docentes al Aula')}
               </h3>
               <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-                {course.name} {course.room ? `· Salón ${course.room}` : ''}
+                {course.name} {course.room ? t('· Salón {room}', { room: course.room }) : ''}
               </p>
             </div>
           </div>
@@ -89,24 +91,24 @@ export function ReassignCourseTeacherModal({
 
           <div className="space-y-1.5">
             <label className="block font-semibold text-slate-900 dark:text-white text-xs">
-              Seleccioná uno o más docentes:
+              {t('Seleccioná uno o más docentes:')}
             </label>
 
             {loading ? (
-              <div className="text-xs text-stone-400 py-4 text-center">Cargando...</div>
+              <div className="text-xs text-stone-400 py-4 text-center">{t('Cargando...')}</div>
             ) : teachers.length === 0 ? (
               <div className="text-xs text-stone-400 dark:text-stone-500 py-4 text-center bg-stone-50 dark:bg-stone-800/40 rounded-xl border border-stone-200 dark:border-stone-700">
-                No hay docentes registrados en la institución.
+                {t('No hay docentes registrados en la institución.')}
               </div>
             ) : (
               <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1">
-                {teachers.map((t) => {
-                  const isSelected = selectedIds.includes(t.id);
+                {teachers.map((teacher) => {
+                  const isSelected = selectedIds.includes(teacher.id);
                   return (
                     <button
-                      key={t.id}
+                      key={teacher.id}
                       type="button"
-                      onClick={() => toggleTeacher(t.id)}
+                      onClick={() => toggleTeacher(teacher.id)}
                       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                         isSelected
                           ? 'bg-emerald-50 dark:bg-emerald-950/50 border-emerald-500 ring-1 ring-emerald-500/30'
@@ -126,10 +128,10 @@ export function ReassignCourseTeacherModal({
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-slate-900 dark:text-white text-xs truncate">
-                          {t.name}
+                          {teacher.name}
                         </div>
                         <div className="text-[11px] text-stone-500 dark:text-stone-400 truncate">
-                          {t.email}
+                          {teacher.email}
                         </div>
                       </div>
                     </button>
@@ -142,14 +144,14 @@ export function ReassignCourseTeacherModal({
           {selectedIds.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {selectedIds.map((id) => {
-                const t = teachers.find((x) => x.id === id);
-                if (!t) return null;
+                const teacher = teachers.find((x) => x.id === id);
+                if (!teacher) return null;
                 return (
                   <span
                     key={id}
                     className="inline-flex items-center gap-1 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 px-2 py-1 rounded-lg text-[11px] font-semibold border border-emerald-200 dark:border-emerald-800/60"
                   >
-                    {t.name}
+                    {teacher.name}
                     <button
                       type="button"
                       onClick={() => toggleTeacher(id)}
@@ -164,9 +166,9 @@ export function ReassignCourseTeacherModal({
           )}
 
           <div className="p-3 rounded-xl bg-stone-50 dark:bg-stone-800/40 border border-stone-200/70 dark:border-stone-700 text-[11.5px] text-stone-500 dark:text-stone-400 leading-relaxed space-y-1">
-            <div>Materia: <strong className="text-slate-900 dark:text-white">{course.subject}</strong></div>
-            {course.shift && <div>Turno: <strong className="text-slate-900 dark:text-white">{course.shift}</strong></div>}
-            {course.qrCode && <div>Código QR Fijo: <strong className="font-mono text-slate-900 dark:text-white">{course.qrCode}</strong></div>}
+            <div>{t('Materia:')}{' '}<strong className="text-slate-900 dark:text-white">{course.subject}</strong></div>
+            {course.shift && <div>{t('Turno:')}{' '}<strong className="text-slate-900 dark:text-white">{course.shift}</strong></div>}
+            {course.qrCode && <div>{t('Código QR Fijo:')}{' '}<strong className="font-mono text-slate-900 dark:text-white">{course.qrCode}</strong></div>}
           </div>
         </div>
 
@@ -176,7 +178,7 @@ export function ReassignCourseTeacherModal({
             disabled={saving}
             className="px-4 py-2 text-xs font-semibold text-stone-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white rounded-lg border border-stone-200 dark:border-stone-700 hover:bg-white dark:hover:bg-stone-800 transition-colors cursor-pointer"
           >
-            Cancelar
+            {t('Cancelar')}
           </button>
           <button
             onClick={handleSave}
@@ -184,11 +186,11 @@ export function ReassignCourseTeacherModal({
             className="bg-emerald-700 hover:bg-emerald-800 text-white px-5 py-2 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
           >
             {saving ? (
-              <span>Guardando...</span>
+              <span>{t('Guardando...')}</span>
             ) : (
               <>
                 <Icon name="check" size={13} />
-                <span>Guardar Asignación {selectedIds.length > 1 ? `(${selectedIds.length})` : ''}</span>
+                <span>{t('Guardar Asignación')}{' '}{selectedIds.length > 1 ? `(${selectedIds.length})` : ''}</span>
               </>
             )}
           </button>

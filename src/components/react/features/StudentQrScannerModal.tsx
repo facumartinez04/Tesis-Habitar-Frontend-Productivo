@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Icon } from '../ui/Icon';
 import { useQrScanner } from '../../../hooks/useQrScanner';
 import { looksLikeUrl, parseScannedQr, type ScannedCodeType } from '../../../lib/qrCode';
+import { t, useI18n } from '../../../i18n';
 
 const READER_ID = 'qr-reader-container';
 
@@ -16,6 +17,7 @@ interface StudentQrScannerModalProps {
 }
 
 export function StudentQrScannerModal({ isOpen, onClose, onCodeScanned }: StudentQrScannerModalProps) {
+  useI18n();
   const [manualCode, setManualCode] = useState('');
   const [activeTab, setActiveTab] = useState<'camara' | 'manual'>('camara');
   const [parseError, setParseError] = useState<string | null>(null);
@@ -23,7 +25,7 @@ export function StudentQrScannerModal({ isOpen, onClose, onCodeScanned }: Studen
   function handleScannedText(rawText: string) {
     const { code, type } = parseScannedQr(rawText);
     if (!code) {
-      setParseError('Ese código QR no corresponde a un aula ni a una actividad de Habitar.');
+      setParseError(t('Ese código QR no corresponde a un aula ni a una actividad de Habitar.'));
       resume();
       return;
     }
@@ -68,19 +70,19 @@ export function StudentQrScannerModal({ isOpen, onClose, onCodeScanned }: Studen
               <Icon name="camera" size={16} />
             </span>
             <div>
-              <h2 className="text-sm font-bold text-text-pri">Escanear Código QR</h2>
-              <p className="text-[11px] text-text-sec">Del aula física o de la actividad</p>
+              <h2 className="text-sm font-bold text-text-pri">{t('Escanear Código QR')}</h2>
+              <p className="text-[11px] text-text-sec">{t('Del aula física o de la actividad')}</p>
             </div>
           </div>
-          <button onClick={onClose} aria-label="Cerrar" className="text-text-ter hover:text-text-pri p-1 rounded-lg text-sm font-bold cursor-pointer"><Icon name="close" size={16} /></button>
+          <button onClick={onClose} aria-label={t('Cerrar')} className="text-text-ter hover:text-text-pri p-1 rounded-lg text-sm font-bold cursor-pointer"><Icon name="close" size={16} /></button>
         </div>
 
         <div className="flex border-b border-gray-border dark:border-[#2D3342] text-xs font-semibold">
           <button onClick={() => setActiveTab('camara')} className={`${TAB_BASE} ${activeTab === 'camara' ? TAB_ACTIVE : TAB_IDLE}`}>
-            <Icon name="camera" size={13} /> Cámara
+            <Icon name="camera" size={13} />{' '}{t('Cámara')}
           </button>
           <button onClick={() => setActiveTab('manual')} className={`${TAB_BASE} ${activeTab === 'manual' ? TAB_ACTIVE : TAB_IDLE}`}>
-            <Icon name="code" size={13} /> Escribir PIN
+            <Icon name="code" size={13} />{' '}{t('Escribir PIN')}
           </button>
         </div>
 
@@ -93,7 +95,7 @@ export function StudentQrScannerModal({ isOpen, onClose, onCodeScanned }: Studen
                 {status === 'starting' && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-white/80 text-[11px] gap-2 z-10">
                     <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-                    <span>Encendiendo cámara…</span>
+                    <span>{t('Encendiendo cámara…')}</span>
                   </div>
                 )}
 
@@ -111,7 +113,7 @@ export function StudentQrScannerModal({ isOpen, onClose, onCodeScanned }: Studen
               )}
 
               <p className="text-[11px] text-text-ter text-center mt-3 max-w-xs">
-                Apuntá la cámara al código QR impreso en el aula o mostrado en la pantalla del docente.
+                {t('Apuntá la cámara al código QR impreso en el aula o mostrado en la pantalla del docente.')}
               </p>
             </div>
           )}
@@ -147,7 +149,7 @@ export function StudentQrScannerModal({ isOpen, onClose, onCodeScanned }: Studen
                 disabled={!manualCode.trim()}
                 className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-colors shadow-xs cursor-pointer"
               >
-                Ingresar →
+                {t('Ingresar →')}
               </button>
             </form>
           )}

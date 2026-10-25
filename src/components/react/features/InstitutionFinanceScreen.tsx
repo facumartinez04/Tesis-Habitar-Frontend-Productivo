@@ -24,10 +24,12 @@ import type {
   InstitutionFee,
   InstitutionFinanceSummary,
 } from '../../../types/finance';
+import { t, useI18n, intlLocale } from '../../../i18n';
 
 type Tab = 'cuotas' | 'gastos' | 'config';
 
 export function InstitutionFinanceScreen() {
+  useI18n();
   const session = useAuthGuard(['coordinador', 'admin']);
   const institutionId = session?.user.institutionId || 'inst_san_martin';
 
@@ -106,7 +108,7 @@ export function InstitutionFinanceScreen() {
   const handleCreateFee = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!feeForm.title || !feeForm.amountArs || !feeForm.dueDate) {
-      showError('Datos incompletos', 'Completá título, importe y fecha de vencimiento.');
+      showError(t('Datos incompletos'), t('Completá título, importe y fecha de vencimiento.'));
       return;
     }
     try {
@@ -120,8 +122,8 @@ export function InstitutionFinanceScreen() {
       });
       setIsFeeModalOpen(false);
       showSuccess(
-        'Cuota Creada con Mercado Pago',
-        'Se generó el enlace de pago de Mercado Pago. Podés compartirlo directamente con la familia.'
+        t('Cuota Creada con Mercado Pago'),
+        t('Se generó el enlace de pago de Mercado Pago. Podés compartirlo directamente con la familia.')
       );
       setFeeForm({
         title: '',
@@ -133,7 +135,7 @@ export function InstitutionFinanceScreen() {
       });
       loadData();
     } catch (err: any) {
-      showError('Error', err.message || 'No se pudo crear la cuota');
+      showError(t('Error'), err.message || t('No se pudo crear la cuota'));
     }
   };
 
@@ -141,17 +143,17 @@ export function InstitutionFinanceScreen() {
     const nextStatus = fee.status === 'PAGADO' ? 'PENDIENTE' : 'PAGADO';
     try {
       await updateInstitutionFeeStatus(institutionId, fee.id, nextStatus);
-      showSuccess('Estado actualizado', `La cuota ahora figura como ${nextStatus}.`);
+      showSuccess(t('Estado actualizado'), t('La cuota ahora figura como {nextStatus}.', { nextStatus }));
       loadData();
     } catch (err: any) {
-      showError('Error', err.message || 'No se pudo actualizar el estado.');
+      showError(t('Error'), err.message || t('No se pudo actualizar el estado.'));
     }
   };
 
   const handleCreateExpense = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!expenseForm.title || !expenseForm.amountArs) {
-      showError('Datos incompletos', 'Ingresá el título y monto del gasto.');
+      showError(t('Datos incompletos'), t('Ingresá el título y monto del gasto.'));
       return;
     }
     try {
@@ -165,7 +167,7 @@ export function InstitutionFinanceScreen() {
         status: expenseForm.status,
       });
       setIsExpenseModalOpen(false);
-      showSuccess('Gasto registrado', 'El gasto escolar fue registrado con éxito.');
+      showSuccess(t('Gasto registrado'), t('El gasto escolar fue registrado con éxito.'));
       setExpenseForm({
         category: 'MANTENIMIENTO',
         title: '',
@@ -177,18 +179,18 @@ export function InstitutionFinanceScreen() {
       });
       loadData();
     } catch (err: any) {
-      showError('Error', err.message || 'No se pudo registrar el gasto.');
+      showError(t('Error'), err.message || t('No se pudo registrar el gasto.'));
     }
   };
 
   const handleDeleteExpense = async (id: string) => {
-    if (!confirm('¿Eliminar este registro de gasto escolar?')) return;
+    if (!confirm(t('¿Eliminar este registro de gasto escolar?'))) return;
     try {
       await deleteInstitutionExpense(institutionId, id);
-      showSuccess('Eliminado', 'Gasto eliminado con éxito.');
+      showSuccess(t('Eliminado'), t('Gasto eliminado con éxito.'));
       loadData();
     } catch (err: any) {
-      showError('Error', err.message || 'No se pudo eliminar el gasto.');
+      showError(t('Error'), err.message || t('No se pudo eliminar el gasto.'));
     }
   };
 
@@ -197,10 +199,10 @@ export function InstitutionFinanceScreen() {
     setSavingConfig(true);
     try {
       await saveInstitutionFinanceConfig(institutionId, mpForm);
-      showSuccess('Configuración guardada', 'Credenciales de Mercado Pago para el colegio guardadas.');
+      showSuccess(t('Configuración guardada'), t('Credenciales de Mercado Pago para el colegio guardadas.'));
       loadData();
     } catch (err: any) {
-      showError('Error', err.message || 'No se pudo guardar la configuración.');
+      showError(t('Error'), err.message || t('No se pudo guardar la configuración.'));
     } finally {
       setSavingConfig(false);
     }
@@ -208,30 +210,30 @@ export function InstitutionFinanceScreen() {
 
   const handleTestMp = async () => {
     if (!mpForm.mpAccessToken) {
-      showError('Falta Token', 'Ingresá el Access Token de la cuenta de Mercado Pago del colegio.');
+      showError(t('Falta Token'), t('Ingresá el Access Token de la cuenta de Mercado Pago del colegio.'));
       return;
     }
     setTestingMp(true);
     try {
       const res = await testMercadoPagoConnection(mpForm.mpAccessToken);
       if (res.success) {
-        showSuccess('Conexión Exitosa', res.message);
+        showSuccess(t('Conexión Exitosa'), res.message);
       } else {
-        showError('Fallo de Conexión', res.message);
+        showError(t('Fallo de Conexión'), res.message);
       }
     } catch (err: any) {
-      showError('Error', err.message || 'Error al conectar con Mercado Pago');
+      showError(t('Error'), err.message || t('Error al conectar con Mercado Pago'));
     } finally {
       setTestingMp(false);
     }
   };
 
   const formatMoney = (amount: number) => {
-    return `$${amount.toLocaleString('es-AR')}`;
+    return `$${amount.toLocaleString(intlLocale())}`;
   };
 
   if (!session || loading) {
-    return <HabitarLoader size="lg" message="Cargando cuotas y finanzas institucionales..." />;
+    return <HabitarLoader size="lg" message={t('Cargando cuotas y finanzas institucionales...')} />;
   }
 
   return (
@@ -239,10 +241,10 @@ export function InstitutionFinanceScreen() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-text-pri">
-            Finanzas Institucionales
+            {t('Finanzas Institucionales')}
           </h1>
           <p className="text-xs sm:text-sm text-text-sec mt-0.5">
-            Gestión de cuotas escolares con cobro Mercado Pago y control de gastos operativos del colegio.
+            {t('Gestión de cuotas escolares con cobro Mercado Pago y control de gastos operativos del colegio.')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -251,14 +253,14 @@ export function InstitutionFinanceScreen() {
             className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-surface hover:bg-gray-bg border border-gray-border rounded-lg text-xs font-semibold text-text-pri transition-colors shadow-2xs"
           >
             <Icon name="plus" size={14} />
-            <span>Nuevo Gasto</span>
+            <span>{t('Nuevo Gasto')}</span>
           </button>
           <button
             onClick={() => setIsFeeModalOpen(true)}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors"
           >
             <Icon name="creditCard" size={14} />
-            <span>Emitir Cuota MP</span>
+            <span>{t('Emitir Cuota MP')}</span>
           </button>
         </div>
       </div>
@@ -266,7 +268,7 @@ export function InstitutionFinanceScreen() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white border border-gray-border rounded-xl p-4 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-text-sec">Cobranzas Recaudadas</span>
+            <span className="text-xs font-medium text-text-sec">{t('Cobranzas Recaudadas')}</span>
             <span className="p-1.5 rounded-lg bg-emerald-50 text-emerald-700">
               <Icon name="trendingUp" size={16} />
             </span>
@@ -275,13 +277,13 @@ export function InstitutionFinanceScreen() {
             {formatMoney(summary?.totalCollectedArs || 0)}
           </div>
           <div className="text-[11px] text-text-sec mt-1">
-            {summary?.paidFeesCount || 0} cuotas cobradas
+            {summary?.paidFeesCount || 0}{' '}{t('cuotas cobradas')}
           </div>
         </div>
 
         <div className="bg-white border border-gray-border rounded-xl p-4 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-text-sec">Cuotas Pendientes</span>
+            <span className="text-xs font-medium text-text-sec">{t('Cuotas Pendientes')}</span>
             <span className="p-1.5 rounded-lg bg-amber-50 text-amber-700">
               <Icon name="clock" size={16} />
             </span>
@@ -290,13 +292,13 @@ export function InstitutionFinanceScreen() {
             {formatMoney(summary?.totalPendingArs || 0)}
           </div>
           <div className="text-[11px] text-text-sec mt-1">
-            {summary?.overdueFeesCount ? `${summary.overdueFeesCount} vencidas` : 'Al día'}
+            {summary?.overdueFeesCount ? t('{overdueFeesCount} vencidas', { overdueFeesCount: summary.overdueFeesCount }) : t('Al día')}
           </div>
         </div>
 
         <div className="bg-white border border-gray-border rounded-xl p-4 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-text-sec">Gastos del Colegio</span>
+            <span className="text-xs font-medium text-text-sec">{t('Gastos del Colegio')}</span>
             <span className="p-1.5 rounded-lg bg-red-50 text-red-600">
               <Icon name="trendingDown" size={16} />
             </span>
@@ -304,12 +306,12 @@ export function InstitutionFinanceScreen() {
           <div className="text-2xl font-extrabold text-red-700 mt-2">
             {formatMoney(summary?.totalExpensesArs || 0)}
           </div>
-          <div className="text-[11px] text-text-sec mt-1">Mantenimiento, insumos y servicios</div>
+          <div className="text-[11px] text-text-sec mt-1">{t('Mantenimiento, insumos y servicios')}</div>
         </div>
 
         <div className="bg-white border border-gray-border rounded-xl p-4 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-text-sec">Balance Neto Escolar</span>
+            <span className="text-xs font-medium text-text-sec">{t('Balance Neto Escolar')}</span>
             <span className="p-1.5 rounded-lg bg-blue-50 text-blue-700">
               <Icon name="wallet" size={16} />
             </span>
@@ -317,7 +319,7 @@ export function InstitutionFinanceScreen() {
           <div className="text-2xl font-extrabold text-text-pri mt-2">
             {formatMoney(summary?.netBalanceArs || 0)}
           </div>
-          <div className="text-[11px] text-emerald-700 font-semibold mt-1">Superávit del período</div>
+          <div className="text-[11px] text-emerald-700 font-semibold mt-1">{t('Superávit del período')}</div>
         </div>
       </div>
 
@@ -332,7 +334,7 @@ export function InstitutionFinanceScreen() {
         >
           <span className="flex items-center gap-2">
             <Icon name="dollarSign" size={15} />
-            Cobranzas & Cuotas Escolares ({fees.length})
+            {t('Cobranzas & Cuotas Escolares ({feesCount})', { feesCount: fees.length })}
           </span>
         </button>
 
@@ -346,7 +348,7 @@ export function InstitutionFinanceScreen() {
         >
           <span className="flex items-center gap-2">
             <Icon name="trendingDown" size={15} />
-            Gastos de la Institución ({expenses.length})
+            {t('Gastos de la Institución ({expensesCount})', { expensesCount: expenses.length })}
           </span>
         </button>
 
@@ -360,7 +362,7 @@ export function InstitutionFinanceScreen() {
         >
           <span className="flex items-center gap-2">
             <Icon name="creditCard" size={15} />
-            Cuenta de Cobro Mercado Pago
+            {t('Cuenta de Cobro Mercado Pago')}
           </span>
         </button>
       </div>
@@ -369,14 +371,14 @@ export function InstitutionFinanceScreen() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-xs text-text-sec">
-              Cuotas emitidas a familias y tutores
+              {t('Cuotas emitidas a familias y tutores')}
             </span>
             <button
               onClick={() => setIsFeeModalOpen(true)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-semibold"
             >
               <Icon name="plus" size={13} />
-              <span>Emitir Cuota</span>
+              <span>{t('Emitir Cuota')}</span>
             </button>
           </div>
 
@@ -385,21 +387,21 @@ export function InstitutionFinanceScreen() {
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="border-b border-gray-border bg-surface text-text-sec font-semibold">
-                    <th className="py-3 px-4">Concepto</th>
-                    <th className="py-3 px-4">Período</th>
-                    <th className="py-3 px-4">Tutor / Familia</th>
-                    <th className="py-3 px-4">Vencimiento</th>
-                    <th className="py-3 px-4 text-right">Importe</th>
-                    <th className="py-3 px-4 text-center">Estado</th>
-                    <th className="py-3 px-4 text-center">Link Mercado Pago</th>
-                    <th className="py-3 px-4 text-center">Acción</th>
+                    <th className="py-3 px-4">{t('Concepto')}</th>
+                    <th className="py-3 px-4">{t('Período')}</th>
+                    <th className="py-3 px-4">{t('Tutor / Familia')}</th>
+                    <th className="py-3 px-4">{t('Vencimiento')}</th>
+                    <th className="py-3 px-4 text-right">{t('Importe')}</th>
+                    <th className="py-3 px-4 text-center">{t('Estado')}</th>
+                    <th className="py-3 px-4 text-center">{t('Link Mercado Pago')}</th>
+                    <th className="py-3 px-4 text-center">{t('Acción')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-border">
                   {fees.length === 0 ? (
                     <tr>
                       <td colSpan={8} className="py-8 text-center text-text-sec">
-                        No hay cuotas emitidas todavía. Hacé clic en &quot;Emitir Cuota&quot; para comenzar.
+                        {t('No hay cuotas emitidas todavía. Hacé clic en "Emitir Cuota" para comenzar.')}
                       </td>
                     </tr>
                   ) : (
@@ -408,11 +410,11 @@ export function InstitutionFinanceScreen() {
                         <td className="py-3 px-4 font-semibold text-text-pri">{fee.title}</td>
                         <td className="py-3 px-4 text-text-sec">{fee.period}</td>
                         <td className="py-3 px-4">
-                          <div className="text-text-pri font-medium">{fee.tutorName || 'Tutor registrado'}</div>
+                          <div className="text-text-pri font-medium">{fee.tutorName || t('Tutor registrado')}</div>
                           <div className="text-[10.5px] text-text-sec">{fee.tutorEmail}</div>
                         </td>
                         <td className="py-3 px-4 text-text-sec whitespace-nowrap">
-                          {new Date(fee.dueDate).toLocaleDateString('es-AR')}
+                          {new Date(fee.dueDate).toLocaleDateString(intlLocale())}
                         </td>
                         <td className="py-3 px-4 text-right font-bold text-text-pri whitespace-nowrap">
                           {formatMoney(fee.amountArs)}
@@ -437,15 +439,15 @@ export function InstitutionFinanceScreen() {
                                 rel="noreferrer"
                                 className="text-emerald-700 hover:underline font-semibold"
                               >
-                                Pagar
+                                {t('Pagar')}
                               </a>
                               <button
                                 onClick={() => {
                                   navigator.clipboard.writeText(fee.mpInitPoint || '');
-                                  showSuccess('Link Copiado', 'Enlace de Mercado Pago copiado para enviar a la familia.');
+                                  showSuccess(t('Link Copiado'), t('Enlace de Mercado Pago copiado para enviar a la familia.'));
                                 }}
                                 className="p-1 text-text-sec hover:text-text-pri"
-                                title="Copiar link"
+                                title={t('Copiar link')}
                               >
                                 <Icon name="copy" size={13} />
                               </button>
@@ -459,7 +461,7 @@ export function InstitutionFinanceScreen() {
                             onClick={() => handleToggleFeeStatus(fee)}
                             className="px-2 py-1 rounded border border-gray-border hover:bg-surface text-[11px] font-medium text-text-pri transition-colors"
                           >
-                            {fee.status === 'PAGADO' ? 'Marcar Pendiente' : 'Marcar Pagado'}
+                            {fee.status === 'PAGADO' ? t('Marcar Pendiente') : t('Marcar Pagado')}
                           </button>
                         </td>
                       </tr>
@@ -477,14 +479,14 @@ export function InstitutionFinanceScreen() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-xs text-text-sec">
-              Egresos y compras de la institución escolar
+              {t('Egresos y compras de la institución escolar')}
             </span>
             <button
               onClick={() => setIsExpenseModalOpen(true)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-semibold"
             >
               <Icon name="plus" size={13} />
-              <span>Nuevo Gasto</span>
+              <span>{t('Nuevo Gasto')}</span>
             </button>
           </div>
 
@@ -493,26 +495,26 @@ export function InstitutionFinanceScreen() {
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="border-b border-gray-border bg-surface text-text-sec font-semibold">
-                    <th className="py-3 px-4">Fecha</th>
-                    <th className="py-3 px-4">Concepto</th>
-                    <th className="py-3 px-4">Categoría</th>
-                    <th className="py-3 px-4">Proveedor / Factura</th>
-                    <th className="py-3 px-4 text-right">Monto</th>
-                    <th className="py-3 px-4 text-center">Acciones</th>
+                    <th className="py-3 px-4">{t('Fecha')}</th>
+                    <th className="py-3 px-4">{t('Concepto')}</th>
+                    <th className="py-3 px-4">{t('Categoría')}</th>
+                    <th className="py-3 px-4">{t('Proveedor / Factura')}</th>
+                    <th className="py-3 px-4 text-right">{t('Monto')}</th>
+                    <th className="py-3 px-4 text-center">{t('Acciones')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-border">
                   {expenses.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="py-8 text-center text-text-sec">
-                        No hay gastos escolares registrados.
+                        {t('No hay gastos escolares registrados.')}
                       </td>
                     </tr>
                   ) : (
                     pagedExpenses.pageItems.map((exp) => (
                       <tr key={exp.id} className="hover:bg-surface/50 transition-colors">
                         <td className="py-3 px-4 text-text-sec whitespace-nowrap">
-                          {new Date(exp.date).toLocaleDateString('es-AR')}
+                          {new Date(exp.date).toLocaleDateString(intlLocale())}
                         </td>
                         <td className="py-3 px-4 font-semibold text-text-pri">{exp.title}</td>
                         <td className="py-3 px-4">
@@ -530,7 +532,7 @@ export function InstitutionFinanceScreen() {
                           <button
                             onClick={() => handleDeleteExpense(exp.id)}
                             className="p-1 text-text-sec hover:text-red transition-colors"
-                            title="Eliminar gasto"
+                            title={t('Eliminar gasto')}
                           >
                             <Icon name="trash" size={14} />
                           </button>
@@ -550,21 +552,21 @@ export function InstitutionFinanceScreen() {
         <div className="max-w-2xl bg-white border border-gray-border rounded-xl p-6 shadow-2xs space-y-5">
           <div>
             <h3 className="text-base font-bold text-text-pri">
-              Cuenta de Mercado Pago de la Institución
+              {t('Cuenta de Mercado Pago de la Institución')}
             </h3>
             <p className="text-xs text-text-sec mt-1">
-              Podés configurar la cuenta propia de Mercado Pago de tu colegio para que el dinero de las cuotas ingrese directamente a su cuenta bancaria.
+              {t('Podés configurar la cuenta propia de Mercado Pago de tu colegio para que el dinero de las cuotas ingrese directamente a su cuenta bancaria.')}
             </p>
           </div>
 
           <form onSubmit={handleSaveMpConfig} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-text-pri mb-1">
-                Access Token de la Escuela
+                {t('Access Token de la Escuela')}
               </label>
               <input
                 type="password"
-                placeholder="APP_USR-xxxxxxxxxxxxxxxxxxxxxxxx..."
+                placeholder={t('APP_USR-xxxxxxxxxxxxxxxxxxxxxxxx...')}
                 value={mpForm.mpAccessToken}
                 onChange={(e) => setMpForm({ ...mpForm, mpAccessToken: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-border rounded-lg text-xs font-mono"
@@ -573,11 +575,11 @@ export function InstitutionFinanceScreen() {
 
             <div>
               <label className="block text-xs font-semibold text-text-pri mb-1">
-                Public Key de la Escuela (Opcional)
+                {t('Public Key de la Escuela (Opcional)')}
               </label>
               <input
                 type="text"
-                placeholder="APP_USR-xxxxxxxx-xxxx-xxxx..."
+                placeholder={t('APP_USR-xxxxxxxx-xxxx-xxxx...')}
                 value={mpForm.mpPublicKey}
                 onChange={(e) => setMpForm({ ...mpForm, mpPublicKey: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-border rounded-lg text-xs font-mono"
@@ -593,7 +595,7 @@ export function InstitutionFinanceScreen() {
                 className="rounded text-emerald-700"
               />
               <label htmlFor="school-sandbox" className="text-xs font-medium text-text-pri">
-                Entorno de pruebas (Sandbox)
+                {t('Entorno de pruebas (Sandbox)')}
               </label>
             </div>
 
@@ -603,7 +605,7 @@ export function InstitutionFinanceScreen() {
                 disabled={savingConfig}
                 className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-xs disabled:opacity-50"
               >
-                {savingConfig ? 'Guardando...' : 'Guardar Configuración'}
+                {savingConfig ? t('Guardando...') : t('Guardar Configuración')}
               </button>
               <button
                 type="button"
@@ -612,7 +614,7 @@ export function InstitutionFinanceScreen() {
                 className="px-4 py-2 border border-gray-border hover:bg-surface rounded-lg text-xs font-semibold text-text-pri disabled:opacity-50 flex items-center gap-1.5"
               >
                 <Icon name="refresh" size={13} className={testingMp ? 'animate-spin' : ''} />
-                <span>{testingMp ? 'Probando...' : 'Probar Token'}</span>
+                <span>{testingMp ? t('Probando...') : t('Probar Token')}</span>
               </button>
             </div>
           </form>
@@ -623,7 +625,7 @@ export function InstitutionFinanceScreen() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white border border-gray-border rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-gray-border">
-              <h3 className="text-base font-bold text-text-pri">Emitir Cuota con Mercado Pago</h3>
+              <h3 className="text-base font-bold text-text-pri">{t('Emitir Cuota con Mercado Pago')}</h3>
               <button onClick={() => setIsFeeModalOpen(false)} className="p-1 text-text-sec hover:text-text-pri">
                 <Icon name="close" size={16} />
               </button>
@@ -631,11 +633,11 @@ export function InstitutionFinanceScreen() {
 
             <form onSubmit={handleCreateFee} className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-text-pri mb-1">Concepto</label>
+                <label className="block text-xs font-semibold text-text-pri mb-1">{t('Concepto')}</label>
                 <input
                   type="text"
                   required
-                  placeholder="Ej: Cuota Marzo 2026 - Primaria"
+                  placeholder={t('Ej: Cuota Marzo 2026 - Primaria')}
                   value={feeForm.title}
                   onChange={(e) => setFeeForm({ ...feeForm, title: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-border rounded-lg text-xs"
@@ -644,7 +646,7 @@ export function InstitutionFinanceScreen() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-text-pri mb-1">Período</label>
+                  <label className="block text-xs font-semibold text-text-pri mb-1">{t('Período')}</label>
                   <input
                     type="text"
                     required
@@ -655,7 +657,7 @@ export function InstitutionFinanceScreen() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-text-pri mb-1">Importe (ARS)</label>
+                  <label className="block text-xs font-semibold text-text-pri mb-1">{t('Importe (ARS)')}</label>
                   <input
                     type="number"
                     required
@@ -668,7 +670,7 @@ export function InstitutionFinanceScreen() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-text-pri mb-1">Fecha de Vencimiento</label>
+                <label className="block text-xs font-semibold text-text-pri mb-1">{t('Fecha de Vencimiento')}</label>
                 <input
                   type="date"
                   required
@@ -679,10 +681,10 @@ export function InstitutionFinanceScreen() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-text-pri mb-1">Email del Tutor o Familia</label>
+                <label className="block text-xs font-semibold text-text-pri mb-1">{t('Email del Tutor o Familia')}</label>
                 <input
                   type="email"
-                  placeholder="familia@ejemplo.com"
+                  placeholder={t('familia@ejemplo.com')}
                   value={feeForm.tutorEmail}
                   onChange={(e) => setFeeForm({ ...feeForm, tutorEmail: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-border rounded-lg text-xs"
@@ -690,10 +692,10 @@ export function InstitutionFinanceScreen() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-text-pri mb-1">Nombre del Tutor o Alumno</label>
+                <label className="block text-xs font-semibold text-text-pri mb-1">{t('Nombre del Tutor o Alumno')}</label>
                 <input
                   type="text"
-                  placeholder="Familia Gómez / Alumno Juan Gómez"
+                  placeholder={t('Familia Gómez / Alumno Juan Gómez')}
                   value={feeForm.tutorName}
                   onChange={(e) => setFeeForm({ ...feeForm, tutorName: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-border rounded-lg text-xs"
@@ -706,14 +708,14 @@ export function InstitutionFinanceScreen() {
                   onClick={() => setIsFeeModalOpen(false)}
                   className="px-4 py-2 border border-gray-border rounded-lg text-xs font-semibold text-text-sec hover:text-text-pri"
                 >
-                  Cancelar
+                  {t('Cancelar')}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1.5"
                 >
                   <Icon name="creditCard" size={13} />
-                  <span>Emitir y Generar Link</span>
+                  <span>{t('Emitir y Generar Link')}</span>
                 </button>
               </div>
             </form>
@@ -725,7 +727,7 @@ export function InstitutionFinanceScreen() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white border border-gray-border rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-gray-border">
-              <h3 className="text-base font-bold text-text-pri">Registrar Gasto de la Escuela</h3>
+              <h3 className="text-base font-bold text-text-pri">{t('Registrar Gasto de la Escuela')}</h3>
               <button onClick={() => setIsExpenseModalOpen(false)} className="p-1 text-text-sec hover:text-text-pri">
                 <Icon name="close" size={16} />
               </button>
@@ -733,11 +735,11 @@ export function InstitutionFinanceScreen() {
 
             <form onSubmit={handleCreateExpense} className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-text-pri mb-1">Concepto / Título</label>
+                <label className="block text-xs font-semibold text-text-pri mb-1">{t('Concepto / Título')}</label>
                 <input
                   type="text"
                   required
-                  placeholder="Ej: Reparación eléctrica salón 4"
+                  placeholder={t('Ej: Reparación eléctrica salón 4')}
                   value={expenseForm.title}
                   onChange={(e) => setExpenseForm({ ...expenseForm, title: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-border rounded-lg text-xs"
@@ -746,7 +748,7 @@ export function InstitutionFinanceScreen() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-text-pri mb-1">Monto (ARS)</label>
+                  <label className="block text-xs font-semibold text-text-pri mb-1">{t('Monto (ARS)')}</label>
                   <input
                     type="number"
                     required
@@ -757,35 +759,35 @@ export function InstitutionFinanceScreen() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-text-pri mb-1">Categoría</label>
+                  <label className="block text-xs font-semibold text-text-pri mb-1">{t('Categoría')}</label>
                   <select
                     value={expenseForm.category}
                     onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-border rounded-lg text-xs form-select"
                   >
-                    <option value="MANTENIMIENTO">Mantenimiento Edilicio</option>
-                    <option value="MATERIAL_DIDACTICO">Material Didáctico</option>
-                    <option value="PLATAFORMAS_SOFTWARE">Plataformas & Software</option>
-                    <option value="SERVICIOS">Servicios (Luz, Internet)</option>
-                    <option value="EVENTOS">Actos y Eventos</option>
-                    <option value="OTROS">Otros</option>
+                    <option value="MANTENIMIENTO">{t('Mantenimiento Edilicio')}</option>
+                    <option value="MATERIAL_DIDACTICO">{t('Material Didáctico')}</option>
+                    <option value="PLATAFORMAS_SOFTWARE">{t('Plataformas & Software')}</option>
+                    <option value="SERVICIOS">{t('Servicios (Luz, Internet)')}</option>
+                    <option value="EVENTOS">{t('Actos y Eventos')}</option>
+                    <option value="OTROS">{t('Otros')}</option>
                   </select>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-text-pri mb-1">Proveedor</label>
+                  <label className="block text-xs font-semibold text-text-pri mb-1">{t('Proveedor')}</label>
                   <input
                     type="text"
-                    placeholder="Librería / Electricista"
+                    placeholder={t('Librería / Electricista')}
                     value={expenseForm.supplier}
                     onChange={(e) => setExpenseForm({ ...expenseForm, supplier: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-border rounded-lg text-xs"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-text-pri mb-1">N° Factura</label>
+                  <label className="block text-xs font-semibold text-text-pri mb-1">{t('N° Factura')}</label>
                   <input
                     type="text"
                     placeholder="FAC-00124"
@@ -802,13 +804,13 @@ export function InstitutionFinanceScreen() {
                   onClick={() => setIsExpenseModalOpen(false)}
                   className="px-4 py-2 border border-gray-border rounded-lg text-xs font-semibold text-text-sec hover:text-text-pri"
                 >
-                  Cancelar
+                  {t('Cancelar')}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-xs"
                 >
-                  Guardar Gasto
+                  {t('Guardar Gasto')}
                 </button>
               </div>
             </form>

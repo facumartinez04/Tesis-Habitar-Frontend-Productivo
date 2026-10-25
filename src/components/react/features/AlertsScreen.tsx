@@ -9,6 +9,7 @@ import { useAuthGuard } from '../../../hooks/useAuthGuard';
 import { getPerformanceAlerts } from '../../../services/alertService';
 import type { PerformanceAlert } from '../../../types/alert';
 import type { IconName } from '../../../lib/iconPaths';
+import { t, useI18n } from '../../../i18n';
 
 const severityIcon: Record<PerformanceAlert['severity'], { icon: IconName; variant: 'red' | 'amber' | 'green' }> = {
   critica: { icon: 'alertTriangle', variant: 'red' },
@@ -17,6 +18,7 @@ const severityIcon: Record<PerformanceAlert['severity'], { icon: IconName; varia
 };
 
 export function AlertsScreen() {
+  useI18n();
   const session = useAuthGuard(['coordinador', 'admin']);
   const [alerts, setAlerts] = useState<PerformanceAlert[]>([]);
   const pagedAlerts = usePagination(alerts, 10, null);
@@ -50,10 +52,10 @@ export function AlertsScreen() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-            Alertas Tempranas de Rendimiento
+            {t('Alertas Tempranas de Rendimiento')}
           </h1>
           <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-            Detección preventiva de cursos y áreas por debajo del umbral institucional (60%)
+            {t('Detección preventiva de cursos y áreas por debajo del umbral institucional (60%)')}
           </p>
         </div>
       </div>
@@ -70,24 +72,24 @@ export function AlertsScreen() {
               desc={
                 alert.severity !== 'resuelta' ? (
                   <>
-                    Promedio en eje {alert.axis}:{' '}
+                    {t('Promedio en eje {axis}:', { axis: alert.axis })}{' '}
                     <strong className={alert.severity === 'critica' ? 'text-rose-700 dark:text-rose-400 font-bold' : 'text-amber-700 dark:text-amber-400 font-bold'}>
                       {alert.currentValue}%
                     </strong>{' '}
-                    (umbral esperado: {alert.threshold}%) · Docente a cargo: {alert.teacherName}
+                    {t('(umbral esperado: {threshold}%) · Docente a cargo: {teacherName}', { threshold: alert.threshold, teacherName: alert.teacherName })}
                   </>
                 ) : undefined
               }
-              date={alert.severity !== 'resuelta' ? `Detectado el ${alert.detectedAt}` : undefined}
+              date={alert.severity !== 'resuelta' ? t('Detectado el {detectedAt}', { detectedAt: alert.detectedAt }) : undefined}
             >
               {alert.severity === 'resuelta' ? (
-                <Badge color="green">Resuelto</Badge>
+                <Badge color="green">{t('Resuelto')}</Badge>
               ) : (
                 <button
                   onClick={() => (window.location.href = `/institucional`)}
                   className="flex items-center gap-1.5 bg-white dark:bg-[#1A1E29] border border-stone-200 dark:border-stone-700 hover:bg-stone-50 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap shadow-2xs transition-colors cursor-pointer"
                 >
-                  <span>Ver detalle</span>
+                  <span>{t('Ver detalle')}</span>
                   <Icon name="arrowRight" size={13} />
                 </button>
               )}
@@ -95,11 +97,11 @@ export function AlertsScreen() {
           );
         })}
       </div>
-        <Pagination page={pagedAlerts.page} totalPages={pagedAlerts.totalPages} total={pagedAlerts.total} pageSize={pagedAlerts.pageSize} onChange={pagedAlerts.setPage} label="alertas" />
+        <Pagination page={pagedAlerts.page} totalPages={pagedAlerts.totalPages} total={pagedAlerts.total} pageSize={pagedAlerts.pageSize} onChange={pagedAlerts.setPage} label={t('alertas')} />
 
       <div className="mt-8 pt-4 border-t border-stone-200 dark:border-stone-800 flex items-center justify-between text-xs text-stone-500">
-        <span>Las alertas se actualizan de forma continua tras cada cierre de actividad docente.</span>
-        <a href="/institucional/configuracion" className="text-emerald-750 font-semibold hover:underline">Configurar umbrales</a>
+        <span>{t('Las alertas se actualizan de forma continua tras cada cierre de actividad docente.')}</span>
+        <a href="/institucional/configuracion" className="text-emerald-750 font-semibold hover:underline">{t('Configurar umbrales')}</a>
       </div>
     </div>
   );

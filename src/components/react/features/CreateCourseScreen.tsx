@@ -7,8 +7,10 @@ import { HabitarLoader } from '../ui/HabitarLoader';
 import { createCourse } from '../../../services/courseService';
 import { listInstitutionUsers, type InstitutionUser } from '../../../services/institutionUsersService';
 import type { CreateCourseInput } from '../../../types/activity';
+import { t, useI18n } from '../../../i18n';
 
 export function CreateCourseScreen() {
+  useI18n();
   const session = useAuthGuard(['coordinador', 'admin']);
   const [teachers, setTeachers] = useState<InstitutionUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,8 +19,8 @@ export function CreateCourseScreen() {
 
   const [form, setForm] = useState<CreateCourseInput>({
     name: '',
-    subject: 'Lengua y Literatura',
-    grade: '6° Primaria',
+    subject: t('Lengua y Literatura'),
+    grade: t('6° Primaria'),
     division: 'A',
     room: '',
     shift: 'MAÑANA',
@@ -36,7 +38,7 @@ export function CreateCourseScreen() {
   }, [session]);
 
   if (!session || loading) {
-    return <HabitarLoader size="lg" message="Cargando datos..." />;
+    return <HabitarLoader size="lg" message={t('Cargando datos...')} />;
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -48,7 +50,7 @@ export function CreateCourseScreen() {
       await createCourse(form);
       window.location.href = '/institucional/aulas';
     } catch (err: any) {
-      showToast('Error creando el aula: ' + (err.message || 'Error desconocido'));
+      showToast(t('Error creando el aula: ') + (err.message || t('Error desconocido')));
       setIsSubmitting(false);
     }
   }
@@ -63,13 +65,13 @@ export function CreateCourseScreen() {
           className="inline-flex items-center gap-1 text-xs text-stone-500 dark:text-stone-400 hover:text-emerald-700 transition-colors mb-3"
         >
           <Icon name="arrowLeft" size={13} />
-          Volver a Aulas
+          {t('Volver a Aulas')}
         </a>
         <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-          Crear Nueva Aula
+          {t('Crear Nueva Aula')}
         </h1>
         <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-          Se generará un código QR fijo permanente para este salón
+          {t('Se generará un código QR fijo permanente para este salón')}
         </p>
       </div>
 
@@ -78,12 +80,12 @@ export function CreateCourseScreen() {
 
           <div>
             <label className="block text-xs font-semibold text-slate-900 dark:text-white mb-1.5">
-              Nombre descriptivo del Aula <span className="text-red-500">*</span>
+              {t('Nombre descriptivo del Aula')}{' '}<span className="text-red-500">*</span>
             </label>
             <input
               required
               type="text"
-              placeholder="ej. 6° A — Lengua y Literatura"
+              placeholder={t('ej. 6° A — Lengua y Literatura')}
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               className="w-full border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-2.5 text-sm bg-white dark:bg-stone-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-600 transition-all"
@@ -93,12 +95,12 @@ export function CreateCourseScreen() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-900 dark:text-white mb-1.5">
-                Materia / Asignatura <span className="text-red-500">*</span>
+                {t('Materia / Asignatura')}{' '}<span className="text-red-500">*</span>
               </label>
               <input
                 required
                 type="text"
-                placeholder="ej. Lengua, Literatura"
+                placeholder={t('ej. Lengua, Literatura')}
                 value={form.subject}
                 onChange={(e) => setForm({ ...form, subject: e.target.value })}
                 className="w-full border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-2.5 text-sm bg-white dark:bg-stone-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-600 transition-all"
@@ -106,21 +108,21 @@ export function CreateCourseScreen() {
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-900 dark:text-white mb-1.5">
-                Grado / Nivel
+                {t('Grado / Nivel')}
               </label>
               <select
                 value={form.grade}
                 onChange={(e) => setForm({ ...form, grade: e.target.value })}
                 className="w-full border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-2.5 text-sm bg-white dark:bg-stone-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-600 transition-all"
               >
-                <option value="4° Primaria">4° Primaria</option>
-                <option value="5° Primaria">5° Primaria</option>
-                <option value="6° Primaria">6° Primaria</option>
-                <option value="1° Secundaria">1° Secundaria</option>
-                <option value="2° Secundaria">2° Secundaria</option>
-                <option value="3° Secundaria">3° Secundaria</option>
-                <option value="4° Secundaria">4° Secundaria</option>
-                <option value="5° Secundaria">5° Secundaria</option>
+                <option value="4° Primaria">{t('4° Primaria')}</option>
+                <option value="5° Primaria">{t('5° Primaria')}</option>
+                <option value="6° Primaria">{t('6° Primaria')}</option>
+                <option value="1° Secundaria">{t('1° Secundaria')}</option>
+                <option value="2° Secundaria">{t('2° Secundaria')}</option>
+                <option value="3° Secundaria">{t('3° Secundaria')}</option>
+                <option value="4° Secundaria">{t('4° Secundaria')}</option>
+                <option value="5° Secundaria">{t('5° Secundaria')}</option>
               </select>
             </div>
           </div>
@@ -128,11 +130,11 @@ export function CreateCourseScreen() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-900 dark:text-white mb-1.5">
-                División
+                {t('División')}
               </label>
               <input
                 type="text"
-                placeholder="ej. A"
+                placeholder={t('ej. A')}
                 value={form.division}
                 onChange={(e) => setForm({ ...form, division: e.target.value.toUpperCase() })}
                 className="w-full border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-2.5 text-sm bg-white dark:bg-stone-900 text-slate-900 dark:text-white uppercase focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-600 transition-all"
@@ -140,11 +142,11 @@ export function CreateCourseScreen() {
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-900 dark:text-white mb-1.5">
-                Salón Físico
+                {t('Salón Físico')}
               </label>
               <input
                 type="text"
-                placeholder="ej. Aula 12"
+                placeholder={t('ej. Aula 12')}
                 value={form.room}
                 onChange={(e) => setForm({ ...form, room: e.target.value })}
                 className="w-full border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-2.5 text-sm bg-white dark:bg-stone-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-600 transition-all"
@@ -152,23 +154,23 @@ export function CreateCourseScreen() {
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-900 dark:text-white mb-1.5">
-                Turno
+                {t('Turno')}
               </label>
               <select
                 value={form.shift}
                 onChange={(e) => setForm({ ...form, shift: e.target.value as any })}
                 className="w-full border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-2.5 text-sm bg-white dark:bg-stone-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-600 transition-all"
               >
-                <option value="MAÑANA">Mañana</option>
-                <option value="TARDE">Tarde</option>
-                <option value="NOCHE">Noche</option>
+                <option value="MAÑANA">{t('Mañana')}</option>
+                <option value="TARDE">{t('Tarde')}</option>
+                <option value="NOCHE">{t('Noche')}</option>
               </select>
             </div>
           </div>
 
           <div className="pt-2 border-t border-stone-200 dark:border-stone-700">
             <label className="block text-xs font-semibold text-slate-900 dark:text-white mb-1.5">
-              Asignar Docente a Cargo
+              {t('Asignar Docente a Cargo')}
             </label>
             {teachers.length > 0 ? (
               <select
@@ -176,16 +178,16 @@ export function CreateCourseScreen() {
                 onChange={(e) => setForm({ ...form, teacherId: e.target.value || undefined })}
                 className="w-full border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-2.5 text-sm bg-white dark:bg-stone-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-600 transition-all"
               >
-                <option value="">-- Sin asignar / Asignar luego --</option>
-                {teachers.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name} ({t.email})
+                <option value="">{t('-- Sin asignar / Asignar luego --')}</option>
+                {teachers.map((teacher) => (
+                  <option key={teacher.id} value={teacher.id}>
+                    {teacher.name} ({teacher.email})
                   </option>
                 ))}
               </select>
             ) : (
               <p className="text-xs text-stone-400 dark:text-stone-500 py-2">
-                No hay docentes registrados en la institución. Podés asignar uno después.
+                {t('No hay docentes registrados en la institución. Podés asignar uno después.')}
               </p>
             )}
           </div>
@@ -196,7 +198,7 @@ export function CreateCourseScreen() {
             href="/institucional/aulas"
             className="px-4 py-2.5 border border-stone-200 dark:border-stone-700 text-xs rounded-xl text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 font-medium transition-colors"
           >
-            Cancelar
+            {t('Cancelar')}
           </a>
           <button
             type="submit"
@@ -204,11 +206,11 @@ export function CreateCourseScreen() {
             className="flex items-center gap-2 px-6 py-2.5 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-sm transition-all"
           >
             {isSubmitting ? (
-              'Creando Aula...'
+              t('Creando Aula...')
             ) : (
               <>
                 <Icon name="check" size={14} />
-                Crear Aula y Generar QR
+                {t('Crear Aula y Generar QR')}
               </>
             )}
           </button>

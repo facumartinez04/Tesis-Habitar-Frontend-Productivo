@@ -1,6 +1,8 @@
 import type { OAuthProviderId, Role, Session, User } from '../types/auth';
 import { toLower, toUpper } from '../lib/caseAdapters';
 import { sessionStore } from '../store/sessionStore';
+import { isLocale, setChosenLocale, setContextLocale, t, type Locale } from '../i18n';
+import { apiFetch, languageHeaders } from '../lib/apiClient';
 
 const API_URL =
   import.meta.env.PUBLIC_API_URL ||
@@ -16,6 +18,17 @@ interface BackendUser {
   role: string;
   provider: string;
   institutionId: string;
+  language?: string | null;
+}
+
+interface MeResponse {
+  user: BackendUser;
+  institutionLanguage?: string;
+}
+
+function applySessionLocale(user: User, institutionLanguage: Locale | undefined): void {
+  setContextLocale(institutionLanguage);
+  if (user.language) setChosenLocale(user.language);
 }
 
 function toUser(backendUser: BackendUser): User {
@@ -26,6 +39,7 @@ function toUser(backendUser: BackendUser): User {
     email: backendUser.email,
     role: toLower<Role>(backendUser.role),
     institutionId: backendUser.institutionId,
+    language: isLocale(backendUser.language) ? backendUser.language : null,
   };
 }
 
@@ -35,18 +49,20 @@ export function oauthLoginUrl(provider: OAuthProviderId): string {
 
 export async function completeOAuthCallback(token: string): Promise<Session> {
   const response = await fetch(`${API_URL}/auth/me`, {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: { Authorization: `Bearer ${token}`, ...languageHeaders() },
   });
-  if (!response.ok) throw new Error('No se pudo completar el inicio de sesión');
+  if (!response.ok) throw new Error(t('No se pudo completar el inicio de sesión'));
 
-  const { user } = (await response.json()) as { user: BackendUser };
+  const { user, institutionLanguage } = (await response.json()) as MeResponse;
   const session: Session = {
     token,
     user: toUser(user),
     provider: toLower<OAuthProviderId>(user.provider),
     issuedAt: new Date().toISOString(),
+    institutionLanguage: isLocale(institutionLanguage) ? institutionLanguage : undefined,
   };
   sessionStore.set(session);
+  applySessionLocale(session.user, session.institutionLanguage);
   return session;
 }
 
@@ -56,7 +72,7 @@ export async function refreshSession(): Promise<Session | null> {
 
   try {
     const response = await fetch(`${API_URL}/auth/me`, {
-      headers: { Authorization: `Bearer ${current.token}` },
+      headers: { Authorization: `Bearer ${current.token}`, ...languageHeaders() },
     });
     if (!response.ok) {
       if (response.status === 401) {
@@ -66,13 +82,15 @@ export async function refreshSession(): Promise<Session | null> {
       return current;
     }
 
-    const { user } = (await response.json()) as { user: BackendUser };
+    const { user, institutionLanguage } = (await response.json()) as MeResponse;
     const session: Session = {
       ...current,
       user: toUser(user),
       provider: toLower<OAuthProviderId>(user.provider),
+      institutionLanguage: isLocale(institutionLanguage) ? institutionLanguage : current.institutionLanguage,
     };
     sessionStore.set(session);
+    applySessionLocale(session.user, session.institutionLanguage);
     return session;
   } catch {
     return current;
@@ -83,7 +101,7 @@ export async function ensureAdminSession(): Promise<Session> {
   const current = sessionStore.get();
   if (current?.user.role === 'admin') return current;
   window.location.href = '/login';
-  throw new Error('Se necesita una sesión de administración');
+  throw new Error(t('Se necesita una sesión de administración'));
 }
 
 export async function logout(): Promise<void> {
@@ -95,6 +113,12 @@ export async function logout(): Promise<void> {
     }).catch(() => undefined);
   }
   sessionStore.set(null);
+}
+
+export async function updateMyLanguage(language: Locale): Promise<void> {
+  const { user } = await apiFetch<{ user: BackendUser }>('/auth/me/language', { method: 'PATCH', body: { language } });
+  const current = sessionStore.get();
+  if (current) sessionStore.set({ ...current, user: { ...current.user, language: isLocale(user.language) ? user.language : null } });
 }
 
 export function dashboardPathForRole(role: Role): string {
