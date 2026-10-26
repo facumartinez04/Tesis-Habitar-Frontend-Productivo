@@ -30,9 +30,25 @@ import type { Activity } from '../../../types/activity';
 import type { Question } from '../../../types/question';
 import { setContextLocale, t, translate, useI18n, type Locale } from '../../../i18n';
 import { LockedStudentName } from '../ui/LockedStudentName';
+import { questionTypeOf } from '../../../types/question';
 
 function isOpen(question: Question): boolean {
-  return !question.options || question.options.length === 0;
+  const type = questionTypeOf(question);
+  return type === 'ABIERTA' || type === 'COMPLETAR';
+}
+
+function isMulti(question: Question): boolean {
+  return questionTypeOf(question) === 'OPCION_MULTIPLE';
+}
+
+function decodeMulti(value: string | undefined): string[] {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === 'string') : [];
+  } catch {
+    return [];
+  }
 }
 
 function closesAt(activity: Activity): number | null {
@@ -67,7 +83,7 @@ interface ActivityMeta {
 function fromServerDraft(draft: DraftAnswers): Record<string, string> {
   const result: Record<string, string> = {};
   for (const [id, value] of Object.entries(draft)) {
-    const v = value.selectedOption ?? value.textAnswer;
+    const v = value.selectedOptions?.length ? JSON.stringify(value.selectedOptions) : value.selectedOption ?? value.textAnswer;
     if (v) result[id] = v;
   }
   return result;
@@ -78,7 +94,10 @@ function keepValidAnswers(questions: Question[], answers: Record<string, string>
   for (const q of questions) {
     const value = answers[q.id];
     if (!value) continue;
-    if (isOpen(q) || (q.options ?? []).includes(value)) result[q.id] = value;
+    if (isMulti(q)) {
+      const valid = decodeMulti(value).filter((o) => (q.options ?? []).includes(o));
+      if (valid.length) result[q.id] = JSON.stringify(valid);
+    } else if (isOpen(q) || (q.options ?? []).includes(value)) result[q.id] = value;
   }
   return result;
 }
@@ -453,6 +472,17 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     setAnswers((prev) => ({ ...prev, [currentQuestion.id]: option }));
   }
 
+  function toggleOption(option: string) {
+    setAnswers((prev) => {
+      const current = decodeMulti(prev[currentQuestion.id]);
+      const next = current.includes(option) ? current.filter((o) => o !== option) : [...current, option];
+      const copy = { ...prev };
+      if (next.length) copy[currentQuestion.id] = JSON.stringify(next);
+      else delete copy[currentQuestion.id];
+      return copy;
+    });
+  }
+
   function goTo(nextIndex: number) {
     setIndex(Math.max(0, Math.min(nextIndex, questions.length - 1)));
   }
@@ -462,7 +492,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     for (const q of questions) {
       const value = answers[q.id];
       if (!value || !value.trim()) continue;
-      draft[q.id] = isOpen(q) ? { textAnswer: value } : { selectedOption: value };
+      draft[q.id] = isMulti(q) ? { selectedOptions: decodeMulti(value) } : isOpen(q) ? { textAnswer: value } : { selectedOption: value };
     }
     return draft;
   }
@@ -520,7 +550,13 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   function buildPayload(): AnswerPayload[] {
     return questions
       .filter((q) => answers[q.id] !== undefined && answers[q.id] !== '')
-      .map((q) => (isOpen(q) ? { questionId: q.id, textAnswer: answers[q.id] } : { questionId: q.id, selectedOption: answers[q.id] }));
+      .map((q) =>
+        isMulti(q)
+          ? { questionId: q.id, selectedOptions: decodeMulti(answers[q.id]) }
+          : isOpen(q)
+            ? { questionId: q.id, textAnswer: answers[q.id] }
+            : { questionId: q.id, selectedOption: answers[q.id] },
+      );
   }
 
   async function submitAll(automatic: boolean) {
@@ -1134,7 +1170,13 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
             {t('Pregunta {value} de {questionsCount}', { value: safeIndex + 1, questionsCount: questions.length })}
           </span>
           <span className="text-[10px] uppercase bg-stone-100 dark:bg-stone-800 px-2 py-0.5 rounded font-bold">
-            {isOpen(currentQuestion) ? t('Respuesta escrita') : t('Elegí una opción')}
+            {questionTypeOf(currentQuestion) === 'ABIERTA'
+              ? t('Respuesta escrita')
+              : questionTypeOf(currentQuestion) === 'COMPLETAR'
+                ? t('Completá el espacio en blanco')
+                : isMulti(currentQuestion)
+                  ? t('Elegí todas las correctas')
+                  : t('Elegí una opción')}
           </span>
         </div>
 
@@ -1155,7 +1197,23 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
           <TextSizeControls onChange={changeFont} step={fontStep} max={FONT_SCALES.length - 1} />
         </div>
 
-        {isOpen(currentQuestion) && (
+        {questionTypeOf(currentQuestion) === 'COMPLETAR' && (
+          <div className="mb-6">
+            <input
+              value={answers[currentQuestion.id] ?? ''}
+              onChange={(e) => {
+                const value = e.target.value.slice(0, 200);
+                setAnswers((prev) => ({ ...prev, [currentQuestion.id]: value }));
+              }}
+              placeholder={t('Escribí la palabra o frase que falta')}
+              aria-label={t('Respuesta para completar')}
+              autoCapitalize="none"
+              className="w-full px-3.5 py-3 border border-stone-200 dark:border-stone-700 rounded-xl text-sm bg-stone-50 dark:bg-[#202533] text-slate-900 dark:text-white focus:border-emerald-600 focus:bg-white outline-none"
+            />
+          </div>
+        )}
+
+        {questionTypeOf(currentQuestion) === 'ABIERTA' && (
           <div className="mb-6">
             <textarea
               value={answers[currentQuestion.id] ?? ''}
@@ -1172,8 +1230,9 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
         )}
 
         <div className="flex flex-col gap-2.5 mb-6">
-          {currentQuestion.options?.map((option) => {
-            const selected = answers[currentQuestion.id] === option;
+          {!isOpen(currentQuestion) && currentQuestion.options?.map((option) => {
+            const multi = isMulti(currentQuestion);
+            const selected = multi ? decodeMulti(answers[currentQuestion.id]).includes(option) : answers[currentQuestion.id] === option;
             return (
               <label
                 key={option}
@@ -1184,10 +1243,10 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
                 }`}
               >
                 <input
-                  type="radio"
+                  type={multi ? 'checkbox' : 'radio'}
                   name={currentQuestion.id}
                   checked={selected}
-                  onChange={() => selectOption(option)}
+                  onChange={() => (multi ? toggleOption(option) : selectOption(option))}
                   className="accent-emerald-700 w-4 h-4 cursor-pointer"
                 />
                 <span style={fontStep ? { fontSize: `${14 * fontScale}px` } : undefined}>{option}</span>

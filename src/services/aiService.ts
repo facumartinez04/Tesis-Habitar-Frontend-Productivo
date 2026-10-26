@@ -4,6 +4,7 @@ import { apiFetch } from '../lib/apiClient';
 import { toLower, toUpper } from '../lib/caseAdapters';
 import type { Locale } from '../i18n';
 import { sessionStore } from '../store/sessionStore';
+import type { QuestionType } from '../types/question';
 
 export interface GenerateQuestionsResult {
   questions: Question[];
@@ -12,10 +13,13 @@ export interface GenerateQuestionsResult {
 
 interface BackendGeneratedQuestion {
   axis: string;
+  type?: QuestionType;
   prompt: string;
   expectedAnswer: string;
   options?: string[];
   correctOption?: string;
+  correctOptions?: string[];
+  acceptedAnswers?: string[];
   approved: boolean;
 }
 
@@ -29,19 +33,23 @@ export async function generateQuestions(
   sourceText: string,
   focusAxis?: ComprehensionAxis,
   language?: Locale,
+  questionTypes?: QuestionType[],
 ): Promise<GenerateQuestionsResult> {
   const result = await apiFetch<BackendGenerateQuestionsResponse>('/activities/generate-questions', {
     method: 'POST',
-    body: { sourceText, focusAxis: focusAxis ? toUpper(focusAxis) : undefined, language },
+    body: { sourceText, focusAxis: focusAxis ? toUpper(focusAxis) : undefined, language, questionTypes },
   });
 
   const questions: Question[] = result.questions.map((question, index) => ({
     id: `draft-${index}`,
     axis: toLower<ComprehensionAxis>(question.axis),
+    type: question.type,
     prompt: question.prompt,
     expectedAnswer: question.expectedAnswer,
     options: question.options,
     correctOption: question.correctOption,
+    correctOptions: question.correctOptions,
+    acceptedAnswers: question.acceptedAnswers,
     edited: false,
     approved: question.approved,
   }));

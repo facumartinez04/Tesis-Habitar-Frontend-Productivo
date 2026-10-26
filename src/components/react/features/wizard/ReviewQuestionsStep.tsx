@@ -8,6 +8,8 @@ import { Stepper } from '../../ui/Stepper';
 import { activityWizardStore, updateWizard } from '../../../../store/activityWizardStore';
 import type { ComprehensionAxis } from '../../../../types/activity';
 import { t, useI18n } from '../../../../i18n';
+import { QuestionFields, QuestionPreview, draftFromQuestion, draftPayload, questionDraftProblem, type QuestionDraft } from '../QuestionFields';
+import { QUESTION_TYPE_LABEL, questionTypeOf } from '../../../../types/question';
 
 const axisBadge: Record<ComprehensionAxis, { label: string; color: 'blue' | 'teal' | 'amber' }> = {
   literal: { label: 'Literal', color: 'blue' },
@@ -19,7 +21,7 @@ export function ReviewQuestionsStep() {
   useI18n();
   const wizard = useStore(activityWizardStore);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [draft, setDraft] = useState('');
+  const [draft, setDraft] = useState<QuestionDraft | null>(null);
 
   useEffect(() => {
     if (wizard.questions.length === 0) {
@@ -39,16 +41,35 @@ export function ReviewQuestionsStep() {
 
   const approvedCount = wizard.questions.filter((q) => q.approved).length;
 
-  function startEdit(id: string, currentPrompt: string) {
+  function startEdit(id: string) {
+    const question = wizard.questions.find((q) => q.id === id);
+    if (!question) return;
     setEditingId(id);
-    setDraft(currentPrompt);
+    setDraft(draftFromQuestion(question));
   }
 
   function saveEdit(id: string) {
+    if (!draft || questionDraftProblem(draft)) return;
+    const payload = draftPayload(draft);
     updateWizard({
-      questions: wizard.questions.map((q) => (q.id === id ? { ...q, prompt: draft, edited: true } : q)),
+      questions: wizard.questions.map((q) =>
+        q.id === id
+          ? {
+              ...q,
+              type: draft.type,
+              prompt: payload.prompt,
+              expectedAnswer: payload.expectedAnswer ?? q.expectedAnswer,
+              options: 'options' in payload ? payload.options : undefined,
+              correctOption: 'correctOption' in payload ? payload.correctOption : undefined,
+              correctOptions: 'correctOptions' in payload ? payload.correctOptions : undefined,
+              acceptedAnswers: 'acceptedAnswers' in payload ? payload.acceptedAnswers : undefined,
+              edited: true,
+            }
+          : q,
+      ),
     });
     setEditingId(null);
+    setDraft(null);
   }
 
   function removeQuestion(id: string) {
@@ -95,31 +116,36 @@ export function ReviewQuestionsStep() {
           <Card key={question.id} className={`flex flex-col sm:flex-row gap-3 sm:items-start ${question.approved ? 'border-green-mid' : ''}`}>
             <div className="flex-1">
               <Badge color={axisBadge[question.axis].color} className="mb-1.5">{t(axisBadge[question.axis].label)}</Badge>
+              <Badge color="gray" className="mb-1.5 ml-1.5">{t(QUESTION_TYPE_LABEL[questionTypeOf(question)])}</Badge>
               {question.edited && (
                 <span className="inline-flex items-center gap-1 text-[10.5px] text-green-mid ml-1.5">
                   <Icon name="edit" size={11} />
                   {t('editada')}
                 </span>
               )}
-              {editingId === question.id ? (
-                <textarea
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  className="w-full mt-1 border border-gray-border rounded-[6px] px-2.5 py-1.5 text-[13px]"
-                  rows={2}
-                />
+              {editingId === question.id && draft ? (
+                <div className="mt-1">
+                  <QuestionFields draft={draft} onChange={setDraft} idPrefix={question.id} />
+                  {questionDraftProblem(draft) && <p className="text-[11px] text-red mt-1.5">{questionDraftProblem(draft)}</p>}
+                </div>
               ) : (
-                <div className="text-[13px] font-medium mb-1">{question.prompt}</div>
+                <>
+                  <div className="text-[13px] font-medium mb-1">{question.prompt}</div>
+                  <QuestionPreview {...question} />
+                </>
               )}
-              <div className="text-[11.5px] text-text-sec">{t('Resp. esperada: {expectedAnswer}', { expectedAnswer: question.expectedAnswer })}</div>
             </div>
             <div className="flex flex-wrap gap-1.5 sm:shrink-0">
               {editingId === question.id ? (
-                <button onClick={() => saveEdit(question.id)} className="bg-green-dark text-white rounded-[6px] px-2.5 py-1.5 text-xs">
+                <button
+                  onClick={() => saveEdit(question.id)}
+                  disabled={!draft || Boolean(questionDraftProblem(draft))}
+                  className="bg-green-dark text-white rounded-[6px] px-2.5 py-1.5 text-xs disabled:opacity-50"
+                >
                   {t('Guardar')}
                 </button>
               ) : (
-                <button onClick={() => startEdit(question.id, question.prompt)} className="bg-white border border-gray-border rounded-[6px] px-2.5 py-1.5 text-xs">
+                <button onClick={() => startEdit(question.id)} className="bg-white border border-gray-border rounded-[6px] px-2.5 py-1.5 text-xs">
                   {t('Editar')}
                 </button>
               )}

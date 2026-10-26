@@ -4,6 +4,7 @@ import type { Question } from '../types/question';
 import type { ReadingMode } from '../services/activityService';
 import { clearWizardDocument } from '../lib/wizardDocument';
 import type { Locale } from '../i18n';
+import type { QuestionType } from '../types/question';
 
 export interface ActivityWizardState {
   educationLevel: string;
@@ -26,6 +27,7 @@ export interface ActivityWizardState {
   templateId?: string | null;
   showFeedback?: boolean;
   language?: Locale;
+  questionTypes?: QuestionType[];
   saveToBank?: boolean;
   name: string;
   generatedCode: string | null;

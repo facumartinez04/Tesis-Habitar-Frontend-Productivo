@@ -5,6 +5,7 @@ import type { Question } from '../types/question';
 import { apiFetch, apiUrl, authorizedFetch } from '../lib/apiClient';
 import { toLower, toUpper } from '../lib/caseAdapters';
 import { isLocale, t, type Locale } from '../i18n';
+import type { QuestionType } from '../types/question';
 
 export interface CreateActivityInput {
   name: string;
@@ -53,10 +54,13 @@ interface BackendActivity {
 interface BackendQuestion {
   id: string;
   axis: string;
+  type?: QuestionType;
   prompt: string;
   expectedAnswer?: string;
   options: string[] | null;
   correctOption?: string | null;
+  correctOptions?: string[] | null;
+  acceptedAnswers?: string[] | null;
   edited: boolean;
   approved: boolean;
 }
@@ -101,10 +105,13 @@ function toQuestion(backendQuestion: BackendQuestion): Question {
   return {
     id: backendQuestion.id,
     axis: toLower<ComprehensionAxis>(backendQuestion.axis),
+    type: backendQuestion.type,
     prompt: backendQuestion.prompt,
     expectedAnswer: backendQuestion.expectedAnswer ?? '',
     options: backendQuestion.options ?? undefined,
     correctOption: backendQuestion.correctOption ?? undefined,
+    correctOptions: backendQuestion.correctOptions ?? undefined,
+    acceptedAnswers: backendQuestion.acceptedAnswers ?? undefined,
     edited: backendQuestion.edited,
     approved: backendQuestion.approved,
   };
@@ -132,10 +139,13 @@ export async function createActivity(input: CreateActivityInput): Promise<Activi
       ...(input.templateId ? { templateId: input.templateId } : {}),
       questions: input.questions.map((question) => ({
         axis: toUpper(question.axis),
+        type: question.type,
         prompt: question.prompt,
         expectedAnswer: question.expectedAnswer,
         options: question.options,
         correctOption: question.correctOption,
+        correctOptions: question.correctOptions,
+        acceptedAnswers: question.acceptedAnswers,
         approved: question.approved,
         edited: question.edited,
       })),
@@ -215,6 +225,7 @@ export async function publishActivityNow(activityId: string): Promise<void> {
 export interface AnswerPayload {
   questionId: string;
   selectedOption?: string;
+  selectedOptions?: string[];
   textAnswer?: string;
 }
 
@@ -231,7 +242,7 @@ export async function submitResponse(
   });
 }
 
-export type DraftAnswers = Record<string, { selectedOption?: string; textAnswer?: string }>;
+export type DraftAnswers = Record<string, { selectedOption?: string; selectedOptions?: string[]; textAnswer?: string }>;
 
 export interface StudentState {
   status: 'NUEVO' | 'EN_CURSO' | 'ENVIADO';
@@ -270,7 +281,7 @@ export async function releaseQuestions(activityId: string): Promise<void> {
 export async function editLiveQuestion(
   activityId: string,
   questionId: string,
-  input: { prompt?: string; options?: string[]; correctOption?: string; expectedAnswer?: string },
+  input: { prompt?: string; options?: string[]; correctOption?: string; correctOptions?: string[]; acceptedAnswers?: string[]; expectedAnswer?: string },
 ): Promise<void> {
   await apiFetch(`/activities/${activityId}/questions/${questionId}`, { method: 'PATCH', body: input });
 }
@@ -340,11 +351,16 @@ export interface StudentFeedback {
   scores: { literal: number | null; inferencial: number | null; critico: number | null; criticoPending: boolean };
   questions: {
     axis: 'LITERAL' | 'INFERENCIAL' | 'CRITICO';
+    type?: QuestionType;
     prompt: string;
     options: string[] | null;
     selectedOption: string | null;
+    selectedOptions?: string[] | null;
     correctOption: string | null;
+    correctOptions?: string[] | null;
+    acceptedAnswers?: string[] | null;
     correct: boolean | null;
+    partial?: number | null;
     textAnswer: string | null;
     score: number | null;
     scoreLabel: string | null;
@@ -491,9 +507,12 @@ export interface LiveStudent {
 export interface LiveQuestion {
   id: string;
   axis: 'LITERAL' | 'INFERENCIAL' | 'CRITICO';
+  type?: QuestionType;
   prompt: string;
   options: string[] | null;
   correctOption: string | null;
+  correctOptions?: string[] | null;
+  acceptedAnswers?: string[] | null;
   expectedAnswer: string;
 }
 

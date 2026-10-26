@@ -1,8 +1,19 @@
 import { Icon } from '../ui/Icon';
 import type { StudentFeedback } from '../../../services/activityService';
 import { t, useI18n } from '../../../i18n';
+import type { QuestionType } from '../../../types/question';
 
 const AXIS_LABEL: Record<string, string> = { LITERAL: 'Literal', INFERENCIAL: 'Inferencial', CRITICO: 'Crítico' };
+
+type FeedbackQuestion = StudentFeedback['questions'][number];
+
+function questionTypeOf(q: FeedbackQuestion): QuestionType {
+  return q.type ?? (q.options?.length ? 'OPCION_UNICA' : 'ABIERTA');
+}
+
+function answered(q: FeedbackQuestion): boolean {
+  return Boolean(q.selectedOption || q.selectedOptions?.length || q.textAnswer);
+}
 
 function pct(v: number | null): string {
   return v === null ? '—' : `${v}%`;
@@ -36,7 +47,7 @@ export function StudentFeedbackView({ feedback, studentName }: { feedback: Stude
       </div>
       {closed.length > 0 && (
         <p className="text-xs text-stone-600 dark:text-stone-300 mb-4">
-          {t('Acertaste')}{' '}<strong>{right}</strong>{' '}{t('de')}{' '}<strong>{closed.length}</strong>{' '}{t('preguntas de opción múltiple.')}
+          {t('Acertaste')}{' '}<strong>{right}</strong>{' '}{t('de')}{' '}<strong>{closed.length}</strong>{' '}{t('preguntas con corrección automática.')}
         </p>
       )}
 
@@ -50,21 +61,48 @@ export function StudentFeedbackView({ feedback, studentName }: { feedback: Stude
               {q.correct !== null && (
                 <span
                   className={`inline-flex items-center gap-1 text-[10.5px] font-bold px-2 py-0.5 rounded-full ${
-                    q.correct ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-300' : 'bg-red-50 dark:bg-red-500/10 text-red-800 dark:text-red-300'
+                    q.correct
+                      ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-300'
+                      : q.partial
+                        ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-800 dark:text-amber-300'
+                        : 'bg-red-50 dark:bg-red-500/10 text-red-800 dark:text-red-300'
                   }`}
                 >
-                  <Icon name={q.correct ? 'check' : 'close'} size={11} />
-                  {q.correct ? t('Correcta') : q.selectedOption ? t('Incorrecta') : t('Sin responder')}
+                  <Icon name={q.correct ? 'check' : q.partial ? 'minus' : 'close'} size={11} />
+                  {q.correct
+                    ? t('Correcta')
+                    : q.partial
+                      ? t('Parcial ({value}%)', { value: q.partial })
+                      : answered(q)
+                        ? t('Incorrecta')
+                        : t('Sin responder')}
                 </span>
               )}
             </div>
             <div className="text-[13px] font-semibold text-slate-900 dark:text-white mt-1">{q.prompt}</div>
 
-            {q.correct !== null ? (
+            {q.correct !== null && questionTypeOf(q) === 'COMPLETAR' ? (
+              <div className="mt-2 space-y-1.5 text-xs">
+                <div
+                  className={`rounded-lg px-3 py-2 ${
+                    q.correct ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-900 dark:text-emerald-100' : 'bg-red-50 dark:bg-red-500/10 text-red-900 dark:text-red-100'
+                  }`}
+                >
+                  <span className="text-[10px] font-bold uppercase tracking-wider opacity-70 mr-1.5">{t('Tu respuesta')}</span>
+                  {q.textAnswer || <span className="italic opacity-70">{t('No respondiste esta pregunta.')}</span>}
+                </div>
+                {!q.correct && (q.acceptedAnswers?.length ?? 0) > 0 && (
+                  <div className="text-stone-600 dark:text-stone-300">
+                    <span className="font-semibold">{t('Respuestas aceptadas:')}</span> {q.acceptedAnswers!.join(' · ')}
+                  </div>
+                )}
+              </div>
+            ) : q.correct !== null ? (
               <ul className="mt-2 space-y-1">
                 {(q.options ?? []).map((o) => {
-                  const isCorrect = o === q.correctOption;
-                  const isMine = o === q.selectedOption;
+                  const multi = questionTypeOf(q) === 'OPCION_MULTIPLE';
+                  const isCorrect = multi ? (q.correctOptions ?? []).includes(o) : o === q.correctOption;
+                  const isMine = multi ? (q.selectedOptions ?? []).includes(o) : o === q.selectedOption;
                   return (
                     <li
                       key={o}

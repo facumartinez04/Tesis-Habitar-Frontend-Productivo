@@ -16,6 +16,8 @@ import { ActivityBankModal } from './ActivityBankModal';
 import { fetchActivityTemplate, type ActivityTemplateSummary } from '../../../../services/activityService';
 import { clearWizardDocument, documentKind, saveWizardDocument } from '../../../../lib/wizardDocument';
 import { LOCALES, intlLocale, t, useI18n, type Locale } from '../../../../i18n';
+import { CLOSED_QUESTION_TYPES, QUESTION_TYPE_LABEL, type QuestionType } from '../../../../types/question';
+import { HelpTip } from '../../ui/HelpTip';
 
 const DEFAULT_TEXT =
   'La biodiversidad es el conjunto de formas de vida que habitan nuestro planeta. Cada ecosistema alberga especies que dependen entre sí para sobrevivir. Cuando una especie desaparece, las consecuencias se propagan en cadena hacia el resto del sistema. Proteger la biodiversidad no es solo una cuestión ambiental, sino también cultural y económica.';
@@ -132,6 +134,14 @@ export function NewActivityStep1() {
     }
   }, []);
 
+  const selectedTypes: QuestionType[] = wizard.questionTypes?.length ? wizard.questionTypes : CLOSED_QUESTION_TYPES;
+
+  function toggleType(type: QuestionType) {
+    const next = selectedTypes.includes(type) ? selectedTypes.filter((t2) => t2 !== type) : [...selectedTypes, type];
+    if (next.length === 0) return;
+    updateWizard({ questionTypes: CLOSED_QUESTION_TYPES.filter((t2) => next.includes(t2)) });
+  }
+
   const length = readingLength(text);
   const wordCount = length.words;
   const isValid = length.valid;
@@ -148,7 +158,7 @@ export function NewActivityStep1() {
     setGenerating(true);
     setGenerateError(null);
     try {
-      const result = await generateQuestions(text, wizard.focusAxis ?? undefined, wizard.language ?? locale);
+      const result = await generateQuestions(text, wizard.focusAxis ?? undefined, wizard.language ?? locale, selectedTypes);
       updateWizard({
         sourceText: text,
         wordCount: result.wordCount,
@@ -250,6 +260,32 @@ export function NewActivityStep1() {
           </select>
         </div>
       </div>
+
+      <fieldset className="mb-3.5">
+        <legend className="flex items-center gap-1.5 text-[11px] text-text-sec mb-[5px] font-medium">
+          {t('Tipos de pregunta')}
+          <HelpTip text={t('La IA reparte las preguntas literales e inferenciales entre los tipos que marques. Las del eje crítico siempre son de respuesta abierta.')} />
+        </legend>
+        <div className="flex flex-wrap gap-1.5">
+          {CLOSED_QUESTION_TYPES.map((type) => {
+            const on = selectedTypes.includes(type);
+            return (
+              <button
+                key={type}
+                type="button"
+                aria-pressed={on}
+                onClick={() => toggleType(type)}
+                className={`inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-1.5 rounded-[6px] text-[11.5px] font-semibold border cursor-pointer transition-colors ${
+                  on ? 'bg-emerald-700 border-emerald-700 text-white' : 'bg-white dark:bg-[#1A1E29] border-gray-border text-text-sec hover:text-text-pri'
+                }`}
+              >
+                {on && <span aria-hidden="true">✓</span>}
+                {t(QUESTION_TYPE_LABEL[type])}
+              </button>
+            );
+          })}
+        </div>
+      </fieldset>
 
       <div className="form-group mb-2.5">
         <label className="block text-[11px] text-text-sec mb-[5px] font-medium">{t('Texto fuente')}</label>
