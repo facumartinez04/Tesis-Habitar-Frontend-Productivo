@@ -14,6 +14,7 @@ import { ReassignCourseTeacherModal } from './ReassignCourseTeacherModal';
 import { CourseQrModal } from './CourseQrModal';
 import type { Course } from '../../../types/activity';
 import { t, useI18n } from '../../../i18n';
+import { CourseDevicesModal } from './CourseDevicesModal';
 
 export function InstitutionCoursesScreen() {
   useI18n();
@@ -24,6 +25,7 @@ export function InstitutionCoursesScreen() {
   const [loading, setLoading] = useState(true);
   const [reassigningCourse, setReassigningCourse] = useState<Course | null>(null);
   const [qrCourse, setQrCourse] = useState<Course | null>(null);
+  const [devicesCourse, setDevicesCourse] = useState<Course | null>(null);
   const { message, showToast } = useToast();
 
   async function loadData() {
@@ -148,6 +150,14 @@ export function InstitutionCoursesScreen() {
                       <Icon name="qrCode" size={11} />
                       {t('QR')}
                     </button>
+                    <button
+                      onClick={() => setDevicesCourse(course)}
+                      className="flex items-center gap-1 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 hover:bg-stone-50 rounded-lg px-2 py-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300 transition-colors cursor-pointer shadow-2xs"
+                      title={t('Ver los dispositivos de los alumnos y cerrar sesiones')}
+                    >
+                      <Icon name="lock" size={11} />
+                      {t('Dispositivos')}
+                    </button>
                     <a
                       href={`/docente/actividades/nueva?courseId=${course.id}`}
                       className="flex items-center gap-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg px-2 py-1 text-[11px] font-semibold shadow-2xs transition-colors"
@@ -183,6 +193,7 @@ export function InstitutionCoursesScreen() {
         isOpen={Boolean(qrCourse)}
         onClose={() => setQrCourse(null)}
       />
+      <CourseDevicesModal course={devicesCourse} isOpen={Boolean(devicesCourse)} onClose={() => setDevicesCourse(null)} />
     </div>
   );
 }

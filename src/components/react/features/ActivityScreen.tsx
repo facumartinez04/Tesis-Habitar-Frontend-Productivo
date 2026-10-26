@@ -29,6 +29,7 @@ import { arInstant, whenLabel } from '../../../lib/activityDates';
 import type { Activity } from '../../../types/activity';
 import type { Question } from '../../../types/question';
 import { setContextLocale, t, translate, useI18n, type Locale } from '../../../i18n';
+import { LockedStudentName } from '../ui/LockedStudentName';
 
 function isOpen(question: Question): boolean {
   return !question.options || question.options.length === 0;
@@ -130,6 +131,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [studentIdMode, setStudentIdMode] = useState<StudentIdMode>('nombre');
   const [activityLanguage, setActivityLanguage] = useState<Locale>('es');
+  const [lockedName, setLockedName] = useState<string | null>(null);
   const [nameParts, setNameParts] = useState({ firstName: '', lastName: '' });
   const [unavailableMessage, setUnavailableMessage] = useState('');
   const [joinError, setJoinError] = useState<string | null>(null);
@@ -200,6 +202,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
     try {
       localStorage.setItem('habitar_user_role', 'alumno');
       const savedName = localStorage.getItem('habitar_student_name');
+      if (savedName) setLockedName(savedName);
       if (savedName && !name) {
         setName(savedName);
         if (!/^(n\.º\s*)?\d+$/i.test(savedName)) setNameParts(splitStudentName(savedName));
@@ -379,7 +382,10 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
 
   async function handleJoin() {
     let trimmedName = name.trim();
-    if (studentIdMode === 'nombre') {
+    if (lockedName) {
+      trimmedName = lockedName;
+      setName(lockedName);
+    } else if (studentIdMode === 'nombre') {
       const problem = studentNameError(nameParts.firstName, nameParts.lastName);
       if (problem) {
         setJoinError(problem);
@@ -788,7 +794,9 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
             <div className="text-lg font-bold text-slate-900 dark:text-white">{label.title}</div>
             <div className="text-xs text-stone-500 mt-0.5">{label.hint}</div>
           </div>
-          {studentIdMode === 'nombre' ? (
+          {lockedName ? (
+            <LockedStudentName name={lockedName} />
+          ) : studentIdMode === 'nombre' ? (
             <div className="mb-2">
               <StudentNameFields
                 firstName={nameParts.firstName}
@@ -816,7 +824,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
           <div className="mb-2" />
           <button
             onClick={handleJoin}
-            disabled={(studentIdMode === 'nombre' ? !nameParts.firstName.trim() || !nameParts.lastName.trim() : !name.trim()) || joining}
+            disabled={(lockedName ? false : studentIdMode === 'nombre' ? !nameParts.firstName.trim() || !nameParts.lastName.trim() : !name.trim()) || joining}
             className="w-full bg-emerald-700 hover:bg-emerald-800 text-white py-3 rounded-xl text-xs sm:text-sm font-bold transition-all disabled:opacity-50 cursor-pointer shadow-2xs hover:shadow-xs"
           >
             {joining ? t('Ingresando…') : t('Comenzar actividad de lectura')}

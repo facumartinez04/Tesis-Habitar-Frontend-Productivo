@@ -35,6 +35,7 @@ interface BackendInstitution {
   alertThreshold?: number;
   alertEmailsEnabled?: boolean;
   defaultLanguage?: string;
+  readingMaxChars?: number;
   createdAt: string;
 }
 
@@ -57,6 +58,7 @@ function toInstitution(backend: BackendInstitution): Institution {
     alertThreshold: backend.alertThreshold ?? 60,
     alertEmailsEnabled: backend.alertEmailsEnabled ?? true,
     defaultLanguage: backend.defaultLanguage === 'en' ? 'en' : 'es',
+    readingMaxChars: backend.readingMaxChars ?? 5000,
     createdAt: backend.createdAt,
   };
 }
@@ -101,6 +103,7 @@ export interface UpdateInstitutionConfigPayload {
   alertThreshold?: number;
   alertEmailsEnabled?: boolean;
   defaultLanguage?: 'es' | 'en';
+  readingMaxChars?: number;
 }
 
 export async function updateInstitutionConfig(
@@ -120,6 +123,7 @@ export async function updateInstitutionConfig(
       alertThreshold: input.alertThreshold,
       alertEmailsEnabled: input.alertEmailsEnabled,
       defaultLanguage: input.defaultLanguage,
+      readingMaxChars: input.readingMaxChars,
     },
   });
   return toInstitution(backend);

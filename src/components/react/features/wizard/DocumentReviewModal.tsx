@@ -4,7 +4,7 @@ import { HabitarLoader } from '../../ui/HabitarLoader';
 import { DocxPages } from '../../ui/DocxPages';
 import { MIN_TEXT_CHARS, openPdf, type PdfHandle } from '../../../../lib/pdfDocument';
 import { extractDocumentWithPreview } from '../../../../lib/documentText';
-import { validateWordCount } from '../../../../services/aiService';
+import { readingLength } from '../../../../services/aiService';
 import { t, useI18n } from '../../../../i18n';
 
 export interface ImportedDocument {
@@ -29,9 +29,6 @@ interface PageState {
 
 const isPdf = (doc: ImportedDocument) => doc.mimeType === 'application/pdf' || /\.pdf$/i.test(doc.name);
 
-function countWords(text: string): number {
-  return text.trim().split(/\s+/).filter(Boolean).length;
-}
 
 export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentReviewModalProps) {
   useI18n();
@@ -130,8 +127,9 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
 
   if (!doc) return null;
 
-  const words = countWords(text);
-  const valid = validateWordCount(words);
+  const length = readingLength(text);
+  const words = length.words;
+  const valid = length.valid;
   const ocrRunning = pages.find((p) => p.ocr === 'running');
 
   function togglePage(n: number) {
@@ -252,7 +250,7 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
               />
               <div className="px-4 pb-3 flex items-center justify-between gap-2">
                 <span className={`text-[11.5px] font-semibold ${valid ? 'text-green-mid' : 'text-red'}`}>
-                  {t('{words} palabras', { words })}{' '}{valid ? t('· listo') : t('· tiene que tener entre 40 y 600')}
+                  {t('{words} palabras · {chars} caracteres', { words, chars: length.chars })}{' '}{valid ? t('· listo') : length.tooShort ? t('· tiene que tener al menos 40 palabras') : t('· supera los {max} caracteres', { max: length.maxChars })}
                 </span>
                 <button
                   type="button"

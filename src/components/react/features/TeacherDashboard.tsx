@@ -37,6 +37,7 @@ import { t, useI18n } from '../../../i18n';
 import { T } from '../../../i18n/T';
 import { HelpTip } from '../ui/HelpTip';
 import { OnboardingTour, teacherTourSteps } from './OnboardingTour';
+import { StudentCard } from './StudentCard';
 
 const activityStatusBadge: Record<ActivitySummary['status'], { label: string; color: 'green' | 'amber' | 'gray' }> = {
   borrador: { label: 'Borrador', color: 'gray' },
@@ -67,7 +68,13 @@ export function TeacherDashboard() {
   const [selectedCourseId, setSelectedCourseId] = useState<string>('');
   const [view, setView] = useState<'grid' | 'detail'>('grid');
   const [summary, setSummary] = useState<CourseResultSummary | null>(null);
-  const pagedRows = usePagination(summary?.rows ?? [], 15, selectedCourseId);
+  const [studentSearch, setStudentSearch] = useState('');
+  const [studentFilter, setStudentFilter] = useState<PerformanceStatus | 'todos'>('todos');
+  const studentTerm = studentSearch.trim().toLowerCase();
+  const visibleRows = (summary?.rows ?? []).filter(
+    (row) => (studentFilter === 'todos' || row.status === studentFilter) && (!studentTerm || row.studentName.toLowerCase().includes(studentTerm)),
+  );
+  const pagedRows = usePagination(visibleRows, 12, `${selectedCourseId}|${studentFilter}|${studentTerm}`);
   const [aiUsage, setAiUsage] = useState<AiUsageSnapshot | null>(null);
   const { message, showToast } = useToast();
   const [exporting, setExporting] = useState(false);
@@ -518,7 +525,6 @@ export function TeacherDashboard() {
             <Icon name="sparkles" size={12} className="text-emerald-700" />
             <span>{t('IA:')}{' '}<strong>{aiUsage.used}</strong>/{aiUsage.quota}</span>
             <HelpTip
-              align="end"
               title={t('Generaciones de IA')}
               text={t('Cuántas veces se usó la IA este mes para generar preguntas, sobre el total que permite el plan de la institución. Si se agota, Habitar propone preguntas por plantilla.')}
             />
@@ -584,37 +590,52 @@ export function TeacherDashboard() {
             <div className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
               {t('Rendimiento por Alumno en el Aula')}
               <HelpTip
-                text={t('Promedio de cada alumno en los tres ejes. El estado diagnóstico resume si está bien, regular o bajo según el umbral de la institución. Tocá una fila para ver la evolución del alumno.')}
+                text={t('Promedio de cada alumno en los tres ejes. El estado diagnóstico resume si está bien, regular o bajo según el umbral de la institución. Tocá una tarjeta para ver la ficha del alumno.')}
               />
             </div>
-            <TableWrap>
-              <thead>
-                <tr className="bg-stone-50 dark:bg-[#161A24] border-b border-stone-200 dark:border-stone-800">
-                  <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">{t('Alumno')}</th>
-                  <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">{t('Literal')}</th>
-                  <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">{t('Inferencial')}</th>
-                  <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">{t('Crítico')}</th>
-                  <th className="text-left text-xs text-stone-600 dark:text-stone-400 font-bold px-4 py-3">{t('Estado Diagnóstico')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-stone-200/80 dark:divide-stone-800">
-                {pagedRows.pageItems.map((row) => (
-                  <tr
-                    key={row.studentId}
-                    onClick={() => (window.location.href = `/docente/alumnos?id=${row.studentId}`)}
-                    className={`cursor-pointer hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors ${row.status === 'bajo' ? 'bg-rose-50/30 dark:bg-rose-950/10' : ''}`}
+            <div className="flex flex-col sm:flex-row gap-2 mb-3">
+              <div className="relative flex-1">
+                <Icon name="search" size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+                <input
+                  value={studentSearch}
+                  onChange={(e) => setStudentSearch(e.target.value)}
+                  placeholder={t('Buscar alumno…')}
+                  aria-label={t('Buscar alumno')}
+                  className="w-full pl-8 pr-3 py-2 border border-stone-200 dark:border-stone-700 rounded-xl text-xs bg-white dark:bg-[#1A1E29]"
+                />
+              </div>
+              <div className="flex gap-1 overflow-x-auto -mx-1 px-1 pb-1 sm:pb-0" role="group" aria-label={t('Filtrar por estado')}>
+                {(['todos', 'bajo', 'regular', 'bien', 'sin_datos'] as const).map((status) => (
+                  <button
+                    key={status}
+                    type="button"
+                    aria-pressed={studentFilter === status}
+                    onClick={() => setStudentFilter(status)}
+                    className={`shrink-0 inline-flex items-center gap-1 whitespace-nowrap px-3 py-2 rounded-xl text-[11.5px] font-semibold border cursor-pointer transition-colors ${
+                      studentFilter === status
+                        ? 'bg-emerald-700 border-emerald-700 text-white'
+                        : 'bg-white dark:bg-[#1A1E29] border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:text-slate-900'
+                    }`}
                   >
-                    <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">{row.studentName}</td>
-                    <td className="px-4 py-3 text-stone-700 dark:text-stone-300 font-medium">{pct(row.scores?.literal)}</td>
-                    <td className="px-4 py-3 text-stone-700 dark:text-stone-300 font-medium">{pct(row.scores?.inferencial)}</td>
-                    <td className="px-4 py-3 text-stone-700 dark:text-stone-300 font-medium">{row.criticoPending ? <span className="text-amber-700 text-xs font-semibold">{t('pendiente')}</span> : pct(row.scores?.critico)}</td>
-                    <td className="px-4 py-3">
-                      <Badge color={statusBadge[row.status].color}>{statusBadge[row.status].label}</Badge>
-                    </td>
-                  </tr>
+                    {status === 'todos' ? t('Todos') : statusBadge[status].label}
+                    <span className="ml-1 opacity-70 tabular-nums">
+                      {status === 'todos' ? summary.rows.length : summary.rows.filter((r) => r.status === status).length}
+                    </span>
+                  </button>
                 ))}
-              </tbody>
-            </TableWrap>
+              </div>
+            </div>
+            {pagedRows.pageItems.length === 0 ? (
+              <div className="bg-white dark:bg-[#1A1E29] border border-stone-200/80 dark:border-stone-800 rounded-2xl px-5 py-8 text-center text-xs text-stone-500">
+                {summary.rows.length === 0 ? t('Todavía no hay alumnos con respuestas en este aula.') : t('No hay alumnos que coincidan con la búsqueda.')}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                {pagedRows.pageItems.map((row) => (
+                  <StudentCard key={row.studentId} row={row} href={`/docente/alumnos?id=${row.studentId}`} status={statusBadge[row.status]} />
+                ))}
+              </div>
+            )}
             <Pagination page={pagedRows.page} totalPages={pagedRows.totalPages} total={pagedRows.total} pageSize={pagedRows.pageSize} onChange={pagedRows.setPage} label={t('alumnos')} />
           </div>
         </>

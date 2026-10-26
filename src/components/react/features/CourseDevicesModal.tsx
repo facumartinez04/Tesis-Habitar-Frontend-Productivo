@@ -49,8 +49,8 @@ export function CourseDevicesModal({ course, isOpen, onClose }: CourseDevicesMod
     if (!course) return;
 
     const confirmed = await confirmDestructive({
-      title: t('¿Desvincular dispositivo de {studentName}?', { studentName: device.studentName }),
-      text: t('El alumno podrá registrar un nuevo dispositivo (celular o tablet) la próxima vez que escanee el código QR del aula.'),
+      title: t('¿Cerrar la sesión de {studentName} en este dispositivo?', { studentName: device.studentName }),
+      text: t('Ese celular o tablet deja de estar vinculado. El alumno va a poder entrar desde otro dispositivo, siempre con el mismo nombre.'),
     });
 
     if (!confirmed) return;
@@ -58,10 +58,10 @@ export function CourseDevicesModal({ course, isOpen, onClose }: CourseDevicesMod
     setUnlinkingId(device.id);
     try {
       const res = await unlinkCourseStudentDevice(course.id, device.id);
-      showSuccess(t('Dispositivo desvinculado'), res.message);
+      showSuccess(t('Sesión cerrada'), res.message);
       setDevices((prev) => prev.filter((d) => d.id !== device.id));
     } catch (err: any) {
-      showError(t('Error al desvincular'), err.message || t('No se pudo desvincular el dispositivo.'));
+      showError(t('No se pudo cerrar la sesión'), err.message || t('No se pudo desvincular el dispositivo.'));
     } finally {
       setUnlinkingId(null);
     }
@@ -98,7 +98,7 @@ export function CourseDevicesModal({ course, isOpen, onClose }: CourseDevicesMod
         <div className="bg-emerald-50/70 dark:bg-emerald-950/30 border-b border-emerald-200/60 dark:border-emerald-800/40 px-6 py-3 flex items-start gap-2.5 text-xs text-emerald-900 dark:text-emerald-200">
           <Icon name="lock" size={14} className="mt-0.5 shrink-0" />
           <div className="leading-relaxed">
-            <strong>{t('Control de Identidad Única:')}</strong>{' '}{t('Cada alumno puede tener un solo dispositivo vinculado al aula física. Si un alumno cambió de celular o tablet, presioná')}{' '}<strong>{t('"Desvincular"')}</strong>{' '}{t('para que pueda escanear y registrar su nuevo equipo.')}
+            <strong>{t('Hasta 2 dispositivos por alumno:')}</strong>{' '}{t('cada alumno puede tener abierta su cuenta en dos dispositivos como máximo, siempre con el mismo nombre. Si intenta entrar desde un tercero, Habitar le avisa que ya tiene su cuenta abierta. Sólo la docente o el equipo directivo pueden cerrar la sesión de un dispositivo con')}{' '}<strong>{t('«Cerrar sesión»')}</strong>{t('; el alumno no puede hacerlo.')}
           </div>
         </div>
 
@@ -170,7 +170,7 @@ export function CourseDevicesModal({ course, isOpen, onClose }: CourseDevicesMod
                         className="px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 text-xs font-semibold hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                       >
                         <Icon name="trash" size={12} />
-                        <span>{isUnlinking ? t('Desvinculando…') : t('Desvincular')}</span>
+                        <span>{isUnlinking ? t('Cerrando…') : t('Cerrar sesión')}</span>
                       </button>
                     </div>
                   </div>

@@ -25,6 +25,7 @@ import type { Course } from '../../../types/activity';
 import type { Role } from '../../../types/auth';
 import { LOCALES, setContextLocale, t, useI18n, intlLocale, type Locale } from '../../../i18n';
 import { sessionStore } from '../../../store/sessionStore';
+import { HelpTip } from '../ui/HelpTip';
 
 const ROLE_LABEL: Record<Role, string> = { docente: 'Docente', coordinador: 'Coordinador/a',
   director: 'Director/a', admin: 'Admin' };
@@ -54,6 +55,8 @@ export function InstitutionSettingsScreen() {
   const [studentIdMode, setStudentIdMode] = useState<'lista' | 'nombre'>('nombre');
   const [defaultLanguage, setDefaultLanguage] = useState<Locale>('es');
   const [savingLanguage, setSavingLanguage] = useState(false);
+  const [readingMax, setReadingMax] = useState(5000);
+  const [savingReadingMax, setSavingReadingMax] = useState(false);
   const [alertThreshold, setAlertThreshold] = useState(60);
   const [alertEmailsEnabled, setAlertEmailsEnabled] = useState(true);
   const [savingStudents, setSavingStudents] = useState(false);
@@ -99,6 +102,7 @@ export function InstitutionSettingsScreen() {
       setTestResult(null);
       setStudentIdMode(institution.studentIdMode);
       setDefaultLanguage(institution.defaultLanguage);
+      setReadingMax(institution.readingMaxChars);
       setAlertThreshold(institution.alertThreshold);
       setAlertEmailsEnabled(institution.alertEmailsEnabled);
     }
@@ -118,6 +122,26 @@ export function InstitutionSettingsScreen() {
       showToast(err instanceof Error ? err.message : t('Error al guardar la configuración'));
     } finally {
       setSavingLanguage(false);
+    }
+  }
+
+  async function handleSaveReadingMax() {
+    if (!session) return;
+    if (!Number.isInteger(readingMax) || readingMax < 500 || readingMax > 50000) {
+      showToast(t('El máximo tiene que estar entre 500 y 50.000 caracteres'));
+      return;
+    }
+    setSavingReadingMax(true);
+    try {
+      const updated = await updateInstitutionConfig(session.user.institutionId, { readingMaxChars: readingMax });
+      setInstitution(updated);
+      const current = sessionStore.get();
+      if (current) sessionStore.set({ ...current, readingMaxChars: updated.readingMaxChars });
+      showToast(t('Largo máximo de las lecturas guardado'));
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : t('Error al guardar la configuración'));
+    } finally {
+      setSavingReadingMax(false);
     }
   }
 
@@ -319,6 +343,32 @@ export function InstitutionSettingsScreen() {
           ))}
           <button onClick={handleSaveLanguage} disabled={savingLanguage} className="bg-green-dark text-white text-[11.5px] px-3 py-1.5 rounded-md disabled:opacity-50">
             {savingLanguage ? t('Guardando…') : t('Guardar idioma')}
+          </button>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="text-[12.5px] font-medium mb-1 flex items-center gap-1.5">
+          {t('Largo máximo de las lecturas')}
+          <HelpTip text={t('Cantidad máxima de caracteres (con espacios) que puede tener el texto de una actividad. Un texto de 5.000 caracteres son unas 800 palabras.')} />
+        </div>
+        <div className="text-[11.5px] text-text-sec mb-3 leading-relaxed">
+          {t('Los docentes no van a poder generar ni publicar una actividad con un texto más largo. Por defecto son 5.000 caracteres.')}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            type="number"
+            min={500}
+            max={50000}
+            step={100}
+            value={readingMax}
+            onChange={(e) => setReadingMax(Number(e.target.value))}
+            aria-label={t('Largo máximo de las lecturas')}
+            className="w-32 border border-gray-border rounded-md px-2.5 py-1.5 text-[12px] bg-white dark:bg-[#1A1E29]"
+          />
+          <span className="text-[12px] text-text-sec">{t('caracteres')}</span>
+          <button onClick={handleSaveReadingMax} disabled={savingReadingMax} className="bg-green-dark text-white text-[11.5px] px-3 py-1.5 rounded-md disabled:opacity-50">
+            {savingReadingMax ? t('Guardando…') : t('Guardar largo máximo')}
           </button>
         </div>
       </Card>

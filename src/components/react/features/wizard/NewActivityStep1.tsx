@@ -2,7 +2,7 @@ import { useStore } from '@nanostores/react';
 import { useEffect, useState } from 'react';
 import { Icon } from '../../ui/Icon';
 import { Stepper } from '../../ui/Stepper';
-import { generateQuestions, validateWordCount } from '../../../../services/aiService';
+import { generateQuestions, readingLength } from '../../../../services/aiService';
 import { getCourseById } from '../../../../services/courseService';
 import { activityWizardStore, resetWizard, updateWizard } from '../../../../store/activityWizardStore';
 import type { ComprehensionAxis, Course } from '../../../../types/activity';
@@ -15,7 +15,7 @@ import { OneDrivePickerModal } from './OneDrivePickerModal';
 import { ActivityBankModal } from './ActivityBankModal';
 import { fetchActivityTemplate, type ActivityTemplateSummary } from '../../../../services/activityService';
 import { clearWizardDocument, documentKind, saveWizardDocument } from '../../../../lib/wizardDocument';
-import { LOCALES, t, useI18n, type Locale } from '../../../../i18n';
+import { LOCALES, intlLocale, t, useI18n, type Locale } from '../../../../i18n';
 
 const DEFAULT_TEXT =
   'La biodiversidad es el conjunto de formas de vida que habitan nuestro planeta. Cada ecosistema alberga especies que dependen entre sí para sobrevivir. Cuando una especie desaparece, las consecuencias se propagan en cadena hacia el resto del sistema. Proteger la biodiversidad no es solo una cuestión ambiental, sino también cultural y económica.';
@@ -132,8 +132,9 @@ export function NewActivityStep1() {
     }
   }, []);
 
-  const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
-  const isValid = validateWordCount(wordCount);
+  const length = readingLength(text);
+  const wordCount = length.words;
+  const isValid = length.valid;
 
   function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -359,12 +360,18 @@ export function NewActivityStep1() {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2.5">
         <div className="text-[11.5px] text-text-sec">
           {wordCount === 0 ? (
-            t('Cargá un texto de entre 40 y 600 palabras')
+            t('Cargá un texto de al menos 40 palabras y hasta {max} caracteres', { max: length.maxChars.toLocaleString(intlLocale()) })
           ) : (
             <>
-              <span className={`font-semibold ${isValid ? 'text-green-mid' : 'text-red'}`}>{t('{wordCount} palabras', { wordCount })}</span>
-              {' · '}
-              {isValid ? t('Rango válido para nivel seleccionado (40–600)') : t('El texto debe tener entre 40 y 600 palabras')}
+              <span className={`font-semibold ${isValid ? 'text-green-mid' : 'text-red'}`}>
+                {t('{wordCount} palabras · {chars} de {max} caracteres', {
+                  wordCount,
+                  chars: length.chars.toLocaleString(intlLocale()),
+                  max: length.maxChars.toLocaleString(intlLocale()),
+                })}
+              </span>
+              {length.tooShort && <>{' · '}{t('Tiene que tener al menos 40 palabras')}</>}
+              {length.tooLong && <>{' · '}{t('Supera el máximo de caracteres de tu institución')}</>}
             </>
           )}
         </div>

@@ -398,6 +398,11 @@ html.dark .divide-stone-200\/80:not([class*="dark:divide-"]):not([data-keep-whit
   border-color: #2D3342 !important;
 }
 
+html.dark .group:hover .group-hover\:text-emerald-600:not([class*="dark:group-hover:text-"]):not([data-keep-white]):not([data-keep-white] *),
+:root[data-theme="dark"] .group:hover .group-hover\:text-emerald-600:not([class*="dark:group-hover:text-"]):not([data-keep-white]):not([data-keep-white] *) {
+  color: #6EE7B7 !important;
+}
+
 html.dark .group:hover .group-hover\:text-gray-900:not([class*="dark:group-hover:text-"]):not([data-keep-white]):not([data-keep-white] *),
 :root[data-theme="dark"] .group:hover .group-hover\:text-gray-900:not([class*="dark:group-hover:text-"]):not([data-keep-white]):not([data-keep-white] *) {
   color: #F3F4F6 !important;

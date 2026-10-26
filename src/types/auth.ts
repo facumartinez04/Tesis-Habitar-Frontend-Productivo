@@ -20,6 +20,7 @@ export interface Session {
   issuedAt: string;
   token: string;
   institutionLanguage?: Locale;
+  readingMaxChars?: number;
   impersonatedInstitutionId?: string;
   impersonatedInstitutionName?: string;
   impersonatedRole?: string;

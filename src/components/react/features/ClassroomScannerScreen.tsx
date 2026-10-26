@@ -11,6 +11,7 @@ import { getOrCreateDeviceId } from '../../../lib/studentDevice';
 import { useLiveUpdates, usePolling } from '../../../lib/realtime';
 import { todayAR, whenLabel } from '../../../lib/activityDates';
 import { setContextLocale, t, useI18n } from '../../../i18n';
+import { LockedStudentName } from '../ui/LockedStudentName';
 
 interface BoundInfo {
   studentName: string;
@@ -28,6 +29,7 @@ export function ClassroomScannerScreen() {
   const [qrCode, setQrCode] = useState<string>('');
   const [redirecting, setRedirecting] = useState<string | null>(null);
   const [studentNameInput, setStudentNameInput] = useState('');
+  const [lockedName, setLockedName] = useState<string | null>(null);
   const [nameParts, setNameParts] = useState({ firstName: '', lastName: '' });
   const [binding, setBinding] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -120,6 +122,7 @@ export function ClassroomScannerScreen() {
             const previousName = localStorage.getItem('habitar_student_name');
             if (previousName) {
               setStudentNameInput(previousName);
+              setLockedName(previousName);
             }
           }
         } catch {
@@ -149,9 +152,9 @@ export function ClassroomScannerScreen() {
     e.preventDefault();
     if (!info) return;
 
-    const nameProblem = byList ? null : studentNameError(nameParts.firstName, nameParts.lastName);
-    const trimmedName = byList ? studentNameInput.trim() : fullStudentName(nameParts.firstName, nameParts.lastName);
-    if (byList && !/^\d{1,3}$/.test(trimmedName)) {
+    const nameProblem = lockedName || byList ? null : studentNameError(nameParts.firstName, nameParts.lastName);
+    const trimmedName = lockedName ?? (byList ? studentNameInput.trim() : fullStudentName(nameParts.firstName, nameParts.lastName));
+    if (!lockedName && byList && !/^\d{1,3}$/.test(trimmedName)) {
       setError(t('Ingresá sólo tu número de lista, por ejemplo 12.'));
       return;
     }
@@ -376,7 +379,9 @@ export function ClassroomScannerScreen() {
               </div>
             )}
 
-            {byList ? (
+            {lockedName ? (
+              <LockedStudentName name={lockedName} />
+            ) : byList ? (
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-text-pri block">{t('Número de lista')}</label>
                 <input
@@ -406,7 +411,7 @@ export function ClassroomScannerScreen() {
 
             <button
               type="submit"
-              disabled={binding || (byList ? !studentNameInput.trim() : !nameParts.firstName.trim() || !nameParts.lastName.trim())}
+              disabled={binding || (lockedName ? false : byList ? !studentNameInput.trim() : !nameParts.firstName.trim() || !nameParts.lastName.trim())}
               className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl text-sm transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
             >
               {binding ? (

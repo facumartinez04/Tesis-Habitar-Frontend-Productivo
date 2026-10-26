@@ -26,6 +26,7 @@ export interface Institution {
   alertThreshold: number;
   alertEmailsEnabled: boolean;
   defaultLanguage: 'es' | 'en';
+  readingMaxChars: number;
   createdAt: string;
 }
 

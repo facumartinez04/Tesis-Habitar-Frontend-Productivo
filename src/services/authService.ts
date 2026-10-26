@@ -24,6 +24,7 @@ interface BackendUser {
 interface MeResponse {
   user: BackendUser;
   institutionLanguage?: string;
+  readingMaxChars?: number;
 }
 
 function applySessionLocale(user: User, institutionLanguage: Locale | undefined): void {
@@ -53,13 +54,14 @@ export async function completeOAuthCallback(token: string): Promise<Session> {
   });
   if (!response.ok) throw new Error(t('No se pudo completar el inicio de sesión'));
 
-  const { user, institutionLanguage } = (await response.json()) as MeResponse;
+  const { user, institutionLanguage, readingMaxChars } = (await response.json()) as MeResponse;
   const session: Session = {
     token,
     user: toUser(user),
     provider: toLower<OAuthProviderId>(user.provider),
     issuedAt: new Date().toISOString(),
     institutionLanguage: isLocale(institutionLanguage) ? institutionLanguage : undefined,
+    readingMaxChars,
   };
   sessionStore.set(session);
   applySessionLocale(session.user, session.institutionLanguage);
@@ -80,13 +82,14 @@ export async function refreshSession(): Promise<Session | null> {
       return sessionStore.get();
     }
 
-    const { user, institutionLanguage } = (await response.json()) as MeResponse;
+    const { user, institutionLanguage, readingMaxChars } = (await response.json()) as MeResponse;
     const latest = sessionStore.get() ?? current;
     const session: Session = {
       ...latest,
       user: toUser(user),
       provider: toLower<OAuthProviderId>(user.provider),
       institutionLanguage: isLocale(institutionLanguage) ? institutionLanguage : latest.institutionLanguage,
+      readingMaxChars: readingMaxChars ?? latest.readingMaxChars,
     };
     sessionStore.set(session);
     applySessionLocale(session.user, session.institutionLanguage);

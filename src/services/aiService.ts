@@ -3,6 +3,7 @@ import type { Question } from '../types/question';
 import { apiFetch } from '../lib/apiClient';
 import { toLower, toUpper } from '../lib/caseAdapters';
 import type { Locale } from '../i18n';
+import { sessionStore } from '../store/sessionStore';
 
 export interface GenerateQuestionsResult {
   questions: Question[];
@@ -48,6 +49,27 @@ export async function generateQuestions(
   return { questions, wordCount: result.wordCount };
 }
 
-export function validateWordCount(wordCount: number, min = 40, max = 600): boolean {
-  return wordCount >= min && wordCount <= max;
+export const MIN_READING_WORDS = 40;
+export const DEFAULT_READING_MAX_CHARS = 5000;
+
+export function readingMaxChars(): number {
+  return sessionStore.get()?.readingMaxChars ?? DEFAULT_READING_MAX_CHARS;
+}
+
+export interface ReadingLength {
+  words: number;
+  chars: number;
+  maxChars: number;
+  tooShort: boolean;
+  tooLong: boolean;
+  valid: boolean;
+}
+
+export function readingLength(text: string, maxChars = readingMaxChars()): ReadingLength {
+  const trimmed = text.trim();
+  const words = trimmed.split(/\s+/).filter(Boolean).length;
+  const chars = trimmed.length;
+  const tooShort = words < MIN_READING_WORDS;
+  const tooLong = chars > maxChars;
+  return { words, chars, maxChars, tooShort, tooLong, valid: !tooShort && !tooLong };
 }
