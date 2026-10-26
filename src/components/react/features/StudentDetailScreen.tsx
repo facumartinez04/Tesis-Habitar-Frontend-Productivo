@@ -12,9 +12,10 @@ import { useQueryParam } from '../../../hooks/useQueryParam';
 import { getStudentDetail } from '../../../services/studentService';
 import { createFeedback, listFeedback, type Feedback } from '../../../services/feedbackService';
 import type { StudentDetail, StudentTrendPoint } from '../../../types/student';
-import { t, useI18n } from '../../../i18n';
+import { intlLocale, t, useI18n } from '../../../i18n';
 import { T } from '../../../i18n/T';
 import { MetricCard } from '../ui/MetricCard';
+import { HelpTip } from '../ui/HelpTip';
 
 const statusBadge = {
   bien: { label: <T k={'Bien'} />, color: 'green' as const },
@@ -30,6 +31,10 @@ const statusBadge = {
   },
   sin_datos: { label: <T k={'Sin datos'} />, color: 'gray' as const },
 };
+
+function formatAskedAt(iso: string): string {
+  return new Date(iso).toLocaleString(intlLocale(), { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+}
 
 const axisColor = { literal: '#1D9E75', inferencial: '#EF9F27', critico: '#E24B4A' };
 
@@ -216,6 +221,56 @@ export function StudentDetailScreen() {
       </TableWrap>
       </div>
       <Pagination page={pagedHistory.page} totalPages={pagedHistory.totalPages} total={pagedHistory.total} pageSize={pagedHistory.pageSize} onChange={pagedHistory.setPage} label={t('actividades')} />
+
+      <div className="mt-5">
+        <div className="flex items-center gap-1.5 text-xs font-medium text-text-sec mb-2">
+          {t('Preguntas a la ayuda de lectura')}
+          <HelpTip text={t('Lo que el alumno le preguntó a la ayuda mientras leía cada actividad, con la respuesta que recibió. Sirve para ver qué partes del texto le costaron.')} />
+        </div>
+        {student.helpQuestions.length === 0 ? (
+          <div className="bg-surface rounded-md text-[11.5px] text-text-ter text-center px-3 py-4">{t('No le hizo preguntas a la ayuda en ninguna actividad.')}</div>
+        ) : (
+          <div className="space-y-2">
+            {student.helpQuestions.map((activity, index) => (
+              <details
+                key={activity.activityId}
+                open={index === 0}
+                className="group bg-white dark:bg-[#1A1E29] border border-stone-200/80 dark:border-stone-800 rounded-xl"
+              >
+                <summary className="flex items-center gap-2 cursor-pointer list-none px-3.5 py-3 [&::-webkit-details-marker]:hidden">
+                  <Icon name="messageCircle" size={14} className="text-emerald-700 dark:text-emerald-300" />
+                  <span className="flex-1 min-w-0 text-[13px] font-semibold text-slate-900 dark:text-white truncate">{activity.activityName}</span>
+                  <span className="text-[11px] text-text-ter shrink-0">
+                    {activity.questions.length === 1 ? t('1 pregunta') : t('{count} preguntas', { count: activity.questions.length })}
+                  </span>
+                  <Icon name="chevronDown" size={14} className="text-text-ter transition-transform group-open:rotate-180" />
+                </summary>
+                <ol className="border-t border-stone-200/80 dark:border-stone-800 px-3.5 py-3 space-y-3">
+                  {activity.questions.map((q, i) => (
+                    <li key={i} className="text-[12px]">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="font-semibold text-slate-900 dark:text-white whitespace-pre-line break-words min-w-0">{q.question}</div>
+                        <time dateTime={q.askedAt} className="text-[10.5px] text-text-ter shrink-0 tabular-nums">{formatAskedAt(q.askedAt)}</time>
+                      </div>
+                      <div className="mt-1 bg-surface rounded-md px-2.5 py-2 text-text-sec whitespace-pre-line break-words">
+                        {q.declined && (
+                          <span
+                            className="block text-[10px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300 mb-0.5"
+                            title={t('La IA no respondió: buscaba la respuesta de la actividad o no era sobre el texto')}
+                          >
+                            {t('No respondida')}
+                          </span>
+                        )}
+                        {q.answer}
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </details>
+            ))}
+          </div>
+        )}
+      </div>
 
       <div className="mt-5">
         <div className="text-xs font-medium text-text-sec mb-2">{t('CU-03-06 · Retroalimentación')}</div>

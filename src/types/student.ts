@@ -13,6 +13,12 @@ export interface StudentTrendPoint {
   critico: number;
 }
 
+export interface StudentHelpActivity {
+  activityId: string;
+  activityName: string;
+  questions: { question: string; answer: string; declined: boolean; askedAt: string }[];
+}
+
 export interface StudentDetail {
   id: string;
   name: string;
@@ -23,4 +29,5 @@ export interface StudentDetail {
   status: PerformanceStatus;
   trend: StudentTrendPoint[];
   history: StudentActivityHistoryRow[];
+  helpQuestions: StudentHelpActivity[];
 }

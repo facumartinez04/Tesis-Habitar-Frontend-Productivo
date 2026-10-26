@@ -2592,4 +2592,9 @@ export const en: Record<string, string> = {
   'Verdadero o falso': 'True or false',
   'Completar': 'Fill in the blank',
   'Respuesta abierta': 'Open answer',
+  'Preguntas a la ayuda de lectura': 'Questions to the reading helper',
+  'Lo que el alumno le preguntó a la ayuda mientras leía cada actividad, con la respuesta que recibió. Sirve para ver qué partes del texto le costaron.': 'What the student asked the helper while reading each activity, with the answer they got. It shows which parts of the text were hard for them.',
+  'No le hizo preguntas a la ayuda en ninguna actividad.': 'They have not asked the helper anything in any activity.',
+  '1 pregunta': '1 question',
+  '{count} preguntas': '{count} questions',
 };

@@ -2,6 +2,7 @@ import type { PerformanceStatus } from '../types/result';
 import type { StudentDetail } from '../types/student';
 import { apiFetch } from '../lib/apiClient';
 import { toLower } from '../lib/caseAdapters';
+import type { StudentHelpActivity } from '../types/student';
 
 interface BackendStudentDetail {
   studentId: string;
@@ -13,6 +14,7 @@ interface BackendStudentDetail {
   status: string;
   trend: { label: string; literal: number; inferencial: number; critico: number }[];
   history: { activityName: string; date: string; scores: { literal: number; inferencial: number; critico: number } }[];
+  helpQuestions?: StudentHelpActivity[];
 }
 
 export async function getStudentDetail(id: string): Promise<StudentDetail | undefined> {
@@ -33,6 +35,7 @@ export async function getStudentDetail(id: string): Promise<StudentDetail | unde
         critico: point.critico,
       })),
       history: backend.history,
+      helpQuestions: backend.helpQuestions ?? [],
     };
   } catch {
     return undefined;
