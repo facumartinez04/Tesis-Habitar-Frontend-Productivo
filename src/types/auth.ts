@@ -14,6 +14,11 @@ export interface User {
   language?: Locale | null;
 }
 
+export interface InstitutionPause {
+  pausedAt: string;
+  reason: string | null;
+}
+
 export interface Session {
   user: User;
   provider: OAuthProviderId;
@@ -21,6 +26,7 @@ export interface Session {
   token: string;
   institutionLanguage?: Locale;
   readingMaxChars?: number;
+  institutionPaused?: InstitutionPause | null;
   impersonatedInstitutionId?: string;
   impersonatedInstitutionName?: string;
   impersonatedRole?: string;

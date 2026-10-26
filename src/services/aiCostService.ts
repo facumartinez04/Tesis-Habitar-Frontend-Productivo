@@ -9,6 +9,10 @@ export function getInstitutionAiCosts(institutionId: string, scope: AiCostScope,
   return apiFetch<InstitutionAiCostDetail>(month ? `${base}?month=${month}` : base);
 }
 
+export async function setInstitutionAiBudget(institutionId: string, budgetUsd: number | null): Promise<void> {
+  await apiFetch(`/institutions/${institutionId}/ai-budget`, { method: 'PATCH', body: { budgetUsd } });
+}
+
 export function formatUsd(n: number): string {
   const digits = n !== 0 && Math.abs(n) < 0.01 ? 4 : 2;
   return `US$ ${n.toLocaleString(intlLocale(), { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;

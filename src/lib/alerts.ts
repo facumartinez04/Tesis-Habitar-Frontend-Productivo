@@ -41,6 +41,21 @@ export async function confirmAction(options: { title: string; text?: string; con
   return result.isConfirmed;
 }
 
+export async function promptText(options: { title: string; text?: string; placeholder?: string; confirmButtonText?: string }): Promise<string | null> {
+  const result = await themed.fire({
+    icon: 'question',
+    title: options.title,
+    text: options.text,
+    input: 'text',
+    inputPlaceholder: options.placeholder,
+    showCancelButton: true,
+    confirmButtonText: options.confirmButtonText ?? t('Confirmar'),
+    cancelButtonText: t('Cancelar'),
+    reverseButtons: true,
+  });
+  return result.isConfirmed ? String(result.value ?? '') : null;
+}
+
 export function showError(title: string, text?: string): Promise<unknown> {
   return themed.fire({ icon: 'error', title, text });
 }

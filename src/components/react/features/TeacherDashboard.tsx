@@ -14,7 +14,6 @@ import { Skeleton, SkeletonMetricCards, SkeletonCard } from '../ui/Skeleton';
 import { HabitarLoader } from '../ui/HabitarLoader';
 import { listMyCourses } from '../../../services/courseService';
 import { compareCoursePeriods, exportCourseReport, getTeacherCourseSummary, type PeriodComparison } from '../../../services/resultsService';
-import { getAiUsage, type AiUsageSnapshot } from '../../../services/aiUsageService';
 import {
   closeActivityNow,
   duplicateActivity,
@@ -75,7 +74,6 @@ export function TeacherDashboard() {
     (row) => (studentFilter === 'todos' || row.status === studentFilter) && (!studentTerm || row.studentName.toLowerCase().includes(studentTerm)),
   );
   const pagedRows = usePagination(visibleRows, 12, `${selectedCourseId}|${studentFilter}|${studentTerm}`);
-  const [aiUsage, setAiUsage] = useState<AiUsageSnapshot | null>(null);
   const { message, showToast } = useToast();
   const [exporting, setExporting] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
@@ -125,7 +123,6 @@ export function TeacherDashboard() {
 
   useEffect(() => {
     loadCourses();
-    if (session) getAiUsage(session.user.institutionId).then(setAiUsage);
   }, [session]);
 
   function setCourseInUrl(id: string | null) {
@@ -520,16 +517,6 @@ export function TeacherDashboard() {
             summary && t('Comprensión lectora · {courseName} · {studentCount} alumnos', { courseName: summary.courseName, studentCount: summary.studentCount })
           )}
         </div>
-        {aiUsage && (
-          <div className="flex items-center gap-1.5 text-[11px] font-semibold text-stone-500 dark:text-stone-400">
-            <Icon name="sparkles" size={12} className="text-emerald-700" />
-            <span>{t('IA:')}{' '}<strong>{aiUsage.used}</strong>/{aiUsage.quota}</span>
-            <HelpTip
-              title={t('Generaciones de IA')}
-              text={t('Cuántas veces se usó la IA este mes para generar preguntas, sobre el total que permite el plan de la institución. Si se agota, Habitar propone preguntas por plantilla.')}
-            />
-          </div>
-        )}
       </div>
 
       {compareOpen && summary && (

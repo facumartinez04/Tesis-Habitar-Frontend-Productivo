@@ -4,6 +4,7 @@ import { SessionUserBadge } from '../react/features/SessionUserBadge';
 import { ThemeToggle } from '../react/ui/ThemeToggle';
 import { LanguageSelect } from '../react/ui/LanguageSelect';
 import { TourButton } from '../react/features/TourButton';
+import { InstitutionPausedNotice } from '../react/features/InstitutionPausedNotice';
 
 interface Props {
   sectionLabel: string;
@@ -29,5 +30,6 @@ const { sectionLabel } = Astro.props;
     <LanguageSelect client:load />
     <ThemeToggle client:load />
     <SessionUserBadge client:load />
+    <InstitutionPausedNotice client:load />
   </div>
 </header>

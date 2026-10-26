@@ -1,4 +1,4 @@
-import type { OAuthProviderId, Role, Session, User } from '../types/auth';
+import type { InstitutionPause, OAuthProviderId, Role, Session, User } from '../types/auth';
 import { toLower, toUpper } from '../lib/caseAdapters';
 import { sessionStore } from '../store/sessionStore';
 import { isLocale, setChosenLocale, setContextLocale, t, type Locale } from '../i18n';
@@ -25,6 +25,7 @@ interface MeResponse {
   user: BackendUser;
   institutionLanguage?: string;
   readingMaxChars?: number;
+  institutionPaused?: InstitutionPause | null;
 }
 
 function applySessionLocale(user: User, institutionLanguage: Locale | undefined): void {
@@ -54,7 +55,7 @@ export async function completeOAuthCallback(token: string): Promise<Session> {
   });
   if (!response.ok) throw new Error(t('No se pudo completar el inicio de sesión'));
 
-  const { user, institutionLanguage, readingMaxChars } = (await response.json()) as MeResponse;
+  const { user, institutionLanguage, readingMaxChars, institutionPaused } = (await response.json()) as MeResponse;
   const session: Session = {
     token,
     user: toUser(user),
@@ -62,6 +63,7 @@ export async function completeOAuthCallback(token: string): Promise<Session> {
     issuedAt: new Date().toISOString(),
     institutionLanguage: isLocale(institutionLanguage) ? institutionLanguage : undefined,
     readingMaxChars,
+    institutionPaused: institutionPaused ?? null,
   };
   sessionStore.set(session);
   applySessionLocale(session.user, session.institutionLanguage);
@@ -82,7 +84,7 @@ export async function refreshSession(): Promise<Session | null> {
       return sessionStore.get();
     }
 
-    const { user, institutionLanguage, readingMaxChars } = (await response.json()) as MeResponse;
+    const { user, institutionLanguage, readingMaxChars, institutionPaused } = (await response.json()) as MeResponse;
     const latest = sessionStore.get() ?? current;
     const session: Session = {
       ...latest,
@@ -90,6 +92,7 @@ export async function refreshSession(): Promise<Session | null> {
       provider: toLower<OAuthProviderId>(user.provider),
       institutionLanguage: isLocale(institutionLanguage) ? institutionLanguage : latest.institutionLanguage,
       readingMaxChars: readingMaxChars ?? latest.readingMaxChars,
+      institutionPaused: institutionPaused ?? null,
     };
     sessionStore.set(session);
     applySessionLocale(session.user, session.institutionLanguage);

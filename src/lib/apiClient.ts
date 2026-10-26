@@ -117,6 +117,10 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
+    if (response.status === 423 && data?.institutionPaused) {
+      const current = sessionStore.get();
+      if (current) sessionStore.set({ ...current, institutionPaused: data.institutionPaused });
+    }
     throw new ApiError(response.status, data?.error ?? t('Error de red inesperado'));
   }
 

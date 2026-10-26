@@ -12,6 +12,8 @@ import type { Institution } from '../../../types/institution';
 
 import { sessionStore } from '../../../store/sessionStore';
 import { t, useI18n } from '../../../i18n';
+import { pauseInstitution, resumeInstitution } from '../../../services/institutionService';
+import { confirmAction, promptText, showError, showSuccess } from '../../../lib/alerts';
 
 const STATUS_LABEL: Record<Institution['status'], string> = {
   activo: 'Activa',
@@ -54,6 +56,34 @@ export function InstitutionsListScreen() {
       window.location.href = '/institucional';
     }
   };
+
+  async function togglePause(inst: Institution) {
+    try {
+      if (inst.pausedAt) {
+        const ok = await confirmAction({
+          title: t('¿Reactivar la cuenta de {name}?', { name: inst.name }),
+          text: t('Sus usuarios y alumnos vuelven a usar Habitar normalmente.'),
+          confirmButtonText: t('Reactivar'),
+        });
+        if (!ok) return;
+        await resumeInstitution(inst.id);
+        void showSuccess(t('Cuenta reactivada'));
+      } else {
+        const reason = await promptText({
+          title: t('¿Pausar la cuenta de {name}?', { name: inst.name }),
+          text: t('Sus usuarios van a ver un aviso de cuenta pausada y no van a poder usar los paneles ni las actividades. Podés dejar un motivo que verán en el aviso.'),
+          placeholder: t('Motivo (opcional), por ejemplo: pago pendiente'),
+          confirmButtonText: t('Pausar cuenta'),
+        });
+        if (reason === null) return;
+        await pauseInstitution(inst.id, reason.trim() || null);
+        void showSuccess(t('Cuenta pausada'));
+      }
+      setInstitutions(await listInstitutions());
+    } catch (err) {
+      void showError(t('No se pudo cambiar el estado de la cuenta'), err instanceof Error ? err.message : undefined);
+    }
+  }
 
   const term = search.trim().toLowerCase();
   const filtered = (institutions ?? []).filter(
@@ -103,7 +133,11 @@ export function InstitutionsListScreen() {
               <td className="px-2.5 py-2.5 border-b border-gray-border text-text-sec font-mono text-[11.5px]">{inst.domain}</td>
               <td className="px-2.5 py-2.5 border-b border-gray-border text-text-sec">{inst.coordinatorEmail}</td>
               <td className="px-2.5 py-2.5 border-b border-gray-border">
-                <Badge color={inst.status === 'activo' ? 'green' : 'amber'}>{t(STATUS_LABEL[inst.status])}</Badge>
+                {inst.pausedAt ? (
+                  <Badge color="red">{t('Pausada')}</Badge>
+                ) : (
+                  <Badge color={inst.status === 'activo' ? 'green' : 'amber'}>{t(STATUS_LABEL[inst.status])}</Badge>
+                )}
               </td>
               <td className="px-2.5 py-2.5 border-b border-gray-border whitespace-nowrap">
                 <div className="flex items-center gap-1.5 flex-nowrap">
@@ -157,6 +191,18 @@ export function InstitutionsListScreen() {
                       </div>
                     </div>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => void togglePause(inst)}
+                    className={`flex items-center gap-1 whitespace-nowrap border rounded-[6px] px-2 py-1 text-[10.5px] font-semibold cursor-pointer ${
+                      inst.pausedAt
+                        ? 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/40'
+                        : 'bg-red-50 text-red-800 border-red-200 dark:bg-red-500/10 dark:text-red-300 dark:border-red-500/40'
+                    }`}
+                  >
+                    <Icon name={inst.pausedAt ? 'refresh' : 'lock'} size={10} />
+                    {inst.pausedAt ? t('Reactivar') : t('Pausar')}
+                  </button>
                   <a
                     href={`/admin/instituciones/oauth?slug=${inst.slug}`}
                     className="flex items-center gap-1 whitespace-nowrap bg-white hover:bg-gray-50 dark:hover:bg-white/5 text-text-pri border border-gray-border rounded-[6px] px-2 py-1 text-[10.5px]"

@@ -36,6 +36,8 @@ interface BackendInstitution {
   alertEmailsEnabled?: boolean;
   defaultLanguage?: string;
   readingMaxChars?: number;
+  pausedAt?: string | null;
+  pauseReason?: string | null;
   createdAt: string;
 }
 
@@ -59,6 +61,8 @@ function toInstitution(backend: BackendInstitution): Institution {
     alertEmailsEnabled: backend.alertEmailsEnabled ?? true,
     defaultLanguage: backend.defaultLanguage === 'en' ? 'en' : 'es',
     readingMaxChars: backend.readingMaxChars ?? 5000,
+    pausedAt: backend.pausedAt ?? null,
+    pauseReason: backend.pauseReason ?? null,
     createdAt: backend.createdAt,
   };
 }
@@ -75,6 +79,14 @@ export async function createInstitution(input: CreateInstitutionInput): Promise<
     },
   });
   return toInstitution(backend);
+}
+
+export async function pauseInstitution(institutionId: string, reason: string | null): Promise<void> {
+  await apiFetch(`/admin/institutions/${institutionId}/pause`, { method: 'POST', body: { reason } });
+}
+
+export async function resumeInstitution(institutionId: string): Promise<void> {
+  await apiFetch(`/admin/institutions/${institutionId}/pause`, { method: 'DELETE' });
 }
 
 export async function listInstitutions(): Promise<Institution[]> {
