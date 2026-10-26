@@ -1,4 +1,4 @@
-export type AiUsageKind = 'GENERACION' | 'CORRECCION' | 'AYUDA';
+export type AiUsageKind = 'GENERACION' | 'CORRECCION' | 'AYUDA' | 'DOCUMENTO';
 
 export type AiKeySource = 'PLATAFORMA' | 'PROPIA';
 
@@ -57,4 +57,5 @@ export const AI_KIND_LABEL: Record<AiUsageKind, { label: string; detail: string 
   GENERACION: { label: 'Generación de preguntas', detail: 'El docente pide preguntas a partir del texto.' },
   CORRECCION: { label: 'Corrección de respuestas críticas', detail: 'Puntaje sugerido que el docente confirma.' },
   AYUDA: { label: 'Ayuda de lectura', detail: 'Consultas de los alumnos sobre palabras y expresiones.' },
+  DOCUMENTO: { label: 'Páginas escaneadas', detail: 'Texto de PDFs escaneados que el OCR no leyó bien y la IA ordenó.' },
 };

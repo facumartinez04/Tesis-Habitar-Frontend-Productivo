@@ -1,5 +1,6 @@
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { normalizeText } from './documentText';
+import { cleanOcrLines, type OcrLine, type OcrResult } from './ocrCleanup';
 
 export const MIN_TEXT_CHARS = 40;
 
@@ -7,7 +8,7 @@ export interface PdfHandle {
   numPages: number;
   renderPage(pageNumber: number, canvas: HTMLCanvasElement, cssWidth: number): Promise<void>;
   pageText(pageNumber: number): Promise<string>;
-  ocrPage(pageNumber: number, onProgress?: (progress: number) => void): Promise<string>;
+  ocrPage(pageNumber: number, onProgress?: (progress: number) => void): Promise<OcrResult>;
   destroy(): void;
 }
 
@@ -88,11 +89,11 @@ export async function openPdf(file: Blob): Promise<PdfHandle> {
       const worker = await getOcrWorker();
       ocrProgress = onProgress;
       try {
-        const { data } = await worker.recognize(canvas);
-        const raw = String(data.text ?? '')
-          .replace(/-\n(?=[a-záéíóúñ])/g, '')
-          .replace(/([^.!?:;\n])\n+(?=[a-záéíóúñ0-9])/g, '$1 ');
-        return normalizeText(raw);
+        const { data } = await worker.recognize(canvas, {}, { text: true, blocks: true });
+        const lines: OcrLine[] = (data.blocks ?? []).flatMap((block: { paragraphs: { lines: OcrLine[] }[] }) =>
+          block.paragraphs.flatMap((paragraph) => paragraph.lines),
+        );
+        return cleanOcrLines(lines, MIN_TEXT_CHARS);
       } finally {
         ocrProgress = undefined;
       }

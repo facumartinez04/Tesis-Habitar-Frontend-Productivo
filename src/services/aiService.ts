@@ -29,6 +29,16 @@ interface BackendGenerateQuestionsResponse {
   questions: BackendGeneratedQuestion[];
 }
 
+export interface ScannedPageResult {
+  text: string;
+  legible: boolean;
+}
+
+/** La IA recupera el texto de la lectura a partir de lo que leyó el OCR, sin el ruido de las ilustraciones. */
+export async function cleanScannedPage(rawText: string, language?: Locale): Promise<ScannedPageResult> {
+  return apiFetch<ScannedPageResult>('/activities/clean-scanned-page', { method: 'POST', body: { rawText: rawText.slice(0, 12000), language } });
+}
+
 export async function generateQuestions(
   sourceText: string,
   focusAxis?: ComprehensionAxis,

@@ -4,7 +4,8 @@ import { HabitarLoader } from '../../ui/HabitarLoader';
 import { DocxPages } from '../../ui/DocxPages';
 import { MIN_TEXT_CHARS, openPdf, type PdfHandle } from '../../../../lib/pdfDocument';
 import { extractDocumentWithPreview } from '../../../../lib/documentText';
-import { readingLength } from '../../../../services/aiService';
+import { cleanScannedPage, readingLength } from '../../../../services/aiService';
+import { ApiError } from '../../../../lib/apiClient';
 import { t, useI18n } from '../../../../i18n';
 
 export interface ImportedDocument {
@@ -25,13 +26,18 @@ interface PageState {
   needsOcr: boolean;
   ocr: 'idle' | 'running' | 'done' | 'error';
   progress: number;
+  /** Lo que leyó el OCR sin filtrar; es lo que se le pasa a la IA. */
+  raw: string;
+  /** El OCR solo no alcanza: hay que ordenar la página con IA. */
+  unclear: boolean;
+  ai: 'idle' | 'running' | 'done' | 'error';
 }
 
 const isPdf = (doc: ImportedDocument) => doc.mimeType === 'application/pdf' || /\.pdf$/i.test(doc.name);
 
 
 export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentReviewModalProps) {
-  useI18n();
+  const { locale } = useI18n();
   const [pdf, setPdf] = useState<PdfHandle | null>(null);
   const [pages, setPages] = useState<PageState[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
@@ -41,6 +47,7 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
   const [edited, setEdited] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [aiBlocked, setAiBlocked] = useState<string | null>(null);
 
   useEffect(() => {
     if (!doc) return;
@@ -52,6 +59,7 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
     setPdf(null);
     setPages([]);
     setDocxHtml(null);
+    setAiBlocked(null);
     (async () => {
       try {
         if (isPdf(doc)) {
@@ -60,7 +68,7 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
           const initial: PageState[] = [];
           for (let n = 1; n <= handle.numPages; n += 1) {
             const pageText = await handle.pageText(n);
-            initial.push({ text: pageText, needsOcr: pageText.replace(/\s/g, '').length < MIN_TEXT_CHARS, ocr: 'idle', progress: 0 });
+            initial.push({ text: pageText, needsOcr: pageText.replace(/\s/g, '').length < MIN_TEXT_CHARS, ocr: 'idle', progress: 0, raw: '', unclear: false, ai: 'idle' });
           }
           if (cancelled) return handle.destroy();
           setPdf(handle);
@@ -86,21 +94,43 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
   }, [doc]);
 
   useEffect(() => {
-    if (!pdf) return;
+    if (!pdf || pages.some((p) => p.ocr === 'running' || p.ai === 'running')) return;
     const next = selected.find((n) => pages[n - 1]?.needsOcr && pages[n - 1]?.ocr === 'idle');
-    if (next && !pages.some((p) => p.ocr === 'running')) void runOcr(next);
-  }, [pdf, selected, pages]);
+    if (next) {
+      void runOcr(next);
+      return;
+    }
+    if (aiBlocked) return;
+    const unclear = selected.find((n) => pages[n - 1]?.ocr === 'done' && pages[n - 1]?.unclear && pages[n - 1]?.ai === 'idle');
+    if (unclear) void runAi(unclear);
+  }, [pdf, selected, pages, aiBlocked]);
+
+  const updatePage = (n: number, patch: Partial<PageState>) => setPages((prev) => prev.map((p, i) => (i === n - 1 ? { ...p, ...patch } : p)));
 
   async function runOcr(n: number) {
     if (!pdf) return;
-    setPages((prev) => prev.map((p, i) => (i === n - 1 ? { ...p, ocr: 'running', progress: 0 } : p)));
+    updatePage(n, { ocr: 'running', progress: 0, ai: 'idle' });
     try {
-      const result = await pdf.ocrPage(n, (progress) =>
-        setPages((prev) => prev.map((p, i) => (i === n - 1 ? { ...p, progress } : p))),
-      );
-      setPages((prev) => prev.map((p, i) => (i === n - 1 ? { ...p, text: result, ocr: 'done', progress: 1 } : p)));
+      const result = await pdf.ocrPage(n, (progress) => updatePage(n, { progress }));
+      const hasLetters = /[a-záéíóúñ]{3,}/i.test(result.raw);
+      updatePage(n, { text: result.text, raw: result.raw, unclear: result.unclear && hasLetters, ocr: 'done', progress: 1 });
     } catch {
-      setPages((prev) => prev.map((p, i) => (i === n - 1 ? { ...p, ocr: 'error' } : p)));
+      updatePage(n, { ocr: 'error' });
+    }
+  }
+
+  async function runAi(n: number) {
+    const raw = pages[n - 1]?.raw;
+    if (!raw) return;
+    updatePage(n, { ai: 'running' });
+    try {
+      const result = await cleanScannedPage(raw, locale);
+      setEdited(false);
+      updatePage(n, result.legible ? { text: result.text, ai: 'done' } : { ai: 'done', unclear: true });
+    } catch (err) {
+      updatePage(n, { ai: 'error' });
+      // Sin IA o sin presupuesto no tiene sentido seguir probando con las otras páginas.
+      if (err instanceof ApiError && (err.status === 409 || err.status === 423)) setAiBlocked(err.message);
     }
   }
 
@@ -131,6 +161,10 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
   const words = length.words;
   const valid = length.valid;
   const ocrRunning = pages.find((p) => p.ocr === 'running');
+  const aiRunning = pages.find((p) => p.ai === 'running');
+  const aiCleaned = selected.filter((n) => pages[n - 1]?.ai === 'done' && !pages[n - 1]?.unclear).sort((a, b) => a - b);
+  const unreadable = selected.filter((n) => pages[n - 1]?.ai === 'done' && pages[n - 1]?.unclear).sort((a, b) => a - b);
+  const activePage = pages[active - 1];
 
   function togglePage(n: number) {
     setEdited(false);
@@ -174,10 +208,16 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
                       <label className="flex items-center gap-1.5 mt-1.5 text-[11px] text-text-pri cursor-pointer">
                         <input type="checkbox" checked={isSelected} onChange={() => togglePage(n)} className="accent-emerald-600" />
                         {t('Pág. {n}', { n })}
-                        {p.needsOcr && (
-                          <span className="ml-auto text-[9.5px] font-bold uppercase text-amber-700 dark:text-amber-300" title={t('Página escaneada: se lee con OCR')}>
-                            OCR
+                        {p.ai === 'done' && !p.unclear ? (
+                          <span className="ml-auto text-[9.5px] font-bold uppercase text-emerald-700 dark:text-emerald-300" title={t('La IA ordenó el texto que leyó el OCR')}>
+                            {t('IA')}
                           </span>
+                        ) : (
+                          p.needsOcr && (
+                            <span className="ml-auto text-[9.5px] font-bold uppercase text-amber-700 dark:text-amber-300" title={t('Página escaneada: se lee con OCR')}>
+                              OCR
+                            </span>
+                          )
                         )}
                       </label>
                     </div>
@@ -201,9 +241,19 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
                         {t('+ Usar esta página')}
                       </button>
                     )}
-                    {pages[active - 1]?.ocr !== 'running' && (
+                    {activePage?.ocr !== 'running' && activePage?.ai !== 'running' && (
                       <button type="button" onClick={() => { setEdited(false); void runOcr(active); }} className="ml-1 underline cursor-pointer" title={t('Volver a leer la página como imagen')}>
                         {t('Leer con OCR')}
+                      </button>
+                    )}
+                    {activePage?.ocr === 'done' && activePage.raw && activePage.ai !== 'running' && !aiBlocked && (
+                      <button
+                        type="button"
+                        onClick={() => void runAi(active)}
+                        className="ml-1 underline cursor-pointer"
+                        title={t('La IA saca el ruido de las ilustraciones y corrige lo que el OCR leyó mal, sin agregar nada.')}
+                      >
+                        {t('Ordenar con IA')}
                       </button>
                     )}
                   </div>
@@ -236,6 +286,30 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
                   </div>
                 </div>
               )}
+              {aiRunning && (
+                <div className="mx-4 mb-2 flex items-center gap-1.5 text-[11px] text-text-sec">
+                  <Icon name="sparkles" size={12} className="text-emerald-600 animate-pulse" />
+                  {t('El OCR no se entendía bien en la página {value}: la IA está ordenando el texto…', { value: pages.indexOf(aiRunning) + 1 })}
+                </div>
+              )}
+              {aiCleaned.length > 0 && !aiRunning && (
+                <div className="mx-4 mb-2 text-[11px] text-text-sec bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/70 dark:border-emerald-500/20 rounded-lg px-2.5 py-1.5">
+                  {t('La IA ordenó el texto de {pages}. Revisalo antes de usarlo: puede haber palabras que no se leían en la página.', {
+                    pages: aiCleaned.length === 1 ? t('la página {n}', { n: aiCleaned[0] }) : t('las páginas {list}', { list: aiCleaned.join(', ') }),
+                  })}
+                </div>
+              )}
+              {unreadable.length > 0 && !aiRunning && (
+                <div className="mx-4 mb-2 text-[11px] text-amber-800 dark:text-amber-300">
+                  {t('En {pages} no se encontró texto de lectura: puede ser sólo una ilustración. Si tiene texto, copialo a mano.', {
+                    pages: unreadable.length === 1 ? t('la página {n}', { n: unreadable[0] }) : t('las páginas {list}', { list: unreadable.join(', ') }),
+                  })}
+                </div>
+              )}
+              {aiBlocked && <div className="mx-4 mb-2 text-[11px] text-amber-800 dark:text-amber-300">{aiBlocked}</div>}
+              {pages.some((p) => p.ai === 'error') && !aiBlocked && !aiRunning && (
+                <div className="mx-4 mb-2 text-[11px] text-red">{t('La IA no pudo ordenar alguna página. Probá de nuevo con «Ordenar con IA».')}</div>
+              )}
               {pages.some((p) => p.ocr === 'error') && (
                 <div className="mx-4 mb-2 text-[11px] text-red">{t('No se pudo leer alguna página con OCR. Probá de nuevo con «Leer con OCR».')}</div>
               )}
@@ -254,7 +328,7 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
                 </span>
                 <button
                   type="button"
-                  disabled={!text.trim() || Boolean(ocrRunning)}
+                  disabled={!text.trim() || Boolean(ocrRunning) || Boolean(aiRunning)}
                   onClick={() => {
                     const pages = pdf ? selected.slice().sort((a, b) => a - b) : null;
                     onUse(
