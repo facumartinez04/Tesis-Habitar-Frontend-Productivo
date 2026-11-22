@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Badge } from '../ui/Badge';
 import { Icon } from '../ui/Icon';
 import { TableWrap } from '../ui/TableWrap';
+import { DropdownMenu } from '../ui/DropdownMenu';
 import { Pagination } from '../ui/Pagination';
 import { usePagination } from '../../../hooks/usePagination';
 import { Skeleton, SkeletonTable } from '../ui/Skeleton';
@@ -20,26 +21,13 @@ const STATUS_LABEL: Record<Institution['status'], string> = {
   piloto_no_confirmado: 'Piloto no confirmado',
 };
 
+const BTN =
+  'inline-flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-[12.5px] font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-mid/40';
+
 export function InstitutionsListScreen() {
   useI18n();
   const [institutions, setInstitutions] = useState<Institution[] | null>(null);
   const [search, setSearch] = useState('');
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!openMenuId) return;
-    const close = (e: MouseEvent | KeyboardEvent) => {
-      if (e instanceof KeyboardEvent && e.key !== 'Escape') return;
-      if (e instanceof MouseEvent && (e.target as HTMLElement).closest('[data-view-as-menu]')) return;
-      setOpenMenuId(null);
-    };
-    document.addEventListener('mousedown', close);
-    document.addEventListener('keydown', close);
-    return () => {
-      document.removeEventListener('mousedown', close);
-      document.removeEventListener('keydown', close);
-    };
-  }, [openMenuId]);
 
   const enterAs = (inst: Institution, role: 'coordinador' | 'director' | 'docente') => {
     const current = sessionStore.get();
@@ -107,130 +95,92 @@ export function InstitutionsListScreen() {
       <div className="text-[12.5px] text-text-sec mb-[18px]">{t('{institutionsCount} instituciones dadas de alta en la plataforma', { institutionsCount: institutions.length })}</div>
 
       <div className="relative mb-3 max-w-[320px]">
-        <Icon name="search" size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-ter" />
+        <Icon name="search" size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-ter pointer-events-none" />
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t('Buscar por nombre o dominio…')}
-          className="w-full pl-8 pr-2.5 py-[7px] border border-gray-border rounded-[6px] text-[12.5px]"
+          className="w-full h-9 pl-8 pr-3 border border-gray-border rounded-lg bg-card-bg text-[13px] text-text-pri placeholder:text-text-ter focus:outline-none focus:ring-2 focus:ring-green-mid/30 focus:border-green-mid/50"
         />
       </div>
 
       <TableWrap>
         <thead>
           <tr>
-            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">{t('Institución')}</th>
-            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">{t('Dominio')}</th>
-            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">Coordinador/a</th>
-            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">{t('Estado')}</th>
-            <th className="text-left text-[11px] text-text-sec font-medium px-2.5 py-2 border-b border-gray-border bg-white">{t('Acciones')}</th>
+            <th className="text-left text-[11.5px] font-semibold uppercase tracking-wide text-text-ter px-4 py-2.5 border-b border-gray-border bg-white">{t('Institución')}</th>
+            <th className="text-left text-[11.5px] font-semibold uppercase tracking-wide text-text-ter px-4 py-2.5 border-b border-gray-border bg-white">Coordinador/a</th>
+            <th className="text-left text-[11.5px] font-semibold uppercase tracking-wide text-text-ter px-4 py-2.5 border-b border-gray-border bg-white">{t('Estado')}</th>
+            <th className="text-left text-[11.5px] font-semibold uppercase tracking-wide text-text-ter px-4 py-2.5 border-b border-gray-border bg-white text-right">{t('Acciones')}</th>
           </tr>
         </thead>
         <tbody>
           {paged.pageItems.map((inst) => (
-            <tr key={inst.id}>
-              <td className="px-2.5 py-2.5 border-b border-gray-border font-medium">{inst.name}</td>
-              <td className="px-2.5 py-2.5 border-b border-gray-border text-text-sec font-mono text-[11.5px]">{inst.domain}</td>
-              <td className="px-2.5 py-2.5 border-b border-gray-border text-text-sec">{inst.coordinatorEmail}</td>
-              <td className="px-2.5 py-2.5 border-b border-gray-border">
+            <tr key={inst.id} className="transition-colors hover:bg-surface/70">
+              <td className="px-4 py-3 border-b border-gray-border align-middle">
+                <div className="font-semibold text-text-pri leading-tight">{inst.name}</div>
+                <div className="mt-0.5 font-mono text-[11.5px] text-text-ter">{inst.domain}</div>
+              </td>
+              <td className="px-4 py-3 border-b border-gray-border align-middle text-text-sec max-w-[220px]">
+                <span className="block truncate" title={inst.coordinatorEmail}>{inst.coordinatorEmail}</span>
+              </td>
+              <td className="px-4 py-3 border-b border-gray-border align-middle">
                 {inst.pausedAt ? (
-                  <Badge color="red">{t('Pausada')}</Badge>
+                  <Badge color="red">
+                    <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true" />
+                    {t('Pausada')}
+                  </Badge>
                 ) : (
-                  <Badge color={inst.status === 'activo' ? 'green' : 'amber'}>{t(STATUS_LABEL[inst.status])}</Badge>
+                  <Badge color={inst.status === 'activo' ? 'green' : 'amber'}>
+                    <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true" />
+                    {t(STATUS_LABEL[inst.status])}
+                  </Badge>
                 )}
               </td>
-              <td className="px-2.5 py-2.5 border-b border-gray-border whitespace-nowrap">
-                <div className="flex items-center gap-1.5 flex-nowrap">
-                  <div className="relative" data-view-as-menu>
-                    <button
-                      type="button"
-                      aria-haspopup="menu"
-                      aria-expanded={openMenuId === inst.id}
-                      onClick={() => setOpenMenuId((id) => (id === inst.id ? null : inst.id))}
-                      className="flex items-center gap-1 whitespace-nowrap bg-amber-50 hover:bg-amber-100 text-amber-900 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 dark:text-amber-300 border border-amber-300 dark:border-amber-500/40 rounded-[6px] px-2 py-1 text-[10.5px] font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-500"
-                    >
-                      <Icon name="eye" size={11} />
-                      {t('Ver como')}
-                      <Icon name="chevronDown" size={10} />
-                    </button>
-                    <div
-                      role="menu"
-                      className={`${openMenuId === inst.id ? 'block' : 'hidden'} absolute right-0 top-full mt-1 z-30 w-48`}
-                    >
-                      <div className="bg-card-bg border border-gray-border rounded-lg shadow-xl py-1 text-xs">
-                        <div className="px-3 py-1.5 text-[10px] font-semibold text-text-ter uppercase tracking-wider border-b border-gray-border whitespace-normal">
-                          {t('Ingresar a {name}', { name: inst.name })}
-                        </div>
-                        <button
-                          type="button"
-                          role="menuitem"
-                          onClick={() => enterAs(inst, 'coordinador')}
-                          className="w-full text-left px-3 py-1.5 hover:bg-amber-50 dark:hover:bg-amber-500/15 text-text-pri flex items-center justify-between transition-colors"
-                        >
-                          <span className="font-medium">{t('Coordinador')}</span>
-                          <span className="text-[10px] text-text-ter">{t('Panel')}</span>
-                        </button>
-                        <button
-                          type="button"
-                          role="menuitem"
-                          onClick={() => enterAs(inst, 'director')}
-                          className="w-full text-left px-3 py-1.5 hover:bg-amber-50 dark:hover:bg-amber-500/15 text-text-pri flex items-center justify-between transition-colors"
-                        >
-                          <span className="font-medium">{t('Director')}</span>
-                          <span className="text-[10px] text-text-ter">{t('Auditoría')}</span>
-                        </button>
-                        <button
-                          type="button"
-                          role="menuitem"
-                          onClick={() => enterAs(inst, 'docente')}
-                          className="w-full text-left px-3 py-1.5 hover:bg-amber-50 dark:hover:bg-amber-500/15 text-text-pri flex items-center justify-between transition-colors"
-                        >
-                          <span className="font-medium">{t('Docente')}</span>
-                          <span className="text-[10px] text-text-ter">{t('Cursos')}</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => void togglePause(inst)}
-                    className={`flex items-center gap-1 whitespace-nowrap border rounded-[6px] px-2 py-1 text-[10.5px] font-semibold cursor-pointer ${
+              <td className="px-4 py-3 border-b border-gray-border align-middle whitespace-nowrap">
+                <div className="flex items-center justify-end gap-2">
+                  <DropdownMenu
+                    title={t('Ingresar a {name}', { name: inst.name })}
+                    triggerClassName={`${BTN} border-green-mid/40 bg-green-light text-green-dark hover:bg-green-mid/15 dark:text-green-text`}
+                    trigger={
+                      <>
+                        <Icon name="eye" size={14} />
+                        {t('Ver como')}
+                        <Icon name="chevronDown" size={13} className="opacity-70" />
+                      </>
+                    }
+                    items={[
+                      { label: t('Coordinador'), hint: t('Panel'), onSelect: () => enterAs(inst, 'coordinador') },
+                      { label: t('Director'), hint: t('Auditoría'), onSelect: () => enterAs(inst, 'director') },
+                      { label: t('Docente'), hint: t('Cursos'), onSelect: () => enterAs(inst, 'docente') },
+                    ]}
+                  />
+                  <DropdownMenu
+                    title={inst.name}
+                    width={220}
+                    triggerClassName={`${BTN} border-gray-border bg-card-bg text-text-pri hover:bg-surface`}
+                    trigger={
+                      <>
+                        <Icon name="sliders" size={14} className="text-text-ter" />
+                        {t('Gestionar')}
+                        <Icon name="chevronDown" size={13} className="opacity-70" />
+                      </>
+                    }
+                    items={[
+                      { label: t('Acceso'), hint: 'OAuth', icon: 'lock', href: `/admin/instituciones/oauth?slug=${inst.slug}` },
+                      { label: t('Usuarios'), icon: 'users', href: `/admin/instituciones/usuarios?slug=${inst.slug}` },
+                      { label: t('Datos'), icon: 'database', href: `/admin/instituciones/datos?slug=${inst.slug}` },
                       inst.pausedAt
-                        ? 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/40'
-                        : 'bg-red-50 text-red-800 border-red-200 dark:bg-red-500/10 dark:text-red-300 dark:border-red-500/40'
-                    }`}
-                  >
-                    <Icon name={inst.pausedAt ? 'refresh' : 'lock'} size={10} />
-                    {inst.pausedAt ? t('Reactivar') : t('Pausar')}
-                  </button>
-                  <a
-                    href={`/admin/instituciones/oauth?slug=${inst.slug}`}
-                    className="flex items-center gap-1 whitespace-nowrap bg-white hover:bg-gray-50 dark:hover:bg-white/5 text-text-pri border border-gray-border rounded-[6px] px-2 py-1 text-[10.5px]"
-                  >
-                    <Icon name="lock" size={10} />
-                    {t('Acceso')}
-                  </a>
-                  <a
-                    href={`/admin/instituciones/usuarios?slug=${inst.slug}`}
-                    className="flex items-center gap-1 whitespace-nowrap bg-white hover:bg-gray-50 dark:hover:bg-white/5 text-text-pri border border-gray-border rounded-[6px] px-2 py-1 text-[10.5px]"
-                  >
-                    <Icon name="school" size={10} />
-                    {t('Usuarios')}
-                  </a>
-                  <a
-                    href={`/admin/instituciones/datos?slug=${inst.slug}`}
-                    className="flex items-center gap-1 whitespace-nowrap bg-white hover:bg-gray-50 dark:hover:bg-white/5 text-text-pri border border-gray-border rounded-[6px] px-2 py-1 text-[10.5px]"
-                  >
-                    <Icon name="layers" size={10} />
-                    {t('Datos')}
-                  </a>
+                        ? { label: t('Reactivar'), icon: 'refresh', onSelect: () => void togglePause(inst) }
+                        : { label: t('Pausar'), icon: 'lock', danger: true, onSelect: () => void togglePause(inst) },
+                    ]}
+                  />
                 </div>
               </td>
             </tr>
           ))}
           {filtered.length === 0 && (
             <tr>
-              <td colSpan={5} className="px-2.5 py-6 text-center text-text-ter text-[12px]">
+              <td colSpan={4} className="px-4 py-8 text-center text-text-ter text-[13px]">
                 {t('No hay instituciones que coincidan con la búsqueda.')}
               </td>
             </tr>

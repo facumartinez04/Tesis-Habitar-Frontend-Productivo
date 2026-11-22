@@ -1295,6 +1295,7 @@ export const en: Record<string, string> = {
   'Buscar por nombre o dominio…': 'Search by name or domain…',
   'Dominio': 'Domain',
   'Ver como': 'View as',
+  'Gestionar': 'Manage',
   'Ingresar a {name}': 'Enter {name}',
   'Auditoría': 'Audit',
   'Cursos': 'Courses',
