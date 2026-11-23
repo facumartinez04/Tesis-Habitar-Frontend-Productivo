@@ -13,6 +13,7 @@ import { ensureAdminSession } from '../../../services/authService';
 import { getInstitutionBySlug } from '../../../services/institutionService';
 import {
   inviteInstitutionUser,
+  invitationEmailWarning,
   listInstitutionUsers,
   setInstitutionUserActive,
   updateInstitutionUserRole,
@@ -29,7 +30,7 @@ const ROLE_LABEL: Record<Role, string> = { docente: 'Docente', coordinador: 'Coo
 export function AdminInstitutionUsersScreen() {
   useI18n();
   const institutionSlug = useQueryParam('slug', '');
-  const { message, showToast } = useToast();
+  const { message, kind: toastKind, showToast } = useToast();
   const [institution, setInstitution] = useState<Institution | null>(null);
   const [users, setUsers] = useState<InstitutionUser[]>([]);
   const pagedUsers = usePagination(users, 15, null);
@@ -59,9 +60,11 @@ export function AdminInstitutionUsersScreen() {
     if (!institution || !inviteForm.name.trim() || !inviteForm.email.trim()) return;
     setInviting(true);
     try {
-      await inviteInstitutionUser(institution.id, { ...inviteForm, provider: 'google' });
+      const { email } = await inviteInstitutionUser(institution.id, { ...inviteForm, provider: 'google' });
       setInviteForm({ name: '', email: '', role: 'docente' });
-      showToast(t('Usuario dado de alta'));
+      const warning = invitationEmailWarning(email);
+      if (warning) showToast(warning, 'error');
+      else showToast(t('Usuario dado de alta'));
       await refresh(institution.id);
     } catch (err) {
       await showError(t('No se pudo dar de alta al usuario'), err instanceof Error ? err.message : undefined);
@@ -115,7 +118,7 @@ export function AdminInstitutionUsersScreen() {
 
   return (
     <div>
-      <Toast message={message} />
+      <Toast message={message} kind={toastKind} />
       <div className="text-lg font-semibold text-text-pri mb-[3px] tracking-tight">{t('Usuarios — {name}', { name: institution.name })}</div>
       <div className="text-[12.5px] text-text-sec mb-[18px]">{t('{usersCount} usuarios en esta institución', { usersCount: users.length })}</div>
 

@@ -1,6 +1,7 @@
 import { apiFetch } from '../lib/apiClient';
 import { toLower, toUpper } from '../lib/caseAdapters';
 import type { OAuthProviderId, Role } from '../types/auth';
+import { t } from '../i18n';
 
 export interface InstitutionUser {
   id: string;
@@ -40,15 +41,37 @@ export async function listInstitutionUsers(institutionId: string): Promise<Insti
   return backend.map(toUser);
 }
 
+/** Qué pasó con el correo de invitación: salió, no hay servicio de correo, se superó el límite o falló. */
+export type InvitationEmailStatus = 'sent' | 'simulated' | 'throttled' | 'failed';
+
+export interface InvitationResult {
+  user: InstitutionUser;
+  email: InvitationEmailStatus;
+}
+
 export async function inviteInstitutionUser(
   institutionId: string,
   input: { name: string; email: string; role: Role; provider: OAuthProviderId },
-): Promise<InstitutionUser> {
-  const backend = await apiFetch<BackendUser>(`/institutions/${institutionId}/users`, {
+): Promise<InvitationResult> {
+  const backend = await apiFetch<BackendUser & { invitationEmail?: InvitationEmailStatus }>(`/institutions/${institutionId}/users`, {
     method: 'POST',
     body: { name: input.name, email: input.email, role: toUpper(input.role), provider: toUpper(input.provider) },
   });
-  return toUser(backend);
+  return { user: toUser(backend), email: backend.invitationEmail ?? 'sent' };
+}
+
+/** Aviso para quien invita cuando el correo no salió; null si salió bien. */
+export function invitationEmailWarning(status: InvitationEmailStatus): string | null {
+  switch (status) {
+    case 'simulated':
+      return t('Usuario creado, pero el correo no se envió porque el servicio de correo no está configurado. Avisale que ya puede ingresar.');
+    case 'throttled':
+      return t('Usuario creado, pero no se envió el correo: se alcanzó el límite de invitaciones a ese correo. Avisale que ya puede ingresar.');
+    case 'failed':
+      return t('Usuario creado, pero no se pudo enviar el correo. Avisale que ya puede ingresar.');
+    default:
+      return null;
+  }
 }
 
 export async function updateInstitutionUserRole(institutionId: string, userId: string, role: Role): Promise<InstitutionUser> {

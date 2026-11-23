@@ -11,6 +11,7 @@ import { getInstitutionById, updateInstitutionConfig, testAiConfig } from '../..
 import { getAiUsage, type AiUsageSnapshot } from '../../../services/aiUsageService';
 import {
   inviteInstitutionUser,
+  invitationEmailWarning,
   listInstitutionUsers,
   setInstitutionUserActive,
   updateInstitutionUserRole,
@@ -218,9 +219,11 @@ export function InstitutionSettingsScreen() {
     if (!session || !inviteForm.name.trim() || !inviteForm.email.trim()) return;
     setInviting(true);
     try {
-      await inviteInstitutionUser(session.user.institutionId, { ...inviteForm, provider: 'google' });
+      const { email } = await inviteInstitutionUser(session.user.institutionId, { ...inviteForm, provider: 'google' });
       setInviteForm({ name: '', email: '', role: 'docente' });
-      showToast(t('Usuario invitado'));
+      const warning = invitationEmailWarning(email);
+      if (warning) showToast(warning, 'error');
+      else showToast(t('Usuario invitado'));
       refresh();
     } catch (err) {
       showToast(err instanceof Error ? err.message : t('No se pudo invitar al usuario'), 'error');
