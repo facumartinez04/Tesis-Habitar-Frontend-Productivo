@@ -1,8 +1,8 @@
 import type { ComprehensionAxis } from '../types/activity';
 import type { Question } from '../types/question';
-import { apiFetch } from '../lib/apiClient';
+import { ApiError, apiFetch, apiUrl, authorizedFetch } from '../lib/apiClient';
 import { toLower, toUpper } from '../lib/caseAdapters';
-import type { Locale } from '../i18n';
+import { t, type Locale } from '../i18n';
 import { sessionStore } from '../store/sessionStore';
 import type { QuestionType } from '../types/question';
 
@@ -32,6 +32,24 @@ interface BackendGenerateQuestionsResponse {
 export interface ScannedPageResult {
   text: string;
   legible: boolean;
+}
+
+/** Páginas que se pueden leer con IA de una vez (el servidor rechaza más). */
+export const MAX_AI_PAGES = 60;
+
+/**
+ * La IA (DeepSeek) lee las páginas elegidas del PDF en lugar del OCR del navegador.
+ * Solo se envían las páginas elegidas y el servidor borra el archivo de DeepSeek apenas termina.
+ */
+export async function readDocumentWithAi(file: Blob, pages: number[]): Promise<ScannedPageResult> {
+  const res = await authorizedFetch(apiUrl('/activities/read-document'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/pdf', 'X-Pages': pages.join(',') },
+    body: file,
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new ApiError(res.status, data?.error ?? (res.status === 413 ? t('El archivo supera los 15 MB') : t('No se pudo leer el documento con IA')));
+  return data as ScannedPageResult;
 }
 
 /** La IA recupera el texto de la lectura a partir de lo que leyó el OCR, sin el ruido de las ilustraciones. */

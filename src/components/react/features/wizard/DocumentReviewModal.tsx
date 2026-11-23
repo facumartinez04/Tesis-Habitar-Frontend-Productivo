@@ -4,7 +4,7 @@ import { HabitarLoader } from '../../ui/HabitarLoader';
 import { DocxPages } from '../../ui/DocxPages';
 import { MIN_TEXT_CHARS, openPdf, type PdfHandle } from '../../../../lib/pdfDocument';
 import { extractDocumentWithPreview } from '../../../../lib/documentText';
-import { cleanScannedPage, readingLength } from '../../../../services/aiService';
+import { cleanScannedPage, MAX_AI_PAGES, readDocumentWithAi, readingLength } from '../../../../services/aiService';
 import { ApiError } from '../../../../lib/apiClient';
 import { t, useI18n } from '../../../../i18n';
 
@@ -35,6 +35,10 @@ interface PageState {
 
 const isPdf = (doc: ImportedDocument) => doc.mimeType === 'application/pdf' || /\.pdf$/i.test(doc.name);
 
+/** Desde cuántas páginas elegidas se avisa que leer con IA puede consumir mucho. */
+const AI_HEAVY_PAGES = 10;
+/** Desde cuántas páginas se considera grande un documento. */
+const AI_BIG_DOC_PAGES = 20;
 
 export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentReviewModalProps) {
   const { locale } = useI18n();
@@ -47,6 +51,11 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [aiBlocked, setAiBlocked] = useState<string | null>(null);
+  // Lectura con IA (DeepSeek) de las páginas elegidas; si no está disponible se lee con OCR en el navegador.
+  const [aiRead, setAiRead] = useState(true);
+  const [reading, setReading] = useState(false);
+  const [readError, setReadError] = useState<string | null>(null);
+  const [aiFallback, setAiFallback] = useState<string | null>(null);
 
   useEffect(() => {
     if (!doc) return;
@@ -54,6 +63,10 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
     let handle: PdfHandle | null = null;
     setLoading(true);
     setError(null);
+    setAiRead(true);
+    setReading(false);
+    setReadError(null);
+    setAiFallback(null);
     setPdf(null);
     setPages([]);
     setDocxHtml(null);
@@ -92,7 +105,7 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
   }, [doc]);
 
   useEffect(() => {
-    if (!pdf || pages.some((p) => p.ocr === 'running' || p.ai === 'running')) return;
+    if (!pdf || aiRead || pages.some((p) => p.ocr === 'running' || p.ai === 'running')) return;
     const next = selected.find((n) => pages[n - 1]?.needsOcr && pages[n - 1]?.ocr === 'idle');
     if (next) {
       void runOcr(next);
@@ -101,7 +114,7 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
     if (aiBlocked) return;
     const unclear = selected.find((n) => pages[n - 1]?.ocr === 'done' && pages[n - 1]?.unclear && pages[n - 1]?.ai === 'idle');
     if (unclear) void runAi(unclear);
-  }, [pdf, selected, pages, aiBlocked]);
+  }, [pdf, selected, pages, aiBlocked, aiRead]);
 
   const updatePage = (n: number, patch: Partial<PageState>) => setPages((prev) => prev.map((p, i) => (i === n - 1 ? { ...p, ...patch } : p)));
 
@@ -164,7 +177,54 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
   const activePage = pages[active - 1];
 
   function togglePage(n: number) {
+    setReadError(null);
     setSelected((prev) => (prev.includes(n) ? prev.filter((x) => x !== n) : [...prev, n]));
+  }
+
+  // Con IA se leen las páginas elegidas; sin IA (o si falla) se usa el texto que armó el navegador.
+  const aiMode = Boolean(pdf) && aiRead;
+  const tooManyPages = aiMode && selected.length > MAX_AI_PAGES;
+  const heavy = aiMode && selected.length >= AI_HEAVY_PAGES;
+  const bigDoc = aiMode && Boolean(pdf) && (pdf?.numPages ?? 0) > AI_BIG_DOC_PAGES;
+
+  async function handleUse() {
+    if (!doc) return;
+    const chosen = pdf ? selected.slice().sort((a, b) => a - b) : null;
+    const label = pdf && chosen ? `${doc.name} (págs. ${chosen.join(', ')})` : doc.name;
+    const partial = pdf && chosen && chosen.length < pdf.numPages ? chosen : null;
+    if (!aiMode || !chosen) {
+      onUse(text, label, partial);
+      return;
+    }
+    setReading(true);
+    setReadError(null);
+    try {
+      const result = await readDocumentWithAi(doc.file, chosen);
+      if (!result.legible) {
+        setReadError(t('La IA no encontró texto de lectura en esas páginas. Probá con otras páginas.'));
+        return;
+      }
+      const len = readingLength(result.text);
+      if (!len.valid) {
+        setReadError(
+          len.tooShort
+            ? t('El texto leído tiene {words} palabras y hacen falta al menos 40. Elegí más páginas.', { words: len.words })
+            : t('El texto leído supera los {max} caracteres que permite tu institución. Elegí menos páginas.', { max: len.maxChars }),
+        );
+        return;
+      }
+      onUse(result.text, label, partial);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 400) {
+        setReadError(err.message);
+      } else {
+        // Sin IA, sin presupuesto o error del servicio: se leen las páginas con OCR en el navegador.
+        setAiFallback(err instanceof ApiError && (err.status === 409 || err.status === 423) ? `${err.message} ${t('Se leen las páginas con OCR en tu navegador.')}` : t('La IA no pudo leer el documento. Se leen las páginas con OCR en tu navegador.'));
+        setAiRead(false);
+      }
+    } finally {
+      setReading(false);
+    }
   }
 
   return (
@@ -204,7 +264,7 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
                       <label className="flex items-center gap-1.5 mt-1.5 text-[11px] text-text-pri cursor-pointer">
                         <input type="checkbox" checked={isSelected} onChange={() => togglePage(n)} className="accent-emerald-600" />
                         {t('Pág. {n}', { n })}
-                        {p.ai === 'done' && !p.unclear ? (
+                        {aiMode ? null : p.ai === 'done' && !p.unclear ? (
                           <span className="ml-auto text-[9.5px] font-bold uppercase text-emerald-700 dark:text-emerald-300" title={t('La IA ordenó el texto que leyó el OCR')}>
                             {t('IA')}
                           </span>
@@ -237,12 +297,12 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
                         {t('+ Usar esta página')}
                       </button>
                     )}
-                    {activePage?.ocr !== 'running' && activePage?.ai !== 'running' && (
+                    {!aiMode && activePage?.ocr !== 'running' && activePage?.ai !== 'running' && (
                       <button type="button" onClick={() => void runOcr(active)} className="ml-1 underline cursor-pointer" title={t('Volver a leer la página como imagen')}>
                         {t('Leer con OCR')}
                       </button>
                     )}
-                    {activePage?.ocr === 'done' && activePage.raw && activePage.ai !== 'running' && !aiBlocked && (
+                    {!aiMode && activePage?.ocr === 'done' && activePage.raw && activePage.ai !== 'running' && !aiBlocked && (
                       <button
                         type="button"
                         onClick={() => void runAi(active)}
@@ -269,6 +329,27 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
               <div className="px-4 pt-3 pb-2 text-[12px] text-text-sec">
                 {pdf ? t('Marcá las páginas que tienen el texto de la lectura.') : t('Revisá el documento y usalo cuando esté listo.')}
               </div>
+              {tooManyPages && (
+                <div className="mx-4 mb-2 text-[11px] text-red">{t('Podés leer hasta {max} páginas a la vez. Desmarcá algunas.', { max: MAX_AI_PAGES })}</div>
+              )}
+              {!tooManyPages && heavy && (
+                <div className="mx-4 mb-2 text-[11px] text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/10 border border-amber-200/70 dark:border-amber-500/20 rounded-lg px-2.5 py-1.5">
+                  {t('Elegiste {n} páginas: leerlas con IA puede consumir mucho. Marcá solo las páginas que tienen la lectura.', { n: selected.length })}
+                </div>
+              )}
+              {!tooManyPages && !heavy && bigDoc && (
+                <div className="mx-4 mb-2 text-[11px] text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/10 border border-amber-200/70 dark:border-amber-500/20 rounded-lg px-2.5 py-1.5">
+                  {t('Este documento tiene {n} páginas. Elegí cuáles leer: leerlo entero con IA puede consumir mucho.', { n: pdf?.numPages ?? 0 })}
+                </div>
+              )}
+              {reading && (
+                <div className="mx-4 mb-2 flex items-center gap-1.5 text-[11px] text-text-sec">
+                  <Icon name="sparkles" size={12} className="text-emerald-600 animate-pulse" />
+                  {t('La IA está leyendo las páginas elegidas…')}
+                </div>
+              )}
+              {readError && <div className="mx-4 mb-2 text-[11px] text-red">{readError}</div>}
+              {aiFallback && <div className="mx-4 mb-2 text-[11px] text-amber-800 dark:text-amber-300">{aiFallback}</div>}
               {ocrRunning && (
                 <div className="mx-4 mb-2 text-[11px] text-text-sec">
                   {t('Leyendo página {value} con OCR… {round}%', { value: pages.indexOf(ocrRunning) + 1, round: Math.round(ocrRunning.progress * 100) })}
@@ -305,23 +386,22 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
                 <div className="mx-4 mb-2 text-[11px] text-red">{t('No se pudo leer alguna página con OCR. Probá de nuevo con «Leer con OCR».')}</div>
               )}
               <div className="mt-auto px-4 pb-3 pt-2 flex flex-col gap-2">
-                <span className={`text-[11.5px] font-semibold ${valid ? 'text-green-mid' : 'text-red'}`}>
-                  {t('{words} palabras · {chars} caracteres', { words, chars: length.chars })}{' '}{valid ? t('· listo') : length.tooShort ? t('· tiene que tener al menos 40 palabras') : t('· supera los {max} caracteres', { max: length.maxChars })}
-                </span>
+                {aiMode ? (
+                  <span className={`text-[11.5px] font-semibold ${selected.length === 0 || tooManyPages ? 'text-red' : 'text-text-sec'}`}>
+                    {selected.length === 1 ? t('1 página elegida') : t('{n} páginas elegidas', { n: selected.length })}
+                  </span>
+                ) : (
+                  <span className={`text-[11.5px] font-semibold ${valid ? 'text-green-mid' : 'text-red'}`}>
+                    {t('{words} palabras · {chars} caracteres', { words, chars: length.chars })}{' '}{valid ? t('· listo') : length.tooShort ? t('· tiene que tener al menos 40 palabras') : t('· supera los {max} caracteres', { max: length.maxChars })}
+                  </span>
+                )}
                 <button
                   type="button"
-                  disabled={!text.trim() || Boolean(ocrRunning) || Boolean(aiRunning)}
-                  onClick={() => {
-                    const pages = pdf ? selected.slice().sort((a, b) => a - b) : null;
-                    onUse(
-                      text,
-                      pdf && pages ? `${doc.name} (págs. ${pages.join(', ')})` : doc.name,
-                      pdf && pages && pages.length < pdf.numPages ? pages : null,
-                    );
-                  }}
+                  disabled={aiMode ? selected.length === 0 || tooManyPages || reading : !text.trim() || Boolean(ocrRunning) || Boolean(aiRunning)}
+                  onClick={() => void handleUse()}
                   className="w-full bg-green-dark hover:opacity-90 text-white text-xs font-bold px-4 py-2.5 rounded-xl disabled:opacity-50 cursor-pointer"
                 >
-                  {t('Usar este texto')}
+                  {reading ? t('Leyendo con IA…') : aiMode ? t('Leer y usar') : t('Usar este texto')}
                 </button>
               </div>
             </div>
