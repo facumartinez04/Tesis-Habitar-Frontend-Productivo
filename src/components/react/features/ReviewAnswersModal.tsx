@@ -55,6 +55,17 @@ export function ReviewAnswersModal({ activity, isOpen, onClose, onReviewed }: Re
     onClose();
   }
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      if (changed) onReviewed?.();
+      onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isOpen, changed, onClose, onReviewed]);
+
   if (!isOpen || !activity) return null;
 
   return (
