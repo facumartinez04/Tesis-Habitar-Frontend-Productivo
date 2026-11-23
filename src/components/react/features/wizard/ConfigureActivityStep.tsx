@@ -20,11 +20,19 @@ export function ConfigureActivityStep() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [windowRefreshed, setWindowRefreshed] = useState(false);
 
   useEffect(() => {
     if (wizard.questions.length === 0) {
       window.location.href = '/docente/actividades/nueva';
       return;
+    }
+    // El asistente se guarda en el navegador: si se retoma días después, las fechas guardadas ya pasaron.
+    // En ese caso se arranca de nuevo desde ahora en vez de dejar un cierre vencido.
+    const savedClose = arInstant(wizard.endDate || wizard.availableFrom, wizard.endTime);
+    if (savedClose !== null && savedClose <= Date.now()) {
+      updateWizard(defaultActivityWindow());
+      setWindowRefreshed(true);
     }
     listMyCourses().then((result) => {
       setCourses(result);
@@ -45,13 +53,30 @@ export function ConfigureActivityStep() {
   const closesAt = arInstant(endDate, wizard.endTime);
   const windowValid = opensAt !== null && closesAt !== null && closesAt > opensAt;
 
+  /** «Ahora»: la actividad abre en este momento (hora de Argentina). Si el cierre queda antes, se lo corre. */
+  function openNow() {
+    const date = todayInArgentina();
+    const time = currentTimeInArgentina();
+    const open = arInstant(date, time);
+    const patch: { availableFrom: string; startTime: string; endDate?: string; endTime?: string } = { availableFrom: date, startTime: time };
+    if (open === null || closesAt === null || closesAt <= open) {
+      const next = defaultActivityWindow();
+      patch.endDate = next.endDate;
+      patch.endTime = next.endTime;
+    }
+    updateWizard(patch);
+    setWindowRefreshed(false);
+    setSubmitError(null);
+  }
+
   async function handleSubmit() {
     if (!windowValid) {
       setSubmitError(t('[Error-PAR_002] El cierre tiene que ser posterior a la apertura'));
       return;
     }
     if (closesAt !== null && closesAt <= Date.now()) {
-      setSubmitError(t('El cierre ya pasó. Elegí una fecha y hora de cierre futuras.'));
+      const now = `${currentTimeInArgentina()} h del ${todayInArgentina().split('-').reverse().join('/')}`;
+      setSubmitError(t('El cierre ya pasó (ahora son las {now}, hora de Argentina). Elegí una fecha y hora de cierre futuras.', { now }));
       return;
     }
     setSubmitting(true);
@@ -133,9 +158,25 @@ export function ConfigureActivityStep() {
         </select>
       </div>
 
+      {windowRefreshed && (
+        <div className="mb-2.5 text-[11.5px] text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/10 border border-amber-200/70 dark:border-amber-500/20 rounded-lg px-3 py-2">
+          {t('Las fechas que tenías guardadas ya habían pasado: las actualicé a partir de ahora. Revisalas antes de confirmar.')}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-1.5">
         <div className="form-group">
-          <label className="block text-[11px] text-text-sec mb-[5px] font-medium">{t('Abre')}</label>
+          <div className="flex items-center justify-between mb-[5px]">
+            <label className="block text-[11px] text-text-sec font-medium">{t('Abre')}</label>
+            <button
+              type="button"
+              onClick={openNow}
+              title={t('Abrir la actividad en este momento')}
+              className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 underline cursor-pointer"
+            >
+              {t('Ahora')}
+            </button>
+          </div>
           <div className="flex gap-2">
             <input
               type="date"
