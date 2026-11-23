@@ -48,6 +48,11 @@ export function ReviewQuestionsStep() {
     setDraft(draftFromQuestion(question));
   }
 
+  function cancelEdit() {
+    setEditingId(null);
+    setDraft(null);
+  }
+
   function saveEdit(id: string) {
     if (!draft || questionDraftProblem(draft)) return;
     const payload = draftPayload(draft);
@@ -112,54 +117,83 @@ export function ReviewQuestionsStep() {
       </div>
 
       <div className="flex flex-col gap-2 mb-4">
-        {wizard.questions.map((question) => (
-          <Card key={question.id} className={`flex flex-col sm:flex-row gap-3 sm:items-start ${question.approved ? 'border-green-mid' : ''}`}>
-            <div className="flex-1">
-              <Badge color={axisBadge[question.axis].color} className="mb-1.5">{t(axisBadge[question.axis].label)}</Badge>
-              <Badge color="gray" className="mb-1.5 ml-1.5">{t(QUESTION_TYPE_LABEL[questionTypeOf(question)])}</Badge>
+        {wizard.questions.map((question, index) => {
+          const isEditing = editingId === question.id && draft !== null;
+          const problem = isEditing && draft ? questionDraftProblem(draft) : null;
+          const badges = (
+            <div className="flex items-center flex-wrap gap-1.5 mb-1.5">
+              <span className="text-[11px] font-semibold text-text-ter">{index + 1}.</span>
+              <Badge color={axisBadge[question.axis].color}>{t(axisBadge[question.axis].label)}</Badge>
+              <Badge color="gray">{t(QUESTION_TYPE_LABEL[questionTypeOf(question)])}</Badge>
               {question.edited && (
-                <span className="inline-flex items-center gap-1 text-[10.5px] text-green-mid ml-1.5">
+                <span className="inline-flex items-center gap-1 text-[10.5px] text-green-mid">
                   <Icon name="edit" size={11} />
                   {t('editada')}
                 </span>
               )}
-              {editingId === question.id && draft ? (
-                <div className="mt-1">
-                  <QuestionFields draft={draft} onChange={setDraft} idPrefix={question.id} />
-                  {questionDraftProblem(draft) && <p className="text-[11px] text-red mt-1.5">{questionDraftProblem(draft)}</p>}
-                </div>
-              ) : (
-                <>
-                  <div className="text-[13px] font-medium mb-1">{question.prompt}</div>
-                  <QuestionPreview {...question} />
-                </>
-              )}
             </div>
-            <div className="flex flex-wrap gap-1.5 sm:shrink-0">
-              {editingId === question.id ? (
-                <button
-                  onClick={() => saveEdit(question.id)}
-                  disabled={!draft || Boolean(questionDraftProblem(draft))}
-                  className="bg-green-dark text-white rounded-[6px] px-2.5 py-1.5 text-xs disabled:opacity-50"
-                >
-                  {t('Guardar')}
-                </button>
-              ) : (
-                <button onClick={() => startEdit(question.id)} className="bg-white border border-gray-border rounded-[6px] px-2.5 py-1.5 text-xs">
+          );
+          if (isEditing && draft) {
+            // Edición: la tarjeta ocupa todo el ancho y las acciones van abajo, para escribir cómodo.
+            return (
+              <Card
+                key={question.id}
+                className="border-emerald-600 ring-2 ring-emerald-600/20"
+                onKeyDown={(e: React.KeyboardEvent) => {
+                  if (e.key === 'Escape') cancelEdit();
+                }}
+              >
+                <div className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 mb-1">{t('Editando la pregunta')}</div>
+                {badges}
+                <QuestionFields draft={draft} onChange={setDraft} idPrefix={question.id} />
+                <div className="mt-4 pt-3 border-t border-gray-border flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={() => saveEdit(question.id)}
+                    disabled={Boolean(problem)}
+                    className="bg-green-dark text-white rounded-[6px] px-3.5 py-1.5 text-xs font-semibold disabled:opacity-50 cursor-pointer"
+                  >
+                    {t('Guardar cambios')}
+                  </button>
+                  <button onClick={cancelEdit} className="bg-white border border-gray-border rounded-[6px] px-3 py-1.5 text-xs cursor-pointer">
+                    {t('Cancelar')}
+                  </button>
+                  {problem && <span className="text-[11px] text-red">{problem}</span>}
+                  <button
+                    onClick={() => {
+                      cancelEdit();
+                      removeQuestion(question.id);
+                    }}
+                    className="ml-auto bg-white border border-gray-border rounded-[6px] px-2.5 py-1.5 text-xs text-red-text cursor-pointer"
+                  >
+                    {t('Eliminar')}
+                  </button>
+                </div>
+              </Card>
+            );
+          }
+          return (
+            <Card key={question.id} className={`flex flex-col sm:flex-row gap-3 sm:items-start ${question.approved ? 'border-green-mid' : ''}`}>
+              <div className="flex-1 min-w-0">
+                {badges}
+                <div className="text-[13px] font-medium mb-1">{question.prompt}</div>
+                <QuestionPreview {...question} />
+              </div>
+              <div className="flex flex-wrap gap-1.5 sm:shrink-0">
+                <button onClick={() => startEdit(question.id)} className="bg-white border border-gray-border rounded-[6px] px-2.5 py-1.5 text-xs cursor-pointer">
                   {t('Editar')}
                 </button>
-              )}
-              {!question.approved && (
-                <button onClick={() => approveQuestion(question.id)} className="bg-white border border-gray-border rounded-[6px] px-2.5 py-1.5 text-xs text-green-dark">
-                  {t('Aprobar')}
+                {!question.approved && (
+                  <button onClick={() => approveQuestion(question.id)} className="bg-white border border-gray-border rounded-[6px] px-2.5 py-1.5 text-xs text-green-dark cursor-pointer">
+                    {t('Aprobar')}
+                  </button>
+                )}
+                <button onClick={() => removeQuestion(question.id)} className="bg-white border border-gray-border rounded-[6px] px-2.5 py-1.5 text-xs text-red-text cursor-pointer">
+                  {t('Eliminar')}
                 </button>
-              )}
-              <button onClick={() => removeQuestion(question.id)} className="bg-white border border-gray-border rounded-[6px] px-2.5 py-1.5 text-xs text-red-text">
-                {t('Eliminar')}
-              </button>
-            </div>
-          </Card>
-        ))}
+              </div>
+            </Card>
+          );
+        })}
       </div>
 
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2.5">

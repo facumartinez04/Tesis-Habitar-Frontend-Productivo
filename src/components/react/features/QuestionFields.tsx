@@ -1,3 +1,4 @@
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { Icon } from '../ui/Icon';
 import { t, useI18n } from '../../../i18n';
 import type { QuestionType } from '../../../types/question';
@@ -103,7 +104,52 @@ export function draftPayload(draft: QuestionDraft) {
 }
 
 const field =
-  'w-full px-3 py-2 border border-gray-border dark:border-[#2D3342] rounded-lg text-[13px] bg-white dark:bg-[#1A1E29] text-text-pri focus:border-emerald-600 outline-none';
+  'w-full px-3 py-2 border border-gray-border dark:border-[#2D3342] rounded-lg text-[13px] leading-relaxed bg-white dark:bg-[#1A1E29] text-text-pri focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none transition-colors';
+
+/**
+ * Cuadro de texto que crece con lo que se escribe: no corta el texto ni muestra barras de desplazamiento propias.
+ * Con `singleLine` el Enter no agrega renglones (para opciones y respuestas cortas, que pueden ocupar varias líneas al verse).
+ */
+function AutoTextarea({
+  value,
+  onChange,
+  minRows = 1,
+  singleLine = false,
+  ...rest
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  minRows?: number;
+  singleLine?: boolean;
+} & Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'value' | 'onChange' | 'rows'>) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  const fit = () => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    // scrollHeight no cuenta los bordes: se suman para que no se recorte la última línea.
+    el.style.height = `${el.scrollHeight + (el.offsetHeight - el.clientHeight)}px`;
+  };
+  useLayoutEffect(fit, [value]);
+  useEffect(() => {
+    window.addEventListener('resize', fit);
+    return () => window.removeEventListener('resize', fit);
+  }, []);
+  return (
+    <textarea
+      {...rest}
+      ref={ref}
+      value={value}
+      rows={minRows}
+      onChange={(e) => onChange(singleLine ? e.target.value.replace(/\s*\n+\s*/g, ' ') : e.target.value)}
+      onKeyDown={(e) => {
+        if (singleLine && e.key === 'Enter') e.preventDefault();
+        rest.onKeyDown?.(e);
+      }}
+      className={`${rest.className ?? field} resize-none overflow-hidden block`}
+    />
+  );
+}
 
 export function QuestionFields({ draft, onChange, idPrefix }: { draft: QuestionDraft; onChange: (draft: QuestionDraft) => void; idPrefix: string }) {
   useI18n();
@@ -132,7 +178,7 @@ export function QuestionFields({ draft, onChange, idPrefix }: { draft: QuestionD
     <div className="space-y-3">
       <label className="block">
         <span className="block text-[11px] text-text-sec mb-1 font-medium">{t('Consigna')}</span>
-        <textarea value={draft.prompt} onChange={(e) => set({ prompt: e.target.value })} rows={2} className={field} />
+        <AutoTextarea value={draft.prompt} onChange={(prompt) => set({ prompt })} minRows={2} className={field} />
         {draft.type === 'COMPLETAR' && (
           <span className="block text-[11px] text-text-ter mt-1">{t('Marcá el espacio en blanco con ___ (tres guiones bajos).')}</span>
         )}
@@ -141,7 +187,7 @@ export function QuestionFields({ draft, onChange, idPrefix }: { draft: QuestionD
       {draft.type === 'ABIERTA' && (
         <label className="block">
           <span className="block text-[11px] text-text-sec mb-1 font-medium">{t('Respuesta esperada (guía para la corrección)')}</span>
-          <textarea value={draft.expectedAnswer} onChange={(e) => set({ expectedAnswer: e.target.value })} rows={3} className={field} />
+          <AutoTextarea value={draft.expectedAnswer} onChange={(expectedAnswer) => set({ expectedAnswer })} minRows={3} className={field} />
         </label>
       )}
 
@@ -151,9 +197,10 @@ export function QuestionFields({ draft, onChange, idPrefix }: { draft: QuestionD
           <div className="space-y-1.5">
             {draft.acceptedAnswers.map((a, i) => (
               <div key={i} className="flex items-center gap-2">
-                <input
+                <AutoTextarea
                   value={a}
-                  onChange={(e) => set({ acceptedAnswers: draft.acceptedAnswers.map((x, j) => (j === i ? e.target.value : x)) })}
+                  singleLine
+                  onChange={(value) => set({ acceptedAnswers: draft.acceptedAnswers.map((x, j) => (j === i ? value : x)) })}
                   aria-label={t('Respuesta aceptada {value}', { value: i + 1 })}
                   className={field}
                 />
@@ -196,7 +243,7 @@ export function QuestionFields({ draft, onChange, idPrefix }: { draft: QuestionD
                     aria-label={t('Opción {value} es la correcta', { value: i + 1 })}
                     className="accent-emerald-700 w-4 h-4 cursor-pointer shrink-0"
                   />
-                  <input value={o} onChange={(e) => renameOption(i, e.target.value)} readOnly={fixedOptions} className={field} />
+                  <AutoTextarea value={o} singleLine onChange={(value) => renameOption(i, value)} readOnly={fixedOptions} aria-label={t('Opción {value}', { value: i + 1 })} className={field} />
                   {!fixedOptions && draft.options.length > 2 && (
                     <button type="button" onClick={() => removeOption(i)} aria-label={t('Quitar')} className="text-text-ter hover:text-red p-1 cursor-pointer">
                       <Icon name="close" size={13} />
