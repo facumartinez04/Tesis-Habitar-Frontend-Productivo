@@ -205,7 +205,7 @@ export function QuestionFields({ draft, onChange, idPrefix }: { draft: QuestionD
                   className={field}
                 />
                 {draft.acceptedAnswers.length > 1 && (
-                  <button type="button" onClick={() => set({ acceptedAnswers: draft.acceptedAnswers.filter((_, j) => j !== i) })} aria-label={t('Quitar')} className="text-text-ter hover:text-red p-1 cursor-pointer">
+                  <button type="button" onClick={() => set({ acceptedAnswers: draft.acceptedAnswers.filter((_, j) => j !== i) })} aria-label={t('Quitar')} title={t('Quitar')} className="text-text-ter hover:text-red p-1 cursor-pointer">
                     <Icon name="close" size={13} />
                   </button>
                 )}
@@ -245,7 +245,7 @@ export function QuestionFields({ draft, onChange, idPrefix }: { draft: QuestionD
                   />
                   <AutoTextarea value={o} singleLine onChange={(value) => renameOption(i, value)} readOnly={fixedOptions} aria-label={t('Opción {value}', { value: i + 1 })} className={field} />
                   {!fixedOptions && draft.options.length > 2 && (
-                    <button type="button" onClick={() => removeOption(i)} aria-label={t('Quitar')} className="text-text-ter hover:text-red p-1 cursor-pointer">
+                    <button type="button" onClick={() => removeOption(i)} aria-label={t('Quitar')} title={t('Quitar')} className="text-text-ter hover:text-red p-1 cursor-pointer">
                       <Icon name="close" size={13} />
                     </button>
                   )}

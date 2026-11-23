@@ -74,7 +74,7 @@ export function StudentQrScannerModal({ isOpen, onClose, onCodeScanned }: Studen
               <p className="text-[11px] text-text-sec">{t('Del aula física o de la actividad')}</p>
             </div>
           </div>
-          <button onClick={onClose} aria-label={t('Cerrar')} className="text-text-ter hover:text-text-pri p-1 rounded-lg text-sm font-bold cursor-pointer"><Icon name="close" size={16} /></button>
+          <button onClick={onClose} aria-label={t('Cerrar')} title={t('Cerrar')} className="text-text-ter hover:text-text-pri p-1 rounded-lg text-sm font-bold cursor-pointer"><Icon name="close" size={16} /></button>
         </div>
 
         <div className="flex border-b border-gray-border dark:border-[#2D3342] text-xs font-semibold">

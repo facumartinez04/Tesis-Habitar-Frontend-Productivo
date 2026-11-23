@@ -155,7 +155,7 @@ export function PptxViewer({ data, slides: only, index, onIndexChange, onError, 
                 type="button"
                 onClick={() => go(cur - 1)}
                 disabled={cur <= 0}
-                aria-label={t('Diapositiva anterior')}
+                aria-label={t('Diapositiva anterior')} title={t('Diapositiva anterior')}
                 className="px-2.5 py-1 rounded-lg border border-gray-border disabled:opacity-40 cursor-pointer disabled:cursor-default"
               >
                 ‹
@@ -165,7 +165,7 @@ export function PptxViewer({ data, slides: only, index, onIndexChange, onError, 
                 type="button"
                 onClick={() => go(cur + 1)}
                 disabled={cur >= order.length - 1}
-                aria-label={t('Diapositiva siguiente')}
+                aria-label={t('Diapositiva siguiente')} title={t('Diapositiva siguiente')}
                 className="px-2.5 py-1 rounded-lg border border-gray-border disabled:opacity-40 cursor-pointer disabled:cursor-default"
               >
                 ›

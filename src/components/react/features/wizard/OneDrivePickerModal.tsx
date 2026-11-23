@@ -97,7 +97,7 @@ export function OneDrivePickerModal({ token, isOpen, onClose, onPicked }: OneDri
             <Icon name="cloud" size={16} />
             {t('Elegí el texto desde OneDrive')}
           </div>
-          <button type="button" onClick={onClose} aria-label={t('Cerrar')} className="text-text-ter hover:text-text-pri p-1 rounded-lg cursor-pointer">
+          <button type="button" onClick={onClose} aria-label={t('Cerrar')} title={t('Cerrar')} className="text-text-ter hover:text-text-pri p-1 rounded-lg cursor-pointer">
             <Icon name="close" size={16} />
           </button>
         </div>

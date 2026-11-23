@@ -19,6 +19,14 @@ import { LOCALES, intlLocale, t, useI18n, type Locale } from '../../../../i18n';
 import { CLOSED_QUESTION_TYPES, QUESTION_TYPE_LABEL, type QuestionType } from '../../../../types/question';
 import { HelpTip } from '../../ui/HelpTip';
 
+const QUESTION_TYPE_HINT: Record<QuestionType, string> = {
+  OPCION_UNICA: 'Varias opciones y una sola es correcta.',
+  OPCION_MULTIPLE: 'Varias opciones y puede haber más de una correcta.',
+  VERDADERO_FALSO: 'Una afirmación que el alumno marca como verdadera o falsa.',
+  COMPLETAR: 'Una frase con un espacio en blanco que el alumno completa.',
+  ABIERTA: 'El alumno escribe su respuesta y vos la revisás.',
+};
+
 const DEFAULT_TEXT =
   'La biodiversidad es el conjunto de formas de vida que habitan nuestro planeta. Cada ecosistema alberga especies que dependen entre sí para sobrevivir. Cuando una especie desaparece, las consecuencias se propagan en cadena hacia el resto del sistema. Proteger la biodiversidad no es solo una cuestión ambiental, sino también cultural y económica.';
 
@@ -218,7 +226,10 @@ export function NewActivityStep1() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3.5">
         <div className="form-group">
-          <label className="block text-[11px] text-text-sec mb-[5px] font-medium">{t('Nivel educativo')}</label>
+          <label className="flex items-center gap-1.5 text-[11px] text-text-sec mb-[5px] font-medium">
+            {t('Nivel educativo')}
+            <HelpTip text={t('Ajusta la dificultad del vocabulario y de las preguntas al nivel de tus alumnos.')} />
+          </label>
           <select
             className="form-select w-full px-2.5 py-[7px] border border-gray-border rounded-[6px] text-[12.5px] bg-white"
             value={wizard.educationLevel}
@@ -230,7 +241,10 @@ export function NewActivityStep1() {
           </select>
         </div>
         <div className="form-group">
-          <label className="block text-[11px] text-text-sec mb-[5px] font-medium">{t('Eje foco')}</label>
+          <label className="flex items-center gap-1.5 text-[11px] text-text-sec mb-[5px] font-medium">
+            {t('Eje foco')}
+            <HelpTip text={t('Elegí qué tipo de comprensión querés reforzar: la IA arma 3 de las 5 preguntas de ese eje. Sin foco, mezcla los tres ejes de forma estándar.')} />
+          </label>
           <select
             className="form-select w-full px-2.5 py-[7px] border border-gray-border rounded-[6px] text-[12.5px] bg-white"
             value={wizard.focusAxis ?? ''}
@@ -246,7 +260,10 @@ export function NewActivityStep1() {
           </select>
         </div>
         <div className="form-group">
-          <label className="block text-[11px] text-text-sec mb-[5px] font-medium">{t('Idioma de la actividad')}</label>
+          <label className="flex items-center gap-1.5 text-[11px] text-text-sec mb-[5px] font-medium">
+            {t('Idioma de la actividad')}
+            <HelpTip text={t('Idioma en el que la IA escribe las preguntas y en el que ven la actividad los alumnos. Tiene que coincidir con el idioma del texto.')} />
+          </label>
           <select
             className="form-select w-full px-2.5 py-[7px] border border-gray-border rounded-[6px] text-[12.5px] bg-white"
             value={wizard.language ?? locale}
@@ -274,6 +291,7 @@ export function NewActivityStep1() {
                 key={type}
                 type="button"
                 aria-pressed={on}
+                title={t(QUESTION_TYPE_HINT[type])}
                 onClick={() => toggleType(type)}
                 className={`inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-1.5 rounded-[6px] text-[11.5px] font-semibold border cursor-pointer transition-colors ${
                   on ? 'bg-emerald-700 border-emerald-700 text-white' : 'bg-white dark:bg-[#1A1E29] border-gray-border text-text-sec hover:text-text-pri'
@@ -288,9 +306,12 @@ export function NewActivityStep1() {
       </fieldset>
 
       <div className="form-group mb-2.5">
-        <label className="block text-[11px] text-text-sec mb-[5px] font-medium">{t('Texto fuente')}</label>
+        <label className="flex items-center gap-1.5 text-[11px] text-text-sec mb-[5px] font-medium">
+          {t('Texto fuente')}
+          <HelpTip text={t('Es la lectura sobre la que se arman las preguntas. Podés pegarlo, subir un archivo, traerlo del banco de la institución o de tu nube. Mínimo 40 palabras.')} />
+        </label>
         <div className="flex flex-wrap items-center gap-2 mb-2">
-          <label className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-300 hover:bg-emerald-100 text-emerald-900 rounded-[6px] px-2.5 py-1.5 text-xs cursor-pointer font-medium transition-colors">
+          <label title={t('Elegí un archivo de tu equipo. Si es un PDF, un Word o un PowerPoint, los alumnos ven el documento original.')} className="flex items-center gap-1.5 bg-emerald-50border border-emerald-300 hover:bg-emerald-100 text-emerald-900 rounded-[6px] px-2.5 py-1.5 text-xs cursor-pointer font-medium transition-colors">
             <Icon name="fileText" size={13} />
             {t('Subir archivo (Word, PDF, PowerPoint, texto)')}
             <input
@@ -304,6 +325,7 @@ export function NewActivityStep1() {
             type="button"
             onClick={() => setBankOpen(true)}
             disabled={loadingTemplate}
+            title={t('Reutilizá una actividad que ya guardaron vos u otros docentes de la institución.')}
             className="flex items-center gap-1.5 bg-white border border-gray-border rounded-[6px] px-2.5 py-1.5 text-xs text-text-pri font-medium hover:bg-gray-50 disabled:opacity-50 cursor-pointer"
           >
             <Icon name="layers" size={12} />
@@ -312,6 +334,7 @@ export function NewActivityStep1() {
           <button
             type="button"
             onClick={() => { setText(DEFAULT_TEXT); resetWizard(); }}
+            title={t('Carga un texto de muestra para probar Habitar. Reemplaza lo que tengas escrito.')}
             className="flex items-center gap-1.5 bg-white border border-gray-border rounded-[6px] px-2.5 py-1.5 text-xs text-text-sec hover:text-text-pri"
           >
             <Icon name="refresh" size={12} />
@@ -367,6 +390,7 @@ export function NewActivityStep1() {
                 void clearWizardDocument();
                 updateWizard({ documentName: null });
               }}
+              title={t('Los alumnos ven sólo el texto de la actividad, sin el archivo original.')}
               className="font-semibold underline cursor-pointer"
             >
               {t('Mostrar sólo el texto')}
@@ -374,7 +398,7 @@ export function NewActivityStep1() {
           </div>
         )}
         {lastDoc && (
-          <button type="button" onClick={() => setReviewDoc(lastDoc)} className="text-[11.5px] font-semibold text-green-dark hover:underline mb-2 inline-flex items-center gap-1 cursor-pointer">
+          <button type="button" onClick={() => setReviewDoc(lastDoc)} title={t('Abre el documento para elegir qué páginas se leen y se usan para las preguntas.')} className="text-[11.5px] font-semibold text-green-dark hover:underline mb-2 inline-flex items-center gap-1 cursor-pointer">
             <Icon name="eye" size={12} />
             {t('Ver el documento y cambiar las páginas')}
           </button>
@@ -414,6 +438,7 @@ export function NewActivityStep1() {
         <button
           onClick={handleGenerate}
           disabled={!isValid || generating}
+          title={isValid ? t('La IA arma las preguntas a partir del texto. Después las revisás y editás.') : t('Cargá un texto de al menos 40 palabras para poder generar las preguntas.')}
           className="flex items-center justify-center gap-1.5 bg-green-dark text-white px-4 py-2 rounded-[6px] text-[12.5px] font-medium disabled:opacity-50"
         >
           {generating ? t('Generando…') : (

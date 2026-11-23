@@ -36,7 +36,7 @@ export function Pagination({ page, totalPages, total, pageSize, onChange, label 
         {t('{from}–{to} de {total} {label}', { from, to, total, label })}
       </span>
       <div className="flex items-center gap-1">
-        <button type="button" className={`${btn} text-text-sec hover:bg-gray-100 dark:hover:bg-white/5`} onClick={() => onChange(page - 1)} disabled={page <= 1} aria-label={t('Página anterior')}>
+        <button type="button" className={`${btn} text-text-sec hover:bg-gray-100 dark:hover:bg-white/5`} onClick={() => onChange(page - 1)} disabled={page <= 1} aria-label={t('Página anterior')} title={t('Página anterior')}>
           <Icon name="arrowLeft" size={13} />
         </button>
         {pageList(page, totalPages).map((p, i) =>
@@ -56,7 +56,7 @@ export function Pagination({ page, totalPages, total, pageSize, onChange, label 
             </button>
           ),
         )}
-        <button type="button" className={`${btn} text-text-sec hover:bg-gray-100 dark:hover:bg-white/5`} onClick={() => onChange(page + 1)} disabled={page >= totalPages} aria-label={t('Página siguiente')}>
+        <button type="button" className={`${btn} text-text-sec hover:bg-gray-100 dark:hover:bg-white/5`} onClick={() => onChange(page + 1)} disabled={page >= totalPages} aria-label={t('Página siguiente')} title={t('Página siguiente')}>
           <Icon name="arrowRight" size={13} />
         </button>
       </div>

@@ -265,7 +265,7 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
               {pptx && t(' · {numPages} {value} · elegí las que tienen la lectura', { numPages: pptx.info.slides.length, value: pptx.info.slides.length === 1 ? t('diapositiva') : t('diapositivas') })}
             </div>
           </div>
-          <button type="button" onClick={onClose} aria-label={t('Cerrar')} className="text-text-ter hover:text-text-pri p-1.5 rounded-lg cursor-pointer">
+          <button type="button" onClick={onClose} aria-label={t('Cerrar')} title={t('Cerrar')} className="text-text-ter hover:text-text-pri p-1.5 rounded-lg cursor-pointer">
             <Icon name="close" size={16} />
           </button>
         </div>

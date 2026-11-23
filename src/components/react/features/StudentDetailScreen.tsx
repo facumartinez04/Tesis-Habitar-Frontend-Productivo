@@ -133,7 +133,7 @@ export function StudentDetailScreen() {
         <MetricCard value={average('literal') === null ? '—' : `${average('literal')}%`} label={t('Literal')} color="var(--color-green-mid)" help={t('Promedio del alumno en las preguntas cuya respuesta está escrita en el texto.')} />
         <MetricCard value={average('inferencial') === null ? '—' : `${average('inferencial')}%`} label={t('Inferencial')} color="var(--color-amber)" help={t('Promedio del alumno en las preguntas que piden relacionar ideas y sacar conclusiones.')} />
         <MetricCard value={average('critico') === null ? '—' : `${average('critico')}%`} label={t('Crítico')} color="var(--color-red)" help={t('Promedio de sus respuestas abiertas ya revisadas por el docente.')} />
-        <MetricCard value={String(student.activitiesAnswered)} label={t('Actividades respondidas')} />
+        <MetricCard value={String(student.activitiesAnswered)} label={t('Actividades respondidas')} help={t('Cantidad de actividades que este alumno entregó.')} />
       </div>
 
       <div className="text-xs font-medium text-text-sec mb-2">{t('Evolución por eje · trimestre')}</div>

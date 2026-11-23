@@ -12,6 +12,7 @@ import { activityWizardStore, updateWizard, currentTimeInArgentina, defaultActiv
 import type { AttemptPolicy, Course, DiagnosticType } from '../../../../types/activity';
 import { arInstant, durationLabel, whenLabel } from '../../../../lib/activityDates';
 import { t, useI18n } from '../../../../i18n';
+import { HelpTip } from '../../ui/HelpTip';
 
 export function ConfigureActivityStep() {
   useI18n();
@@ -146,7 +147,10 @@ export function ConfigureActivityStep() {
       />
 
       <div className="form-group mb-3">
-        <label className="block text-[11px] text-text-sec mb-[5px] font-medium">{t('Curso de destino')}</label>
+        <label className="flex items-center gap-1.5 text-[11px] text-text-sec mb-[5px] font-medium">
+          {t('Curso de destino')}
+          <HelpTip text={t('El aula a la que pertenece la actividad. Los alumnos la abren con el QR fijo de esa aula y los resultados se suman a sus estadísticas.')} />
+        </label>
         <select
           className="form-select w-full px-2.5 py-[7px] border border-gray-border rounded-[6px] text-[12.5px] bg-white"
           value={wizard.courseId}
@@ -167,7 +171,10 @@ export function ConfigureActivityStep() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-1.5">
         <div className="form-group">
           <div className="flex items-center justify-between mb-[5px]">
-            <label className="block text-[11px] text-text-sec font-medium">{t('Abre')}</label>
+            <label className="flex items-center gap-1.5 text-[11px] text-text-sec font-medium">
+              {t('Abre')}
+              <HelpTip text={t('Desde esta fecha y hora los alumnos pueden entrar a la actividad; antes no pueden. Es horario de Argentina.')} />
+            </label>
             <button
               type="button"
               onClick={openNow}
@@ -196,7 +203,10 @@ export function ConfigureActivityStep() {
           </div>
         </div>
         <div className="form-group">
-          <label className="block text-[11px] text-text-sec mb-[5px] font-medium">{t('Cierra')}</label>
+          <label className="flex items-center gap-1.5 text-[11px] text-text-sec mb-[5px] font-medium">
+            {t('Cierra')}
+            <HelpTip text={t('Pasada esta fecha y hora nadie puede responder y la actividad se cierra sola y, poco después, se borra el documento que hayas subido. Es horario de Argentina.')} />
+          </label>
           <div className="flex gap-2">
             <input
               type="date"
@@ -226,7 +236,10 @@ export function ConfigureActivityStep() {
       </div>
 
       <div className="form-group mb-3.5">
-        <label className="block text-[11px] text-text-sec mb-[5px] font-medium">{t('Política de intentos')}</label>
+        <label className="flex items-center gap-1.5 text-[11px] text-text-sec mb-[5px] font-medium">
+          {t('Política de intentos')}
+          <HelpTip text={t('Con único intento, cada alumno responde una sola vez. Con reintentos, puede volver a hacer la actividad mientras esté abierta.')} />
+        </label>
         <RadioGroup
           options={[
             { value: 'unico' as AttemptPolicy, label: t('Único intento') },
@@ -238,7 +251,10 @@ export function ConfigureActivityStep() {
       </div>
 
       <div className="form-group mb-3.5">
-        <label className="block text-[11px] text-text-sec mb-[5px] font-medium">{t('Lectura')}</label>
+        <label className="flex items-center gap-1.5 text-[11px] text-text-sec mb-[5px] font-medium">
+          {t('Lectura')}
+          <HelpTip text={t('Define cuándo ven las preguntas los alumnos: después de leer, cuando vos las habilitás para todos, o junto con el texto.')} />
+        </label>
         <RadioGroup
           options={[
             { value: 'LECTURA_PRIMERO' as ReadingMode, label: t('Primero leen el texto, después responden') },
@@ -284,7 +300,10 @@ export function ConfigureActivityStep() {
       </div>
 
       <div className="form-group mb-3.5">
-        <label className="block text-[11px] text-text-sec mb-[5px] font-medium">{t('Tipo de actividad')}</label>
+        <label className="flex items-center gap-1.5 text-[11px] text-text-sec mb-[5px] font-medium">
+          {t('Tipo de actividad')}
+          <HelpTip text={t('Una actividad común mide la comprensión del momento. Las diagnósticas de inicio y de cierre del ciclo se comparan para ver cuánto mejoró cada alumno.')} />
+        </label>
         <RadioGroup
           options={[
             { value: '' as DiagnosticType | '', label: t('Actividad común') },
@@ -302,7 +321,10 @@ export function ConfigureActivityStep() {
       </div>
 
       <div className="form-group mb-4">
-        <label className="block text-[11px] text-text-sec mb-[5px] font-medium">{t('Nombre de la actividad (opcional)')}</label>
+        <label className="flex items-center gap-1.5 text-[11px] text-text-sec mb-[5px] font-medium">
+          {t('Nombre de la actividad (opcional)')}
+          <HelpTip text={t('Cómo vas a ver la actividad en tu lista y en los reportes. Los alumnos no lo necesitan para entrar.')} />
+        </label>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}

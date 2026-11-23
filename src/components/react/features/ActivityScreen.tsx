@@ -945,7 +945,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
       {notice && (
         <div className="flex items-start justify-between gap-2 text-xs font-semibold text-sky-900 dark:text-sky-200 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-xl px-3 py-2 mb-3">
           <span>{notice}</span>
-          <button type="button" onClick={() => setNotice(null)} className="text-sky-700 dark:text-sky-300 cursor-pointer" aria-label={t('Cerrar aviso')}>
+          <button type="button" onClick={() => setNotice(null)} className="text-sky-700 dark:text-sky-300 cursor-pointer" aria-label={t('Cerrar aviso')} title={t('Cerrar aviso')}>
             <Icon name="close" size={13} />
           </button>
         </div>
@@ -1314,10 +1314,10 @@ function TextSizeControls({ onChange, step, max }: { onChange: (delta: number) =
     'w-8 h-8 rounded-lg border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 font-bold disabled:opacity-40 cursor-pointer hover:bg-stone-50 dark:hover:bg-stone-800';
   return (
     <div className="inline-flex items-center gap-1" role="group" aria-label={t('Tamaño de letra')}>
-      <button type="button" onClick={() => onChange(-1)} disabled={step === 0} className={`${btn} text-[11px]`} aria-label={t('Achicar la letra')}>
+      <button type="button" onClick={() => onChange(-1)} disabled={step === 0} className={`${btn} text-[11px]`} aria-label={t('Achicar la letra')} title={t('Achicar la letra')}>
         A−
       </button>
-      <button type="button" onClick={() => onChange(1)} disabled={step === max} className={`${btn} text-[14px]`} aria-label={t('Agrandar la letra')}>
+      <button type="button" onClick={() => onChange(1)} disabled={step === max} className={`${btn} text-[14px]`} aria-label={t('Agrandar la letra')} title={t('Agrandar la letra')}>
         A+
       </button>
     </div>

@@ -74,7 +74,7 @@ export function ReviewAnswersModal({ activity, isOpen, onClose, onReviewed }: Re
           </div>
           <button
             onClick={handleClose}
-            aria-label={t('Cerrar')}
+            aria-label={t('Cerrar')} title={t('Cerrar')}
             className="text-text-ter hover:text-text-pri p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
           >
             <Icon name="close" size={16} />

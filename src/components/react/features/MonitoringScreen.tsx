@@ -71,9 +71,9 @@ export function MonitoringScreen() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-[18px]">
-        <MetricCard value={snapshot.monthlyUptimePercent === null ? t('Sin datos') : `${snapshot.monthlyUptimePercent}%`} label={t('Disponibilidad mensual')} color="var(--color-green-mid)" />
-        <MetricCard value={snapshot.latencyP95Seconds === null ? t('Sin datos') : `${snapshot.latencyP95Seconds}s`} label={t('Latencia p95')} />
-        <MetricCard value={String(snapshot.incidentsThisMonth)} label={t('Incidentes este mes')} color="var(--color-amber)" />
+        <MetricCard value={snapshot.monthlyUptimePercent === null ? t('Sin datos') : `${snapshot.monthlyUptimePercent}%`} label={t('Disponibilidad mensual')} color="var(--color-green-mid)" help={t('Porcentaje del mes en que Habitar estuvo funcionando sin interrupciones.')} />
+        <MetricCard value={snapshot.latencyP95Seconds === null ? t('Sin datos') : `${snapshot.latencyP95Seconds}s`} label={t('Latencia p95')} help={t('El 95 % de las consultas a la plataforma tardó este tiempo o menos en responder. Mientras más bajo, más rápida se siente.')} />
+        <MetricCard value={String(snapshot.incidentsThisMonth)} label={t('Incidentes este mes')} color="var(--color-amber)" help={t('Cantidad de interrupciones o caídas de algún componente registradas en el mes en curso.')} />
       </div>
 
       <div className="text-xs font-medium text-text-sec mb-2.5">{t('Estado de componentes')}</div>

@@ -60,7 +60,7 @@ export function ActivityBankModal({ isOpen, onClose, onPick }: ActivityBankModal
             <h2 className="text-base font-bold text-text-pri">{t('Banco de la institución')}</h2>
             <p className="text-xs text-text-sec mt-0.5">{t('Actividades que guardaron los docentes, con su texto y sus preguntas listas.')}</p>
           </div>
-          <button onClick={onClose} aria-label={t('Cerrar')} className="text-text-ter hover:text-text-pri p-1 rounded-lg cursor-pointer">
+          <button onClick={onClose} aria-label={t('Cerrar')} title={t('Cerrar')} className="text-text-ter hover:text-text-pri p-1 rounded-lg cursor-pointer">
             <Icon name="close" size={16} />
           </button>
         </div>

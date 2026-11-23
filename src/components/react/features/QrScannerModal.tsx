@@ -89,7 +89,7 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
               <h2 className="text-sm font-bold text-text-pri">{t('Vincular Aula')}</h2>
             </div>
           </div>
-          <button onClick={onClose} aria-label={t('Cerrar')} className="text-text-ter hover:text-text-pri p-2 rounded-lg transition-colors cursor-pointer"><Icon name="close" size={16} /></button>
+          <button onClick={onClose} aria-label={t('Cerrar')} title={t('Cerrar')} className="text-text-ter hover:text-text-pri p-2 rounded-lg transition-colors cursor-pointer"><Icon name="close" size={16} /></button>
         </div>
 
         <div className="flex border-b border-gray-border dark:border-[#2D3342] text-xs font-semibold">

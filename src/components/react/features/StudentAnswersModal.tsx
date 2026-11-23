@@ -156,7 +156,7 @@ export function StudentAnswersModal({ activityId, responseId, studentName, onClo
               </div>
             )}
           </div>
-          <button onClick={onClose} aria-label={t('Cerrar')} className="text-text-ter hover:text-text-pri p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer shrink-0">
+          <button onClick={onClose} aria-label={t('Cerrar')} title={t('Cerrar')} className="text-text-ter hover:text-text-pri p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer shrink-0">
             <Icon name="close" size={16} />
           </button>
         </div>

@@ -35,6 +35,12 @@ interface Dashboard {
 
 type AxisRow = { label: string; title: string; averages: Avg };
 
+const AXIS_HELP = {
+  literal: 'Promedio de aciertos en las preguntas cuya respuesta está escrita en el texto.',
+  inferencial: 'Promedio de aciertos en las preguntas que piden relacionar ideas y sacar conclusiones.',
+  critico: 'Promedio de las respuestas abiertas ya corregidas, en las que el alumno opina con argumentos del texto.',
+} as const;
+
 const AXES = [
   { key: 'literal', label: 'Literal', light: '#2a78d6', dark: '#3987e5' },
   { key: 'inferencial', label: 'Inferencial', light: '#eb6834', dark: '#d95926' },
@@ -297,7 +303,7 @@ export function DashboardScreen() {
             <Tile label={t('Alumnos')} value={k.students.toLocaleString(intlLocale())} help={t('Alumnos distintos que respondieron al menos una actividad.')} />
             <Tile label={t('Actividades')} value={k.activities.toLocaleString(intlLocale())} help={t('Actividades que recibieron respuestas en el período.')} />
             {AXES.map((a, i) => (
-              <Tile key={a.key} label={t('Promedio {toLowerCase}', { toLowerCase: a.label.toLowerCase() })} value={pct(k.averages[a.key])} dot={color(i)} />
+              <Tile key={a.key} label={t('Promedio {toLowerCase}', { toLowerCase: a.label.toLowerCase() })} value={pct(k.averages[a.key])} dot={color(i)} help={t(AXIS_HELP[a.key])} />
             ))}
             <Tile
               label={t('Por revisar')}
@@ -319,7 +325,7 @@ export function DashboardScreen() {
           {(selectedStudent && data.timeline.length > 0) || data.diagnostic.inicio || data.diagnostic.cierre ? (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4 print-avoid-break">
               {selectedStudent && data.timeline.length > 0 && (
-                <ChartCard title={t('Evolución de {name}, actividad por actividad', { name: selectedStudent.name })}>
+                <ChartCard title={t('Evolución de {name}, actividad por actividad', { name: selectedStudent.name })} help={t('El promedio del alumno en cada actividad que respondió, de la más antigua a la más reciente. Sirve para ver si mejora con el tiempo.')}>
                   <AxesChart
                     rows={data.timeline.map((point, i) => ({
                       label: `${i + 1}`,

@@ -92,7 +92,7 @@ export function ReadingHelpChat({ code, studentName, selection, onSelectionUsed 
             type="button"
             onClick={() => setOpen(true)}
             className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold pl-3.5 pr-4 py-3 rounded-full shadow-lg cursor-pointer"
-            aria-label={t('Abrir ayuda con el texto')}
+            aria-label={t('Abrir ayuda con el texto')} title={t('Abrir ayuda con el texto')}
           >
             <Icon name="messageCircle" size={16} />
             {t('¿No entendés algo del texto?')}
@@ -116,7 +116,7 @@ export function ReadingHelpChat({ code, studentName, selection, onSelectionUsed 
             <button
               type="button"
               onClick={() => setOpen(false)}
-              aria-label={t('Cerrar ayuda')}
+              aria-label={t('Cerrar ayuda')} title={t('Cerrar ayuda')}
               className="text-stone-500 hover:text-slate-900 dark:hover:text-white p-1 rounded-lg cursor-pointer"
             >
               <Icon name="close" size={16} />
@@ -195,7 +195,7 @@ export function ReadingHelpChat({ code, studentName, selection, onSelectionUsed 
               <button
                 type="submit"
                 disabled={draft.trim().length < 2 || Boolean(pending) || exhausted}
-                aria-label={t('Enviar duda')}
+                aria-label={t('Enviar duda')} title={t('Enviar duda')}
                 className="shrink-0 w-10 h-10 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white flex items-center justify-center disabled:opacity-40 cursor-pointer"
               >
                 <Icon name="send" size={15} />
