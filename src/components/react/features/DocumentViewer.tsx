@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { HabitarLoader } from '../ui/HabitarLoader';
 import { DocxPages } from '../ui/DocxPages';
 import { PptxViewer } from '../ui/PptxViewer';
+import { ExpandButton, ReaderOverlay, ZoomControls } from '../ui/ReaderOverlay';
 import { PPTX_MIME } from '../../../lib/pptxDocument';
 import { fetchActivityDocument, type ActivityDocumentMeta } from '../../../services/activityService';
 import { openPdf, type PdfHandle } from '../../../lib/pdfDocument';
@@ -32,14 +33,55 @@ function sanitizeHtml(html: string): string {
   return doc.body.innerHTML;
 }
 
+interface DocumentBodyProps {
+  pdf: PdfHandle | null;
+  html: string | null;
+  pptx: ArrayBuffer | null;
+  slides: number[] | null;
+  /** 1 = el ancho disponible. */
+  zoom: number;
+  onError: () => void;
+}
+
+/** El documento ya leído, dibujado al ancho de su contenedor (que ya viene multiplicado por el zoom). */
+function DocumentBody({ pdf, html, pptx, slides, zoom, onError }: DocumentBodyProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(0);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    setWidth(Math.floor(el.getBoundingClientRect().width));
+    const observer = new ResizeObserver(([entry]) => setWidth(Math.floor(entry.contentRect.width)));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const pages = pdf ? (slides?.filter((p) => p <= pdf.numPages) ?? Array.from({ length: pdf.numPages }, (_, i) => i + 1)) : [];
+
+  return (
+    <div ref={containerRef} className="w-full">
+      {pdf && width > 0 && (
+        <div className="space-y-3">
+          {pages.map((n, i) => (
+            <PdfPage key={n} pdf={pdf} page={n} width={width} label={t('Página {value} de {pagesCount}', { value: i + 1, pagesCount: pages.length })} />
+          ))}
+        </div>
+      )}
+      {html !== null && <DocxPages html={html} maxWidth={Math.round(640 * zoom)} />}
+      {pptx && <PptxViewer data={pptx} slides={slides} onError={onError} maxWidth={Math.round(960 * zoom)} />}
+    </div>
+  );
+}
+
 export function DocumentViewer({ code, document: meta, onError }: DocumentViewerProps) {
   useI18n();
   const [pdf, setPdf] = useState<PdfHandle | null>(null);
   const [html, setHtml] = useState<string | null>(null);
   const [pptx, setPptx] = useState<ArrayBuffer | null>(null);
   const [loading, setLoading] = useState(true);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState(0);
+  const [zoom, setZoom] = useState(1);
+  const [expanded, setExpanded] = useState(false);
   const onErrorRef = useRef(onError);
   onErrorRef.current = onError;
 
@@ -74,33 +116,34 @@ export function DocumentViewer({ code, document: meta, onError }: DocumentViewer
     };
   }, [code, meta.mimeType]);
 
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    setWidth(Math.floor(el.getBoundingClientRect().width));
-    const observer = new ResizeObserver(([entry]) => setWidth(Math.floor(entry.contentRect.width)));
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  const pages = pdf ? (meta.pages?.filter((p) => p <= pdf.numPages) ?? Array.from({ length: pdf.numPages }, (_, i) => i + 1)) : [];
+  const ready = !loading && (pdf !== null || html !== null || pptx !== null);
+  const body = (z: number) => (
+    <DocumentBody pdf={pdf} html={html} pptx={pptx} slides={meta.pages} zoom={z} onError={() => onErrorRef.current()} />
+  );
 
   return (
-    <div ref={containerRef} className="w-full">
+    <div className="w-full">
       {loading && (
         <div className="py-10">
           <HabitarLoader size="sm" message={t('Abriendo el documento…')} />
         </div>
       )}
-      {pdf && width > 0 && (
-        <div className="space-y-3">
-          {pages.map((n, i) => (
-            <PdfPage key={n} pdf={pdf} page={n} width={width} label={t('Página {value} de {pagesCount}', { value: i + 1, pagesCount: pages.length })} />
-          ))}
+      {ready && (
+        <div className="flex flex-wrap items-center justify-end gap-2 mb-2">
+          <ZoomControls zoom={zoom} onChange={setZoom} />
+          <ExpandButton onClick={() => setExpanded(true)} />
         </div>
       )}
-      {html !== null && <DocxPages html={html} />}
-      {pptx && <PptxViewer data={pptx} slides={meta.pages} onError={() => onErrorRef.current()} />}
+      {ready && !expanded && (
+        <div className="overflow-x-auto">
+          <div style={{ width: `${zoom * 100}%` }}>{body(zoom)}</div>
+        </div>
+      )}
+      {ready && expanded && (
+        <ReaderOverlay title={meta.fileName} onClose={() => setExpanded(false)} initialZoom={1}>
+          {(z) => body(z * 1.4)}
+        </ReaderOverlay>
+      )}
     </div>
   );
 }

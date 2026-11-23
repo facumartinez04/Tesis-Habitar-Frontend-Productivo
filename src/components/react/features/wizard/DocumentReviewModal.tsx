@@ -6,6 +6,7 @@ import { PptxViewer } from '../../ui/PptxViewer';
 import { isPptx, pptxText, readPptx, type PptxInfo } from '../../../../lib/pptxDocument';
 import { MIN_TEXT_CHARS, openPdf, type PdfHandle } from '../../../../lib/pdfDocument';
 import { extractDocumentWithPreview } from '../../../../lib/documentText';
+import { ExpandButton, ReaderOverlay } from '../../ui/ReaderOverlay';
 import { cleanScannedPage, MAX_AI_PAGES, readDocumentWithAi, readingLength, readingMaxChars } from '../../../../services/aiService';
 
 function formatFileSize(bytes: number): string {
@@ -52,6 +53,7 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
   const [pages, setPages] = useState<PageState[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
   const [active, setActive] = useState(1);
+  const [reader, setReader] = useState(false);
   const [docxHtml, setDocxHtml] = useState<string | null>(null);
   // Presentación de PowerPoint: el texto sale de las diapositivas elegidas (sin OCR ni IA) y se ve con su diseño.
   const [pptx, setPptx] = useState<{ data: ArrayBuffer; info: PptxInfo } | null>(null);
@@ -334,7 +336,11 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
               </div>
             )}
 
-            <div className="flex-1 min-w-0 min-h-[220px] overflow-auto bg-gray-bg p-4 flex justify-center items-start">
+            <div className="flex-1 min-w-0 min-h-[220px] flex flex-col bg-gray-bg">
+            <div className="shrink-0 flex justify-end px-4 pt-3">
+              <ExpandButton onClick={() => setReader(true)} />
+            </div>
+            <div className="flex-1 min-h-0 overflow-auto p-4 flex justify-center items-start">
               {pptx ? (
                 <div className="w-full max-w-[960px]">
                   <PptxViewer data={pptx.data} index={active - 1} onIndexChange={(i) => setActive(i + 1)} />
@@ -387,6 +393,46 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
                 </pre>
               )}
             </div>
+            </div>
+            {reader && (
+              <ReaderOverlay
+                title={doc.name}
+                onClose={() => setReader(false)}
+                footer={
+                  paged ? (
+                    <>
+                      {pdf && (
+                        <>
+                          <button type="button" disabled={active <= 1} onClick={() => setActive((a) => a - 1)} aria-label={t('Página anterior')} title={t('Página anterior')} className="px-2.5 py-1 rounded-lg border border-gray-border disabled:opacity-40 cursor-pointer">‹</button>
+                          <span className="tabular-nums">{t('Página {active} de {numPages}', { active, numPages: pdf.numPages })}</span>
+                          <button type="button" disabled={active >= pdf.numPages} onClick={() => setActive((a) => a + 1)} aria-label={t('Página siguiente')} title={t('Página siguiente')} className="px-2.5 py-1 rounded-lg border border-gray-border disabled:opacity-40 cursor-pointer">›</button>
+                        </>
+                      )}
+                      <label className="inline-flex items-center gap-1.5 font-semibold text-text-pri cursor-pointer">
+                        <input type="checkbox" checked={selected.includes(active)} onChange={() => togglePage(active)} className="accent-emerald-600" />
+                        {pptx ? t('Usar esta diapositiva') : t('Usar esta página')}
+                      </label>
+                    </>
+                  ) : undefined
+                }
+              >
+                {(z) =>
+                  pptx ? (
+                    <PptxViewer data={pptx.data} index={active - 1} onIndexChange={(i) => setActive(i + 1)} maxWidth={4000} />
+                  ) : pdf ? (
+                    <div className="bg-white shadow-lg rounded" data-keep-white="true">
+                      <PageCanvas key={active} pdf={pdf} page={active} width={Math.round(Math.min(1100 * z, 3300) * 1.25)} fill />
+                    </div>
+                  ) : docxHtml ? (
+                    <DocxPages html={docxHtml} maxWidth={4000} />
+                  ) : (
+                    <pre className="bg-white text-neutral-900 shadow-lg rounded w-full p-8 text-[15px] whitespace-pre-wrap font-sans" data-keep-white="true">
+                      {text}
+                    </pre>
+                  )
+                }
+              </ReaderOverlay>
+            )}
 
             <div className="lg:w-[300px] shrink-0 border-t lg:border-t-0 lg:border-l border-gray-border flex flex-col min-h-[140px]">
               <div className="px-4 pt-3 pb-2 text-[12px] text-text-sec">
@@ -510,7 +556,7 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
  * Dibuja una página del PDF. Con `fit` se ajusta al espacio disponible (ancho y alto) conservando la proporción,
  * así una diapositiva horizontal o una hoja vertical se ven enteras sin cortarse.
  */
-function PageCanvas({ pdf, page, width, fit = false }: { pdf: PdfHandle; page: number; width: number; fit?: boolean }) {
+function PageCanvas({ pdf, page, width, fit = false, fill = false }: { pdf: PdfHandle; page: number; width: number; fit?: boolean; fill?: boolean }) {
   useI18n();
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
@@ -524,9 +570,14 @@ function PageCanvas({ pdf, page, width, fit = false }: { pdf: PdfHandle; page: n
           canvas.style.width = 'auto';
           canvas.style.height = 'auto';
         }
+        if (fill) {
+          // Modo lectura: la página ocupa todo el ancho que se le da.
+          canvas.style.width = '100%';
+          canvas.style.height = 'auto';
+        }
       })
       .catch(() => undefined);
-  }, [pdf, page, width, fit]);
+  }, [pdf, page, width, fit, fill]);
   return fit ? (
     <canvas ref={ref} className="block rounded bg-white max-w-full" style={{ maxHeight: 'calc(94vh - 220px)' }} />
   ) : (
