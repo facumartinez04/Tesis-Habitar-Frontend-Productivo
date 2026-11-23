@@ -25,6 +25,8 @@ export interface CreateActivityInput {
   showFeedback?: boolean;
   templateId?: string | null;
   language?: Locale;
+  /** El texto salió de un documento: no rige el largo máximo de la institución sino el peso del archivo. */
+  fromDocument?: boolean;
 }
 
 export type ReadingMode = 'LECTURA_PRIMERO' | 'DOCENTE_HABILITA' | 'LIBRE';
@@ -137,6 +139,7 @@ export async function createActivity(input: CreateActivityInput): Promise<Activi
       showFeedback: input.showFeedback ?? true,
       ...(input.language ? { language: input.language } : {}),
       ...(input.templateId ? { templateId: input.templateId } : {}),
+      ...(input.fromDocument ? { fromDocument: true } : {}),
       questions: input.questions.map((question) => ({
         axis: toUpper(question.axis),
         type: question.type,

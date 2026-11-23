@@ -98,6 +98,7 @@ export function ConfigureActivityStep() {
         readingHelp: wizard.readingHelp ?? true,
         showFeedback: wizard.showFeedback ?? true,
         templateId: wizard.templateId ?? null,
+        fromDocument: wizard.fromDocument,
         language: wizard.language,
         questions: wizard.questions,
         diagnosticType: wizard.diagnosticType,

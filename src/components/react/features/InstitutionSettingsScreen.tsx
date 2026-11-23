@@ -353,10 +353,10 @@ export function InstitutionSettingsScreen() {
       <Card>
         <div className="text-[12.5px] font-medium mb-1 flex items-center gap-1.5">
           {t('Largo máximo de las lecturas')}
-          <HelpTip text={t('Cantidad máxima de caracteres (con espacios) que puede tener el texto de una actividad. Un texto de 5.000 caracteres son unas 800 palabras.')} />
+          <HelpTip text={t('Cantidad máxima de caracteres (con espacios) del texto que los docentes pegan o escriben. Un texto de 5.000 caracteres son unas 800 palabras. Los documentos no se limitan por esto sino por su peso (hasta 15 MB).')} />
         </div>
         <div className="text-[11.5px] text-text-sec mb-3 leading-relaxed">
-          {t('Los docentes no van a poder generar ni publicar una actividad con un texto más largo. Por defecto son 5.000 caracteres.')}
+          {t('Los docentes no van a poder generar ni publicar una actividad con un texto pegado más largo. Por defecto son 5.000 caracteres. Si suben un archivo (PDF, Word o PowerPoint) y eligen las páginas, vale el peso del archivo: hasta 15 MB.')}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <input

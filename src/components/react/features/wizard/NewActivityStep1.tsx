@@ -2,7 +2,7 @@ import { useStore } from '@nanostores/react';
 import { useEffect, useState } from 'react';
 import { Icon } from '../../ui/Icon';
 import { Stepper } from '../../ui/Stepper';
-import { generateQuestions, readingLength } from '../../../../services/aiService';
+import { generateQuestions, readingLength, readingMaxChars } from '../../../../services/aiService';
 import { getCourseById } from '../../../../services/courseService';
 import { activityWizardStore, resetWizard, updateWizard } from '../../../../store/activityWizardStore';
 import type { ComprehensionAxis, Course } from '../../../../types/activity';
@@ -59,6 +59,7 @@ export function NewActivityStep1() {
         questions,
         templateId: template.id,
         documentName: template.hasDocument ? t('{value} (del banco)', { value: template.documentFileName ?? t('documento') }) : null,
+        fromDocument: template.hasDocument || sourceText.trim().length > readingMaxChars(),
         educationLevel: template.educationLevel || wizard.educationLevel,
         language: template.language ?? wizard.language,
         name: template.name,
@@ -71,7 +72,7 @@ export function NewActivityStep1() {
   }
 
   useEffect(() => {
-    updateWizard({ sourceText: '', wordCount: 0, questions: [], documentName: null, templateId: null, generatedCode: null, generatedActivityId: null });
+    updateWizard({ sourceText: '', wordCount: 0, questions: [], documentName: null, fromDocument: false, templateId: null, generatedCode: null, generatedActivityId: null });
     void clearWizardDocument();
   }, []);
 
@@ -150,7 +151,7 @@ export function NewActivityStep1() {
     updateWizard({ questionTypes: CLOSED_QUESTION_TYPES.filter((t2) => next.includes(t2)) });
   }
 
-  const length = readingLength(text);
+  const length = readingLength(text, readingMaxChars(Boolean(wizard.fromDocument)));
   const wordCount = length.words;
   const isValid = length.valid;
 
@@ -166,7 +167,7 @@ export function NewActivityStep1() {
     setGenerating(true);
     setGenerateError(null);
     try {
-      const result = await generateQuestions(text, wizard.focusAxis ?? undefined, wizard.language ?? locale, selectedTypes);
+      const result = await generateQuestions(text, wizard.focusAxis ?? undefined, wizard.language ?? locale, selectedTypes, Boolean(wizard.fromDocument));
       updateWizard({
         sourceText: text,
         wordCount: result.wordCount,
@@ -311,7 +312,7 @@ export function NewActivityStep1() {
           <HelpTip text={t('Es la lectura sobre la que se arman las preguntas. Podés pegarlo, subir un archivo, traerlo del banco de la institución o de tu nube. Mínimo 40 palabras.')} />
         </label>
         <div className="flex flex-wrap items-center gap-2 mb-2">
-          <label title={t('Elegí un archivo de tu equipo. Si es un PDF, un Word o un PowerPoint, los alumnos ven el documento original.')} className="flex items-center gap-1.5 bg-emerald-50border border-emerald-300 hover:bg-emerald-100 text-emerald-900 rounded-[6px] px-2.5 py-1.5 text-xs cursor-pointer font-medium transition-colors">
+          <label title={t('Elegí un archivo de tu equipo (hasta 15 MB). Si es un PDF, un Word o un PowerPoint, los alumnos ven el documento original.')} className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-300 hover:bg-emerald-100 text-emerald-900 rounded-[6px] px-2.5 py-1.5 text-xs cursor-pointer font-medium transition-colors">
             <Icon name="fileText" size={13} />
             {t('Subir archivo (Word, PDF, PowerPoint, texto)')}
             <input
@@ -424,14 +425,16 @@ export function NewActivityStep1() {
           ) : (
             <>
               <span className={`font-semibold ${isValid ? 'text-green-mid' : 'text-red'}`}>
-                {t('{wordCount} palabras · {chars} de {max} caracteres', {
-                  wordCount,
-                  chars: length.chars.toLocaleString(intlLocale()),
-                  max: length.maxChars.toLocaleString(intlLocale()),
-                })}
+                {wizard.fromDocument
+                  ? t('{wordCount} palabras · {chars} caracteres', { wordCount, chars: length.chars.toLocaleString(intlLocale()) })
+                  : t('{wordCount} palabras · {chars} de {max} caracteres', {
+                      wordCount,
+                      chars: length.chars.toLocaleString(intlLocale()),
+                      max: length.maxChars.toLocaleString(intlLocale()),
+                    })}
               </span>
               {length.tooShort && <>{' · '}{t('Tiene que tener al menos 40 palabras')}</>}
-              {length.tooLong && <>{' · '}{t('Supera el máximo de caracteres de tu institución')}</>}
+              {length.tooLong && <>{' · '}{wizard.fromDocument ? t('Es demasiado texto: elegí menos páginas del documento') : t('Supera el máximo de caracteres de tu institución')}</>}
             </>
           )}
         </div>
@@ -468,10 +471,10 @@ export function NewActivityStep1() {
             setLastDoc(reviewDoc);
             if (documentKind(reviewDoc.name, reviewDoc.mimeType)) {
               void saveWizardDocument({ name: reviewDoc.name, mimeType: reviewDoc.mimeType, file: reviewDoc.file, pages });
-              updateWizard({ documentName: label });
+              updateWizard({ documentName: label, fromDocument: true });
             } else {
               void clearWizardDocument();
-              updateWizard({ documentName: null });
+              updateWizard({ documentName: null, fromDocument: true });
             }
           }
           setReviewDoc(null);

@@ -62,10 +62,11 @@ export async function generateQuestions(
   focusAxis?: ComprehensionAxis,
   language?: Locale,
   questionTypes?: QuestionType[],
+  fromDocument?: boolean,
 ): Promise<GenerateQuestionsResult> {
   const result = await apiFetch<BackendGenerateQuestionsResponse>('/activities/generate-questions', {
     method: 'POST',
-    body: { sourceText, focusAxis: focusAxis ? toUpper(focusAxis) : undefined, language, questionTypes },
+    body: { sourceText, focusAxis: focusAxis ? toUpper(focusAxis) : undefined, language, questionTypes, ...(fromDocument ? { fromDocument: true } : {}) },
   });
 
   const questions: Question[] = result.questions.map((question, index) => ({
@@ -88,8 +89,12 @@ export async function generateQuestions(
 export const MIN_READING_WORDS = 40;
 export const DEFAULT_READING_MAX_CHARS = 5000;
 
-export function readingMaxChars(): number {
-  return sessionStore.get()?.readingMaxChars ?? DEFAULT_READING_MAX_CHARS;
+/** Techo técnico del texto leído de un documento (igual al del servidor). El peso del archivo (15 MB) y las páginas son el límite visible. */
+export const DOCUMENT_READING_MAX_CHARS = 50000;
+
+export function readingMaxChars(fromDocument = false): number {
+  const own = sessionStore.get()?.readingMaxChars ?? DEFAULT_READING_MAX_CHARS;
+  return fromDocument ? Math.max(own, DOCUMENT_READING_MAX_CHARS) : own;
 }
 
 export interface ReadingLength {

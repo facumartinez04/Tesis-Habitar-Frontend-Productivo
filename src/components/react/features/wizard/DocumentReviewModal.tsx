@@ -6,7 +6,11 @@ import { PptxViewer } from '../../ui/PptxViewer';
 import { isPptx, pptxText, readPptx, type PptxInfo } from '../../../../lib/pptxDocument';
 import { MIN_TEXT_CHARS, openPdf, type PdfHandle } from '../../../../lib/pdfDocument';
 import { extractDocumentWithPreview } from '../../../../lib/documentText';
-import { cleanScannedPage, MAX_AI_PAGES, readDocumentWithAi, readingLength } from '../../../../services/aiService';
+import { cleanScannedPage, MAX_AI_PAGES, readDocumentWithAi, readingLength, readingMaxChars } from '../../../../services/aiService';
+
+function formatFileSize(bytes: number): string {
+  return bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+}
 import { ApiError } from '../../../../lib/apiClient';
 import { t, useI18n } from '../../../../i18n';
 
@@ -86,7 +90,7 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
           // (portadas, imágenes) quedan elegidas: no suman texto pero el alumno las tiene que ver.
           const chosen: number[] = [];
           for (const slide of info.slides) {
-            if (slide.text && readingLength(pptxText(info, [...chosen, slide.n])).tooLong) break;
+            if (slide.text && readingLength(pptxText(info, [...chosen, slide.n]), readingMaxChars(true)).tooLong) break;
             chosen.push(slide.n);
           }
           setPptx({ data, info });
@@ -189,7 +193,8 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
 
   if (!doc) return null;
 
-  const length = readingLength(text);
+  // El texto de un documento no se limita por el largo que fija la institución sino por el peso del archivo y las páginas.
+  const length = readingLength(text, readingMaxChars(true));
   const words = length.words;
   const valid = length.valid;
   const ocrRunning = pages.find((p) => p.ocr === 'running');
@@ -230,12 +235,12 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
         setReadError(t('La IA no encontró texto de lectura en esas páginas. Probá con otras páginas.'));
         return;
       }
-      const len = readingLength(result.text);
+      const len = readingLength(result.text, readingMaxChars(true));
       if (!len.valid) {
         setReadError(
           len.tooShort
             ? t('El texto leído tiene {words} palabras y hacen falta al menos 40. Elegí más páginas.', { words: len.words })
-            : t('El texto leído supera los {max} caracteres que permite tu institución. Elegí menos páginas.', { max: len.maxChars }),
+            : t('Las páginas elegidas tienen demasiado texto para armar las preguntas. Elegí menos páginas.'),
         );
         return;
       }
@@ -261,7 +266,8 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
             <div className="text-sm font-bold text-text-pri truncate">{doc.name}</div>
             <div className="text-[11.5px] text-text-sec">
               {doc.origin}
-              {pdf && t(' · {numPages} {value} · elegí las que tienen la lectura', { numPages: pdf.numPages, value: pdf.numPages === 1 ? t('página') : t('páginas') })}
+              {doc.file.size > 0 && ` · ${formatFileSize(doc.file.size)}`}
+              {pdf &&t(' · {numPages} {value} · elegí las que tienen la lectura', { numPages: pdf.numPages, value: pdf.numPages === 1 ? t('página') : t('páginas') })}
               {pptx && t(' · {numPages} {value} · elegí las que tienen la lectura', { numPages: pptx.info.slides.length, value: pptx.info.slides.length === 1 ? t('diapositiva') : t('diapositivas') })}
             </div>
           </div>
@@ -480,7 +486,7 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
                   </span>
                 ) : (
                   <span className={`text-[11.5px] font-semibold ${valid ? 'text-green-mid' : 'text-red'}`}>
-                    {t('{words} palabras · {chars} caracteres', { words, chars: length.chars })}{' '}{valid ? t('· listo') : length.tooShort ? t('· tiene que tener al menos 40 palabras') : t('· supera los {max} caracteres', { max: length.maxChars })}
+                    {t('{words} palabras · {chars} caracteres', { words, chars: length.chars })}{' '}{valid ? t('· listo') : length.tooShort ? t('· tiene que tener al menos 40 palabras') : t('· es demasiado texto: elegí menos páginas')}
                   </span>
                 )}
                 <button
