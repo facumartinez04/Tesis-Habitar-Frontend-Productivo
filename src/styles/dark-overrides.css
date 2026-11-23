@@ -243,6 +243,11 @@ html.dark .border-amber-200:not([class*="dark:border-"]):not([data-keep-white]):
   border-color: rgba(245, 158, 11, 0.35) !important;
 }
 
+html.dark .border-amber-200\/70:not([class*="dark:border-"]):not([data-keep-white]):not([data-keep-white] *),
+:root[data-theme="dark"] .border-amber-200\/70:not([class*="dark:border-"]):not([data-keep-white]):not([data-keep-white] *) {
+  border-color: rgba(245, 158, 11, 0.35) !important;
+}
+
 html.dark .border-amber-300:not([class*="dark:border-"]):not([data-keep-white]):not([data-keep-white] *),
 :root[data-theme="dark"] .border-amber-300:not([class*="dark:border-"]):not([data-keep-white]):not([data-keep-white] *) {
   border-color: rgba(245, 158, 11, 0.35) !important;
@@ -406,11 +411,6 @@ html.dark .group:hover .group-hover\:text-emerald-600:not([class*="dark:group-ho
 html.dark .group:hover .group-hover\:text-gray-900:not([class*="dark:group-hover:text-"]):not([data-keep-white]):not([data-keep-white] *),
 :root[data-theme="dark"] .group:hover .group-hover\:text-gray-900:not([class*="dark:group-hover:text-"]):not([data-keep-white]):not([data-keep-white] *) {
   color: #F3F4F6 !important;
-}
-
-html.dark .hover\:bg-amber-100:not([class*="dark:hover:bg-"]):not([data-keep-white]):not([data-keep-white] *):hover,
-:root[data-theme="dark"] .hover\:bg-amber-100:not([class*="dark:hover:bg-"]):not([data-keep-white]):not([data-keep-white] *):hover {
-  background-color: rgba(245, 158, 11, 0.160) !important;
 }
 
 html.dark .hover\:bg-amber-50:not([class*="dark:hover:bg-"]):not([data-keep-white]):not([data-keep-white] *):hover,
