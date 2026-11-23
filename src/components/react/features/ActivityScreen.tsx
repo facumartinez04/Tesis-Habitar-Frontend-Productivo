@@ -1300,7 +1300,9 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
           </button>
         )}
       </div>
-      {helpChat}
+      {/* La ayuda con el texto es para leer: al pasar a responder las preguntas no aparece
+          (salvo en «Texto y preguntas juntos», donde el texto sigue a la vista mientras responden). */}
+      {meta.readingMode === 'LIBRE' ? helpChat : null}
       {scanner}
     </div>
   );

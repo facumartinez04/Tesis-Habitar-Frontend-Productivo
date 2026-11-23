@@ -278,7 +278,7 @@ export function ConfigureActivityStep() {
           checked={wizard.readingHelp ?? true}
           onChange={(value) => updateWizard({ readingHelp: value })}
           label={t('Ayuda con el texto')}
-          description={t('Cada alumno puede preguntarle a la IA qué significa una palabra o una frase. No le responde las preguntas de la actividad, y vos ves sus dudas en el panel en vivo.')}
+          description={t('Cada alumno puede preguntarle a la IA qué significa una palabra o una frase mientras lee. Al pasar a responder, la ayuda no aparece. No le responde las preguntas de la actividad, y vos ves sus dudas en el panel en vivo.')}
           size="sm"
         />
       </div>
