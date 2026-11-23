@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import type { OAuthProviderId } from '../../../types/auth';
-import { oauthLoginUrl } from '../../../services/authService';
+import {
+  clearPendingLogin,
+  getPendingLogin,
+  oauthLoginUrl,
+  retryPendingLogin,
+  type PendingLogin,
+} from '../../../services/authService';
 import { getIntegrationsConfig } from '../../../services/integrationsService';
 import { GoogleIcon, MicrosoftIcon } from '../ui/BrandIcon';
 import { StudentQrScannerModal } from './StudentQrScannerModal';
@@ -17,29 +23,71 @@ const ERROR_MESSAGES: Record<string, string> = {
   session_expired: 'La sesión de login expiró, intentá de nuevo.',
 };
 
+// Cuenta identificada por Google o Microsoft que todavía no puede entrar: mensaje claro y «Volver a validar».
+const PENDING_MESSAGES: Record<string, string> = {
+  institution_not_allowed:
+    'Tu cuenta todavía no está vinculada a ninguna institución en Habitar. Pedile a tu coordinador/a que te dé de alta con este correo.',
+  account_disabled: 'Tu cuenta fue desactivada. Pedile a tu coordinador/a que la vuelva a activar.',
+};
+
 export function LoginScreen() {
   useI18n();
   const [loadingProvider, setLoadingProvider] = useState<OAuthProviderId | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-  // Microsoft 365 se habilita solo si el servidor tiene cargadas sus credenciales.
-  const [microsoftEnabled, setMicrosoftEnabled] = useState(false);
+  // Microsoft 365: null mientras se consulta al servidor. Solo se muestra «Próx.» si el servidor confirma que no está configurado.
+  const [microsoftEnabled, setMicrosoftEnabled] = useState<boolean | null>(null);
+  const [pending, setPending] = useState<PendingLogin | null>(null);
+  const [pendingCode, setPendingCode] = useState('institution_not_allowed');
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null);
+  const [retrying, setRetrying] = useState(false);
 
   useEffect(() => {
     getIntegrationsConfig()
       .then((config) => setMicrosoftEnabled(Boolean(config.oneDrive)))
-      .catch(() => setMicrosoftEnabled(false));
+      .catch(() => setMicrosoftEnabled(null));
   }, []);
 
   useEffect(() => {
     const rawError = new URLSearchParams(window.location.search).get('error');
     if (rawError) {
+      if (PENDING_MESSAGES[rawError]) setPendingCode(rawError);
       setError(t(ERROR_MESSAGES[rawError]) || rawError);
       try {
         window.history.replaceState({}, '', window.location.pathname);
       } catch {}
     }
+    getPendingLogin().then((found) => {
+      if (!found) return;
+      setPending(found);
+      setError(null);
+    });
   }, []);
+
+  async function handleRetry() {
+    setRetrying(true);
+    setPendingMessage(null);
+    const result = await retryPendingLogin();
+    if (result.ok) {
+      window.location.href = result.dashboardPath;
+      return;
+    }
+    setRetrying(false);
+    if (PENDING_MESSAGES[result.code]) {
+      setPendingCode(result.code);
+      setPendingMessage(t('Todavía no tenés acceso. Probá de nuevo cuando tu coordinador/a te haya dado de alta.'));
+      return;
+    }
+    // El ingreso pendiente ya no sirve (venció o la cuenta ya no es confiable): volver a los botones de ingreso.
+    setPending(null);
+    setError(t(ERROR_MESSAGES[result.code]) || result.message);
+  }
+
+  async function handleOtherAccount() {
+    await clearPendingLogin();
+    setPending(null);
+    setPendingMessage(null);
+  }
 
   function handleLogin(provider: OAuthProviderId) {
     setLoadingProvider(provider);
@@ -96,6 +144,46 @@ export function LoginScreen() {
           </div>
         )}
 
+        {pending ? (
+          <div className="w-full text-left space-y-4">
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-500/10 px-4 py-3.5 space-y-2.5">
+              <div className="flex items-center gap-2.5">
+                <span className="shrink-0 w-8 h-8 rounded-full bg-white dark:bg-[#202533] border border-amber-200 dark:border-amber-500/30 flex items-center justify-center">
+                  {pending.provider === 'microsoft' ? <MicrosoftIcon /> : <GoogleIcon />}
+                </span>
+                <div className="min-w-0">
+                  <div className="text-[11px] text-stone-500 dark:text-stone-400 font-medium">
+                    {pending.provider === 'microsoft' ? t('Ingresaste con Microsoft como') : t('Ingresaste con Google como')}
+                  </div>
+                  <div className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{pending.name || pending.email}</div>
+                  {pending.name && <div className="text-[11px] text-stone-500 dark:text-stone-400 truncate">{pending.email}</div>}
+                </div>
+              </div>
+              <p role="status" className="text-xs leading-relaxed text-amber-900 dark:text-amber-200 font-medium">
+                {t(PENDING_MESSAGES[pendingCode])}
+              </p>
+              {pendingMessage && <p className="text-[11px] leading-relaxed text-amber-800 dark:text-amber-300">{pendingMessage}</p>}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleRetry}
+              disabled={retrying}
+              className="flex items-center justify-center gap-2 w-full px-4 py-3.5 rounded-2xl bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white dark:text-white text-xs font-bold transition-colors shadow-xs disabled:opacity-60 cursor-pointer"
+            >
+              <Icon name="refresh" size={15} />
+              <span>{retrying ? t('Validando…') : t('Volver a validar')}</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleOtherAccount}
+              disabled={retrying}
+              className="w-full px-4 py-3 rounded-2xl border border-stone-300/80 dark:border-stone-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-stone-50 dark:hover:bg-[#282F40] transition-colors disabled:opacity-60 cursor-pointer"
+            >
+              {t('Usar otra cuenta')}
+            </button>
+          </div>
+        ) : (
         <div className="w-full space-y-3">
           <button
             disabled={loadingProvider !== null}
@@ -106,7 +194,7 @@ export function LoginScreen() {
             <span>{loadingProvider === 'google' ? t('Conectando con Google…') : t('Continuar con Google Workspace')}</span>
           </button>
 
-          {microsoftEnabled ? (
+          {microsoftEnabled !== false ? (
             <button
               disabled={loadingProvider !== null}
               onClick={() => handleLogin('microsoft')}
@@ -127,6 +215,7 @@ export function LoginScreen() {
             </button>
           )}
         </div>
+        )}
 
         <div className="w-full my-6 flex items-center gap-3">
           <div className="flex-1 h-px bg-stone-200 dark:bg-stone-800" />

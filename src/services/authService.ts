@@ -49,6 +49,50 @@ export function oauthLoginUrl(provider: OAuthProviderId): string {
   return `${API_URL}/auth/${toUpper(provider)}`;
 }
 
+/** Ingreso pendiente: la persona se identificó con Google o Microsoft pero su cuenta todavía no puede entrar. */
+export interface PendingLogin {
+  email: string;
+  name: string | null;
+  provider: OAuthProviderId;
+}
+
+export type RetryPendingResult = { ok: true; dashboardPath: string } | { ok: false; code: string; message: string };
+
+export async function getPendingLogin(): Promise<PendingLogin | null> {
+  try {
+    const response = await fetch(`${API_URL}/auth/pending`, { credentials: 'include', headers: languageHeaders() });
+    if (response.status !== 200) return null;
+    const body = (await response.json()) as { email: string; name: string | null; provider: string };
+    return { email: body.email, name: body.name, provider: toLower<OAuthProviderId>(body.provider) };
+  } catch {
+    return null;
+  }
+}
+
+export async function retryPendingLogin(): Promise<RetryPendingResult> {
+  try {
+    const response = await fetch(`${API_URL}/auth/pending/retry`, { method: 'POST', credentials: 'include', headers: languageHeaders() });
+    const body = (await response.json().catch(() => ({}))) as { token?: string; dashboardPath?: string; code?: string; error?: string };
+    if (response.ok && body.token) {
+      await completeOAuthCallback(body.token);
+      return { ok: true, dashboardPath: body.dashboardPath || '/' };
+    }
+    return {
+      ok: false,
+      code: body.code ?? (response.status === 401 ? 'session_expired' : 'auth_failed'),
+      message: body.error ?? t('No se pudo iniciar sesión'),
+    };
+  } catch {
+    return { ok: false, code: 'auth_failed', message: t('No se pudo conectar con el servidor') };
+  }
+}
+
+export async function clearPendingLogin(): Promise<void> {
+  try {
+    await fetch(`${API_URL}/auth/pending`, { method: 'DELETE', credentials: 'include' });
+  } catch {}
+}
+
 export async function completeOAuthCallback(token: string): Promise<Session> {
   const response = await fetch(`${API_URL}/auth/me`, {
     headers: { Authorization: `Bearer ${token}`, ...languageHeaders() },
