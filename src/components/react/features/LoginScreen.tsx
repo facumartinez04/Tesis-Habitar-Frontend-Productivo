@@ -11,7 +11,6 @@ const ERROR_MESSAGES: Record<string, string> = {
   institution_not_allowed: 'Tu institución no está habilitada en Habitar. Contactá a tu coordinador/a.',
   account_disabled: 'Tu cuenta fue desactivada. Contactá a tu coordinador/a.',
   invalid_tenant: 'Tu cuenta no pertenece a la organización de la institución registrada en Habitar.',
-  personal_account: 'Usá tu cuenta institucional de Microsoft 365, no una cuenta personal.',
   guest_account: 'Las cuentas invitadas de Microsoft no pueden ingresar a Habitar.',
   unauthorized: 'No se pudo validar la sesión con el proveedor de login.',
   auth_failed: 'Ocurrió un error al intentar iniciar sesión. Por favor, intentá nuevamente.',
@@ -73,9 +72,9 @@ export function LoginScreen() {
         <a href="/" className="mb-4 inline-block group" title={t('Ir al inicio de Habitar')}>
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#0F6E56] to-[#0A4D3C] text-white flex items-center justify-center p-2.5 shadow-md group-hover:scale-105 transition-transform">
             <img
-              src="/logo.svg"
+              src="/logo-white.svg"
               alt="Habitar"
-              className="w-full h-full object-contain filter invert brightness-200"
+              className="w-full h-full object-contain"
             />
           </div>
         </a>

@@ -78,7 +78,7 @@ export function OAuthConfigScreen() {
     if (!tenantId) {
       const confirmed = await confirmAction({
         title: t('¿Quitar la organización de Microsoft?'),
-        text: t('Nadie de {domain} va a poder ingresar con Microsoft 365 hasta que la vuelvas a cargar.', { domain: institution.domain }),
+        text: t('Las cuentas de esa organización solo van a poder ingresar si su dominio está verificado en Microsoft.', { domain: institution.domain }),
       });
       if (!confirmed) return;
     }
@@ -167,11 +167,11 @@ export function OAuthConfigScreen() {
           <MicrosoftIcon size={16} />
           <div className="text-[12.5px] font-medium">{t('Organización de Microsoft 365')}</div>
           <Badge color={status.microsoftTenantId ? 'green' : 'gray'}>
-            {status.microsoftTenantId ? t('Vinculada') : t('Sin vincular')}
+            {status.microsoftTenantId ? t('Vinculada') : t('Opcional')}
           </Badge>
         </div>
         <div className="text-[11.5px] text-text-sec mb-2.5">
-          {t('Para ingresar con Microsoft 365, la cuenta tiene que pertenecer a la organización de la escuela. Cargá el ID de inquilino (tenant ID): lo ve el administrador de la escuela en Microsoft Entra › Información general, y también queda en la bitácora de eventos cuando alguien de esa organización intenta ingresar.')}
+          {t('Opcional. Con Microsoft entran las cuentas personales y las de organizaciones que verificaron su dominio. Si la escuela usa Microsoft 365 sin el dominio verificado, cargá acá su ID de inquilino (tenant ID): lo ve el administrador de la escuela en Microsoft Entra › Información general, y también queda en la bitácora de eventos cuando alguien de esa organización intenta ingresar.')}
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
           <input
