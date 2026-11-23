@@ -54,6 +54,8 @@ export interface PendingLogin {
   email: string;
   name: string | null;
   provider: OAuthProviderId;
+  /** Instituciones entre las que elegir cuando la persona tiene cuenta en más de una (vacío si no hace falta elegir). */
+  choices: { id: string; name: string }[];
 }
 
 export type RetryPendingResult = { ok: true; dashboardPath: string } | { ok: false; code: string; message: string };
@@ -62,16 +64,22 @@ export async function getPendingLogin(): Promise<PendingLogin | null> {
   try {
     const response = await fetch(`${API_URL}/auth/pending`, { credentials: 'include', headers: languageHeaders() });
     if (response.status !== 200) return null;
-    const body = (await response.json()) as { email: string; name: string | null; provider: string };
-    return { email: body.email, name: body.name, provider: toLower<OAuthProviderId>(body.provider) };
+    const body = (await response.json()) as { email: string; name: string | null; provider: string; choices?: { id: string; name: string }[] };
+    return { email: body.email, name: body.name, provider: toLower<OAuthProviderId>(body.provider), choices: body.choices ?? [] };
   } catch {
     return null;
   }
 }
 
-export async function retryPendingLogin(): Promise<RetryPendingResult> {
+/** Reintenta el ingreso pendiente; con `institutionId`, entra a la institución elegida (si tiene cuenta en más de una). */
+export async function retryPendingLogin(institutionId?: string): Promise<RetryPendingResult> {
   try {
-    const response = await fetch(`${API_URL}/auth/pending/retry`, { method: 'POST', credentials: 'include', headers: languageHeaders() });
+    const response = await fetch(`${API_URL}/auth/pending/retry`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', ...languageHeaders() },
+      body: JSON.stringify(institutionId ? { institutionId } : {}),
+    });
     const body = (await response.json().catch(() => ({}))) as { token?: string; dashboardPath?: string; code?: string; error?: string };
     if (response.ok && body.token) {
       await completeOAuthCallback(body.token);

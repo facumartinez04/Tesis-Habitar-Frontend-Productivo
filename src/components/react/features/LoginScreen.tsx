@@ -50,7 +50,8 @@ export function LoginScreen() {
 
   useEffect(() => {
     const rawError = new URLSearchParams(window.location.search).get('error');
-    if (rawError) {
+    // «choose_institution» no es un error: la persona tiene cuenta en varias instituciones y elige a cuál entra.
+    if (rawError && rawError !== 'choose_institution') {
       if (PENDING_MESSAGES[rawError]) setPendingCode(rawError);
       setError(t(ERROR_MESSAGES[rawError]) || rawError);
       try {
@@ -81,6 +82,19 @@ export function LoginScreen() {
     // El ingreso pendiente ya no sirve (venció o la cuenta ya no es confiable): volver a los botones de ingreso.
     setPending(null);
     setError(t(ERROR_MESSAGES[result.code]) || result.message);
+  }
+
+  // La persona tiene cuenta en más de una institución y elige a cuál entra.
+  async function handleChoose(institutionId: string) {
+    setRetrying(true);
+    setPendingMessage(null);
+    const result = await retryPendingLogin(institutionId);
+    if (result.ok) {
+      window.location.href = result.dashboardPath;
+      return;
+    }
+    setRetrying(false);
+    setPendingMessage(result.message);
   }
 
   async function handleOtherAccount() {
@@ -144,7 +158,48 @@ export function LoginScreen() {
           </div>
         )}
 
-        {pending ? (
+        {pending && pending.choices.length > 1 ? (
+          <div className="w-full text-left space-y-3">
+            <div className="flex items-center gap-2.5">
+              <span className="shrink-0 w-8 h-8 rounded-full bg-white dark:bg-[#202533] border border-stone-200 dark:border-stone-700 flex items-center justify-center">
+                {pending.provider === 'microsoft' ? <MicrosoftIcon /> : <GoogleIcon />}
+              </span>
+              <div className="min-w-0">
+                <div className="text-[11px] text-stone-500 dark:text-stone-400 font-medium">
+                  {pending.provider === 'microsoft' ? t('Ingresaste con Microsoft como') : t('Ingresaste con Google como')}
+                </div>
+                <div className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{pending.name || pending.email}</div>
+                {pending.name && <div className="text-[11px] text-stone-500 dark:text-stone-400 truncate">{pending.email}</div>}
+              </div>
+            </div>
+            <p role="status" className="text-xs leading-relaxed text-slate-700 dark:text-slate-200 font-medium">
+              {t('Tenés cuenta en más de una institución. Elegí a cuál querés entrar.')}
+            </p>
+            <div className="space-y-2">
+              {pending.choices.map((choice) => (
+                <button
+                  key={choice.id}
+                  type="button"
+                  onClick={() => void handleChoose(choice.id)}
+                  disabled={retrying}
+                  className="flex items-center justify-between gap-3 w-full px-4 py-3.5 rounded-2xl border border-stone-300/80 dark:border-stone-700 bg-white dark:bg-[#202533] text-slate-800 dark:text-slate-100 text-xs font-bold hover:border-emerald-600 hover:bg-emerald-50/40 dark:hover:bg-[#282F40] transition-all shadow-xs disabled:opacity-60 cursor-pointer text-left"
+                >
+                  <span className="min-w-0 truncate">{choice.name}</span>
+                  <Icon name="arrowRight" size={14} />
+                </button>
+              ))}
+            </div>
+            {pendingMessage && <p className="text-[11px] leading-relaxed text-red-700 dark:text-red-300">{pendingMessage}</p>}
+            <button
+              type="button"
+              onClick={handleOtherAccount}
+              disabled={retrying}
+              className="w-full px-4 py-3 rounded-2xl border border-stone-300/80 dark:border-stone-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-stone-50 dark:hover:bg-[#282F40] transition-colors disabled:opacity-60 cursor-pointer"
+            >
+              {t('Usar otra cuenta')}
+            </button>
+          </div>
+        ) : pending ? (
           <div className="w-full text-left space-y-4">
             <div className="rounded-2xl border border-amber-200 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-500/10 px-4 py-3.5 space-y-2.5">
               <div className="flex items-center gap-2.5">
