@@ -24,7 +24,6 @@ export interface ActivityWizardState {
   readingMode?: ReadingMode;
   readingHelp?: boolean;
   documentName?: string | null;
-  /** El texto salió de un archivo o del banco: se limita por el peso del archivo y no por el largo de la institución. */
   fromDocument?: boolean;
   templateId?: string | null;
   showFeedback?: boolean;

@@ -265,7 +265,7 @@ export function ClassroomScannerScreen() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
-      <div className="fixed top-0 inset-x-0 z-40 bg-surface/85 backdrop-blur-md border-b border-gray-border/70 px-4 py-2 flex items-center justify-between text-xs">
+      <div className="fixed top-0 inset-x-0 z-40 bg-surface/85 backdrop-blur-md border-b border-gray-border/70 pl-4 pr-28 py-2 flex items-center justify-between text-xs">
         <div className="flex items-center gap-1.5 text-text-sec">
           <Icon name="backpack" size={14} />
           <span className="font-semibold text-text-pri">{t('Aula Física')}</span>

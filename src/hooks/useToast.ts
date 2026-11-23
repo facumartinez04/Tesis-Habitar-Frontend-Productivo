@@ -11,7 +11,6 @@ export function useToast() {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setKind(toastKind);
     setMessage(text);
-    // Los errores quedan más tiempo en pantalla para que se alcancen a leer.
     timeoutRef.current = setTimeout(() => setMessage(null), toastKind === 'error' ? 5000 : 2800);
   }, []);
 

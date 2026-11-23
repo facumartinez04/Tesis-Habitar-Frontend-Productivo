@@ -33,18 +33,14 @@ interface PageState {
   needsOcr: boolean;
   ocr: 'idle' | 'running' | 'done' | 'error';
   progress: number;
-  /** Lo que leyó el OCR sin filtrar; es lo que se le pasa a la IA. */
   raw: string;
-  /** El OCR solo no alcanza: hay que ordenar la página con IA. */
   unclear: boolean;
   ai: 'idle' | 'running' | 'done' | 'error';
 }
 
 const isPdf = (doc: ImportedDocument) => doc.mimeType === 'application/pdf' || /\.pdf$/i.test(doc.name);
 
-/** Desde cuántas páginas elegidas se avisa que leer con IA puede consumir mucho. */
 const AI_HEAVY_PAGES = 10;
-/** Desde cuántas páginas se considera grande un documento. */
 const AI_BIG_DOC_PAGES = 20;
 
 export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentReviewModalProps) {
@@ -55,13 +51,11 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
   const [active, setActive] = useState(1);
   const [reader, setReader] = useState(false);
   const [docxHtml, setDocxHtml] = useState<string | null>(null);
-  // Presentación de PowerPoint: el texto sale de las diapositivas elegidas (sin OCR ni IA) y se ve con su diseño.
   const [pptx, setPptx] = useState<{ data: ArrayBuffer; info: PptxInfo } | null>(null);
   const [text, setText] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [aiBlocked, setAiBlocked] = useState<string | null>(null);
-  // Lectura con IA (DeepSeek) de las páginas elegidas; si no está disponible se lee con OCR en el navegador.
   const [aiRead, setAiRead] = useState(true);
   const [reading, setReading] = useState(false);
   const [readError, setReadError] = useState<string | null>(null);
@@ -88,8 +82,6 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
           const data = await doc.file.arrayBuffer();
           const info = await readPptx(data);
           if (cancelled) return;
-          // Se elige de entrada todo lo que entra en el largo máximo de la lectura. Las diapositivas sin texto
-          // (portadas, imágenes) quedan elegidas: no suman texto pero el alumno las tiene que ver.
           const chosen: number[] = [];
           for (const slide of info.slides) {
             if (slide.text && readingLength(pptxText(info, [...chosen, slide.n]), readingMaxChars(true)).tooLong) break;
@@ -164,7 +156,6 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
       updatePage(n, result.legible ? { text: result.text, ai: 'done' } : { ai: 'done', unclear: true });
     } catch (err) {
       updatePage(n, { ai: 'error' });
-      // Sin IA o sin presupuesto no tiene sentido seguir probando con las otras páginas.
       if (err instanceof ApiError && (err.status === 409 || err.status === 423)) setAiBlocked(err.message);
     }
   }
@@ -195,7 +186,6 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
 
   if (!doc) return null;
 
-  // El texto de un documento no se limita por el largo que fija la institución sino por el peso del archivo y las páginas.
   const length = readingLength(text, readingMaxChars(true));
   const words = length.words;
   const valid = length.valid;
@@ -210,13 +200,11 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
     setSelected((prev) => (prev.includes(n) ? prev.filter((x) => x !== n) : [...prev, n]));
   }
 
-  // Con IA se leen las páginas elegidas; sin IA (o si falla) se usa el texto que armó el navegador.
   const aiMode = Boolean(pdf) && aiRead;
   const tooManyPages = aiMode && selected.length > MAX_AI_PAGES;
   const heavy = aiMode && selected.length >= AI_HEAVY_PAGES;
   const bigDoc = aiMode && Boolean(pdf) && (pdf?.numPages ?? 0) > AI_BIG_DOC_PAGES;
 
-  // Páginas (PDF) o diapositivas (PowerPoint) del documento.
   const count = pdf?.numPages ?? pptx?.info.slides.length ?? 0;
   const paged = Boolean(pdf) || Boolean(pptx);
 
@@ -251,7 +239,6 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
       if (err instanceof ApiError && err.status === 400) {
         setReadError(err.message);
       } else {
-        // Sin IA, sin presupuesto o error del servicio: se leen las páginas con OCR en el navegador.
         setAiFallback(err instanceof ApiError && (err.status === 409 || err.status === 423) ? `${err.message} ${t('Se leen las páginas con OCR en tu navegador.')}` : t('La IA no pudo leer el documento. Se leen las páginas con OCR en tu navegador.'));
         setAiRead(false);
       }
@@ -552,10 +539,6 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
   );
 }
 
-/**
- * Dibuja una página del PDF. Con `fit` se ajusta al espacio disponible (ancho y alto) conservando la proporción,
- * así una diapositiva horizontal o una hoja vertical se ven enteras sin cortarse.
- */
 function PageCanvas({ pdf, page, width, fit = false, fill = false }: { pdf: PdfHandle; page: number; width: number; fit?: boolean; fill?: boolean }) {
   useI18n();
   const ref = useRef<HTMLCanvasElement>(null);
@@ -566,12 +549,10 @@ function PageCanvas({ pdf, page, width, fit = false, fill = false }: { pdf: PdfH
       .renderPage(page, canvas, width)
       .then(() => {
         if (fit) {
-          // renderPage fija el tamaño en píxeles: se libera para que mande el espacio disponible.
           canvas.style.width = 'auto';
           canvas.style.height = 'auto';
         }
         if (fill) {
-          // Modo lectura: la página ocupa todo el ancho que se le da.
           canvas.style.width = '100%';
           canvas.style.height = 'auto';
         }

@@ -680,7 +680,7 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
   }, [stage, activity]);
 
   const studentBar = (
-    <div className="fixed top-0 inset-x-0 z-40 bg-white/90 dark:bg-[#161A24]/90 backdrop-blur-md border-b border-stone-200/80 px-4 py-2 flex items-center justify-between text-xs">
+    <div className="fixed top-0 inset-x-0 z-40 bg-white/90 dark:bg-[#161A24]/90 backdrop-blur-md border-b border-stone-200/80 pl-4 pr-28 py-2 flex items-center justify-between text-xs">
       <div className="flex items-center gap-2 text-stone-600 dark:text-stone-300">
         <Icon name="backpack" size={16} className="text-emerald-700 dark:text-emerald-400" />
         <span className="font-bold text-slate-900 dark:text-white">{t('Modo Alumno')}</span>
@@ -1300,8 +1300,6 @@ export function ActivityScreen({ defaultCode = '' }: ActivityScreenProps) {
           </button>
         )}
       </div>
-      {/* La ayuda con el texto es para leer: al pasar a responder las preguntas no aparece
-          (salvo en «Texto y preguntas juntos», donde el texto sigue a la vista mientras responden). */}
       {meta.readingMode === 'LIBRE' ? helpChat : null}
       {scanner}
     </div>

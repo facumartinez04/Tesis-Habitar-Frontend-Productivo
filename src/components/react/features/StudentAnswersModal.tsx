@@ -21,7 +21,6 @@ const AXIS: Record<ResponseDetailQuestion['axis'], { label: string; color: 'blue
 
 const pct = (value: number | null) => (value === null ? '—' : `${Math.round(value)}%`);
 
-/** Resultado de una pregunta: cerrada (correcta, incorrecta, parcial) o abierta (puntaje o pendiente). */
 function Result({ q }: { q: ResponseDetailQuestion }) {
   const answered = q.selectedOption !== null || (q.selectedOptions?.length ?? 0) > 0 || Boolean(q.textAnswer);
   if (q.correct === null) {
@@ -88,7 +87,6 @@ function Answer({ q }: { q: ResponseDetailQuestion }) {
     );
   }
 
-  // Abierta: lo que escribió, la sugerencia de la IA y la nota de la docente.
   return (
     <div className="space-y-2 text-xs">
       {q.textAnswer ? (
@@ -108,7 +106,6 @@ function Answer({ q }: { q: ResponseDetailQuestion }) {
   );
 }
 
-/** Qué respondió un alumno en cada pregunta y si está bien (para la docente). */
 export function StudentAnswersModal({ activityId, responseId, studentName, onClose }: StudentAnswersModalProps) {
   useI18n();
   const [detail, setDetail] = useState<ResponseDetail | null>(null);

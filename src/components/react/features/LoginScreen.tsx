@@ -23,7 +23,6 @@ const ERROR_MESSAGES: Record<string, string> = {
   session_expired: 'La sesión de login expiró, intentá de nuevo.',
 };
 
-// Cuenta identificada por Google o Microsoft que todavía no puede entrar: mensaje claro y «Volver a validar».
 const PENDING_MESSAGES: Record<string, string> = {
   institution_not_allowed:
     'Tu cuenta todavía no está vinculada a ninguna institución en Habitar. Pedile a tu coordinador/a que te dé de alta con este correo.',
@@ -35,7 +34,6 @@ export function LoginScreen() {
   const [loadingProvider, setLoadingProvider] = useState<OAuthProviderId | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-  // Microsoft 365: null mientras se consulta al servidor. Solo se muestra «Próx.» si el servidor confirma que no está configurado.
   const [microsoftEnabled, setMicrosoftEnabled] = useState<boolean | null>(null);
   const [pending, setPending] = useState<PendingLogin | null>(null);
   const [pendingCode, setPendingCode] = useState('institution_not_allowed');
@@ -50,7 +48,6 @@ export function LoginScreen() {
 
   useEffect(() => {
     const rawError = new URLSearchParams(window.location.search).get('error');
-    // «choose_institution» no es un error: la persona tiene cuenta en varias instituciones y elige a cuál entra.
     if (rawError && rawError !== 'choose_institution') {
       if (PENDING_MESSAGES[rawError]) setPendingCode(rawError);
       setError(t(ERROR_MESSAGES[rawError]) || rawError);
@@ -79,12 +76,10 @@ export function LoginScreen() {
       setPendingMessage(t('Todavía no tenés acceso. Probá de nuevo cuando tu coordinador/a te haya dado de alta.'));
       return;
     }
-    // El ingreso pendiente ya no sirve (venció o la cuenta ya no es confiable): volver a los botones de ingreso.
     setPending(null);
     setError(t(ERROR_MESSAGES[result.code]) || result.message);
   }
 
-  // La persona tiene cuenta en más de una institución y elige a cuál entra.
   async function handleChoose(institutionId: string) {
     setRetrying(true);
     setPendingMessage(null);

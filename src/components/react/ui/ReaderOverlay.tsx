@@ -14,7 +14,6 @@ export function nextZoom(current: number, direction: 1 | -1): number {
 const btn =
   'inline-flex items-center justify-center min-w-[28px] h-7 px-1.5 rounded-lg border border-gray-border bg-white dark:bg-[#1A1E29] text-text-pri text-[11.5px] font-semibold hover:bg-gray-50 dark:hover:bg-white/5 disabled:opacity-40 disabled:cursor-default cursor-pointer';
 
-/** Achicar, agrandar y volver al tamaño original. */
 export function ZoomControls({ zoom, onChange }: { zoom: number; onChange: (zoom: number) => void }) {
   useI18n();
   return (
@@ -32,7 +31,6 @@ export function ZoomControls({ zoom, onChange }: { zoom: number; onChange: (zoom
   );
 }
 
-/** Botón que abre el documento a pantalla completa. */
 export function ExpandButton({ onClick }: { onClick: () => void }) {
   useI18n();
   return (
@@ -46,17 +44,11 @@ export function ExpandButton({ onClick }: { onClick: () => void }) {
 interface ReaderOverlayProps {
   title: string;
   onClose: () => void;
-  /** Recibe el zoom elegido. El contenido se ajusta al ancho que se le da. */
   children: (zoom: number) => ReactNode;
-  /** Barra inferior opcional (por ejemplo, para pasar de página). */
   footer?: ReactNode;
   initialZoom?: number;
 }
 
-/**
- * «Modo lectura»: el documento a pantalla completa, con zoom. Se cierra con la X o con Escape.
- * Con el teclado: + y − cambian el tamaño y 0 vuelve al original.
- */
 export function ReaderOverlay({ title, onClose, children, footer, initialZoom = 1 }: ReaderOverlayProps) {
   useI18n();
   const [zoom, setZoom] = useState(initialZoom);

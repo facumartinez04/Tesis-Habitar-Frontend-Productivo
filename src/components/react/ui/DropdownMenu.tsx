@@ -7,18 +7,14 @@ export interface DropdownItem {
   label: string;
   hint?: string;
   icon?: IconName;
-  /** Acción destructiva: se muestra en rojo y separada del resto. */
   danger?: boolean;
-  /** Si se indica, el ítem es un enlace. */
   href?: string;
   onSelect?: () => void;
 }
 
 interface DropdownMenuProps {
-  /** Contenido del botón que abre el menú. */
   trigger: ReactNode;
   triggerClassName?: string;
-  /** Encabezado opcional del menú. */
   title?: string;
   items: DropdownItem[];
   width?: number;
@@ -28,12 +24,6 @@ interface DropdownMenuProps {
 const GAP = 6;
 const MARGIN = 8;
 
-/**
- * Menú desplegable que se dibuja en un portal con posición fija, así no lo recortan
- * los contenedores con overflow (por ejemplo, las tablas con scroll horizontal).
- * Se abre hacia arriba si no entra debajo, se cierra con Escape, clic afuera o scroll,
- * y se recorre con las flechas.
- */
 export function DropdownMenu({ trigger, triggerClassName = '', title, items, width = 208, align = 'end' }: DropdownMenuProps) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<{ top: number; left: number; up: boolean } | null>(null);

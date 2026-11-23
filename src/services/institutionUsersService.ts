@@ -10,7 +10,6 @@ export interface InstitutionUser {
   role: Role;
   provider: OAuthProviderId;
   active: boolean;
-  /** Fecha del último ingreso; null si fue invitado y todavía no ingresó. */
   lastLoginAt: string | null;
 }
 
@@ -41,7 +40,6 @@ export async function listInstitutionUsers(institutionId: string): Promise<Insti
   return backend.map(toUser);
 }
 
-/** Qué pasó con el correo de invitación: salió, no hay servicio de correo, se superó el límite o falló. */
 export type InvitationEmailStatus = 'sent' | 'simulated' | 'throttled' | 'failed';
 
 export interface InvitationResult {
@@ -60,7 +58,6 @@ export async function inviteInstitutionUser(
   return { user: toUser(backend), email: backend.invitationEmail ?? 'sent' };
 }
 
-/** Aviso para quien invita cuando el correo no salió; null si salió bien. */
 export function invitationEmailWarning(status: InvitationEmailStatus): string | null {
   switch (status) {
     case 'simulated':

@@ -3,16 +3,12 @@ import JSZip from 'jszip';
 export const PPTX_MIME = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
 
 export interface PptxSlide {
-  /** Número de diapositiva (1 = la primera, según el orden de la presentación). */
   n: number;
-  /** Texto de la diapositiva, un párrafo por línea. */
   text: string;
-  /** Primera línea con texto, para reconocerla en una lista. */
   title: string;
 }
 
 export interface PptxInfo {
-  /** Tamaño de la diapositiva en EMU (unidad de PowerPoint): sirve para conocer su proporción. */
   width: number;
   height: number;
   slides: PptxSlide[];
@@ -20,7 +16,6 @@ export interface PptxInfo {
 
 const A_NS = 'http://schemas.openxmlformats.org/drawingml/2006/main';
 const R_NS = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
-/** Una diapositiva con más de esto en XML no es normal: se ignora para no trabar el navegador. */
 const MAX_SLIDE_XML = 6 * 1024 * 1024;
 
 export const isPptx = (name: string, mimeType = '') => mimeType === PPTX_MIME || /\.pptx$/i.test(name);
@@ -43,7 +38,6 @@ function slideText(xml: string): string[] {
   return lines;
 }
 
-/** Lee el tamaño, el orden de las diapositivas y su texto. No dibuja nada. */
 export async function readPptx(data: ArrayBuffer): Promise<PptxInfo> {
   const zip = await JSZip.loadAsync(data);
   const presentationXml = await zip.file('ppt/presentation.xml')?.async('string');
@@ -54,7 +48,6 @@ export async function readPptx(data: ArrayBuffer): Promise<PptxInfo> {
   const width = Number(size?.getAttribute('cx')) || 9144000;
   const height = Number(size?.getAttribute('cy')) || 5143500;
 
-  // Orden real: lo define la lista de la presentación, no el número del archivo (si se reordenaron, no coinciden).
   const rels = new Map<string, string>();
   const relsXml = await zip.file('ppt/_rels/presentation.xml.rels')?.async('string');
   if (relsXml) {
@@ -84,7 +77,6 @@ export async function readPptx(data: ArrayBuffer): Promise<PptxInfo> {
   return { width, height, slides };
 }
 
-/** Texto de las diapositivas elegidas, en orden y separadas por una línea en blanco. */
 export function pptxText(info: PptxInfo, selected: number[]): string {
   const chosen = new Set(selected);
   return info.slides

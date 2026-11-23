@@ -25,7 +25,6 @@ export interface CreateActivityInput {
   showFeedback?: boolean;
   templateId?: string | null;
   language?: Locale;
-  /** El texto salió de un documento: no rige el largo máximo de la institución sino el peso del archivo. */
   fromDocument?: boolean;
 }
 
@@ -523,7 +522,6 @@ export async function getActivityLive(activityId: string): Promise<LiveActivity>
   return apiFetch<LiveActivity>(`/activities/${activityId}/live`);
 }
 
-/** Qué respondió un alumno en una pregunta y si está bien (vista de la docente). */
 export interface ResponseDetailQuestion {
   axis: 'LITERAL' | 'INFERENCIAL' | 'CRITICO';
   type: QuestionType;
@@ -534,9 +532,7 @@ export interface ResponseDetailQuestion {
   correctOption: string | null;
   correctOptions: string[] | null;
   acceptedAnswers: string[] | null;
-  /** true/false en las de respuesta cerrada; null en las abiertas. */
   correct: boolean | null;
-  /** Porcentaje cuando está parcialmente bien (opción múltiple). */
   partial: number | null;
   textAnswer: string | null;
   score: number | null;

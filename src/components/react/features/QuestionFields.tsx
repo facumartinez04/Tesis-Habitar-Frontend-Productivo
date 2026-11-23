@@ -106,10 +106,6 @@ export function draftPayload(draft: QuestionDraft) {
 const field =
   'w-full px-3 py-2 border border-gray-border dark:border-[#2D3342] rounded-lg text-[13px] leading-relaxed bg-white dark:bg-[#1A1E29] text-text-pri focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none transition-colors';
 
-/**
- * Cuadro de texto que crece con lo que se escribe: no corta el texto ni muestra barras de desplazamiento propias.
- * Con `singleLine` el Enter no agrega renglones (para opciones y respuestas cortas, que pueden ocupar varias líneas al verse).
- */
 function AutoTextarea({
   value,
   onChange,
@@ -127,7 +123,6 @@ function AutoTextarea({
     const el = ref.current;
     if (!el) return;
     el.style.height = 'auto';
-    // scrollHeight no cuenta los bordes: se suman para que no se recorte la última línea.
     el.style.height = `${el.scrollHeight + (el.offsetHeight - el.clientHeight)}px`;
   };
   useLayoutEffect(fit, [value]);

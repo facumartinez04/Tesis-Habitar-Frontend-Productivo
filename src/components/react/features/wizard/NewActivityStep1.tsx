@@ -72,7 +72,7 @@ export function NewActivityStep1() {
   }
 
   useEffect(() => {
-    updateWizard({ sourceText: '', wordCount: 0, questions: [], documentName: null, fromDocument: false, templateId: null, generatedCode: null, generatedActivityId: null });
+    updateWizard({ name: '', sourceText: '', wordCount: 0, questions: [], documentName: null, fromDocument: false, templateId: null, generatedCode: null, generatedActivityId: null });
     void clearWizardDocument();
   }, []);
 

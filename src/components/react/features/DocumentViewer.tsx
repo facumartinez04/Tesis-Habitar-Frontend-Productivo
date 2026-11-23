@@ -38,12 +38,10 @@ interface DocumentBodyProps {
   html: string | null;
   pptx: ArrayBuffer | null;
   slides: number[] | null;
-  /** 1 = el ancho disponible. */
   zoom: number;
   onError: () => void;
 }
 
-/** El documento ya leído, dibujado al ancho de su contenedor (que ya viene multiplicado por el zoom). */
 function DocumentBody({ pdf, html, pptx, slides, zoom, onError }: DocumentBodyProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);

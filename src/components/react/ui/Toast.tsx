@@ -7,7 +7,6 @@ interface ToastProps {
   kind?: ToastKind;
 }
 
-// Colores explícitos para cada modo: en claro, cartel oscuro; en oscuro, cartel claro. Así el texto siempre contrasta.
 const STYLES: Record<ToastKind, { box: string; icon: string; iconName: IconName }> = {
   success: {
     box: 'bg-slate-900 text-white border-slate-900 dark:bg-stone-100 dark:text-slate-900 dark:border-stone-100',

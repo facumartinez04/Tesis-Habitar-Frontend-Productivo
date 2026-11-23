@@ -49,6 +49,7 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
     }
   }
 
+  const showDebug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
   const { status, error: cameraError, logs, resume } = useQrScanner({
     elementId: READER_ID,
     enabled: isOpen && activeTab === 'camara' && !verifying,
@@ -121,7 +122,7 @@ export function QrScannerModal({ isOpen, onClose, onCourseDetected }: QrScannerM
                   </div>
                 )}
 
-                {logs.length > 0 && (
+                {showDebug && logs.length > 0 && (
                   <div className="absolute bottom-0 left-0 right-0 bg-black/80 text-green-400 text-[10px] p-2 font-mono whitespace-pre-wrap break-all z-10 max-h-24 overflow-y-auto">
                     {logs.join('\n')}
                   </div>

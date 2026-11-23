@@ -34,13 +34,8 @@ export interface ScannedPageResult {
   legible: boolean;
 }
 
-/** Páginas que se pueden leer con IA de una vez (el servidor rechaza más). */
 export const MAX_AI_PAGES = 60;
 
-/**
- * La IA (DeepSeek) lee las páginas elegidas del PDF en lugar del OCR del navegador.
- * Solo se envían las páginas elegidas y el servidor borra el archivo de DeepSeek apenas termina.
- */
 export async function readDocumentWithAi(file: Blob, pages: number[]): Promise<ScannedPageResult> {
   const res = await authorizedFetch(apiUrl('/activities/read-document'), {
     method: 'POST',
@@ -52,7 +47,6 @@ export async function readDocumentWithAi(file: Blob, pages: number[]): Promise<S
   return data as ScannedPageResult;
 }
 
-/** La IA recupera el texto de la lectura a partir de lo que leyó el OCR, sin el ruido de las ilustraciones. */
 export async function cleanScannedPage(rawText: string, language?: Locale): Promise<ScannedPageResult> {
   return apiFetch<ScannedPageResult>('/activities/clean-scanned-page', { method: 'POST', body: { rawText: rawText.slice(0, 12000), language } });
 }
@@ -89,7 +83,6 @@ export async function generateQuestions(
 export const MIN_READING_WORDS = 40;
 export const DEFAULT_READING_MAX_CHARS = 5000;
 
-/** Techo técnico del texto leído de un documento (igual al del servidor). El peso del archivo (15 MB) y las páginas son el límite visible. */
 export const DOCUMENT_READING_MAX_CHARS = 50000;
 
 export function readingMaxChars(fromDocument = false): number {

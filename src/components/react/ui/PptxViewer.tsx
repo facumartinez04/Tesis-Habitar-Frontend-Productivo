@@ -3,25 +3,16 @@ import { readPptx, type PptxInfo } from '../../../lib/pptxDocument';
 import { t, useI18n } from '../../../i18n';
 
 interface PptxViewerProps {
-  /** Contenido del .pptx tal cual lo subió el docente. */
   data: ArrayBuffer;
-  /** Diapositivas a mostrar (1 = la primera). Sin esto, todas. */
   slides?: number[] | null;
-  /** Posición actual dentro de las que se muestran (0 = la primera). Sin esto, el visor la maneja solo. */
   index?: number;
   onIndexChange?: (index: number) => void;
-  /** Se llama si no se pudo leer el archivo. */
   onError?: () => void;
   maxWidth?: number;
 }
 
-// Los botones propios reemplazan a los de la librería, que se ocultan.
 const HIDE_BUILT_IN = '.habitar-pptx [class*="pptx-preview-wrapper-"]{display:none!important}.habitar-pptx .pptx-preview-wrapper{box-shadow:none!important}';
 
-/**
- * Muestra una presentación de PowerPoint en el navegador, con su diseño. El archivo no se sube a ningún servicio:
- * se dibuja acá mismo. Si el diseño no se puede dibujar, se muestra el texto de las diapositivas.
- */
 export function PptxViewer({ data, slides: only, index, onIndexChange, onError, maxWidth = 960 }: PptxViewerProps) {
   useI18n();
   const [info, setInfo] = useState<PptxInfo | null>(null);
@@ -73,7 +64,6 @@ export function PptxViewer({ data, slides: only, index, onIndexChange, onError, 
   const width = Math.min(boxWidth, maxWidth);
   const height = info ? Math.round((width * info.height) / info.width) : 0;
 
-  // Se dibuja (de nuevo) cuando cambia el archivo o el ancho disponible.
   useEffect(() => {
     const holder = holderRef.current;
     if (!info || !holder || width < 120) return;
@@ -101,13 +91,11 @@ export function PptxViewer({ data, slides: only, index, onIndexChange, onError, 
       try {
         previewerRef.current?.destroy();
       } catch {
-        /* ya estaba destruido */
       }
       previewerRef.current = null;
     };
   }, [info, data, width, height]);
 
-  // Muestra la diapositiva que corresponde.
   useEffect(() => {
     const previewer = previewerRef.current;
     const slide = order[cur];

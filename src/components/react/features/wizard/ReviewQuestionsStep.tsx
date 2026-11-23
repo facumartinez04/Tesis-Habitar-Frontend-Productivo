@@ -98,7 +98,7 @@ export function ReviewQuestionsStep() {
     <div>
       <div className="text-lg font-semibold text-text-pri mb-[3px] tracking-tight">{t('Revisá las preguntas generadas')}</div>
       <div className="text-[12.5px] text-text-sec mb-[18px]">
-        {t('La IA generó {questionsCount} preguntas. Podés editarlas, eliminarlas o aprobarlas.', { questionsCount: wizard.questions.length })}
+        {t('Se generaron {questionsCount} preguntas. Podés editarlas, eliminarlas o aprobarlas.', { questionsCount: wizard.questions.length })}
       </div>
 
       <Stepper
@@ -134,7 +134,6 @@ export function ReviewQuestionsStep() {
             </div>
           );
           if (isEditing && draft) {
-            // Edición: la tarjeta ocupa todo el ancho y las acciones van abajo, para escribir cómodo.
             return (
               <Card
                 key={question.id}

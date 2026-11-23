@@ -12,11 +12,8 @@ export interface OcrLine {
 }
 
 export interface OcrResult {
-  /** Texto con las líneas que parecen lectura; el ruido de las ilustraciones queda afuera. */
   text: string;
-  /** Todo lo que leyó el OCR, sin filtrar: es lo que se manda a la IA para reconstruir la página. */
   raw: string;
-  /** true cuando lo que quedó no alcanza para confiar en el OCR solo. */
   unclear: boolean;
 }
 
@@ -37,14 +34,12 @@ function isJunkToken(word: OcrWord): boolean {
   return !isRealWord(word) || letterCount(word.text) <= 1;
 }
 
-/** Saca las tiras de letras sueltas que el OCR pega al principio o al final de una línea (bordes del dibujo). */
 export function trimJunkEdges(line: OcrLine): OcrLine {
   const words = line.words.filter((w) => w.text.trim());
   let start = 0;
   while (start < words.length && isJunkToken(words[start])) start += 1;
   let end = words.length;
   while (end > start && isJunkToken(words[end - 1])) end -= 1;
-  // Una sola palabra corta en un borde puede ser real ("y", "a"): sólo se cortan tiras de dos o más.
   if (start === 1 && letterCount(words[0].text) > 0) start = 0;
   if (words.length - end === 1 && letterCount(words[words.length - 1].text) > 0) end = words.length;
   if (start === 0 && end === words.length) return line;
@@ -52,7 +47,6 @@ export function trimJunkEdges(line: OcrLine): OcrLine {
   return { ...line, words: kept, text: kept.map((w) => w.text).join(' ') };
 }
 
-/** Una línea es lectura si la mayoría de sus palabras son palabras de verdad y al menos una es larga. */
 export function looksLikeText(line: OcrLine): boolean {
   const words = line.words.filter((w) => w.text.trim());
   if (words.length === 0 || line.confidence < MIN_LINE_CONFIDENCE) return false;

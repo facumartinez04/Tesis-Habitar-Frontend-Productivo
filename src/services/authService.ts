@@ -49,12 +49,10 @@ export function oauthLoginUrl(provider: OAuthProviderId): string {
   return `${API_URL}/auth/${toUpper(provider)}`;
 }
 
-/** Ingreso pendiente: la persona se identificó con Google o Microsoft pero su cuenta todavía no puede entrar. */
 export interface PendingLogin {
   email: string;
   name: string | null;
   provider: OAuthProviderId;
-  /** Instituciones entre las que elegir cuando la persona tiene cuenta en más de una (vacío si no hace falta elegir). */
   choices: { id: string; name: string }[];
 }
 
@@ -71,7 +69,6 @@ export async function getPendingLogin(): Promise<PendingLogin | null> {
   }
 }
 
-/** Reintenta el ingreso pendiente; con `institutionId`, entra a la institución elegida (si tiene cuenta en más de una). */
 export async function retryPendingLogin(institutionId?: string): Promise<RetryPendingResult> {
   try {
     const response = await fetch(`${API_URL}/auth/pending/retry`, {

@@ -14,10 +14,23 @@ import { arInstant, durationLabel, whenLabel } from '../../../../lib/activityDat
 import { t, useI18n } from '../../../../i18n';
 import { HelpTip } from '../../ui/HelpTip';
 
+function suggestedTitle(sourceText: string, documentName?: string | null): string {
+  const firstLine = sourceText.split('\n').map((line) => line.trim()).find(Boolean) ?? '';
+  if (firstLine && firstLine.length <= 70 && firstLine.split(/\s+/).length <= 10) return firstLine.replace(/[.:;,]+$/, '');
+  const fromFile = (documentName ?? '').replace(/\.[a-z0-9]+$/i, '').replace(/[_-]+/g, ' ').trim();
+  if (fromFile) return fromFile;
+  const words = sourceText.trim().split(/\s+/).slice(0, 6).join(' ');
+  return words ? `${words}…` : '';
+}
+
 export function ConfigureActivityStep() {
   useI18n();
   const wizard = useStore(activityWizardStore);
-  const [name, setName] = useState(wizard.name || t('Comprensión lectora — Biodiversidad'));
+  const [name, setName] = useState(() => {
+    if (wizard.name) return wizard.name;
+    const title = suggestedTitle(wizard.sourceText, wizard.documentName);
+    return title ? t('Comprensión lectora — {title}', { title }) : t('Comprensión lectora');
+  });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -28,8 +41,6 @@ export function ConfigureActivityStep() {
       window.location.href = '/docente/actividades/nueva';
       return;
     }
-    // El asistente se guarda en el navegador: si se retoma días después, las fechas guardadas ya pasaron.
-    // En ese caso se arranca de nuevo desde ahora en vez de dejar un cierre vencido.
     const savedClose = arInstant(wizard.endDate || wizard.availableFrom, wizard.endTime);
     if (savedClose !== null && savedClose <= Date.now()) {
       updateWizard(defaultActivityWindow());
@@ -54,7 +65,6 @@ export function ConfigureActivityStep() {
   const closesAt = arInstant(endDate, wizard.endTime);
   const windowValid = opensAt !== null && closesAt !== null && closesAt > opensAt;
 
-  /** «Ahora»: la actividad abre en este momento (hora de Argentina). Si el cierre queda antes, se lo corre. */
   function openNow() {
     const date = todayInArgentina();
     const time = currentTimeInArgentina();

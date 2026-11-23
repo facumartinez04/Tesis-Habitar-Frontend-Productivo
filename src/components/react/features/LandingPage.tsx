@@ -25,8 +25,6 @@ export function LandingPage() {
       document.documentElement.setAttribute('data-theme', 'light');
     } catch {}
     setSession(sessionStore.get());
-    // La sesión guardada en el navegador puede estar vencida o revocada: se confirma con el servidor
-    // antes de mostrar al usuario como logueado (si no, «Mi Panel» lo mandaría al login).
     if (sessionStore.get()) refreshSession().then(setSession);
     listPublicPlans().then((data) => {
       if (data && data.length > 0) setPlans(data);

@@ -91,11 +91,11 @@ export function ReadingHelpChat({ code, studentName, selection, onSelectionUsed 
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold pl-3.5 pr-4 py-3 rounded-full shadow-lg cursor-pointer"
+            className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold p-3.5 sm:pl-3.5 sm:pr-4 sm:py-3 rounded-full shadow-lg cursor-pointer"
             aria-label={t('Abrir ayuda con el texto')} title={t('Abrir ayuda con el texto')}
           >
-            <Icon name="messageCircle" size={16} />
-            {t('¿No entendés algo del texto?')}
+            <Icon name="messageCircle" size={18} />
+            <span className="hidden sm:inline">{t('¿No entendés algo del texto?')}</span>
           </button>
         </div>
       )}
