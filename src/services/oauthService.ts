@@ -10,6 +10,7 @@ interface BackendOAuthAccessStatus {
   institutionStatus: string;
   googleConfigured: boolean;
   microsoftConfigured: boolean;
+  microsoftTenantId: string | null;
 }
 
 function toStatus(backend: BackendOAuthAccessStatus): OAuthAccessStatus {
@@ -20,6 +21,7 @@ function toStatus(backend: BackendOAuthAccessStatus): OAuthAccessStatus {
     institutionStatus: toLower<InstitutionStatus>(backend.institutionStatus),
     googleConfigured: backend.googleConfigured,
     microsoftConfigured: backend.microsoftConfigured,
+    microsoftTenantId: backend.microsoftTenantId ?? null,
   };
 }
 
@@ -35,5 +37,13 @@ export async function activateOAuthAccess(institutionId: string): Promise<OAuthA
 
 export async function deactivateOAuthAccess(institutionId: string): Promise<OAuthAccessStatus> {
   const backend = await apiFetch<BackendOAuthAccessStatus>(`/oauth/${institutionId}/deactivate`, { method: 'POST' });
+  return toStatus(backend);
+}
+
+export async function setMicrosoftTenant(institutionId: string, tenantId: string | null): Promise<OAuthAccessStatus> {
+  const backend = await apiFetch<BackendOAuthAccessStatus>(`/oauth/${institutionId}/microsoft-tenant`, {
+    method: 'PUT',
+    body: { tenantId },
+  });
   return toStatus(backend);
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { OAuthProviderId } from '../../../types/auth';
 import { oauthLoginUrl } from '../../../services/authService';
+import { getIntegrationsConfig } from '../../../services/integrationsService';
 import { GoogleIcon, MicrosoftIcon } from '../ui/BrandIcon';
 import { StudentQrScannerModal } from './StudentQrScannerModal';
 import { Icon } from '../ui/Icon';
@@ -9,7 +10,9 @@ import { t, useI18n } from '../../../i18n';
 const ERROR_MESSAGES: Record<string, string> = {
   institution_not_allowed: 'Tu institución no está habilitada en Habitar. Contactá a tu coordinador/a.',
   account_disabled: 'Tu cuenta fue desactivada. Contactá a tu coordinador/a.',
-  invalid_tenant: 'El email no corresponde a la institución registrada.',
+  invalid_tenant: 'Tu cuenta no pertenece a la organización de la institución registrada en Habitar.',
+  personal_account: 'Usá tu cuenta institucional de Microsoft 365, no una cuenta personal.',
+  guest_account: 'Las cuentas invitadas de Microsoft no pueden ingresar a Habitar.',
   unauthorized: 'No se pudo validar la sesión con el proveedor de login.',
   auth_failed: 'Ocurrió un error al intentar iniciar sesión. Por favor, intentá nuevamente.',
   session_expired: 'La sesión de login expiró, intentá de nuevo.',
@@ -20,6 +23,14 @@ export function LoginScreen() {
   const [loadingProvider, setLoadingProvider] = useState<OAuthProviderId | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  // Microsoft 365 se habilita solo si el servidor tiene cargadas sus credenciales.
+  const [microsoftEnabled, setMicrosoftEnabled] = useState(false);
+
+  useEffect(() => {
+    getIntegrationsConfig()
+      .then((config) => setMicrosoftEnabled(Boolean(config.oneDrive)))
+      .catch(() => setMicrosoftEnabled(false));
+  }, []);
 
   useEffect(() => {
     const rawError = new URLSearchParams(window.location.search).get('error');
@@ -96,15 +107,26 @@ export function LoginScreen() {
             <span>{loadingProvider === 'google' ? t('Conectando con Google…') : t('Continuar con Google Workspace')}</span>
           </button>
 
-          <button
-            disabled
-            title={t('Próximamente disponible')}
-            className="flex items-center justify-center gap-3 w-full px-4 py-3.5 border border-stone-200 dark:border-stone-800 rounded-2xl bg-stone-50 dark:bg-[#161A24] text-stone-400 dark:text-stone-500 text-xs font-semibold opacity-60 cursor-not-allowed"
-          >
-            <MicrosoftIcon />
-            <span className="flex-1 text-left">{t('Continuar con Microsoft 365')}</span>
-            <span className="text-[10px] bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-400 px-2 py-0.5 rounded-md font-bold">{t('Próx.')}</span>
-          </button>
+          {microsoftEnabled ? (
+            <button
+              disabled={loadingProvider !== null}
+              onClick={() => handleLogin('microsoft')}
+              className="flex items-center justify-center gap-3 w-full px-4 py-3.5 border border-stone-300/80 dark:border-stone-700 rounded-2xl bg-white dark:bg-[#202533] text-slate-800 dark:text-slate-100 text-xs font-bold hover:border-emerald-600 hover:bg-emerald-50/40 dark:hover:bg-[#282F40] transition-all shadow-xs disabled:opacity-60 cursor-pointer"
+            >
+              <MicrosoftIcon />
+              <span>{loadingProvider === 'microsoft' ? t('Conectando con Microsoft…') : t('Continuar con Microsoft 365')}</span>
+            </button>
+          ) : (
+            <button
+              disabled
+              title={t('Próximamente disponible')}
+              className="flex items-center justify-center gap-3 w-full px-4 py-3.5 border border-stone-200 dark:border-stone-800 rounded-2xl bg-stone-50 dark:bg-[#161A24] text-stone-400 dark:text-stone-500 text-xs font-semibold opacity-60 cursor-not-allowed"
+            >
+              <MicrosoftIcon />
+              <span className="flex-1 text-left">{t('Continuar con Microsoft 365')}</span>
+              <span className="text-[10px] bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-400 px-2 py-0.5 rounded-md font-bold">{t('Próx.')}</span>
+            </button>
+          )}
         </div>
 
         <div className="w-full my-6 flex items-center gap-3">
