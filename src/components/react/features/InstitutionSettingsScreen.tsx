@@ -302,7 +302,7 @@ export function InstitutionSettingsScreen() {
       <div className="text-lg font-semibold text-text-pri tracking-tight">{t('Configuración institucional')}</div>
 
       <Card>
-        <div className="text-[12.5px] font-medium mb-3">{t('CU-05-06 · Niveles y ejes de comprensión habilitados')}</div>
+        <div className="text-[12.5px] font-medium mb-3">{t('Niveles y ejes de comprensión habilitados')}</div>
         <div className="flex flex-wrap gap-4">
           <div>
             <div className="text-[11px] text-text-ter mb-1.5">{t('Niveles')}</div>
@@ -393,7 +393,7 @@ export function InstitutionSettingsScreen() {
           ))}
         </div>
 
-        <div className="text-[12.5px] font-medium mb-1">{t('Alertas de rendimiento (CU-03-03)')}</div>
+        <div className="text-[12.5px] font-medium mb-1">{t('Alertas de rendimiento')}</div>
         <div className="text-[11.5px] text-text-sec mb-2 leading-relaxed">
           {t('Cuando el promedio de un curso en un eje, en sus últimas cinco actividades, queda debajo del umbral, Habitar genera una alerta. Más de 15 puntos debajo, la alerta es crítica.')}
         </div>
@@ -690,7 +690,7 @@ export function InstitutionSettingsScreen() {
       </Card>
 
       <Card>
-        <div className="text-[12.5px] font-medium mb-3">{t('CU-05-05 · Usuarios y roles de la institución')}</div>
+        <div className="text-[12.5px] font-medium mb-3">{t('Usuarios y roles de la institución')}</div>
 
         <div className="flex flex-wrap gap-2 mb-3.5">
           <input
@@ -824,7 +824,7 @@ export function InstitutionSettingsScreen() {
       </Card>
 
       <Card>
-        <div className="text-[12.5px] font-medium mb-1">{t('CU-04-04 · Retención y purga de datos')}</div>
+        <div className="text-[12.5px] font-medium mb-1">{t('Retención y purga de datos')}</div>
         <div className="text-[11px] text-text-sec mb-3">
           {t('Los datos de alumnos dados de alta hace más del período configurado son elegibles para purga (Ley 25.326).')}
         </div>

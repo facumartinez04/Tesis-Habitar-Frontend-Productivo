@@ -535,7 +535,7 @@ export function BrandScreen() {
               <div className="space-y-1">
                 <span className="text-[11px] font-mono text-gray-400 uppercase">{t('Código y Aula QR · 13px / Monospace')}</span>
                 <div className="font-mono text-xs text-[#0F6E56] bg-[#F8FBF9] p-3 rounded-lg border border-gray-200 inline-block">
-                  {t('AULA-6A-781A · CU-02-01 · LITERAL / INFERENCIAL / CRITICO')}
+                  {t('AULA-6A-781A · LITERAL / INFERENCIAL / CRITICO')}
                 </div>
               </div>
             </div>

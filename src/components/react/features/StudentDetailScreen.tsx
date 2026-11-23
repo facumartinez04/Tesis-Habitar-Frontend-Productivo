@@ -273,7 +273,7 @@ export function StudentDetailScreen() {
       </div>
 
       <div className="mt-5">
-        <div className="text-xs font-medium text-text-sec mb-2">{t('CU-03-06 · Retroalimentación')}</div>
+        <div className="text-xs font-medium text-text-sec mb-2">{t('Retroalimentación')}</div>
         <div className="bg-white border border-gray-border rounded-md p-3.5">
           <div className="flex flex-col sm:flex-row gap-2 mb-3">
             <input
