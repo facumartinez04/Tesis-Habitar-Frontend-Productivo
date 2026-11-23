@@ -284,9 +284,9 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
 
             <div className="flex-1 min-w-0 min-h-[220px] overflow-auto bg-gray-bg p-4 flex justify-center items-start">
               {pdf ? (
-                <div className="flex flex-col items-center gap-2">
-                  <div className="shadow-lg rounded bg-white" data-keep-white="true">
-                    <PageCanvas key={active} pdf={pdf} page={active} width={560} />
+                <div className="flex flex-col items-center gap-2 max-w-full min-w-0">
+                  <div className="shadow-lg rounded bg-white max-w-full" data-keep-white="true">
+                    <PageCanvas key={active} pdf={pdf} page={active} width={1000} fit />
                   </div>
                   <div className="flex items-center gap-2 text-[11.5px] text-text-sec">
                     <button type="button" disabled={active <= 1} onClick={() => setActive((a) => a - 1)} className="px-2 py-1 rounded-lg border border-gray-border disabled:opacity-40 cursor-pointer">‹</button>
@@ -328,6 +328,32 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
             <div className="lg:w-[300px] shrink-0 border-t lg:border-t-0 lg:border-l border-gray-border flex flex-col min-h-[140px]">
               <div className="px-4 pt-3 pb-2 text-[12px] text-text-sec">
                 {pdf ? t('Marcá las páginas que tienen el texto de la lectura.') : t('Revisá el documento y usalo cuando esté listo.')}
+                {pdf && (
+                  <div className="mt-2 flex items-center gap-3 text-[11.5px] font-semibold">
+                    <button
+                      type="button"
+                      disabled={selected.length === pdf.numPages}
+                      onClick={() => {
+                        setReadError(null);
+                        setSelected(Array.from({ length: pdf.numPages }, (_, i) => i + 1));
+                      }}
+                      className="text-emerald-700 dark:text-emerald-300 underline disabled:opacity-40 disabled:no-underline cursor-pointer disabled:cursor-default"
+                    >
+                      {t('Seleccionar todas')}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={selected.length === 0}
+                      onClick={() => {
+                        setReadError(null);
+                        setSelected([]);
+                      }}
+                      className="text-text-sec underline disabled:opacity-40 disabled:no-underline cursor-pointer disabled:cursor-default"
+                    >
+                      {t('Quitar selección')}
+                    </button>
+                  </div>
+                )}
               </div>
               {tooManyPages && (
                 <div className="mx-4 mb-2 text-[11px] text-red">{t('Podés leer hasta {max} páginas a la vez. Desmarcá algunas.', { max: MAX_AI_PAGES })}</div>
@@ -412,11 +438,30 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
   );
 }
 
-function PageCanvas({ pdf, page, width }: { pdf: PdfHandle; page: number; width: number }) {
+/**
+ * Dibuja una página del PDF. Con `fit` se ajusta al espacio disponible (ancho y alto) conservando la proporción,
+ * así una diapositiva horizontal o una hoja vertical se ven enteras sin cortarse.
+ */
+function PageCanvas({ pdf, page, width, fit = false }: { pdf: PdfHandle; page: number; width: number; fit?: boolean }) {
   useI18n();
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
-    if (ref.current) void pdf.renderPage(page, ref.current, width).catch(() => undefined);
-  }, [pdf, page, width]);
-  return <canvas ref={ref} className="block rounded bg-white" style={{ width }} />;
+    const canvas = ref.current;
+    if (!canvas) return;
+    void pdf
+      .renderPage(page, canvas, width)
+      .then(() => {
+        if (fit) {
+          // renderPage fija el tamaño en píxeles: se libera para que mande el espacio disponible.
+          canvas.style.width = 'auto';
+          canvas.style.height = 'auto';
+        }
+      })
+      .catch(() => undefined);
+  }, [pdf, page, width, fit]);
+  return fit ? (
+    <canvas ref={ref} className="block rounded bg-white max-w-full" style={{ maxHeight: 'calc(94vh - 220px)' }} />
+  ) : (
+    <canvas ref={ref} className="block rounded bg-white" style={{ width }} />
+  );
 }
