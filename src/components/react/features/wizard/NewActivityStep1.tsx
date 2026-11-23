@@ -292,10 +292,10 @@ export function NewActivityStep1() {
         <div className="flex flex-wrap items-center gap-2 mb-2">
           <label className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-300 hover:bg-emerald-100 text-emerald-900 rounded-[6px] px-2.5 py-1.5 text-xs cursor-pointer font-medium transition-colors">
             <Icon name="fileText" size={13} />
-            {t('Subir archivo (Word, PDF, texto)')}
+            {t('Subir archivo (Word, PDF, PowerPoint, texto)')}
             <input
               type="file"
-              accept=".txt,.md,.docx,.pdf"
+              accept=".txt,.md,.docx,.pdf,.pptx"
               className="hidden"
               onChange={handleFileUpload}
             />

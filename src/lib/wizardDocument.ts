@@ -12,9 +12,12 @@ export interface WizardDocument {
 export const PDF_MIME = 'application/pdf';
 export const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
-export function documentKind(name: string, mimeType: string): 'pdf' | 'docx' | null {
+export const PPTX_MIME = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+
+export function documentKind(name: string, mimeType: string): 'pdf' | 'docx' | 'pptx' | null {
   if (mimeType === PDF_MIME || /\.pdf$/i.test(name)) return 'pdf';
   if (mimeType === DOCX_MIME || /\.docx$/i.test(name)) return 'docx';
+  if (mimeType === PPTX_MIME || /\.pptx$/i.test(name)) return 'pptx';
   return null;
 }
 

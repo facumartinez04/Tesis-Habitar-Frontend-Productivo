@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from '../../ui/Icon';
 import { HabitarLoader } from '../../ui/HabitarLoader';
 import { DocxPages } from '../../ui/DocxPages';
+import { PptxViewer } from '../../ui/PptxViewer';
+import { isPptx, pptxText, readPptx, type PptxInfo } from '../../../../lib/pptxDocument';
 import { MIN_TEXT_CHARS, openPdf, type PdfHandle } from '../../../../lib/pdfDocument';
 import { extractDocumentWithPreview } from '../../../../lib/documentText';
 import { cleanScannedPage, MAX_AI_PAGES, readDocumentWithAi, readingLength } from '../../../../services/aiService';
@@ -47,6 +49,8 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
   const [selected, setSelected] = useState<number[]>([]);
   const [active, setActive] = useState(1);
   const [docxHtml, setDocxHtml] = useState<string | null>(null);
+  // Presentación de PowerPoint: el texto sale de las diapositivas elegidas (sin OCR ni IA) y se ve con su diseño.
+  const [pptx, setPptx] = useState<{ data: ArrayBuffer; info: PptxInfo } | null>(null);
   const [text, setText] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -70,10 +74,25 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
     setPdf(null);
     setPages([]);
     setDocxHtml(null);
+    setPptx(null);
     setAiBlocked(null);
     (async () => {
       try {
-        if (isPdf(doc)) {
+        if (isPptx(doc.name, doc.mimeType)) {
+          const data = await doc.file.arrayBuffer();
+          const info = await readPptx(data);
+          if (cancelled) return;
+          // Se elige de entrada todo lo que entra en el largo máximo de la lectura. Las diapositivas sin texto
+          // (portadas, imágenes) quedan elegidas: no suman texto pero el alumno las tiene que ver.
+          const chosen: number[] = [];
+          for (const slide of info.slides) {
+            if (slide.text && readingLength(pptxText(info, [...chosen, slide.n])).tooLong) break;
+            chosen.push(slide.n);
+          }
+          setPptx({ data, info });
+          setSelected(chosen.length ? chosen : [1]);
+          setActive(1);
+        } else if (isPdf(doc)) {
           handle = await openPdf(doc.file);
           if (cancelled) return handle.destroy();
           const initial: PageState[] = [];
@@ -157,6 +176,9 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
   useEffect(() => {
     if (pdf) setText(pdfText);
   }, [pdf, pdfText]);
+  useEffect(() => {
+    if (pptx) setText(pptxText(pptx.info, selected));
+  }, [pptx, selected]);
 
   useEffect(() => {
     if (!doc) return;
@@ -187,11 +209,15 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
   const heavy = aiMode && selected.length >= AI_HEAVY_PAGES;
   const bigDoc = aiMode && Boolean(pdf) && (pdf?.numPages ?? 0) > AI_BIG_DOC_PAGES;
 
+  // Páginas (PDF) o diapositivas (PowerPoint) del documento.
+  const count = pdf?.numPages ?? pptx?.info.slides.length ?? 0;
+  const paged = Boolean(pdf) || Boolean(pptx);
+
   async function handleUse() {
     if (!doc) return;
-    const chosen = pdf ? selected.slice().sort((a, b) => a - b) : null;
-    const label = pdf && chosen ? `${doc.name} (págs. ${chosen.join(', ')})` : doc.name;
-    const partial = pdf && chosen && chosen.length < pdf.numPages ? chosen : null;
+    const chosen = paged ? selected.slice().sort((a, b) => a - b) : null;
+    const label = chosen ? `${doc.name} (${pptx ? 'diaps.' : 'págs.'} ${chosen.join(', ')})` : doc.name;
+    const partial = chosen && chosen.length < count ? chosen : null;
     if (!aiMode || !chosen) {
       onUse(text, label, partial);
       return;
@@ -236,6 +262,7 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
             <div className="text-[11.5px] text-text-sec">
               {doc.origin}
               {pdf && t(' · {numPages} {value} · elegí las que tienen la lectura', { numPages: pdf.numPages, value: pdf.numPages === 1 ? t('página') : t('páginas') })}
+              {pptx && t(' · {numPages} {value} · elegí las que tienen la lectura', { numPages: pptx.info.slides.length, value: pptx.info.slides.length === 1 ? t('diapositiva') : t('diapositivas') })}
             </div>
           </div>
           <button type="button" onClick={onClose} aria-label={t('Cerrar')} className="text-text-ter hover:text-text-pri p-1.5 rounded-lg cursor-pointer">
@@ -282,8 +309,38 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
               </div>
             )}
 
+            {pptx && (
+              <div className="lg:w-[170px] shrink-0 border-b lg:border-b-0 lg:border-r border-gray-border overflow-x-auto lg:overflow-y-auto flex lg:flex-col gap-1.5 p-3">
+                {pptx.info.slides.map((slide) => (
+                  <div
+                    key={slide.n}
+                    className={`shrink-0 w-[150px] lg:w-auto rounded-xl border-2 px-2 py-1.5 transition-colors ${active === slide.n ? 'border-emerald-500' : 'border-transparent'}`}
+                  >
+                    <label className="flex items-center gap-1.5 text-[11px] font-semibold text-text-pri cursor-pointer">
+                      <input type="checkbox" checked={selected.includes(slide.n)} onChange={() => togglePage(slide.n)} className="accent-emerald-600" />
+                      {t('Diap. {n}', { n: slide.n })}
+                    </label>
+                    <button type="button" onClick={() => setActive(slide.n)} className="block w-full text-left text-[10.5px] leading-snug text-text-sec mt-1 line-clamp-2 cursor-pointer" aria-label={t('Ver diapositiva {n}', { n: slide.n })}>
+                      {slide.title || t('(sin texto)')}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <div className="flex-1 min-w-0 min-h-[220px] overflow-auto bg-gray-bg p-4 flex justify-center items-start">
-              {pdf ? (
+              {pptx ? (
+                <div className="w-full max-w-[960px]">
+                  <PptxViewer data={pptx.data} index={active - 1} onIndexChange={(i) => setActive(i + 1)} />
+                  {!selected.includes(active) && (
+                    <div className="text-center mt-2">
+                      <button type="button" onClick={() => togglePage(active)} className="text-[11.5px] text-emerald-700 dark:text-emerald-300 font-semibold cursor-pointer">
+                        {t('+ Usar esta diapositiva')}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : pdf ? (
                 <div className="flex flex-col items-center gap-2 max-w-full min-w-0">
                   <div className="shadow-lg rounded bg-white max-w-full" data-keep-white="true">
                     <PageCanvas key={active} pdf={pdf} page={active} width={1000} fit />
@@ -327,15 +384,15 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
 
             <div className="lg:w-[300px] shrink-0 border-t lg:border-t-0 lg:border-l border-gray-border flex flex-col min-h-[140px]">
               <div className="px-4 pt-3 pb-2 text-[12px] text-text-sec">
-                {pdf ? t('Marcá las páginas que tienen el texto de la lectura.') : t('Revisá el documento y usalo cuando esté listo.')}
-                {pdf && (
+                {pdf ? t('Marcá las páginas que tienen el texto de la lectura.') : pptx ? t('Elegí las diapositivas que tienen la lectura.') : t('Revisá el documento y usalo cuando esté listo.')}
+                {paged && (
                   <div className="mt-2 flex items-center gap-3 text-[11.5px] font-semibold">
                     <button
                       type="button"
-                      disabled={selected.length === pdf.numPages}
+                      disabled={selected.length === count}
                       onClick={() => {
                         setReadError(null);
-                        setSelected(Array.from({ length: pdf.numPages }, (_, i) => i + 1));
+                        setSelected(Array.from({ length: count }, (_, i) => i + 1));
                       }}
                       className="text-emerald-700 dark:text-emerald-300 underline disabled:opacity-40 disabled:no-underline cursor-pointer disabled:cursor-default"
                     >
@@ -372,6 +429,11 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
                 <div className="mx-4 mb-2 flex items-center gap-1.5 text-[11px] text-text-sec">
                   <Icon name="sparkles" size={12} className="text-emerald-600 animate-pulse" />
                   {t('La IA está leyendo las páginas elegidas…')}
+                </div>
+              )}
+              {pptx && !text.trim() && (
+                <div className="mx-4 mb-2 text-[11px] text-amber-800 dark:text-amber-300">
+                  {t('Las diapositivas elegidas no tienen texto: para armar las preguntas hace falta texto que se pueda leer.')}
                 </div>
               )}
               {readError && <div className="mx-4 mb-2 text-[11px] text-red">{readError}</div>}

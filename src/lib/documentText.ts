@@ -1,12 +1,13 @@
 import { t } from '../i18n';
 
-export const SUPPORTED_EXTENSIONS = ['.txt', '.md', '.docx', '.pdf'] as const;
+export const SUPPORTED_EXTENSIONS = ['.txt', '.md', '.docx', '.pdf', '.pptx'] as const;
 
 export const SUPPORTED_MIME_TYPES = [
   'text/plain',
   'text/markdown',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'application/pdf',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
 ];
 
 const MAX_BYTES = 15 * 1024 * 1024;
@@ -66,10 +67,14 @@ export async function extractText(file: Blob, name: string, mimeType = file.type
     text = await pdfToText(await file.arrayBuffer());
   } else if (ext === '.docx' || mimeType === SUPPORTED_MIME_TYPES[2]) {
     text = await docxToText(await file.arrayBuffer());
+  } else if (ext === '.pptx' || mimeType === SUPPORTED_MIME_TYPES[4]) {
+    const { readPptx, pptxText } = await import('./pptxDocument');
+    const info = await readPptx(await file.arrayBuffer());
+    text = pptxText(info, info.slides.map((s) => s.n));
   } else if (ext === '.txt' || ext === '.md' || mimeType.startsWith('text/')) {
     text = await file.text();
   } else {
-    throw new Error(t('Formato no admitido. Usá un Google Docs, Word (.docx), PDF o texto (.txt, .md).'));
+    throw new Error(t('Formato no admitido. Usá un Google Docs, Word (.docx), PDF, PowerPoint (.pptx) o texto (.txt, .md).'));
   }
   const normalized = normalizeText(text);
   if (!normalized) {

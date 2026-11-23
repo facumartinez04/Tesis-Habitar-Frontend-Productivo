@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { HabitarLoader } from '../ui/HabitarLoader';
 import { DocxPages } from '../ui/DocxPages';
+import { PptxViewer } from '../ui/PptxViewer';
+import { PPTX_MIME } from '../../../lib/pptxDocument';
 import { fetchActivityDocument, type ActivityDocumentMeta } from '../../../services/activityService';
 import { openPdf, type PdfHandle } from '../../../lib/pdfDocument';
 import { t, useI18n } from '../../../i18n';
@@ -34,6 +36,7 @@ export function DocumentViewer({ code, document: meta, onError }: DocumentViewer
   useI18n();
   const [pdf, setPdf] = useState<PdfHandle | null>(null);
   const [html, setHtml] = useState<string | null>(null);
+  const [pptx, setPptx] = useState<ArrayBuffer | null>(null);
   const [loading, setLoading] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
@@ -51,6 +54,9 @@ export function DocumentViewer({ code, document: meta, onError }: DocumentViewer
           handle = await openPdf(blob);
           if (cancelled) return handle.destroy();
           setPdf(handle);
+        } else if (meta.mimeType === PPTX_MIME) {
+          const data = await blob.arrayBuffer();
+          if (!cancelled) setPptx(data);
         } else {
           const mammoth = await import('mammoth');
           const result = await mammoth.convertToHtml({ arrayBuffer: await blob.arrayBuffer() });
@@ -94,6 +100,7 @@ export function DocumentViewer({ code, document: meta, onError }: DocumentViewer
         </div>
       )}
       {html !== null && <DocxPages html={html} />}
+      {pptx && <PptxViewer data={pptx} slides={meta.pages} onError={() => onErrorRef.current()} />}
     </div>
   );
 }

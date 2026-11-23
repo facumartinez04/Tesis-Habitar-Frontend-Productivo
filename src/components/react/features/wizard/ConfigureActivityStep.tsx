@@ -268,7 +268,7 @@ export function ConfigureActivityStep() {
           checked={wizard.saveToBank ?? false}
           onChange={(value) => updateWizard({ saveToBank: value })}
           label={t('Guardar en el banco de la institución')}
-          description={t('Guarda el texto, las preguntas y el documento para que vos u otros docentes la reutilicen. No se borra al cerrar la actividad.')}
+          description={t('Guarda el texto y las preguntas para que vos u otros docentes la reutilicen. No se borra al cerrar la actividad. El documento no se guarda: se muestra a los alumnos y se borra solo al vencer la actividad.')}
           size="sm"
         />
       </div>
