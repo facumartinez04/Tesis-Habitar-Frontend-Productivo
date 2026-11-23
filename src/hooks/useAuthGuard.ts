@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Role } from '../types/auth';
 import { useSession } from './useSession';
-import { refreshSession } from '../services/authService';
+import { dashboardPathForRole, refreshSession } from '../services/authService';
 
 export function useAuthGuard(allowedRoles?: Role[]) {
   const session = useSession();
@@ -39,7 +39,8 @@ export function useAuthGuard(allowedRoles?: Role[]) {
         (allowedRoles.includes('director') && (activeRole === 'coordinador' || activeRole === 'admin'));
 
       if (!isAllowed) {
-        window.location.href = '/login';
+        const home = dashboardPathForRole(activeRole);
+        window.location.href = home !== window.location.pathname ? home : '/login';
       }
     }
   }, [checked, session, allowedRoles]);

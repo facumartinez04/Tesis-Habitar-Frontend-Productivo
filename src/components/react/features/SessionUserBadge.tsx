@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useSession } from '../../../hooks/useSession';
-import { clearSession } from '../../../store/sessionStore';
+import { logout } from '../../../services/authService';
 import { Icon } from '../ui/Icon';
 import { t, useI18n } from '../../../i18n';
 
@@ -49,8 +49,8 @@ export function SessionUserBadge() {
     ? t('Admin ({value})', { value: roleBadgeLabel[session.impersonatedRole] || session.impersonatedRole })
     : t(roleBadgeLabel[session.user.role]) || session.user.role;
 
-  const handleLogout = () => {
-    clearSession();
+  const handleLogout = async () => {
+    await logout();
     window.location.href = '/login';
   };
 

@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { Icon } from '../ui/Icon';
 import { listPublicPlans, DEFAULT_PUBLIC_PLANS } from '../../../services/subscriptionService';
 import type { SubscriptionPlan } from '../../../types/subscription';
-import { sessionStore, clearSession } from '../../../store/sessionStore';
-import { dashboardPathForRole } from '../../../services/authService';
+import { sessionStore } from '../../../store/sessionStore';
+import { dashboardPathForRole, logout, refreshSession } from '../../../services/authService';
 import { LanguageSelect } from '../ui/LanguageSelect';
 import { t, useI18n, intlLocale } from '../../../i18n';
 
@@ -25,6 +25,9 @@ export function LandingPage() {
       document.documentElement.setAttribute('data-theme', 'light');
     } catch {}
     setSession(sessionStore.get());
+    // La sesión guardada en el navegador puede estar vencida o revocada: se confirma con el servidor
+    // antes de mostrar al usuario como logueado (si no, «Mi Panel» lo mandaría al login).
+    if (sessionStore.get()) refreshSession().then(setSession);
     listPublicPlans().then((data) => {
       if (data && data.length > 0) setPlans(data);
     });
@@ -197,7 +200,7 @@ export function LandingPage() {
                         {t('Mi Panel')}
                       </a>
                       <button
-                        onClick={() => { clearSession(); setSession(null); setUserMenu(false); }}
+                        onClick={() => { void logout(); setSession(null); setUserMenu(false); }}
                         className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                       >
                         <Icon name="logOut" size={15} />
@@ -269,7 +272,7 @@ export function LandingPage() {
                     {t('Mi Panel')}
                   </a>
                   <button
-                    onClick={() => { clearSession(); setSession(null); setMobileMenu(false); }}
+                    onClick={() => { void logout(); setSession(null); setMobileMenu(false); }}
                     className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-rose-600 hover:bg-rose-50 cursor-pointer"
                   >
                     <Icon name="logOut" size={16} />
