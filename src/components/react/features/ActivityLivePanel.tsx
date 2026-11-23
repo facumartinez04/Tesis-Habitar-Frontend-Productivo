@@ -6,6 +6,7 @@ import { Icon } from '../ui/Icon';
 import { QrBox } from '../ui/QrBox';
 import { HabitarLoader } from '../ui/HabitarLoader';
 import { ReviewAnswersModal } from './ReviewAnswersModal';
+import { StudentAnswersModal } from './StudentAnswersModal';
 import { LiveQuestionsModal } from './LiveQuestionsModal';
 import {
   closeActivityNow,
@@ -119,6 +120,7 @@ export function ActivityLivePanel({ activityId, footer }: ActivityLivePanelProps
   const [busy, setBusy] = useState(false);
   const [projecting, setProjecting] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [answersOf, setAnswersOf] = useState<{ responseId: string; name: string } | null>(null);
   const [questionsOpen, setQuestionsOpen] = useState(false);
   const [highlight, setHighlight] = useState<string | null>(null);
   const pagedHelp = usePagination(live?.helpQuestions ?? [], 10, null);
@@ -506,6 +508,15 @@ export function ActivityLivePanel({ activityId, footer }: ActivityLivePanelProps
                       >
                         {r.phase === 'ENVIADO' ? t('Enviado') : idle ? t('Inactivo') : r.phase === 'RESPONDIENDO' ? t('Respondiendo') : t('Leyendo')}
                       </span>
+                      {r.phase === 'ENVIADO' && r.response && (
+                        <button
+                          type="button"
+                          onClick={() => setAnswersOf({ responseId: r.response!.responseId, name: r.name })}
+                          className="shrink-0 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 underline cursor-pointer"
+                        >
+                          {t('Ver respuestas')}
+                        </button>
+                      )}
                       <span className="text-right shrink-0 w-14">
                         <span className="block text-[11px] text-text-ter tabular-nums">{timeOf(r.response?.submittedAt ?? r.updatedAt)}</span>
                         {r.deviceTag && (
@@ -584,6 +595,7 @@ export function ActivityLivePanel({ activityId, footer }: ActivityLivePanelProps
       )}
 
       <ReviewAnswersModal activity={reviewOpen ? { id: live.id, name: live.name } : null} isOpen={reviewOpen} onClose={() => setReviewOpen(false)} onReviewed={load} />
+      {answersOf && <StudentAnswersModal activityId={live.id} responseId={answersOf.responseId} studentName={answersOf.name} onClose={() => setAnswersOf(null)} />}
       <LiveQuestionsModal
         activityId={live.id}
         activityName={live.name}

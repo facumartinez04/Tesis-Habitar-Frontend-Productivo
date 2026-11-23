@@ -519,3 +519,41 @@ export interface LiveQuestion {
 export async function getActivityLive(activityId: string): Promise<LiveActivity> {
   return apiFetch<LiveActivity>(`/activities/${activityId}/live`);
 }
+
+/** Qué respondió un alumno en una pregunta y si está bien (vista de la docente). */
+export interface ResponseDetailQuestion {
+  axis: 'LITERAL' | 'INFERENCIAL' | 'CRITICO';
+  type: QuestionType;
+  prompt: string;
+  options: string[] | null;
+  selectedOption: string | null;
+  selectedOptions: string[] | null;
+  correctOption: string | null;
+  correctOptions: string[] | null;
+  acceptedAnswers: string[] | null;
+  /** true/false en las de respuesta cerrada; null en las abiertas. */
+  correct: boolean | null;
+  /** Porcentaje cuando está parcialmente bien (opción múltiple). */
+  partial: number | null;
+  textAnswer: string | null;
+  score: number | null;
+  scoreLabel: string | null;
+  pendingReview: boolean;
+  aiScore: number | null;
+  aiRationale: string | null;
+  teacherScore: number | null;
+  reviewed: boolean;
+}
+
+export interface ResponseDetail {
+  responseId: string;
+  studentDisplayName: string;
+  submittedAt: string;
+  scores: { literal: number | null; inferencial: number | null; critico: number | null; criticoPending: boolean };
+  summary: { closed: number; correct: number; partial: number; incorrect: number; open: number; openPending: number };
+  questions: ResponseDetailQuestion[];
+}
+
+export async function getResponseDetail(activityId: string, responseId: string): Promise<ResponseDetail> {
+  return apiFetch<ResponseDetail>(`/activities/${activityId}/responses/${responseId}`);
+}
