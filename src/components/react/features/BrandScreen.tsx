@@ -588,12 +588,12 @@ export function BrandScreen() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-emerald-50/60 border border-emerald-200 rounded-2xl p-6 space-y-3">
-              <div className="flex items-center gap-2 text-emerald-800 font-bold text-sm">
-                <Icon name="check" size={16} className="text-emerald-700" />
+            <div className="bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl p-6 space-y-3">
+              <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold text-sm">
+                <Icon name="check" size={16} className="text-emerald-700 dark:text-emerald-400" />
                 <span>{t('Usos Recomendados (Do)')}</span>
               </div>
-              <ul className="text-xs text-emerald-950 space-y-2 leading-relaxed">
+              <ul className="text-xs text-emerald-950 dark:text-emerald-100 space-y-2 leading-relaxed">
                 <li>{t('• Mantener un espacio libre perimetral equivalente al 20% del ancho del logotipo.')}</li>
                 <li>{t('• Usar la versión blanca sobre fondos oscuros o el color `#0F6E56` sobre fondos claros.')}</li>
                 <li>{t('• Asegurar un tamaño mínimo de 24x24 px en pantalla para preservar la legibilidad de la chimenea.')}</li>
@@ -601,12 +601,12 @@ export function BrandScreen() {
               </ul>
             </div>
 
-            <div className="bg-rose-50/60 border border-rose-200 rounded-2xl p-6 space-y-3">
-              <div className="flex items-center gap-2 text-rose-800 font-bold text-sm">
-                <Icon name="alert-circle" size={16} className="text-rose-700" />
+            <div className="bg-rose-50/60 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/50 rounded-2xl p-6 space-y-3">
+              <div className="flex items-center gap-2 text-rose-800 dark:text-rose-300 font-bold text-sm">
+                <Icon name="alert-circle" size={16} className="text-rose-700 dark:text-rose-400" />
                 <span>{t('Usos Incorrectos (Don\'t)')}</span>
               </div>
-              <ul className="text-xs text-rose-950 space-y-2 leading-relaxed">
+              <ul className="text-xs text-rose-950 dark:text-rose-100 space-y-2 leading-relaxed">
                 <li>{t('• No distorsionar, rotar ni estirar las proporciones del isotipo.')}</li>
                 <li>{t('• No alterar los colores esmeralda oficiales por tonos no autorizados.')}</li>
                 <li>{t('• No aplicar sombras paralelas pronunciadas, brillos 3D ni degradados estridentes.')}</li>

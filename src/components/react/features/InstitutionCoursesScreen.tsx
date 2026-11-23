@@ -26,7 +26,7 @@ export function InstitutionCoursesScreen() {
   const [reassigningCourse, setReassigningCourse] = useState<Course | null>(null);
   const [qrCourse, setQrCourse] = useState<Course | null>(null);
   const [devicesCourse, setDevicesCourse] = useState<Course | null>(null);
-  const { message, showToast } = useToast();
+  const { message, kind: toastKind, showToast } = useToast();
 
   async function loadData() {
     if (!session) return;
@@ -39,7 +39,7 @@ export function InstitutionCoursesScreen() {
       setCourses(courseList);
       setTeachers(userList.filter((u) => u.role === 'docente' && u.active));
     } catch {
-      showToast(t('Error al cargar las aulas'));
+      showToast(t('Error al cargar las aulas'), 'error');
     } finally {
       setLoading(false);
     }
@@ -55,7 +55,7 @@ export function InstitutionCoursesScreen() {
 
   return (
     <div>
-      <Toast message={message} />
+      <Toast message={message} kind={toastKind} />
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>

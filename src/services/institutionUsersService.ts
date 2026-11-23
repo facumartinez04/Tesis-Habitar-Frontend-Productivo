@@ -9,6 +9,8 @@ export interface InstitutionUser {
   role: Role;
   provider: OAuthProviderId;
   active: boolean;
+  /** Fecha del último ingreso; null si fue invitado y todavía no ingresó. */
+  lastLoginAt: string | null;
 }
 
 interface BackendUser {
@@ -18,6 +20,7 @@ interface BackendUser {
   role: string;
   provider: string;
   active: boolean;
+  lastLoginAt?: string | null;
 }
 
 function toUser(backend: BackendUser): InstitutionUser {
@@ -28,6 +31,7 @@ function toUser(backend: BackendUser): InstitutionUser {
     role: toLower<Role>(backend.role),
     provider: toLower<InstitutionUser['provider']>(backend.provider),
     active: backend.active,
+    lastLoginAt: backend.lastLoginAt ?? null,
   };
 }
 

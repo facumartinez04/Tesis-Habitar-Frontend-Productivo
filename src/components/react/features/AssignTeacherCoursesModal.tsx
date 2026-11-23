@@ -111,8 +111,8 @@ export function AssignTeacherCoursesModal({
           </button>
         </div>
 
-        <div className="px-6 py-3 bg-emerald-50/70 border-b border-emerald-100 flex items-start gap-2.5 text-xs text-emerald-950 leading-relaxed">
-          <span className="mt-0.5 text-emerald-700 shrink-0">
+        <div className="px-6 py-3 bg-emerald-50/70 dark:bg-emerald-950/30 border-b border-emerald-100 dark:border-emerald-800/40 flex items-start gap-2.5 text-xs text-emerald-950 dark:text-emerald-200 leading-relaxed">
+          <span className="mt-0.5 text-emerald-700 dark:text-emerald-400 shrink-0">
             <Icon name="info" size={14} />
           </span>
           <p>
@@ -198,7 +198,7 @@ export function AssignTeacherCoursesModal({
                         {course.subject}
                       </span>
                       {course.shift && (
-                        <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100/70 px-1.5 py-0.2 rounded">
+                        <span className="text-[10px] font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-900/40 px-1.5 py-0.2 rounded">
                           {course.shift}
                         </span>
                       )}

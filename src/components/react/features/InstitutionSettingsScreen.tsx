@@ -35,7 +35,7 @@ const AXIS_LABEL: Record<ComprehensionAxis, string> = { literal: 'Literal', infe
 export function InstitutionSettingsScreen() {
   useI18n();
   const session = useAuthGuard(['coordinador', 'admin']);
-  const { message, showToast } = useToast();
+  const { message, kind: toastKind, showToast } = useToast();
 
   const [institution, setInstitution] = useState<Institution | null>(null);
   const [aiUsage, setAiUsage] = useState<AiUsageSnapshot | null>(null);
@@ -119,7 +119,7 @@ export function InstitutionSettingsScreen() {
       setContextLocale(updated.defaultLanguage);
       showToast(t('Idioma de la institución guardado'));
     } catch (err) {
-      showToast(err instanceof Error ? err.message : t('Error al guardar la configuración'));
+      showToast(err instanceof Error ? err.message : t('Error al guardar la configuración'), 'error');
     } finally {
       setSavingLanguage(false);
     }
@@ -139,7 +139,7 @@ export function InstitutionSettingsScreen() {
       if (current) sessionStore.set({ ...current, readingMaxChars: updated.readingMaxChars });
       showToast(t('Largo máximo de las lecturas guardado'));
     } catch (err) {
-      showToast(err instanceof Error ? err.message : t('Error al guardar la configuración'));
+      showToast(err instanceof Error ? err.message : t('Error al guardar la configuración'), 'error');
     } finally {
       setSavingReadingMax(false);
     }
@@ -157,7 +157,7 @@ export function InstitutionSettingsScreen() {
       setInstitution(updated);
       showToast(t('Identificación de alumnos y alertas guardadas'));
     } catch (err) {
-      showToast(err instanceof Error ? err.message : t('Error al guardar la configuración'));
+      showToast(err instanceof Error ? err.message : t('Error al guardar la configuración'), 'error');
     } finally {
       setSavingStudents(false);
     }
@@ -183,7 +183,7 @@ export function InstitutionSettingsScreen() {
       setAiCustomApiKey('');
       showToast(t('Configuración institucional e IA guardada'));
     } catch (err) {
-      showToast(err instanceof Error ? err.message : t('Error al guardar la configuración'));
+      showToast(err instanceof Error ? err.message : t('Error al guardar la configuración'), 'error');
     } finally {
       setSavingConfig(false);
     }
@@ -223,7 +223,7 @@ export function InstitutionSettingsScreen() {
       showToast(t('Usuario invitado'));
       refresh();
     } catch (err) {
-      showToast(err instanceof Error ? err.message : t('No se pudo invitar al usuario'));
+      showToast(err instanceof Error ? err.message : t('No se pudo invitar al usuario'), 'error');
     } finally {
       setInviting(false);
     }
@@ -295,7 +295,7 @@ export function InstitutionSettingsScreen() {
 
   return (
     <div className="space-y-5">
-      <Toast message={message} />
+      <Toast message={message} kind={toastKind} />
       <div className="text-lg font-semibold text-text-pri tracking-tight">{t('Configuración institucional')}</div>
 
       <Card>
@@ -786,7 +786,15 @@ export function InstitutionSettingsScreen() {
                   )}
                 </td>
                 <td className="px-2.5 py-2.5 border-b border-gray-border">
-                  <Badge color={user.active ? 'green' : 'gray'}>{user.active ? t('Activo') : t('Desactivado')}</Badge>
+                  {!user.active ? (
+                    <Badge color="gray">{t('Desactivado')}</Badge>
+                  ) : user.lastLoginAt ? (
+                    <Badge color="green">{t('Activo')}</Badge>
+                  ) : (
+                    <span title={t('Fue invitado/a y todavía no ingresó a Habitar.')}>
+                      <Badge color="amber">{t('Invitación pendiente')}</Badge>
+                    </span>
+                  )}
                 </td>
                 <td className="px-2.5 py-2.5 border-b border-gray-border">
                   <div className="flex items-center gap-1.5">

@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Toast } from '../ui/Toast';
+import { useToast } from '../../../hooks/useToast';
 import { Icon } from '../ui/Icon';
 import { usePagination } from '../../../hooks/usePagination';
 import { Pagination } from '../ui/Pagination';
@@ -33,7 +35,7 @@ export function JiraScreen() {
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const [createInitialStatus, setCreateInitialStatus] = useState<JiraStatus>('todo');
   const [viewMode, setViewMode] = useState<'board' | 'list'>('board');
-  const [notification, setNotification] = useState<string | null>(null);
+  const { message: toastMessage, kind: toastKind, showToast } = useToast();
 
   const [filters, setFilters] = useState<JiraFiltersState>({
     search: '',
@@ -46,18 +48,13 @@ export function JiraScreen() {
     onlyOverdue: false,
   });
 
-  const showToast = (msg: string) => {
-    setNotification(msg);
-    setTimeout(() => setNotification(null), 3000);
-  };
-
   const loadIssues = async () => {
     setLoading(true);
     try {
       const data = await jiraService.getIssues();
       setIssues(data);
     } catch {
-      showToast(t('Error al conectar con el servidor'));
+      showToast(t('Error al conectar con el servidor'), 'error');
     } finally {
       setLoading(false);
     }
@@ -93,7 +90,7 @@ export function JiraScreen() {
     try {
       await jiraService.updateIssue(id, { status: newStatus });
     } catch {
-      showToast(t('Error al actualizar'));
+      showToast(t('Error al actualizar'), 'error');
       loadIssues();
     }
   };
@@ -105,7 +102,7 @@ export function JiraScreen() {
       setIsCreateOpen(false);
       showToast(t('Tarea {id} creada en PostgreSQL', { id: created.id }));
     } catch {
-      showToast(t('Error al crear tarea'));
+      showToast(t('Error al crear tarea'), 'error');
     }
   };
 
@@ -117,7 +114,7 @@ export function JiraScreen() {
       setSelectedIssue(null);
       showToast(t('Tarea eliminada'));
     } catch {
-      showToast(t('Error al eliminar'));
+      showToast(t('Error al eliminar'), 'error');
     }
   };
 
@@ -127,11 +124,7 @@ export function JiraScreen() {
 
   return (
     <div className="space-y-6">
-      {notification && (
-        <div className="fixed bottom-6 right-6 z-50 bg-gray-900 text-white text-xs px-4 py-2.5 rounded-lg shadow-lg">
-          {notification}
-        </div>
-      )}
+      <Toast message={toastMessage} kind={toastKind} />
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

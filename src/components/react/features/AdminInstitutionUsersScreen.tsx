@@ -174,7 +174,15 @@ export function AdminInstitutionUsersScreen() {
                   </select>
                 </td>
                 <td className="px-2.5 py-2.5 border-b border-gray-border">
-                  <Badge color={user.active ? 'green' : 'gray'}>{user.active ? t('Activo') : t('Desactivado')}</Badge>
+                  {!user.active ? (
+                    <Badge color="gray">{t('Desactivado')}</Badge>
+                  ) : user.lastLoginAt ? (
+                    <Badge color="green">{t('Activo')}</Badge>
+                  ) : (
+                    <span title={t('Fue invitado/a y todavía no ingresó a Habitar.')}>
+                      <Badge color="amber">{t('Invitación pendiente')}</Badge>
+                    </span>
+                  )}
                 </td>
                 <td className="px-2.5 py-2.5 border-b border-gray-border">
                   <button onClick={() => handleToggleActive(user)} className="flex items-center gap-1 bg-white border border-gray-border rounded-[6px] px-2 py-1 text-[10.5px]">

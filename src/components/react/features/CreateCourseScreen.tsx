@@ -15,7 +15,7 @@ export function CreateCourseScreen() {
   const [teachers, setTeachers] = useState<InstitutionUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { message, showToast } = useToast();
+  const { message, kind: toastKind, showToast } = useToast();
 
   const [form, setForm] = useState<CreateCourseInput>({
     name: '',
@@ -50,14 +50,14 @@ export function CreateCourseScreen() {
       await createCourse(form);
       window.location.href = '/institucional/aulas';
     } catch (err: any) {
-      showToast(t('Error creando el aula: ') + (err.message || t('Error desconocido')));
+      showToast(t('Error creando el aula: ') + (err.message || t('Error desconocido')), 'error');
       setIsSubmitting(false);
     }
   }
 
   return (
     <div>
-      <Toast message={message} />
+      <Toast message={message} kind={toastKind} />
 
       <div className="mb-6">
         <a

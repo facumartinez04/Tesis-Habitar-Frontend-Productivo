@@ -74,7 +74,7 @@ export function TeacherDashboard() {
     (row) => (studentFilter === 'todos' || row.status === studentFilter) && (!studentTerm || row.studentName.toLowerCase().includes(studentTerm)),
   );
   const pagedRows = usePagination(visibleRows, 12, `${selectedCourseId}|${studentFilter}|${studentTerm}`);
-  const { message, showToast } = useToast();
+  const { message, kind: toastKind, showToast } = useToast();
   const [exporting, setExporting] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
   const [range, setRange] = useState({ fromA: '', toA: '', fromB: '', toB: '' });
@@ -115,7 +115,7 @@ export function TeacherDashboard() {
         setView('grid');
       }
     } catch {
-      showToast(t('Error al cargar la lista de aulas'));
+      showToast(t('Error al cargar la lista de aulas'), 'error');
     } finally {
       setLoadingCourses(false);
     }
@@ -184,7 +184,7 @@ export function TeacherDashboard() {
       showToast(t('Actividad duplicada como borrador'));
       if (summary) refreshActivities(summary.courseId);
     } catch (err) {
-      showToast(err instanceof Error ? err.message : t('No se pudo duplicar la actividad'));
+      showToast(err instanceof Error ? err.message : t('No se pudo duplicar la actividad'), 'error');
     } finally {
       setBusyActivityId(null);
     }
@@ -196,7 +196,7 @@ export function TeacherDashboard() {
       await saveActivityAsTemplate(activityId);
       showToast(t('«{activityName}» quedó en el banco de la institución', { activityName }));
     } catch (err) {
-      showToast(err instanceof Error ? err.message : t('No se pudo guardar en el banco'));
+      showToast(err instanceof Error ? err.message : t('No se pudo guardar en el banco'), 'error');
     } finally {
       setBusyActivityId(null);
     }
@@ -215,7 +215,7 @@ export function TeacherDashboard() {
       showToast(t('Actividad cerrada'));
       if (summary) refreshActivities(summary.courseId);
     } catch (err) {
-      showToast(err instanceof Error ? err.message : t('No se pudo cerrar la actividad'));
+      showToast(err instanceof Error ? err.message : t('No se pudo cerrar la actividad'), 'error');
     } finally {
       setBusyActivityId(null);
     }
@@ -252,7 +252,7 @@ export function TeacherDashboard() {
       await exportCourseReport(summary.courseId);
       showToast(t('Reporte exportado'));
     } catch {
-      showToast(t('No se pudo exportar el reporte'));
+      showToast(t('No se pudo exportar el reporte'), 'error');
     } finally {
       setExporting(false);
     }
@@ -282,7 +282,7 @@ export function TeacherDashboard() {
   if (courses.length === 0) {
     return (
       <div>
-        <Toast message={message} />
+        <Toast message={message} kind={toastKind} />
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
           <div>
             <h1 className="text-lg font-semibold text-text-pri tracking-tight">{t('Mis Aulas y Cursos')}</h1>
@@ -337,7 +337,7 @@ export function TeacherDashboard() {
     const totalStudents = courses.reduce((sum, c) => sum + (c.studentsCount ?? 0), 0);
     return (
       <div>
-        <Toast message={message} />
+        <Toast message={message} kind={toastKind} />
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
           <div>
             <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
@@ -376,7 +376,7 @@ export function TeacherDashboard() {
 
   return (
     <div>
-      <Toast message={message} />
+      <Toast message={message} kind={toastKind} />
 
       <button
         type="button"

@@ -558,7 +558,7 @@ export function RenewalScreen() {
 
       {activeTab === 'comparativa' && (
         <div className="bg-white border border-gray-border rounded-xl shadow-2xs overflow-hidden">
-          <div className="p-4 border-b border-gray-border bg-gray-50/50 flex items-center justify-between">
+          <div className="p-4 border-b border-gray-border bg-gray-50/50 dark:bg-white/5 flex items-center justify-between">
             <span className="text-xs font-semibold text-text-pri">
               {t('Comparativa Detallada de Capacidades por Plan')}
             </span>
