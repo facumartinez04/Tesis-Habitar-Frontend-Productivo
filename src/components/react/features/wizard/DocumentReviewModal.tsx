@@ -44,7 +44,6 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
   const [active, setActive] = useState(1);
   const [docxHtml, setDocxHtml] = useState<string | null>(null);
   const [text, setText] = useState('');
-  const [edited, setEdited] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [aiBlocked, setAiBlocked] = useState<string | null>(null);
@@ -55,7 +54,6 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
     let handle: PdfHandle | null = null;
     setLoading(true);
     setError(null);
-    setEdited(false);
     setPdf(null);
     setPages([]);
     setDocxHtml(null);
@@ -125,7 +123,6 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
     updatePage(n, { ai: 'running' });
     try {
       const result = await cleanScannedPage(raw, locale);
-      setEdited(false);
       updatePage(n, result.legible ? { text: result.text, ai: 'done' } : { ai: 'done', unclear: true });
     } catch (err) {
       updatePage(n, { ai: 'error' });
@@ -145,8 +142,8 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
     [selected, pages],
   );
   useEffect(() => {
-    if (pdf && !edited) setText(pdfText);
-  }, [pdf, pdfText, edited]);
+    if (pdf) setText(pdfText);
+  }, [pdf, pdfText]);
 
   useEffect(() => {
     if (!doc) return;
@@ -167,7 +164,6 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
   const activePage = pages[active - 1];
 
   function togglePage(n: number) {
-    setEdited(false);
     setSelected((prev) => (prev.includes(n) ? prev.filter((x) => x !== n) : [...prev, n]));
   }
 
@@ -242,7 +238,7 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
                       </button>
                     )}
                     {activePage?.ocr !== 'running' && activePage?.ai !== 'running' && (
-                      <button type="button" onClick={() => { setEdited(false); void runOcr(active); }} className="ml-1 underline cursor-pointer" title={t('Volver a leer la página como imagen')}>
+                      <button type="button" onClick={() => void runOcr(active)} className="ml-1 underline cursor-pointer" title={t('Volver a leer la página como imagen')}>
                         {t('Leer con OCR')}
                       </button>
                     )}
@@ -269,14 +265,9 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
               )}
             </div>
 
-            <div className="lg:w-[380px] shrink-0 border-t lg:border-t-0 lg:border-l border-gray-border flex flex-col min-h-[200px]">
-              <div className="px-4 pt-3 pb-1.5 text-[12px] font-bold text-text-pri flex items-center justify-between">
-                {t('Texto que se va a usar')}
-                {edited && pdf && (
-                  <button type="button" onClick={() => setEdited(false)} className="text-[11px] font-semibold text-text-sec underline cursor-pointer">
-                    {t('Rearmar desde las páginas')}
-                  </button>
-                )}
+            <div className="lg:w-[300px] shrink-0 border-t lg:border-t-0 lg:border-l border-gray-border flex flex-col min-h-[140px]">
+              <div className="px-4 pt-3 pb-2 text-[12px] text-text-sec">
+                {pdf ? t('Marcá las páginas que tienen el texto de la lectura.') : t('Revisá el documento y usalo cuando esté listo.')}
               </div>
               {ocrRunning && (
                 <div className="mx-4 mb-2 text-[11px] text-text-sec">
@@ -313,16 +304,7 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
               {pages.some((p) => p.ocr === 'error') && (
                 <div className="mx-4 mb-2 text-[11px] text-red">{t('No se pudo leer alguna página con OCR. Probá de nuevo con «Leer con OCR».')}</div>
               )}
-              <textarea
-                value={text}
-                onChange={(e) => {
-                  setText(e.target.value);
-                  setEdited(true);
-                }}
-                placeholder={pdf ? t('Marcá las páginas que tienen el texto de la lectura.') : ''}
-                className="flex-1 mx-4 mb-2 px-3 py-2 border border-gray-border rounded-xl text-[12.5px] leading-relaxed resize-none"
-              />
-              <div className="px-4 pb-3 flex items-center justify-between gap-2">
+              <div className="mt-auto px-4 pb-3 pt-2 flex flex-col gap-2">
                 <span className={`text-[11.5px] font-semibold ${valid ? 'text-green-mid' : 'text-red'}`}>
                   {t('{words} palabras · {chars} caracteres', { words, chars: length.chars })}{' '}{valid ? t('· listo') : length.tooShort ? t('· tiene que tener al menos 40 palabras') : t('· supera los {max} caracteres', { max: length.maxChars })}
                 </span>
@@ -337,7 +319,7 @@ export function DocumentReviewModal({ document: doc, onClose, onUse }: DocumentR
                       pdf && pages && pages.length < pdf.numPages ? pages : null,
                     );
                   }}
-                  className="bg-green-dark hover:opacity-90 text-white text-xs font-bold px-4 py-2 rounded-xl disabled:opacity-50 cursor-pointer"
+                  className="w-full bg-green-dark hover:opacity-90 text-white text-xs font-bold px-4 py-2.5 rounded-xl disabled:opacity-50 cursor-pointer"
                 >
                   {t('Usar este texto')}
                 </button>
