@@ -12,6 +12,26 @@ const MARGIN_RATIO = 0.09;
 const CONTENT_CLASS =
   'text-neutral-900 text-[13px] leading-relaxed break-words [&_p]:mb-3 [&_h1]:text-lg [&_h1]:font-bold [&_h1]:mb-3 [&_h2]:text-base [&_h2]:font-bold [&_h2]:mb-2 [&_h3]:font-bold [&_h3]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3 [&_img]:max-w-full [&_img]:h-auto [&_img]:my-2 [&_table]:w-full [&_table]:my-3 [&_table]:border-collapse [&_td]:border [&_td]:border-neutral-300 [&_td]:p-1.5 [&_th]:border [&_th]:border-neutral-300 [&_th]:p-1.5 [&_a]:text-emerald-800 [&_a]:underline';
 
+const SAFE_URL = /^(https?:|mailto:|#|data:image\/(png|jpe?g|gif|webp|bmp);)/i;
+const URL_ATTRS = new Set(['href', 'src', 'xlink:href', 'action', 'formaction', 'srcset', 'poster']);
+
+export function safeDocxHtml(html: string): string {
+  const doc = new DOMParser().parseFromString(`<body>${html}</body>`, 'text/html');
+  doc.querySelectorAll('script, iframe, object, embed, style, link, meta, base, form, svg, math').forEach((el) => el.remove());
+  doc.body.querySelectorAll('*').forEach((el) => {
+    for (const attr of [...el.attributes]) {
+      const name = attr.name.toLowerCase();
+      if (name.startsWith('on') || name === 'style') el.removeAttribute(attr.name);
+      else if (URL_ATTRS.has(name) && !SAFE_URL.test(attr.value.trim())) el.removeAttribute(attr.name);
+    }
+    if (el.tagName === 'A' && el.hasAttribute('href') && !el.getAttribute('href')!.startsWith('#')) {
+      el.setAttribute('target', '_blank');
+      el.setAttribute('rel', 'noopener noreferrer');
+    }
+  });
+  return doc.body.innerHTML;
+}
+
 export function DocxPages({ html, maxWidth = 640 }: DocxPagesProps) {
   useI18n();
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -37,7 +57,7 @@ export function DocxPages({ html, maxWidth = 640 }: DocxPagesProps) {
     const box = measureRef.current;
     if (!box || width === 0) return;
     let cancelled = false;
-    box.innerHTML = html;
+    box.innerHTML = safeDocxHtml(html);
     const images = [...box.querySelectorAll('img')];
     Promise.all(images.map((img) => (img.complete ? Promise.resolve() : img.decode().catch(() => undefined)))).then(() => {
       if (cancelled) return;
