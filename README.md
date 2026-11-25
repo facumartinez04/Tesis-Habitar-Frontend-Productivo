@@ -2,6 +2,9 @@
 
 Frontend del proyecto Habitar (Astro + React + Tailwind), PWA e íntegramente responsive (mobile-first).
 
+El backend está en [Tesis-Habitar-Backend-Productivo](https://github.com/facumartinez04/Tesis-Habitar-Backend-Productivo).
+Para desarrollo local, copiar `.env.example` a `.env` y apuntar `PUBLIC_API_URL` a la API.
+
 ## Stack
 
 - **Astro 7** — routing basado en archivos, salida estática
